@@ -1,3 +1,6 @@
+# Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+# Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+
 ###*
 A lightweight IoC container for dependency injection.
 
