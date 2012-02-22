@@ -19,7 +19,7 @@ DeftJS provides:
 * **Testability**
 	* Promotes loose coupling through class annotation driven dependency injection.
 
-DeftJS provides to building blocks to scale up to meet the needs of large enterprise class applications and development teams.
+DeftJS provides the building blocks to scaling up to meet the needs of large enterprise class applications and development teams.
 
 # Features
 
@@ -29,8 +29,7 @@ DeftJS provides to building blocks to scale up to meet the needs of large enterp
 	* Resolves dependencies by class instance, factory function or value.
 	* Supports singleton and prototype resolution of class instance and factory function dependencies.
 	* Offers eager and lazy instantiation of dependencies.
-	* Capable of injecting into Ext JS class configs and properties.
-	* Injects dependencies before the class constructor is executed.
+	* Injects dependencies into Ext JS class configs and properties before the class constructor is executed.
 
 # API
 
@@ -50,7 +49,7 @@ In the simplest scenario, the Injector can be configured to map identifiers by c
 		...
 	]);
 
-When the Injector attempts to resolve dependencies for these identifiers, a singleton instance of the specified class will be created and returned.
+When the Injector is called to resolve dependencies for these identifiers, a singleton instance of the specified class will be created and returned.
 
 Where necessary, you can also specify constructor parameters:
 
@@ -92,7 +91,7 @@ Additionally, you can configure dependency providers to be eagerly or lazily (th
 		...
 	});
 
-When a dependency provider is configured for eager instantiation, it will be immediately created and cached in the Injector after all the identifiers in that `configure()` call have been processed.
+When a dependency provider is configured for eager instantiation, it will be created and cached in the Injector immediately after all the identifiers in that `configure()` call have been processed.
 
 *NOTE:* Only singletons can be eagerly instantiated.
 
@@ -126,9 +125,9 @@ The Injector can also be configured to map identifiers to factory functions:
 		...
 	});
  
-When the Injector attempts to resolve dependencies for these identifiers, the factory function is called and the dependency is resolved with the return value.
+When the Injector is called to resolve dependencies for these identifiers, the factory function is called and the dependency is resolved with the return value.
 
-As shown above, a lazily instantiated factory function can optionally accept an instance parameter, corresponding to the instance for which the Injector is currently injecting dependencies.
+As shown above, a lazily instantiated factory function can optionally accept a parameter, corresponding to the instance for which the Injector is currently injecting dependencies.
 
 Factory function dependency providers can be configured as singletons or prototypes and can be eagerly or lazily instantiated.
 
@@ -161,7 +160,7 @@ A class is marked as participating in dependency injection by including the Inje
 
 	Ext.define( 'MyApp.manager.ContactManager', {
 		extend: 'MyApp.manager.AbstractManager',
-		mixins: [ 'Deft.mixin.Injectable' ]
+		mixins: [ 'Deft.mixin.Injectable' ],
 		...
 	});
 
@@ -169,7 +168,7 @@ Its dependencies are expressed using the `inject` annotation:
 
 	Ext.define( 'MyApp.manager.ContactManager', {
 		extend: 'MyApp.manager.AbstractManager',
-		mixins: [ 'Deft.mixin.Injectable' ]
+		mixins: [ 'Deft.mixin.Injectable' ],
 		
 		inject: [ 'contactManager' ],
 		...
@@ -177,9 +176,9 @@ Its dependencies are expressed using the `inject` annotation:
 
 Any class that includes the Injectable mixin will have the dependencies described in its `inject` annotation resolved and injected by the Injector prior to the class constructor being called.
 
-By default, the dependency will be injected into the config or property of the same name.
+By default, each dependency will be injected into the config or property of the same name.
 
-You also can specify the specific property to inject into, by using slightly more verbose syntax:
+You can override this behavior and indicate the specific property to inject into, by using slightly more verbose syntax:
 
 	Ext.define( 'MyApp.manager.ContactManager',
 		extend: 'MyApp.manager.AbstractManager',
@@ -228,7 +227,6 @@ A class does not need to explicitly define a config or property for the property
 * Website (*in progress*)
 * FAQ
 * Mailing list
-* Twitter account (*in progress*)
 * Full suite of Jasmine tests (*in progress*)
 * Example Ext JS and Sencha Touch applications
 * Alternative MVC implementation (Model View ViewController)
