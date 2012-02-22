@@ -19,7 +19,7 @@ DeftJS provides:
 * **Testability**
 	* Promotes loose coupling through class annotation driven dependency injection.
 
-DeftJS provides the building blocks to scaling up to meet the needs of large enterprise class applications and development teams.
+DeftJS provides the building blocks for scaling up to meet the needs of large enterprise class applications and development teams.
 
 # Features
 
