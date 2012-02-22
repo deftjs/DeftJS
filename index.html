@@ -216,7 +216,7 @@ html h6 {
 </ul>
 
 
-<p>DeftJS provides to building blocks to scale up to meet the needs of large enterprise class applications and development teams.</p>
+<p>DeftJS provides the building blocks for scaling up to meet the needs of large enterprise class applications and development teams.</p>
 
 <h1>Features</h1>
 
@@ -229,8 +229,7 @@ html h6 {
 <li>Resolves dependencies by class instance, factory function or value.</li>
 <li>Supports singleton and prototype resolution of class instance and factory function dependencies.</li>
 <li>Offers eager and lazy instantiation of dependencies.</li>
-<li>Capable of injecting into Ext JS class configs and properties.</li>
-<li>Injects dependencies before the class constructor is executed.</li>
+<li>Injects dependencies into Ext JS class configs and properties before the class constructor is executed.</li>
 </ul>
 </li>
 </ul>
@@ -255,7 +254,7 @@ html h6 {
 ]);
 </code></pre>
 
-<p>When the Injector attempts to resolve dependencies for these identifiers, a singleton instance of the specified class will be created and returned.</p>
+<p>When the Injector is called to resolve dependencies for these identifiers, a singleton instance of the specified class will be created and returned.</p>
 
 <p>Where necessary, you can also specify constructor parameters:</p>
 
@@ -300,7 +299,7 @@ html h6 {
 });
 </code></pre>
 
-<p>When a dependency provider is configured for eager instantiation, it will be immediately created and cached in the Injector after all the identifiers in that <code>configure()</code> call have been processed.</p>
+<p>When a dependency provider is configured for eager instantiation, it will be created and cached in the Injector immediately after all the identifiers in that <code>configure()</code> call have been processed.</p>
 
 <p><em>NOTE:</em> Only singletons can be eagerly instantiated.</p>
 
@@ -335,9 +334,9 @@ html h6 {
 });
 </code></pre>
 
-<p>When the Injector attempts to resolve dependencies for these identifiers, the factory function is called and the dependency is resolved with the return value.</p>
+<p>When the Injector is called to resolve dependencies for these identifiers, the factory function is called and the dependency is resolved with the return value.</p>
 
-<p>As shown above, a lazily instantiated factory function can optionally accept an instance parameter, corresponding to the instance for which the Injector is currently injecting dependencies.</p>
+<p>As shown above, a lazily instantiated factory function can optionally accept a parameter, corresponding to the instance for which the Injector is currently injecting dependencies.</p>
 
 <p>Factory function dependency providers can be configured as singletons or prototypes and can be eagerly or lazily instantiated.</p>
 
@@ -371,7 +370,7 @@ html h6 {
 
 <pre><code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
-    mixins: [ 'Deft.mixin.Injectable' ]
+    mixins: [ 'Deft.mixin.Injectable' ],
     ...
 });
 </code></pre>
@@ -380,7 +379,7 @@ html h6 {
 
 <pre><code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
-    mixins: [ 'Deft.mixin.Injectable' ]
+    mixins: [ 'Deft.mixin.Injectable' ],
 
     inject: [ 'contactManager' ],
     ...
@@ -389,9 +388,9 @@ html h6 {
 
 <p>Any class that includes the Injectable mixin will have the dependencies described in its <code>inject</code> annotation resolved and injected by the Injector prior to the class constructor being called.</p>
 
-<p>By default, the dependency will be injected into the config or property of the same name.</p>
+<p>By default, each dependency will be injected into the config or property of the same name.</p>
 
-<p>You also can specify the specific property to inject into, by using slightly more verbose syntax:</p>
+<p>You also can override this behavior and indicate the specific property to inject into, by using slightly more verbose syntax:</p>
 
 <pre><code>Ext.define( 'MyApp.manager.ContactManager',
     extend: 'MyApp.manager.AbstractManager',
@@ -445,7 +444,6 @@ html h6 {
 <li>Website (<em>in progress</em>)</li>
 <li>FAQ</li>
 <li>Mailing list</li>
-<li>Twitter account (<em>in progress</em>)</li>
 <li>Full suite of Jasmine tests (<em>in progress</em>)</li>
 <li>Example Ext JS and Sencha Touch applications</li>
 <li>Alternative MVC implementation (Model View ViewController)</li>
