@@ -43,11 +43,11 @@ A lightweight IoC container for dependency injection.
 
 In the simplest scenario, the Injector can be configured to map identifiers by class names:
 
-	Deft.Injector.configure([
+	Deft.Injector.configure({
 		contactStore: 'MyApp.store.ContactStore',
 		contactManager: 'MyApp.manager.ContactManager',
 		...
-	]);
+	});
 
 When the Injector is called to resolve dependencies for these identifiers, a singleton instance of the specified class will be created and returned.
 
@@ -180,7 +180,7 @@ By default, each dependency will be injected into the config or property of the 
 
 You can override this behavior and indicate the specific property to inject into, by using slightly more verbose syntax:
 
-	Ext.define( 'MyApp.manager.ContactManager',
+	Ext.define( 'MyApp.manager.ContactManager', {
 		extend: 'MyApp.manager.AbstractManager',
 		mixins: [ 'Deft.mixin.Injectable' ],
 		
@@ -194,7 +194,7 @@ In this case, the `contactManager` dependency will be resolved into a new `manag
 
 A class does not need to explicitly define a config or property for the property to be injected.  However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.
 
-	Ext.define( 'MyApp.manager.ContactManager',
+	Ext.define( 'MyApp.manager.ContactManager', {
 		extend: 'MyApp.manager.AbstractManager',
 		mixins: [ 'Deft.mixin.Injectable' ],
 		
