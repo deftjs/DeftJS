@@ -45,15 +45,15 @@ Ext.define('Deft.ioc.DependencyProvider', {
     this.initConfig(config);
     if (this.getEager()) {
       if (this.getValue() != null) {
-        Ext.Error.raise("Error while configuring '" + (this.getIndentifier()) + "': a 'value' cannot be created eagerly.");
+        Ext.Error.raise("Error while configuring '" + (this.getIdentifier()) + "': a 'value' cannot be created eagerly.");
       }
       if (!this.getSingleton()) {
-        Ext.Error.raise("Error while configuring '" + (this.getIndentifier()) + "': only singletons can be created eagerly.");
+        Ext.Error.raise("Error while configuring '" + (this.getIdentifier()) + "': only singletons can be created eagerly.");
       }
     }
     if (!this.getSingleton()) {
       if (this.getValue() != null) {
-        Ext.Error.raise("Error while configuring '" + (this.getIndentifier()) + "': a 'value' can only be configured as a singleton.");
+        Ext.Error.raise("Error while configuring '" + (this.getIdentifier()) + "': a 'value' can only be configured as a singleton.");
       }
     }
     return this;
@@ -74,7 +74,7 @@ Ext.define('Deft.ioc.DependencyProvider', {
       parameters = this.getParameters() != null ? [this.getClassName()].concat(this.getParameters()) : [this.getClassName()];
       instance = Ext.create.apply(this, parameters);
     } else {
-      Ext.Error.raise("Error while configuring rule for '" + (this.getIndentifier()) + "': no 'value', 'fn', or 'className' was specified.");
+      Ext.Error.raise("Error while configuring rule for '" + (this.getIdentifier()) + "': no 'value', 'fn', or 'className' was specified.");
     }
     if (this.getSingleton()) this.setValue(instance);
     return instance;
@@ -149,6 +149,7 @@ Ext.define('Deft.ioc.Injector', {
   inject: function(identifiers, targetInstance) {
     var config;
     config = {};
+    if (Ext.isString(identifiers)) identifiers = [identifiers];
     Ext.Object.each(identifiers, function(key, value) {
       var identifier, resolvedValue, targetProperty;
       targetProperty = Ext.isArray(identifiers) ? value : key;

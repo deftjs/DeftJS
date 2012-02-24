@@ -1,5 +1,7 @@
-# Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
-# Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+###
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+###
 
 ###*
 @private
@@ -49,13 +51,13 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 		
 		if @getEager()
 			if @getValue()? 
-				Ext.Error.raise( "Error while configuring '#{ @getIndentifier() }': a 'value' cannot be created eagerly." )
+				Ext.Error.raise( "Error while configuring '#{ @getIdentifier() }': a 'value' cannot be created eagerly." )
 			if not @getSingleton()
-				Ext.Error.raise( "Error while configuring '#{ @getIndentifier() }': only singletons can be created eagerly." )
+				Ext.Error.raise( "Error while configuring '#{ @getIdentifier() }': only singletons can be created eagerly." )
 		
 		if not @getSingleton()
 			if @getValue()? 
-				Ext.Error.raise( "Error while configuring '#{ @getIndentifier() }': a 'value' can only be configured as a singleton." )
+				Ext.Error.raise( "Error while configuring '#{ @getIdentifier() }': a 'value' can only be configured as a singleton." )
 		
 		return @
 	
@@ -76,7 +78,7 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 			parameters = if @getParameters()? then [ @getClassName() ].concat( @getParameters() ) else [ @getClassName() ]
 			instance = Ext.create.apply( this, parameters )
 		else
-			Ext.Error.raise( "Error while configuring rule for '#{ @getIndentifier() }': no 'value', 'fn', or 'className' was specified." )
+			Ext.Error.raise( "Error while configuring rule for '#{ @getIdentifier() }': no 'value', 'fn', or 'className' was specified." )
 		
 		if @getSingleton()
 			@setValue( instance )

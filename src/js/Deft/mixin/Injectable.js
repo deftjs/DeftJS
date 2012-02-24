@@ -1,9 +1,7 @@
 /*
- * DeftJS v0.1.0
- * Copyright (c) 2012 DeftJS Framework Contributors
- * Open source under the MIT License.
- */
-
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 /**
 A mixin that marks a class as participating in dependency injection.
 

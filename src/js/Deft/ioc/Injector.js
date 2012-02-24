@@ -1,9 +1,7 @@
 /*
- * DeftJS v0.1.0
- * Copyright (c) 2012 DeftJS Framework Contributors
- * Open source under the MIT License.
- */
-
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 /**
 A lightweight IoC container for dependency injection.
 
@@ -72,6 +70,7 @@ Ext.define('Deft.ioc.Injector', {
   inject: function(identifiers, targetInstance) {
     var config;
     config = {};
+    if (Ext.isString(identifiers)) identifiers = [identifiers];
     Ext.Object.each(identifiers, function(key, value) {
       var identifier, resolvedValue, targetProperty;
       targetProperty = Ext.isArray(identifiers) ? value : key;
