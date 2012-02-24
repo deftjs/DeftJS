@@ -247,11 +247,11 @@ html h6 {
 
 <p>In the simplest scenario, the Injector can be configured to map identifiers by class names:</p>
 
-<pre><code>Deft.Injector.configure([
+<pre><code>Deft.Injector.configure({
     contactStore: 'MyApp.store.ContactStore',
     contactManager: 'MyApp.manager.ContactManager',
     ...
-]);
+});
 </code></pre>
 
 <p>When the Injector is called to resolve dependencies for these identifiers, a singleton instance of the specified class will be created and returned.</p>
@@ -392,7 +392,7 @@ html h6 {
 
 <p>You also can override this behavior and indicate the specific property to inject into, by using slightly more verbose syntax:</p>
 
-<pre><code>Ext.define( 'MyApp.manager.ContactManager',
+<pre><code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
 
@@ -407,7 +407,7 @@ html h6 {
 
 <p>A class does not need to explicitly define a config or property for the property to be injected.  However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.</p>
 
-<pre><code>Ext.define( 'MyApp.manager.ContactManager',
+<pre><code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
 
@@ -433,6 +433,7 @@ html h6 {
 <h1>Version History</h1>
 
 <ul>
+<li>0.1.1 - Preview release, added Jasmine test suite.</li>
 <li>0.1.0 - Preview release, introducing an IoC container for dependency injection.</li>
 </ul>
 
@@ -444,10 +445,10 @@ html h6 {
 <li>Website (<em>in progress</em>)</li>
 <li>FAQ</li>
 <li>Mailing list</li>
-<li>Full suite of Jasmine tests (<em>in progress</em>)</li>
 <li>Example Ext JS and Sencha Touch applications</li>
 <li>Alternative MVC implementation (Model View ViewController)</li>
-<li>Hierarchical ViewController-aware Routing</li>
+<li>Routing</li>
+<li>Navigation - support for hierarchical views, route-aware</li>
 <li>Deferreds / Promises</li>
 <li>AOP with an Ext JS-style API (i.e. JSON style configuration)</li>
 <li>Occasionally-Connected Store (simplifing online / offline capabilities)</li>
@@ -458,6 +459,7 @@ html h6 {
 
 <ul>
 <li><a href="http://twitter.com/johnyanarella">John Yanarella</a> (Creator)</li>
+<li><a href="http://davidtucker.net/">David Tucker</a></li>
 </ul>
 
 
@@ -467,10 +469,11 @@ html h6 {
 <li>Inspiration drawn from other IoC frameworks:
 
 <ul>
-<li>Spring</li>
-<li>Swiz</li>
-<li>Swift Suspenders</li>
-<li>AngularJS</li>
+<li><a href="http://www.springsource.org/">Spring</a></li>
+<li><a href="http://swizframework.org/">Swiz</a></li>
+<li><a href="http://www.robotlegs.org/">Robotlegs</a></li>
+<li><a href="https://github.com/tschneidereit/SwiftSuspenders">Swift Suspenders</a></li>
+<li><a href="http://angularjs.org/">AngularJS</a></li>
 </ul>
 </li>
 <li>Special thanks to:
