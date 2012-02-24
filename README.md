@@ -219,6 +219,7 @@ A class does not need to explicitly define a config or property for the property
 
 # Version History
 
+* 0.1.1 - Preview release, added Jasmine test suite.
 * 0.1.0 - Preview release, introducing an IoC container for dependency injection.
 
 # Roadmap
@@ -227,10 +228,10 @@ A class does not need to explicitly define a config or property for the property
 * Website (*in progress*)
 * FAQ
 * Mailing list
-* Full suite of Jasmine tests (*in progress*)
 * Example Ext JS and Sencha Touch applications
 * Alternative MVC implementation (Model View ViewController)
-* Hierarchical ViewController-aware Routing
+* Routing
+* Navigation - support for hierarchical views, route-aware
 * Deferreds / Promises
 * AOP with an Ext JS-style API (i.e. JSON style configuration)
 * Occasionally-Connected Store (simplifing online / offline capabilities)
@@ -238,14 +239,16 @@ A class does not need to explicitly define a config or property for the property
 # Development Team
 
 * [John Yanarella](http://twitter.com/johnyanarella) (Creator)
+* [David Tucker](http://www.davidtucker.net/)
 
 # Acknowledgements
 
 * Inspiration drawn from other IoC frameworks:
-	* Spring
-	* Swiz
-	* Swift Suspenders
-	* AngularJS
+	* [Spring](http://www.springsource.org/)
+	* [Swiz](http://swizframework.org/)
+	* [Robotlegs](http://www.robotlegs.org/)
+	* [Swift Suspenders](https://github.com/tschneidereit/SwiftSuspenders)
+	* [AngularJS](http://angularjs.org/)
 * Special thanks to:
 	* [David Tucker](http://www.davidtucker.net/) for reviewing several iterations of the proposed syntax.
 	* [Claude Gauthier](http://www.sencha.com/training) for leading the 5-day 'Fast Track to Ext JS' training where this idea was born.

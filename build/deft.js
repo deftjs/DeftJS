@@ -1,3 +1,9 @@
+/*
+DeftJS 0.1.1
+
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 Ext.define("Deft.ioc.DependencyProvider",{config:{identifier:null,className:null,parameters:null,fn:null,value:null,singleton:!0,eager:!1},constructor:function(a){this.initConfig(a);this.getEager()&&(this.getValue()!=null&&Ext.Error.raise("Error while configuring '"+this.getIdentifier()+"': a 'value' cannot be created eagerly."),this.getSingleton()||Ext.Error.raise("Error while configuring '"+this.getIdentifier()+"': only singletons can be created eagerly."));this.getSingleton()||this.getValue()!=
 null&&Ext.Error.raise("Error while configuring '"+this.getIdentifier()+"': a 'value' can only be configured as a singleton.");return this},resolve:function(a){var b;Ext.log("Resolving '"+this.getIdentifier()+"'.");if(this.getValue()!=null)return this.getValue();b=null;this.getFn()!=null?(Ext.log("Executing factory function."),b=this.fn(a)):this.getClassName()!=null?(Ext.log("Creating instance of '"+this.getClassName()+"'."),a=this.getParameters()!=null?[this.getClassName()].concat(this.getParameters()):
 [this.getClassName()],b=Ext.create.apply(this,a)):Ext.Error.raise("Error while configuring rule for '"+this.getIdentifier()+"': no 'value', 'fn', or 'className' was specified.");this.getSingleton()&&this.setValue(b);return b}});
