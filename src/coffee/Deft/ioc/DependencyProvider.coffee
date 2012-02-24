@@ -76,7 +76,7 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 		else if @getClassName()?
 			Ext.log( "Creating instance of '#{ @getClassName() }'." )
 			parameters = if @getParameters()? then [ @getClassName() ].concat( @getParameters() ) else [ @getClassName() ]
-			instance = Ext.create.apply( this, parameters )
+			instance = Ext.create.apply( @, parameters )
 		else
 			Ext.Error.raise( "Error while configuring rule for '#{ @getIdentifier() }': no 'value', 'fn', or 'className' was specified." )
 		

@@ -90,8 +90,16 @@ Ext.define( 'Deft.ioc.Injector',
 				else
 					Ext.log( "Injecting '#{ identifier }' into '#{ targetProperty }'." )
 					targetInstance[ targetProperty ] = resolvedValue
+				return
 			@
 		)
-		targetInstance.config = Ext.Object.merge( {}, targetInstance.config or {}, config )
+		
+		if targetInstance.$configInited
+			for name, value of config
+				setterFunctionName = 'set' + Ext.String.capitalize( name )
+				targetInstance[ setterFunctionName ].call( targetInstance, value )
+		else
+			targetInstance.config = Ext.Object.merge( {}, targetInstance.config or {}, config )
+		
 		return targetInstance
 )

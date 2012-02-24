@@ -68,7 +68,7 @@ Ext.define('Deft.ioc.Injector', {
   	Inject dependencies (by their identifiers) into the target object instance.
   */
   inject: function(identifiers, targetInstance) {
-    var config;
+    var config, name, setterFunctionName, value;
     config = {};
     if (Ext.isString(identifiers)) identifiers = [identifiers];
     Ext.Object.each(identifiers, function(key, value) {
@@ -78,13 +78,21 @@ Ext.define('Deft.ioc.Injector', {
       resolvedValue = this.resolve(identifier, targetInstance);
       if (targetInstance.config.hasOwnProperty(targetProperty)) {
         Ext.log("Injecting '" + identifier + "' into 'config." + targetProperty + "'.");
-        return config[targetProperty] = resolvedValue;
+        config[targetProperty] = resolvedValue;
       } else {
         Ext.log("Injecting '" + identifier + "' into '" + targetProperty + "'.");
-        return targetInstance[targetProperty] = resolvedValue;
+        targetInstance[targetProperty] = resolvedValue;
       }
     }, this);
-    targetInstance.config = Ext.Object.merge({}, targetInstance.config || {}, config);
+    if (targetInstance.$configInited) {
+      for (name in config) {
+        value = config[name];
+        setterFunctionName = 'set' + Ext.String.capitalize(name);
+        targetInstance[setterFunctionName].call(targetInstance, value);
+      }
+    } else {
+      targetInstance.config = Ext.Object.merge({}, targetInstance.config || {}, config);
+    }
     return targetInstance;
   }
 });
