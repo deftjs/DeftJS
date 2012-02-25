@@ -1234,6 +1234,10 @@ describe( 'Deft.ioc.Injector', ->
 				value: []
 			}
 			{
+				type: 'Object'
+				value: {}
+			}
+			{
 				type: 'Class'
 				value: Ext.create( 'ExampleClass' )
 			}
@@ -1292,6 +1296,10 @@ describe( 'Deft.ioc.Injector', ->
 			'arrayValueLazily'
 			'arrayValueAsSingleton'
 			'arrayValueAsSingletonLazily'
+			'objectValue'
+			'objectValueLazily'
+			'objectValueAsSingleton'
+			'objectValueAsSingletonLazily'
 			'classValue'
 			'classValueLazily'
 			'classValueAsSingleton'
@@ -1444,6 +1452,10 @@ describe( 'Deft.ioc.Injector', ->
 					arrayValueLazily: null
 					arrayValueAsSingleton: null
 					arrayValueAsSingletonLazily: null
+					objectValue: null
+					objectValueLazily: null
+					objectValueAsSingleton: null
+					objectValueAsSingletonLazily: null
 					classValue: null
 					classValueLazily: null
 					classValueAsSingleton: null
@@ -1452,7 +1464,7 @@ describe( 'Deft.ioc.Injector', ->
 					functionValueLazily: null
 					functionValueAsSingleton: null
 					functionValueAsSingletonLazily: null
-			
+				
 				constructor: ( config ) ->
 					@initConfig( config )
 					return @
@@ -1460,7 +1472,7 @@ describe( 'Deft.ioc.Injector', ->
 			
 			Ext.define( 'ComplexClass',
 				extend: 'ComplexBaseClass'
-			
+				
 				constructor: ( config ) ->
 					return @callParent( arguments )
 			)
@@ -1533,7 +1545,7 @@ describe( 'Deft.ioc.Injector', ->
 						expect(
 							complexClassInstance[ getterFunctionName ]()
 						).toBeInstanceOf( Ext.ClassManager.getClass( resolvedValue ).getName() )
-						
+					
 				return
 			)
 			
@@ -1576,9 +1588,15 @@ describe( 'Deft.ioc.Injector', ->
 					resolvedValue = Deft.Injector.resolve( configuredIdentifier )
 					
 					if configuredIdentifier.indexOf( 'Prototype' ) is -1
-						expect(
-							injectableComplexClassInstance[ getterFunctionName ]()
-						).toBe( resolvedValue )
+						if configuredIdentifier.indexOf( 'objectValue' ) is -1
+							expect(
+								injectableComplexClassInstance[ getterFunctionName ]()
+							).toBe( resolvedValue )
+						else
+							# NOTE: Object configs are cloned/merged and will not be the exact same instance.
+							expect(
+								injectableComplexClassInstance[ getterFunctionName ]()
+							).not.toBeNull()
 					else
 						expect(
 							injectableComplexClassInstance[ getterFunctionName ]()

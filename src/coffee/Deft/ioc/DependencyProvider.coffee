@@ -49,6 +49,11 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 	constructor: ( config ) ->
 		@initConfig( config )
 		
+		# NOTE: Internally, @initConfig() clones Object values before calling the corresponding setter.
+		# As a workaround, detect this situation and set value to the original passed instance.
+		if config.value? and config.value.constructor is Object
+			@setValue( config.value )
+		
 		if @getEager()
 			if @getValue()? 
 				Ext.Error.raise( "Error while configuring '#{ @getIdentifier() }': a 'value' cannot be created eagerly." )

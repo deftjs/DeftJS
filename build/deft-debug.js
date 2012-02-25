@@ -44,6 +44,9 @@ Ext.define('Deft.ioc.DependencyProvider', {
   },
   constructor: function(config) {
     this.initConfig(config);
+    if ((config.value != null) && config.value.constructor === Object) {
+      this.setValue(config.value);
+    }
     if (this.getEager()) {
       if (this.getValue() != null) {
         Ext.Error.raise("Error while configuring '" + (this.getIdentifier()) + "': a 'value' cannot be created eagerly.");
@@ -82,10 +85,6 @@ Ext.define('Deft.ioc.DependencyProvider', {
   }
 });
 
-/*
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
-Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
-*/
 /**
 A lightweight IoC container for dependency injection.
 
@@ -181,10 +180,6 @@ Ext.define('Deft.ioc.Injector', {
   }
 });
 
-/*
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
-Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
-*/
 /**
 A mixin that marks a class as participating in dependency injection.
 

@@ -744,6 +744,9 @@ describe('Deft.ioc.Injector', function() {
         type: 'Array',
         value: []
       }, {
+        type: 'Object',
+        value: {}
+      }, {
         type: 'Class',
         value: Ext.create('ExampleClass')
       }, {
@@ -755,7 +758,7 @@ describe('Deft.ioc.Injector', function() {
       typeDescriptor = typeDescriptors[_i];
       describeConfigurationByValueOfType.call(this, typeDescriptor);
     }
-    configuredIdentifiers = ['classNameAsString', 'className', 'classNameEagerly', 'classNameLazily', 'classNameAsSingleton', 'classNameAsSingletonEagerly', 'classNameAsSingletonLazily', 'classNameAsPrototype', 'classNameAsPrototypeLazily', 'classNameWithParameters', 'classNameWithParametersEagerly', 'classNameWithParametersLazily', 'classNameWithParametersAsSingleton', 'classNameWithParametersAsSingletonEagerly', 'classNameWithParametersAsSingletonLazily', 'classNameWithParametersAsPrototype', 'classNameWithParametersAsPrototypeLazily', 'fn', 'fnEagerly', 'fnLazily', 'fnAsSingleton', 'fnAsSingletonEagerly', 'fnAsSingletonLazily', 'fnAsPrototype', 'fnAsPrototypeLazily', 'booleanValue', 'booleanValueLazily', 'booleanValueAsSingleton', 'booleanValueAsSingletonLazily', 'stringValue', 'stringValueLazily', 'stringValueAsSingleton', 'stringValueAsSingletonLazily', 'numberValue', 'numberValueLazily', 'numberValueAsSingleton', 'numberValueAsSingletonLazily', 'dateValue', 'dateValueLazily', 'dateValueAsSingleton', 'dateValueAsSingletonLazily', 'arrayValue', 'arrayValueLazily', 'arrayValueAsSingleton', 'arrayValueAsSingletonLazily', 'classValue', 'classValueLazily', 'classValueAsSingleton', 'classValueAsSingletonLazily', 'functionValue', 'functionValueLazily', 'functionValueAsSingleton', 'functionValueAsSingletonLazily'];
+    configuredIdentifiers = ['classNameAsString', 'className', 'classNameEagerly', 'classNameLazily', 'classNameAsSingleton', 'classNameAsSingletonEagerly', 'classNameAsSingletonLazily', 'classNameAsPrototype', 'classNameAsPrototypeLazily', 'classNameWithParameters', 'classNameWithParametersEagerly', 'classNameWithParametersLazily', 'classNameWithParametersAsSingleton', 'classNameWithParametersAsSingletonEagerly', 'classNameWithParametersAsSingletonLazily', 'classNameWithParametersAsPrototype', 'classNameWithParametersAsPrototypeLazily', 'fn', 'fnEagerly', 'fnLazily', 'fnAsSingleton', 'fnAsSingletonEagerly', 'fnAsSingletonLazily', 'fnAsPrototype', 'fnAsPrototypeLazily', 'booleanValue', 'booleanValueLazily', 'booleanValueAsSingleton', 'booleanValueAsSingletonLazily', 'stringValue', 'stringValueLazily', 'stringValueAsSingleton', 'stringValueAsSingletonLazily', 'numberValue', 'numberValueLazily', 'numberValueAsSingleton', 'numberValueAsSingletonLazily', 'dateValue', 'dateValueLazily', 'dateValueAsSingleton', 'dateValueAsSingletonLazily', 'arrayValue', 'arrayValueLazily', 'arrayValueAsSingleton', 'arrayValueAsSingletonLazily', 'objectValue', 'objectValueLazily', 'objectValueAsSingleton', 'objectValueAsSingletonLazily', 'classValue', 'classValueLazily', 'classValueAsSingleton', 'classValueAsSingletonLazily', 'functionValue', 'functionValueLazily', 'functionValueAsSingleton', 'functionValueAsSingletonLazily'];
     describe('Resolution', function() {
       it('should resolve a value for configured identifiers', function() {
         var configuredIdentifier, _j, _len2;
@@ -874,6 +877,10 @@ describe('Deft.ioc.Injector', function() {
           arrayValueLazily: null,
           arrayValueAsSingleton: null,
           arrayValueAsSingletonLazily: null,
+          objectValue: null,
+          objectValueLazily: null,
+          objectValueAsSingleton: null,
+          objectValueAsSingletonLazily: null,
           classValue: null,
           classValueLazily: null,
           classValueAsSingleton: null,
@@ -966,7 +973,11 @@ describe('Deft.ioc.Injector', function() {
           expect(injectableComplexClassInstance[getterFunctionName]()).not.toBeNull();
           resolvedValue = Deft.Injector.resolve(configuredIdentifier);
           if (configuredIdentifier.indexOf('Prototype') === -1) {
-            expect(injectableComplexClassInstance[getterFunctionName]()).toBe(resolvedValue);
+            if (configuredIdentifier.indexOf('objectValue') === -1) {
+              expect(injectableComplexClassInstance[getterFunctionName]()).toBe(resolvedValue);
+            } else {
+              expect(injectableComplexClassInstance[getterFunctionName]()).not.toBeNull();
+            }
           } else {
             expect(injectableComplexClassInstance[getterFunctionName]()).toBeInstanceOf(Ext.ClassManager.getClass(resolvedValue).getName());
           }

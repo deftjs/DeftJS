@@ -41,6 +41,9 @@ Ext.define('Deft.ioc.DependencyProvider', {
   },
   constructor: function(config) {
     this.initConfig(config);
+    if ((config.value != null) && config.value.constructor === Object) {
+      this.setValue(config.value);
+    }
     if (this.getEager()) {
       if (this.getValue() != null) {
         Ext.Error.raise("Error while configuring '" + (this.getIdentifier()) + "': a 'value' cannot be created eagerly.");
