@@ -43,16 +43,19 @@ A lightweight IoC container for dependency injection.
 
 In the simplest scenario, the Injector can be configured to map identifiers by class names:
 
+```javascript
 	Deft.Injector.configure({
 		contactStore: 'MyApp.store.ContactStore',
 		contactManager: 'MyApp.manager.ContactManager',
 		...
 	});
+```
 
 When the Injector is called to resolve dependencies for these identifiers, a singleton instance of the specified class will be created and returned.
 
 Where necessary, you can also specify constructor parameters:
 
+```javascript
 	Deft.Injector.configure({
 		contactStore: {
 			className: 'MyApp.store.ContactStore',
@@ -70,9 +73,11 @@ Where necessary, you can also specify constructor parameters:
 		contactManager: 'MyApp.manager.ContactManager',
 		...
 	});
+```
 
 You can also specify whether a class is instantiated as a singleton (the default) or a prototype:
 
+```javascript
 	Deft.Injector.configure({
 		contactController: {
 			className: 'MyApp.controller.ContactViewController',
@@ -80,9 +85,11 @@ You can also specify whether a class is instantiated as a singleton (the default
 		},
 		...
 	});
+```
 
 Additionally, you can configure dependency providers to be eagerly or lazily (the default) instantiated:
 
+```javascript
 	Deft.Injector.configure({
 		preferences:  {
 			preferences: 'MyApp.preferences.Preferences',
@@ -90,6 +97,7 @@ Additionally, you can configure dependency providers to be eagerly or lazily (th
 		},
 		...
 	});
+```
 
 When a dependency provider is configured for eager instantiation, it will be created and cached in the Injector immediately after all the identifiers in that `configure()` call have been processed.
 
@@ -99,6 +107,7 @@ When a dependency provider is configured for eager instantiation, it will be cre
 
 The Injector can also be configured to map identifiers to factory functions:
 
+```javascript
 	Deft.Injector.configure({
 		contactStore: {
 			fn: function() {
@@ -124,6 +133,7 @@ The Injector can also be configured to map identifiers to factory functions:
 		},
 		...
 	});
+```
  
 When the Injector is called to resolve dependencies for these identifiers, the factory function is called and the dependency is resolved with the return value.
 
@@ -137,6 +147,7 @@ Factory function dependency providers can be configured as singletons or prototy
 
 The Injector can also be configured to map identifiers to values:
 
+```javascript
 	Deft.Injector.configure({
 		brandedApplicationName: {
 			value: "Contact Manager"
@@ -149,6 +160,7 @@ The Injector can also be configured to map identifiers to values:
 		},
 		...
 	});
+```
 
 A value can be any native JavaScript type, including Strings, Arrays, Numbers, Objects or class instances… even Functions!
 
@@ -158,14 +170,17 @@ A value can be any native JavaScript type, including Strings, Arrays, Numbers, O
 
 A class is marked as participating in dependency injection by including the Injectable mixin:
 
+```javascript
 	Ext.define( 'MyApp.manager.ContactManager', {
 		extend: 'MyApp.manager.AbstractManager',
 		mixins: [ 'Deft.mixin.Injectable' ],
 		...
 	});
+```
 
 Its dependencies are expressed using the `inject` annotation:
 
+```javascript
 	Ext.define( 'MyApp.manager.ContactManager', {
 		extend: 'MyApp.manager.AbstractManager',
 		mixins: [ 'Deft.mixin.Injectable' ],
@@ -173,6 +188,7 @@ Its dependencies are expressed using the `inject` annotation:
 		inject: [ 'contactManager' ],
 		...
 	});
+```
 
 Any class that includes the Injectable mixin will have the dependencies described in its `inject` annotation resolved and injected by the Injector prior to the class constructor being called.
 
@@ -180,6 +196,7 @@ By default, each dependency will be injected into the config or property of the 
 
 You can override this behavior and indicate the specific property to inject into, by using slightly more verbose syntax:
 
+```javascript
 	Ext.define( 'MyApp.manager.ContactManager', {
 		extend: 'MyApp.manager.AbstractManager',
 		mixins: [ 'Deft.mixin.Injectable' ],
@@ -189,11 +206,13 @@ You can override this behavior and indicate the specific property to inject into
 		},
 		...
 	});
+```
 
 In this case, the `contactManager` dependency will be resolved into a new `manager` property.
 
 A class does not need to explicitly define a config or property for the property to be injected.  However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.
 
+```javascript
 	Ext.define( 'MyApp.manager.ContactManager', {
 		extend: 'MyApp.manager.AbstractManager',
 		mixins: [ 'Deft.mixin.Injectable' ],
@@ -215,6 +234,7 @@ A class does not need to explicitly define a config or property for the property
 		}
 		...
 	});
+```
 
 
 # Version History
