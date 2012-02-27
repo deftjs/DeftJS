@@ -1,6 +1,6 @@
 # DeftJS
 
-DeftJS is a micro-architecture that enables nimble development of enterprise class web applications with Ext JS and Sencha Touch.
+Essential extensions for enterprise development with [Ext JS](http://www.sencha.com/products/extjs/) and [Sencha Touch](http://www.sencha.com/products/touch/).
 
 # Goals
 
