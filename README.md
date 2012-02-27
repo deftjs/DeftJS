@@ -2,11 +2,11 @@
 
 Essential extensions for enterprise web application development with [Ext JS](http://www.sencha.com/products/extjs/) and [Sencha Touch](http://www.sencha.com/products/touch/).
 
+# About
+
+DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks that enable large development teams to rapidly build enterprise scale applications, leveraging best practices and proven patterns discovered by top RIA developers at some of the best consulting firms in the industry.
+
 # Goals
-
-DeftJS enhances Ext JS and Sencha Touch's APIs with patterns and best practices discovered by top RIA developers at some of the best consulting firms in the industry.
-
-DeftJS provides:
 
 * **Simplicity**
 	* Eliminates boilerplate code in favor of the simplest expression of developer intent.
@@ -18,8 +18,6 @@ DeftJS provides:
 	* Enables business layer code reuse between Ext JS and Sencha Touch applications.
 * **Testability**
 	* Promotes loose coupling through class annotation driven dependency injection.
-
-DeftJS provides the building blocks for scaling up to meet the needs of large enterprise class applications and development teams.
 
 # Features
 
