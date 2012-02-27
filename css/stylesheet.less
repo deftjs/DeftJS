@@ -1,0 +1,163 @@
+@import "grid.less";
+
+@import "reset.css";
+
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+ol,
+ul,
+li,
+img {
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+html {
+	color: #333333;
+	font-family: "ff-din-web-pro-1", "ff-din-web-pro-2", sans-serif;
+	font-size: 16px;
+	line-height: 19.2px;
+	color-profile: sRGB;
+}
+
+body {
+	#grid > .container;
+	
+	background: #1a6b95 url('../image/background.png') repeat;
+}
+
+section {
+	#grid > .container .columns(12);
+
+	background-color: #ffffff;
+}
+
+#content {
+	padding: 40px 70px;
+}
+
+p {
+  font-weight: lighter;
+  margin-bottom: 20px;
+}
+strong {
+  font-weight: bold;
+}
+ol, ul {
+  margin-left: 2em;
+  margin-bottom: 20px;
+}
+ul ul, ol ol, ul ol, ol ul {
+  margin-top: 10px;
+}
+li {
+  margin-bottom: 10px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: #126499;
+	border-color: #ffffff;
+	text-shadow: 1px 1px #dddddd;
+	font-weight: lighter;
+	text-transform: capitalize;
+	margin-top: 40px;
+	margin-bottom: 20px;
+}
+h1 {
+	font-size: 24.624px;
+	line-height: 29.548799999999996px;
+}
+h2 {
+	font-size: 24.624px;
+	line-height: 29.548799999999996px;
+}
+h3 {
+	font-size: 23.44px;
+	line-height: 28.128px;
+}
+h4 {
+	font-size: 22.16px;
+	line-height: 26.592px;
+}
+h5 {
+	font-size: 22.16px;
+	line-height: 26.592px;
+}
+h6 {
+	font-size: 22.16px;
+	line-height: 26.592px;
+}
+img {
+	margin-bottom: 20px;
+}
+h1 img,
+h2 img,
+h3 img,
+h4 img,
+h5 img,
+h6 img,
+p img {
+  margin-bottom: 0;
+}
+
+h1 {
+  text-transform: uppercase;
+  font-weight: bold;
+  border-bottom: 1px solid;
+}
+h2 {
+  border-bottom: 1px solid;
+}
+h3,
+h4,
+h5,
+h6 {
+  border-bottom: none;
+}
+
+a, 
+a:active, 
+a:visited {
+	color: #126499;
+	text-decoration: underline;
+}
+a:hover {
+	background-color: #D1ECFF;
+}
+
+pre, code {
+	font-family: monospace;
+}
+pre {
+	margin-bottom: 20px;
+	padding: 15px;
+	color: #333333;
+	background-color: #F8F8F8;
+	white-space: pre;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+.title {
+	font-size: 400%;
+	text-transform: none;
+	border-bottom: none;
+	margin-bottom: 30px;
+}
+.tagline, .tagline {
+	font-size: 150%;
+	line-height: 29.548799999999996px;
+	margin-bottom: 30px;
+}

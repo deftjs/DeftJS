@@ -1,0 +1,127 @@
+////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2011 CodeCatalyst, LLC - http://www.codecatalyst.com/
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.	
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// grid.less
+// 	
+// A grid system implemented as less.js (http://lesscss.org/) mixins to promote 
+// the definition of semantic, rather than grid-system specific, CSS classes.
+// 
+// Based on the 960 Grid System (http://960.gs) by Nathan Smith (http://sonspring.com/).
+//
+// Acknowledgements:
+//
+// As grid.less has evolved, it has drawn heavily from similar implementations by:
+//
+//  * Mark McConachie (http://www.markmcconachie.com/)
+//  * Greg Thornton (http://xdissent.com/) 
+// 
+// @author John Yanarella (http://www.codecatalyst.com/)
+// @version 2.0
+////////////////////////////////////////////////////////////////////////////////
+
+/* grid.less 2.0 */
+
+#grid {
+	
+	// Designate this element as a grid container, with the specified @container-column-count, @container-width and @margin-width.
+	
+	.container(@container-column-count: 12, @container-width: 960px, @margin-width: 10px) {
+		@total-column-width: @container-width / @container-column-count;
+		@gutter-width: @margin-width * 2;
+		
+		margin-left: auto;
+		margin-right: auto;
+		width: @container-width;
+		.clear();
+		
+		// Designate this element as a grid element, @column-count columns wide.
+		
+		.columns(@column-count: 1) {
+			display: inline;
+			float: left;
+			margin-left: @margin-width;
+			margin-right: @margin-width;
+			width: @total-column-width * @column-count - @gutter-width;
+		}
+		
+		// Prepend @prefix-count empty columns before this grid element.
+		
+		.prefix(@prefix-count: 1) {
+			padding-left: @total-column-width * @prefix-count;
+		}
+		
+		// Append @suffix-count empty columns after this grid element.
+		
+		.suffix(@suffix-count: 1) {
+			padding-right: @total-column-width * @suffix-count;
+		}
+
+		// Push this grid element @push-count columns to the right.
+		
+		.push(@push-count: 1) {
+			position: relative;
+			left: @total-column-width * @push-count;
+		}
+		
+		// Pull this grid element @pull-count columns to the left.
+		
+		.pull(@pull-count: 1) {
+			.push(0 - @pull-count);
+		}
+		
+		// Mark as the first nested grid element - remove the left margin.
+		
+		.alpha() {
+			margin-left: 0;
+		}
+		
+		// Mark as the last nested grid element - remove the right margin.
+		
+		.omega() {
+			margin-right: 0;
+		}
+		
+		// Clear all floats following this element.
+		
+		.clear() {
+			&:after {
+				.clearfix();
+				content: '\0020';
+			}
+		}
+		
+		// Clear all floats.
+		
+		.clearfix() {
+			clear: both;
+			display: block;
+			overflow: hidden;
+			width: 0;
+			height: 0;
+			font-size: 0;
+			line-height: 0;
+			visibility: hidden;
+			zoom: 1;
+		}
+	}
+}
