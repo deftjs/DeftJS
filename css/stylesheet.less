@@ -36,7 +36,7 @@ body {
 
 section {
 	#grid > .container .columns(12);
-
+	
 	background-color: #ffffff;
 }
 
@@ -45,21 +45,21 @@ section {
 }
 
 p {
-  font-weight: lighter;
-  margin-bottom: 20px;
+	font-weight: lighter;
+	margin-bottom: 20px;
 }
 strong {
-  font-weight: bold;
+	font-weight: bold;
 }
 ol, ul {
-  margin-left: 2em;
-  margin-bottom: 20px;
+	margin-left: 2em;
+	margin-bottom: 20px;
 }
 ul ul, ol ol, ul ol, ol ul {
-  margin-top: 10px;
+	margin-top: 10px;
 }
 li {
-  margin-bottom: 10px;
+	margin-bottom: 10px;
 }
 h1,
 h2,
@@ -109,22 +109,22 @@ h4 img,
 h5 img,
 h6 img,
 p img {
-  margin-bottom: 0;
+	margin-bottom: 0;
 }
 
 h1 {
-  text-transform: uppercase;
-  font-weight: bold;
-  border-bottom: 1px solid;
+	text-transform: uppercase;
+	font-weight: bold;
+	border-bottom: 1px solid;
 }
 h2 {
-  border-bottom: 1px solid;
+	border-bottom: 1px solid;
 }
 h3,
 h4,
 h5,
 h6 {
-  border-bottom: none;
+	border-bottom: none;
 }
 
 a, 
@@ -160,4 +160,83 @@ pre {
 	font-size: 150%;
 	line-height: 29.548799999999996px;
 	margin-bottom: 30px;
+}
+
+.border_radius( @radius ) {
+	-webkit-border-radius: @radius;
+	-moz-border-radius: @radius;
+	-icab-border-radius: @radius;
+	-o-border-radius: @radius;
+	-khtml-border-radius: @radius;
+	border-radius: @radius;
+}
+
+.button_background( @top-color, @bottom-color, @border-color-top, @border-color-right, @border-color-bottom, @border-color-left ) {
+	background: @bottom-color;
+	background: -moz-linear-gradient(top, @top-color 0%, @bottom-color 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,@top-color), color-stop(100%,@bottom-color));
+	background: linear-gradient(top, @top-color 0%, @bottom-color 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='@top-color', endColorstr='@bottom-color',GradientType=0 );
+	background-color: @top-color, @top-color, @bottom-color, @bottom-color;
+	border-color: @border-color-top @border-color-right @border-color-bottom @border-color-left;
+	border-style:solid;
+	border-width:1px;
+}
+
+@button-base-color: #126499;
+
+@button-over-top-color: lighten( saturate( @button-base-color, 8% ), 17% );
+@button-over-bottom-color: @button-base-color;
+@button-over-top-border-color: lighten( desaturate( @button-base-color, 7% ), 10% );
+@button-over-right-border-color: lighten( desaturate( @button-base-color, 9% ), 2% );
+@button-over-bottom-border-color: darken( desaturate( @button-base-color, 0% ), 5% );
+@button-over-left-border-color: lighten( desaturate( @button-base-color, 9% ), 2% );
+
+@button-down-top-color: darken( saturate( @button-base-color, 1% ), 1% );
+@button-down-bottom-color: lighten( saturate( @button-base-color, 9% ), 17% );
+@button-down-top-border-color: darken( saturate( @button-base-color, 1% ), 6% );
+@button-down-right-border-color: darken( saturate( @button-base-color, 0% ), 5% );
+@button-down-bottom-border-color: darken( saturate( @button-base-color, 0% ), 5% );
+@button-down-left-border-color: darken( saturate( @button-base-color, 0% ), 5% );
+
+a.button {
+	display: block;
+	float: left;
+	padding: 3px 10px 3px 8px;
+	height: 20px;
+	margin-right: 12px;
+	line-height: 20px;
+	color: #333;
+	font-family: Helvetica, Arial, freesans, sans-serif;
+	font-size: 13px;
+	font-weight: bold;
+	text-decoration:none;
+	text-shadow: 1px 1px 0 #fff;
+	.button_background( #ffffff, #dedede, #cccccc, #cccccc, #cccccc, #cccccc );
+	.border_radius( 4px );
+}
+a.button:hover {
+	color: #fff;
+	text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+	.button_background( @button-over-top-color, @button-over-bottom-color, @button-over-top-border-color, @button-over-right-border-color, @button-over-bottom-border-color, @button-over-left-border-color );
+}
+a.button:active {
+	color: #fff;
+	text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+	.button_background( @button-down-top-color, @button-down-bottom-color, @button-down-top-border-color, @button-down-right-border-color, @button-down-bottom-border-color, @button-down-left-border-color );
+}
+
+a.button.icon span{
+	padding-left: 22px;	
+}
+
+a.button.icon.download span{
+	background: url(../image/icon/download-dark.png) no-repeat 0 -2px;
+}
+a.button.icon.download:hover span{
+	background: url(../image/icon/download-light.png) no-repeat 0 -2px;
+}
+
+a.button.icon.github span{
+	background: url(../image/icon/github.png) no-repeat 0 -2px;
 }
