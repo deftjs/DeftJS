@@ -1,6 +1,6 @@
 # DeftJS
 
-Essential extensions for enterprise web application development with [Ext JS](http://www.sencha.com/products/extjs/) and [Sencha Touch](http://www.sencha.com/products/touch/).
+Essential extensions for enterprise web and mobile application development with [Ext JS](http://www.sencha.com/products/extjs/) and [Sencha Touch](http://www.sencha.com/products/touch/).
 
 # About
 
