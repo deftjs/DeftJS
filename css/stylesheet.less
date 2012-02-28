@@ -176,7 +176,7 @@ pre {
 	background: -moz-linear-gradient(top, @top-color 0%, @bottom-color 100%);
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,@top-color), color-stop(100%,@bottom-color));
 	background: linear-gradient(top, @top-color 0%, @bottom-color 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='@top-color', endColorstr='@bottom-color',GradientType=0 );
+	filter: ~"progid:DXImageTransform.Microsoft.gradient( startColorstr="@top-color~", endColorstr="@bottom-color~",GradientType=0 )";
 	background-color: @top-color, @top-color, @bottom-color, @bottom-color;
 	border-color: @border-color-top @border-color-right @border-color-bottom @border-color-left;
 	border-style:solid;
