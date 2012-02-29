@@ -257,6 +257,7 @@ Ext.define( 'MyApp.manager.ContactManager', {
 
 * [John Yanarella](http://twitter.com/johnyanarella) (Creator)
 * [David Tucker](http://www.davidtucker.net/)
+* [Ryan Campbell](http://www.ryancampbell.com/)
 
 # Acknowledgements
 
