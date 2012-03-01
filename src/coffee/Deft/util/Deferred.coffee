@@ -8,7 +8,7 @@ Ext.define( 'Deft.util.Deferred',
 		
 		@progressCallbacks = []
 		@successCallbacks = []
-		@errorCallbacks = []
+		@failureCallbacks = []
 		@cancelCallbacks = []
 		
 		@promise = Ext.create( 'Deft.Promise', @ )
@@ -17,9 +17,9 @@ Ext.define( 'Deft.util.Deferred',
 	
 	then: ( callbacks ) ->
 		if Ext.isObject( callbacks )
-			{ success: successCallback, error: errorCallback, progress: progressCallback, cancel: cancelCallback } = callbacks
+			{ success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback } = callbacks
 		else
-			[ successCallback, errorCallback, progressCallback, cancelCallback ] = arguments
+			[ successCallback, failureCallback, progressCallback, cancelCallback ] = arguments
 		
 		deferred = Ext.create( 'Deft.Deferred' )
 		
@@ -30,7 +30,7 @@ Ext.define( 'Deft.util.Deferred',
 						result = callback( value )
 						if result is undefined
 							deferred[ action ]( value )
-						else if result instanceof Ext.ClassManager.get( 'Deft.Promise' ) or result instanceof Ext.ClassManager.get( 'Deft.Deferred' )
+						else if result instanceof Ext.ClassManager.get( 'Deft.util.Promise' ) or result instanceof Ext.ClassManager.get( 'Deft.util.Deferred' )
 							result.then( Ext.bind( deferred.resolve, deferred ), Ext.bind( deferred.reject, deferred ), Ext.bind( deferred.update, deferred ), Ext.bind( deferred.cancel, deferred ) )
 						else
 							deferred[ action ]( result )
@@ -42,7 +42,7 @@ Ext.define( 'Deft.util.Deferred',
 		
 		@register( wrapCallback( progressCallback, 'update'  ), @progressCallbacks, 'pending',   @progress )
 		@register( wrapCallback( successCallback,  'resolve' ), @successCallbacks,  'resolved',  @value    )
-		@register( wrapCallback( errorCallback,    'reject'  ), @errorCallbacks,    'rejected',  @value    )
+		@register( wrapCallback( failureCallback,  'reject'  ), @failureCallbacks,  'rejected',  @value    )
 		@register( wrapCallback( cancelCallback,   'cancel'  ), @cancelCallbacks,   'cancelled', @value    )
 		
 		return deferred.promise
@@ -65,7 +65,7 @@ Ext.define( 'Deft.util.Deferred',
 		return
 	
 	reject: ( error ) ->
-		@complete( 'rejected', error, @errorCallbacks )
+		@complete( 'rejected', error, @failureCallbacks )
 		return
 	
 	cancel: ( reason ) ->
@@ -98,7 +98,7 @@ Ext.define( 'Deft.util.Deferred',
 	releaseCallbacks: ->
 		@progressCallbacks = null
 		@successCallbacks = null
-		@errorCallbacks = null
+		@failureCallbacks = null
 		@cancelCallbacks = null
 		return
 	
