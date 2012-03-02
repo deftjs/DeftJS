@@ -68,6 +68,9 @@ Ext.define( 'Deft.util.Promise',
 			
 			return Ext.create( 'Deft.util.Deferred' ).resolve( @reduceArray.apply( promisesOrValues, reduceArguments ) ).promise
 		
+		###*
+		@private
+		###
 		reduceArray: ( reduceFunction, initialValue ) ->
 			if Array.reduce?
 				return Array.reduce( reduceFunction, initialValue )
@@ -105,6 +108,9 @@ Ext.define( 'Deft.util.Promise',
 			
 			return reduced
 		
+		###*
+		@private
+		###
 		reduceIntoArray: ( previousValue, currentValue, currentIndex ) ->
 			previousValue[ currentIndex ] = value
 			return previousValue

@@ -71,7 +71,10 @@ Ext.define( 'Deft.util.Deferred',
 	cancel: ( reason ) ->
 		@complete( 'cancelled', reason, @cancelCallbacks )
 		return
-		
+	
+	###*
+	@private
+	###
 	register: ( callback, callbacks, state, value ) ->
 		if Ext.isFunction( callback )
 			if @state is 'pending'
@@ -80,6 +83,9 @@ Ext.define( 'Deft.util.Deferred',
 				@notify( [ callback ], value )
 		return
 	
+	###*
+	@private
+	###
 	complete: ( state, value, callbacks ) ->
 		if @state is 'pending'
 			@state = state
@@ -90,11 +96,17 @@ Ext.define( 'Deft.util.Deferred',
 			Ext.Error.raise( 'Error: this Deferred has already been completed and cannot be modified.')
 		return
 	
+	###*
+	@private
+	###
 	notify: ( callbacks, value ) ->
 		for callback in callbacks
 			callback( value )
 		return
 	
+	###*
+	@private
+	###
 	releaseCallbacks: ->
 		@progressCallbacks = null
 		@successCallbacks = null
