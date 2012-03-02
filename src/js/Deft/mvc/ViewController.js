@@ -14,35 +14,61 @@ Ext.define('Deft.mvc.ViewController', {
         return this;
     },
     /**
-     Configure the Injector.
+     Configure the ViewController.
      */
     configure: function() {
         Ext.Logger.log('Configuring view controller.');
+
         if (Ext.isObject(this.control)) {
-            Ext.Object.each(this.control, function(selector, config) {
-                var components = this.view.query(selector);
-                if (components.length > 0) {
-                    var component = components[0];
-                    if (Ext.isString(config)) {
-                        Ext.Logger.log("adding " + config + " component ref");
-                        this[config] = component;
-                    } else {
-                        if (Ext.isString(config.ref)) {
-                            Ext.Logger.log("adding " + config.ref + " component ref");
-                            this[config.ref] = component;
-                        }
-                        if (Ext.isObject(config.listeners)) {
-                            Ext.Object.each(config.listeners, function(event, handler, obj) {
-                                Ext.Logger.log("adding component " + component + " event " + event + " listener to " + handler );
-                                component.addListener(event, this[handler], this);
-                            }, this);
-                        }
-                    }
+            Ext.Object.each(this.control, function(key, config) {
+                var isView = key == "view";
+                var selector = Ext.isString(config) ? config : Ext.isString(config.selector) ? config.selector : "#" + key;
+                var component = isView ? this.view : this.view.query( selector )[0];
+                this[key] = component;
+                if (Ext.isObject(config)) {
+                    var listeners = Ext.isObject(config.listeners) ? config.listeners : config;
+                    Ext.Object.each(listeners, function(event, handler, obj) {
+                        Ext.Logger.log("adding component " + component + " event " + event + " listener to " + handler );
+                        component.addListener(event, this[handler], this);
+                    }, this);
                 }
             }, this);
         }
+
         if (Ext.isFunction(this.setup)) {
             this.setup();
         }
+
+        this.view.removeListener('initialize', this.configure, this);
+        this.view.addListener('beforedestroy', this.destroy, this);
+    },
+
+    /**
+     * Destroy the ViewController.
+     */
+    destroy: function(e) {
+        if (Ext.isFunction(this.tearDown)) {
+            if (this.tearDown() == false)
+                return false; // cancel view destroy
+        }
+
+        if (Ext.isObject(this.control)) {
+            Ext.Object.each(this.control, function(key, config) {
+                var component = this[key];
+                if (Ext.isObject(config)) {
+                    var listeners = Ext.isObject(config.listeners) ? config.listeners : config;
+                    Ext.Object.each(listeners, function(event, handler, obj) {
+                        Ext.Logger.log("removing component " + component + " event " + event + " listener to " + handler );
+                        component.removeListener(event, this[handler], this);
+                    }, this);
+                }
+                this[key] = null;
+            }, this);
+        }
+
+        this.view.removeListener('beforedestroy', this.destroy, this);
+
+        return true;
     }
+
 });

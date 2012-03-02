@@ -8,13 +8,14 @@
  Used in conjunction with {@link Deft.mvc.ViewController}.
  */
 Ext.define('Deft.mixin.Controllable', {
-    requires: ['Deft.mvc.ViewControllerManager'],
+    requires: ['Deft.mvc.ViewController'],
     /**
      @private
      */
     onClassMixedIn: function(targetClass) {
         targetClass.prototype.constructor = Ext.Function.createInterceptor(targetClass.prototype.constructor, function() {
-            return Deft.mvc.ViewControllerManager.attach(this.controller, this);
+            var controller = Ext.create(this.controller, this);
+            this.addListener('initialize', controller.configure, controller);
         });
     }
 });
