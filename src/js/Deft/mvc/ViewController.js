@@ -10,7 +10,7 @@
 Ext.define('Deft.mvc.ViewController', {
     alternateClassName: ['Deft.ViewController'],
     constructor: function(view) {
-        this.view = view;
+        this.components = {view: view};
         return this;
     },
     /**
@@ -19,12 +19,21 @@ Ext.define('Deft.mvc.ViewController', {
     configure: function() {
         Ext.Logger.log('Configuring view controller.');
 
+        var view = this.getView();
+
         if (Ext.isObject(this.control)) {
             Ext.Object.each(this.control, function(key, config) {
                 var isView = key == "view";
                 var selector = Ext.isString(config) ? config : Ext.isString(config.selector) ? config.selector : "#" + key;
-                var component = isView ? this.view : this.view.query( selector )[0];
-                this[key] = component;
+                var component = isView ? view : view.query( selector )[0];
+                var getterName = "get" + Ext.String.capitalize(key);
+
+                if (!this[getterName]) {
+                    this[getterName] = Ext.Function.pass(this.getElement, [key], this);
+                }
+
+                this.components[key] = component;
+
                 if (Ext.isObject(config)) {
                     var listeners = Ext.isObject(config.listeners) ? config.listeners : config;
                     Ext.Object.each(listeners, function(event, handler, obj) {
@@ -39,8 +48,8 @@ Ext.define('Deft.mvc.ViewController', {
             this.setup();
         }
 
-        this.view.removeListener('initialize', this.configure, this);
-        this.view.addListener('beforedestroy', this.destroy, this);
+        view.removeListener('initialize', this.configure, this);
+        view.addListener('beforedestroy', this.destroy, this);
     },
 
     /**
@@ -62,13 +71,25 @@ Ext.define('Deft.mvc.ViewController', {
                         component.removeListener(event, this[handler], this);
                     }, this);
                 }
-                this[key] = null;
+
+                var getterName = "get" + Ext.String.capitalize(key);
+                this[getterName] = null;
+
             }, this);
         }
 
         this.view.removeListener('beforedestroy', this.destroy, this);
+        this.components = null;
 
         return true;
+    },
+
+    getComponent: function( key ) {
+        return this.components[ key];
+    },
+
+    getView: function() {
+        return this.components.view;
     }
 
 });
