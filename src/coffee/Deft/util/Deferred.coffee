@@ -15,6 +15,9 @@ Ext.define( 'Deft.util.Deferred',
 		
 		return @
 	
+	###*
+	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Deferred} is resolved, rejected, updated or cancelled.
+	###
 	then: ( callbacks ) ->
 		if Ext.isObject( callbacks )
 			{ success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback } = callbacks
@@ -47,6 +50,9 @@ Ext.define( 'Deft.util.Deferred',
 		
 		return deferred.promise
 	
+	###*
+	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Deferred} is either resolved, rejected, or cancelled.
+	###
 	always: ( alwaysCallback ) ->
 		return @then( 
 			success: alwaysCallback
@@ -54,25 +60,38 @@ Ext.define( 'Deft.util.Deferred',
 			cancel: alwaysCallback
 		)
 	
+	###*
+	Update progress for this {@link Deft.util.Deferred} and notify relevant callbacks.
+	###
 	update: ( progress ) ->
 		if @state is 'pending'
 			@progress = progress
 			@notify( @progressCallbacks, progress )
 		return
 	
+	###*
+	Resolve this {@link Deft.util.Deferred} and notify relevant callbacks.
+	###
 	resolve: ( value ) ->
 		@complete( 'resolved', value, @successCallbacks )
 		return
 	
+	###*
+	Reject this {@link Deft.util.Deferred} and notify relevant callbacks.
+	###
 	reject: ( error ) ->
 		@complete( 'rejected', error, @failureCallbacks )
 		return
 	
+	###*
+	Cancel this {@link Deft.util.Deferred} and notify relevant callbacks.
+	###
 	cancel: ( reason ) ->
 		@complete( 'cancelled', reason, @cancelCallbacks )
 		return
 	
 	###*
+	Register a callback for this {@link Deft.util.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
 	@private
 	###
 	register: ( callback, callbacks, state, value ) ->
@@ -84,6 +103,7 @@ Ext.define( 'Deft.util.Deferred',
 		return
 	
 	###*
+	Complete this {@link Deft.util.Deferred} with the specified state and value.
 	@private
 	###
 	complete: ( state, value, callbacks ) ->
@@ -98,6 +118,7 @@ Ext.define( 'Deft.util.Deferred',
 	
 	###*
 	@private
+	Notify the specified callbacks with the specified value.
 	###
 	notify: ( callbacks, value ) ->
 		for callback in callbacks
@@ -106,6 +127,7 @@ Ext.define( 'Deft.util.Deferred',
 	
 	###*
 	@private
+	Release references to all callbacks registered with this {@link Deft.util.Deferred}.
 	###
 	releaseCallbacks: ->
 		@progressCallbacks = null

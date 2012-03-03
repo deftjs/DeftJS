@@ -2,18 +2,31 @@ Ext.define( 'Deft.util.Promise',
 	alternateClassName: [ 'Deft.Promise' ]
 	
 	statics:
+		###*
+		Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called:
+		- immediately for the specified value, or
+		- when the specified {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
+		###
 		when: ( promiseOrValue, callbacks ) ->
 			if promiseOrValue instanceof Ext.ClassManager.get( 'Deft.util.Promise' ) or promiseOrValue instanceof Ext.ClassManager.get( 'Deft.util.Deferred' )
 				return promiseOrValue.then( callbacks )
 			else
 				return Ext.create( 'Deft.util.Deferred' ).resolve( promiseOrValue ).then( callbacks )
 		
+		###*
+		Returns a new {@link Deft.util.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
+		The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
+		###
 		all: ( promisesOrValues, callbacks ) ->
 			results = new Array[ promisesOrValues.length ]
 			promise = @reduce( promisesOrValues, @reduceIntoArray, results )
 			
 			return @when( promise, callbacks )
 		
+		###*
+		Returns a new {@link Deft.util.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
+		The resolution value will be the resolution value of the triggering `promiseOrValue`.
+		###
 		any: ( promisesOrValues, callbacks ) ->
 			deferred = Ext.create( 'Deft.util.Deferred' )
 			
@@ -42,6 +55,10 @@ Ext.define( 'Deft.util.Promise',
 			
 			return deferred.then( callbacks )
 		
+		###*
+		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
+		The specified map function may return either a value or a promise.
+		###
 		map: ( promisesOrValues, mapFunction ) ->
 			# Since the map function may be asynchronous, get all invocations of it into flight ASAP.
 			results = new Array[ promisesOrValues.length ]
@@ -52,6 +69,9 @@ Ext.define( 'Deft.util.Promise',
 			# Then use reduce() to collect all the results.
 			return @reduce( results, @reduceIntoArray, results )
 		
+		###*
+		Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
+		###
 		reduce: ( promisesOrValues, reduceFunction, initialValue ) ->
 			# Wrap the reduce function with one that handles promises and then delegates to it.
 			reduceArguments = [
@@ -69,6 +89,7 @@ Ext.define( 'Deft.util.Promise',
 			return Ext.create( 'Deft.util.Deferred' ).resolve( @reduceArray.apply( promisesOrValues, reduceArguments ) ).promise
 		
 		###*
+		Internal reduce implementation - includes fallback when Array.reduce is not available.
 		@private
 		###
 		reduceArray: ( reduceFunction, initialValue ) ->
@@ -119,9 +140,15 @@ Ext.define( 'Deft.util.Promise',
 		@deferred = deferred
 		return @
 	
+	###*
+	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
+	###
 	then: ( callbacks ) ->
 		return @deferred.then( callbacks )
 	
+	###*
+	Cancel this {@link Deft.util.Promise} and notify relevant callbacks.
+	###
 	cancel: ( reason ) ->
 		return @deferred.cancel( reason )
 )
