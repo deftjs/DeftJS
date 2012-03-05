@@ -51,8 +51,8 @@ Ext.define( 'Deft.util.Promise',
 			rejectFunction   = ( value ) -> rejector( value )
 			progressFunction = ( value ) -> updater( value )
 			
-			for index, promiseOrValue in promisesOrValues
-				if index of promiseOrValue
+			for promiseOrValue, index in promisesOrValues
+				if index of promisesOrValues
 					@when( promiseOrValue, resolveFunction, rejectFunction, progressFunction )
 			
 			return deferred.then( callbacks )
@@ -64,7 +64,7 @@ Ext.define( 'Deft.util.Promise',
 		map: ( promisesOrValues, mapFunction ) ->
 			# Since the map function may be asynchronous, get all invocations of it into flight ASAP.
 			results = new Array( promisesOrValues.length )
-			for index, promiseOrValue in promisesOrValues
+			for promiseOrValue, index in promisesOrValues
 				if index of promisesOrValues
 					results[ index ] = @when( promiseOrValue, mapFunction )
 				
