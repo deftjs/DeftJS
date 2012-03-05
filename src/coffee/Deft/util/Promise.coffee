@@ -96,9 +96,6 @@ Ext.define( 'Deft.util.Promise',
 		@private
 		###
 		reduceArray: ( reduceFunction, initialValue ) ->
-			if Array.prototype.reduce?
-				return Array.prototype.reduce.apply( @, arguments )
-			
 			# ES5 reduce implementation if native not available
 			# See: http://es5.github.com/#x15.4.4.21 as there are many specifics and edge cases.
 			# ES5 dictates that reduce.length === 1
@@ -154,4 +151,10 @@ Ext.define( 'Deft.util.Promise',
 	###
 	cancel: ( reason ) ->
 		return @deferred.cancel( reason )
+,
+	->
+		# Use native reduce implementation, if available.
+		if Array.prototype.reduce?
+			@reduceArray = Array.prototype.reduce
+		return
 )
