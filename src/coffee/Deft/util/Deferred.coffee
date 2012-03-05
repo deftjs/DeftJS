@@ -1,3 +1,8 @@
+###
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+###
+
 Ext.define( 'Deft.util.Deferred',
 	alternateClassName: [ 'Deft.Deferred' ]
 	
