@@ -5,7 +5,7 @@ Ext.define( 'Deft.util.Promise',
 		###*
 		Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called:
 		- immediately for the specified value, or
-		- when the specified {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
+		- when the specified {@link Deft.util.Deferred} or {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
 		###
 		when: ( promiseOrValue, callbacks ) ->
 			if promiseOrValue instanceof Ext.ClassManager.get( 'Deft.util.Promise' ) or promiseOrValue instanceof Ext.ClassManager.get( 'Deft.util.Deferred' )
@@ -89,17 +89,15 @@ Ext.define( 'Deft.util.Promise',
 			if ( arguments.length is 3 )
 				reduceArguments.push( initialValue )
 			
-			deferred = Ext.create( 'Deft.util.Deferred' )
-			deferred.resolve( @reduceArray.apply( promisesOrValues, reduceArguments ) )
-			return deferred.promise
+			return @when( @reduceArray.apply( promisesOrValues, reduceArguments ) )
 		
 		###*
 		Internal reduce implementation - includes fallback when Array.reduce is not available.
 		@private
 		###
 		reduceArray: ( reduceFunction, initialValue ) ->
-			if Array.reduce?
-				return Array.reduce( reduceFunction, initialValue )
+			if Array.prototype.reduce?
+				return Array.prototype.reduce.apply( @, arguments )
 			
 			# ES5 reduce implementation if native not available
 			# See: http://es5.github.com/#x15.4.4.21 as there are many specifics and edge cases.
@@ -138,7 +136,7 @@ Ext.define( 'Deft.util.Promise',
 		@private
 		###
 		reduceIntoArray: ( previousValue, currentValue, currentIndex ) ->
-			previousValue[ currentIndex ] = value
+			previousValue[ currentIndex ] = currentValue
 			return previousValue
 	
 	constructor: ( deferred ) ->
