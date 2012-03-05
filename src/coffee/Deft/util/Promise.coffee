@@ -11,14 +11,16 @@ Ext.define( 'Deft.util.Promise',
 			if promiseOrValue instanceof Ext.ClassManager.get( 'Deft.util.Promise' ) or promiseOrValue instanceof Ext.ClassManager.get( 'Deft.util.Deferred' )
 				return promiseOrValue.then( callbacks )
 			else
-				return Ext.create( 'Deft.util.Deferred' ).resolve( promiseOrValue ).then( callbacks )
+				deferred = Ext.create( 'Deft.util.Deferred' )
+				deferred.resolve( promiseOrValue )
+				return deferred.then( callbacks )
 		
 		###*
 		Returns a new {@link Deft.util.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
 		The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
 		###
 		all: ( promisesOrValues, callbacks ) ->
-			results = new Array[ promisesOrValues.length ]
+			results = new Array( promisesOrValues.length )
 			promise = @reduce( promisesOrValues, @reduceIntoArray, results )
 			
 			return @when( promise, callbacks )
@@ -61,7 +63,7 @@ Ext.define( 'Deft.util.Promise',
 		###
 		map: ( promisesOrValues, mapFunction ) ->
 			# Since the map function may be asynchronous, get all invocations of it into flight ASAP.
-			results = new Array[ promisesOrValues.length ]
+			results = new Array( promisesOrValues.length )
 			for index, promiseOrValue in promisesOrValues
 				if index of promisesOrValues
 					results[ index ] = @when( promiseOrValue, mapFunction )
@@ -74,10 +76,11 @@ Ext.define( 'Deft.util.Promise',
 		###
 		reduce: ( promisesOrValues, reduceFunction, initialValue ) ->
 			# Wrap the reduce function with one that handles promises and then delegates to it.
+			whenResolved = @when
 			reduceArguments = [
 				( previousValueOrPromise, currentValueOrPromise, currentIndex ) ->
-					return @when( previousValueOrPromise, ( previousValue ) ->
-						return @when( currentValueOrPromise, ( currentValue ) ->
+					return whenResolved( previousValueOrPromise, ( previousValue ) ->
+						return whenResolved( currentValueOrPromise, ( currentValue ) ->
 							return reduceFunction( previousValue, currentValue, currentIndex, promisesOrValues )
 						)
 					)
@@ -86,7 +89,9 @@ Ext.define( 'Deft.util.Promise',
 			if ( arguments.length is 3 )
 				reduceArguments.push( initialValue )
 			
-			return Ext.create( 'Deft.util.Deferred' ).resolve( @reduceArray.apply( promisesOrValues, reduceArguments ) ).promise
+			deferred = Ext.create( 'Deft.util.Deferred' )
+			deferred.resolve( @reduceArray.apply( promisesOrValues, reduceArguments ) )
+			return deferred.promise
 		
 		###*
 		Internal reduce implementation - includes fallback when Array.reduce is not available.
@@ -124,7 +129,7 @@ Ext.define( 'Deft.util.Promise',
 			while index < length
 				# Skip holes
 				if index of array
-					reduced = reduceFunc( reduced, array[ index ], index, array )
+					reduced = reduceFunction( reduced, array[ index ], index, array )
 				index++
 			
 			return reduced
