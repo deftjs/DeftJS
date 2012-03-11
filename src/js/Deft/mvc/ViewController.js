@@ -11,6 +11,7 @@ Ext.define('Deft.mvc.ViewController', {
     alternateClassName: ['Deft.ViewController'],
     constructor: function(view) {
         this.components = {view: view};
+        view.on('initialize', this.configure, this);
         return this;
     },
     /**
@@ -21,24 +22,22 @@ Ext.define('Deft.mvc.ViewController', {
 
         var view = this.getView();
 
+        view.un('initialize', this.configure, this);
+        view.on('beforedestroy', this.destroy, this);
+
         if (Ext.isObject(this.control)) {
             Ext.Object.each(this.control, function(key, config) {
-                var isView = key == "view";
-                var selector = Ext.isString(config) ? config : Ext.isString(config.selector) ? config.selector : "#" + key;
-                var component = isView ? view : view.query( selector )[0];
-                var getterName = "get" + Ext.String.capitalize(key);
+                var component = this.locateComponent(key, config);
 
-                if (!this[getterName]) {
-                    this[getterName] = Ext.Function.pass(this.getElement, [key], this);
-                }
-
-                this.components[key] = component;
+                this.setComponent(key, component);
 
                 if (Ext.isObject(config)) {
                     var listeners = Ext.isObject(config.listeners) ? config.listeners : config;
+
                     Ext.Object.each(listeners, function(event, handler, obj) {
-                        Ext.Logger.log("adding component " + component + " event " + event + " listener to " + handler );
-                        component.addListener(event, this[handler], this);
+                        Ext.Logger.log('adding component ' + component + ' event ' + event + ' listener to ' + handler );
+
+                        component.on(event, this[handler], this);
                     }, this);
                 }
             }, this);
@@ -47,45 +46,72 @@ Ext.define('Deft.mvc.ViewController', {
         if (Ext.isFunction(this.setup)) {
             this.setup();
         }
-
-        view.removeListener('initialize', this.configure, this);
-        view.addListener('beforedestroy', this.destroy, this);
     },
 
     /**
      * Destroy the ViewController.
      */
     destroy: function(e) {
-        if (Ext.isFunction(this.tearDown)) {
-            if (this.tearDown() == false)
-                return false; // cancel view destroy
-        }
+        Ext.Logger.log('Destroying view controller.');
+
+        var view = this.getView();
+        view.un('beforedestroy', this.destroy, this);
+
+        if (Ext.isFunction(this.tearDown) && this.tearDown() == false)
+            return false;
 
         if (Ext.isObject(this.control)) {
             Ext.Object.each(this.control, function(key, config) {
-                var component = this[key];
+                var component = this.getComponent( key );
+
                 if (Ext.isObject(config)) {
                     var listeners = Ext.isObject(config.listeners) ? config.listeners : config;
+
                     Ext.Object.each(listeners, function(event, handler, obj) {
-                        Ext.Logger.log("removing component " + component + " event " + event + " listener to " + handler );
-                        component.removeListener(event, this[handler], this);
+                        Ext.Logger.log('removing component ' + component + ' event ' + event + ' listener to ' + handler);
+
+                        component.un(event, this[handler], this);
                     }, this);
                 }
 
-                var getterName = "get" + Ext.String.capitalize(key);
+                var getterName = 'get' + Ext.String.capitalize(key);
                 this[getterName] = null;
 
             }, this);
         }
 
-        this.view.removeListener('beforedestroy', this.destroy, this);
         this.components = null;
 
         return true;
     },
 
-    getComponent: function( key ) {
-        return this.components[ key];
+    locateComponent: function(key, config) {
+        var view = this.getView();
+
+        if (key == 'view')
+            return view;
+
+        if (Ext.isString(config))
+            return view.query(config)[0];
+
+        if (Ext.isString(config.selector))
+            return view.query(config.selector)[0];
+
+        return view.query('#' + key)[0];
+    },
+
+    getComponent: function(key) {
+        return this.components[key];
+    },
+
+    setComponent: function(key, value) {
+        var getterName = 'get' + Ext.String.capitalize(key);
+
+        // create getter method
+        if (!this[getterName])
+            this[getterName] = Ext.Function.pass(this.getElement, [key], this);
+
+        this.components[key] = value;
     },
 
     getView: function() {

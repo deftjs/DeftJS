@@ -14,8 +14,10 @@ Ext.define('Deft.mixin.Controllable', {
      */
     onClassMixedIn: function(targetClass) {
         targetClass.prototype.constructor = Ext.Function.createInterceptor(targetClass.prototype.constructor, function() {
-            var controller = Ext.create(this.controller, this);
-            this.addListener('initialize', controller.configure, controller);
+            var controllers = Ext.isArray(this.controller) ? this.controller : [ this.controller ];
+            Ext.each(controllers, function(controllerClass) {
+                Ext.create(controllerClass, this);
+            }, this);
         });
     }
 });
