@@ -15,7 +15,7 @@ Ext.define( 'Deft.mixin.Injectable',
 	@private
 	###
 	onClassMixedIn: ( targetClass ) ->
-		targetClass.prototype.constructor = Ext.Function.createInterceptor( targetClass.prototype.constructor, ->
+		targetClass::constructor = Ext.Function.createInterceptor( targetClass::constructor, ->
 			Deft.Injector.inject( @inject, @ )
 		)
 		return
