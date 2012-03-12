@@ -164,7 +164,7 @@ Ext.define( 'Deft.util.Promise',
 ,
 	->
 		# Use native reduce implementation, if available.
-		if Array.prototype.reduce?
-			@reduceArray = Array.prototype.reduce
+		if Array::reduce?
+			@reduceArray = Array::reduce
 		return
 )
