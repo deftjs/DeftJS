@@ -8,7 +8,7 @@ Jasmine test suite for Deft.util.Deferred
 ###
 describe( 'Deft.util.Deferred', ->
 	
-	describe( 'then()', ->
+	describe( 'Registering callbacks via then()', ->
 		
 		createSpecsForThen = ( thenFunction, callbacksFactoryFunction ) ->
 			
@@ -63,252 +63,6 @@ describe( 'Deft.util.Deferred', ->
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
 				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
 				expect( cancelCallback ).toHaveBeenCalledWith( 'reason' ) if cancelCallback?
-			)
-			
-			it( 'should allow resolution after update', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				expect( ->
-					deferred.update( 'progress' )
-					deferred.resolve( 'expected result' )
-				).not.toThrow()
-				
-				expect( successCallback ).toHaveBeenCalledWith( 'expected result' ) if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).toHaveBeenCalledWith( 'progress' ) if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should allow rejection after update', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				expect( ->
-					deferred.update( 'progress' )
-					deferred.reject( 'error message' )
-				).not.toThrow()
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).toHaveBeenCalledWith( 'error message' ) if failureCallback?
-				expect( progressCallback ).toHaveBeenCalledWith( 'progress' ) if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should allow cancellation after update', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				expect( ->
-					deferred.update( 'progress' )
-					deferred.cancel( 'reason' )
-				).not.toThrow()
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).toHaveBeenCalledWith( 'progress' ) if progressCallback?
-				expect( cancelCallback ).toHaveBeenCalledWith( 'reason' ) if cancelCallback?
-			)
-			
-			it( 'should not allow resolution after resolution', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.resolve( 'expected result' )
-				
-				successCallback.reset() if successCallback?
-				
-				expect( ->
-					deferred.resolve( 'expected result' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow rejection after resolution', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.resolve( 'expected result' )
-				
-				successCallback.reset() if successCallback?
-				
-				expect( ->
-					deferred.reject( 'error message' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow update after resolution', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.resolve( 'expected result' )
-				
-				successCallback.reset() if successCallback?
-				
-				expect( ->
-					deferred.update( 'progress' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow cancellation after resolution', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.resolve( 'expected result' )
-				
-				successCallback.reset() if successCallback?
-				
-				expect( ->
-					deferred.cancel( 'reason' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow resolution after rejection', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.reject( 'error message' )
-				
-				failureCallback.reset() if failureCallback?
-				
-				expect( ->
-					deferred.resolve( 'expected result' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow rejection after rejection', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.reject( 'error message' )
-				
-				failureCallback.reset() if failureCallback?
-				
-				expect( ->
-					deferred.reject( 'error message' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow update after rejection', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.reject( 'error message' )
-				
-				failureCallback.reset() if failureCallback?
-				
-				expect( ->
-					deferred.update( 'progress' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow cancellation after rejection', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.reject( 'error message' )
-				
-				failureCallback.reset() if failureCallback?
-				
-				expect( ->
-					deferred.cancel( 'reason' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow resolution after cancellation', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.cancel( 'reason' )
-				
-				cancelCallback.reset() if cancelCallback?
-				
-				expect( ->
-					deferred.resolve( 'expected result' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow rejection after cancellation', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.cancel( 'reason' )
-				
-				cancelCallback.reset() if cancelCallback?
-				
-				expect( ->
-					deferred.reject( 'error message' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow update after cancellation', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.cancel( 'reason' )
-				
-				cancelCallback.reset() if cancelCallback?
-				
-				expect( ->
-					deferred.update( 'progress' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
-			)
-			
-			it( 'should not allow cancellation after cancellation', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
-				
-				deferred.cancel( 'reason' )
-				
-				cancelCallback.reset() if cancelCallback?
-				
-				expect( ->
-					deferred.cancel( 'reason' ) 
-				).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
-				
-				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
-				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
-				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
-				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
 			)
 			
 			it( 'should immediately call newly added success callback (if specified) when already resolved', ->
@@ -450,7 +204,7 @@ describe( 'Deft.util.Deferred', ->
 		)
 	)
 	
-	describe( 'always()', ->
+	describe( 'Registering callback via always()', ->
 		
 		deferred = null
 		alwaysCallback = null
@@ -523,6 +277,267 @@ describe( 'Deft.util.Deferred', ->
 			deferred.always( alwaysCallback )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
+		)
+	)
+	
+	describe( 'Completion', ->
+		
+		deferred = null
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			deferred = Ext.create( 'Deft.util.Deferred' )
+			
+			successCallback  = jasmine.createSpy()
+			failureCallback  = jasmine.createSpy()
+			progressCallback = jasmine.createSpy()
+			cancelCallback   = jasmine.createSpy()
+		)
+		
+		it( 'should allow resolution after update', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			expect( ->
+				deferred.update( 'progress' )
+				deferred.resolve( 'expected result' )
+			).not.toThrow()
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'expected result' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should allow rejection after update', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			expect( ->
+				deferred.update( 'progress' )
+				deferred.reject( 'error message' )
+			).not.toThrow()
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
+			expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should allow cancellation after update', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			expect( ->
+				deferred.update( 'progress' )
+				deferred.cancel( 'reason' )
+			).not.toThrow()
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
+			expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
+		)
+		
+		it( 'should not allow resolution after resolution', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'expected result' )
+			
+			successCallback.reset() if successCallback?
+			
+			expect( ->
+				deferred.resolve( 'expected result' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow rejection after resolution', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'expected result' )
+			
+			successCallback.reset() if successCallback?
+			
+			expect( ->
+				deferred.reject( 'error message' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow update after resolution', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'expected result' )
+			
+			successCallback.reset() if successCallback?
+			
+			expect( ->
+				deferred.update( 'progress' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow cancellation after resolution', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'expected result' )
+			
+			successCallback.reset() if successCallback?
+			
+			expect( ->
+				deferred.cancel( 'reason' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow resolution after rejection', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			failureCallback.reset() if failureCallback?
+			
+			expect( ->
+				deferred.resolve( 'expected result' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow rejection after rejection', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			failureCallback.reset() if failureCallback?
+			
+			expect( ->
+				deferred.reject( 'error message' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow update after rejection', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			failureCallback.reset() if failureCallback?
+			
+			expect( ->
+				deferred.update( 'progress' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow cancellation after rejection', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			failureCallback.reset() if failureCallback?
+			
+			expect( ->
+				deferred.cancel( 'reason' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow resolution after cancellation', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			cancelCallback.reset() if cancelCallback?
+			
+			expect( ->
+				deferred.resolve( 'expected result' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow rejection after cancellation', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			cancelCallback.reset() if cancelCallback?
+			
+			expect( ->
+				deferred.reject( 'error message' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow update after cancellation', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			cancelCallback.reset()
+			
+			expect( ->
+				deferred.update( 'progress' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should not allow cancellation after cancellation', ->
+			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			cancelCallback.reset() if cancelCallback?
+			
+			expect( ->
+				deferred.cancel( 'reason' ) 
+			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
 		)
 	)
 )
