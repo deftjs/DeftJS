@@ -309,10 +309,28 @@ describe('Deft.util.Deferred', function() {
         deferred.always(void 0);
       }).not.toThrow();
     });
-    return it('should throw an error when a non-function callback is specified', function() {
+    it('should throw an error when a non-function callback is specified', function() {
       expect(function() {
         deferred.always('value');
       }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
+    });
+    it('should return a new Promise', function() {
+      var result;
+      result = deferred.always(alwaysCallback);
+      expect(result).toBeInstanceOf('Deft.util.Promise');
+      expect(result).not.toBe(deferred.promise);
+    });
+    it('should return a new Promise when a null callback is specified', function() {
+      var result;
+      result = deferred.always(null);
+      expect(result).toBeInstanceOf('Deft.util.Promise');
+      expect(result).not.toBe(deferred.promise);
+    });
+    return it('should return a new Promise when an undefined callback is specified', function() {
+      var result;
+      result = deferred.always(void 0);
+      expect(result).toBeInstanceOf('Deft.util.Promise');
+      expect(result).not.toBe(deferred.promise);
     });
   });
   return describe('State Flow and Completion', function() {

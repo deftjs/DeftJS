@@ -393,6 +393,33 @@ describe( 'Deft.util.Deferred', ->
 			
 			return
 		)
+		
+		it( 'should return a new Promise', ->
+			result = deferred.always( alwaysCallback )
+			
+			expect( result ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( result ).not.toBe( deferred.promise )
+			
+			return
+		)
+		
+		it( 'should return a new Promise when a null callback is specified', ->
+			result = deferred.always( null )
+			
+			expect( result ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( result ).not.toBe( deferred.promise )
+			
+			return
+		)
+		
+		it( 'should return a new Promise when an undefined callback is specified', ->
+			result = deferred.always( undefined )
+			
+			expect( result ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( result ).not.toBe( deferred.promise )
+			
+			return
+		)
 	)
 	
 	describe( 'State Flow and Completion', ->
