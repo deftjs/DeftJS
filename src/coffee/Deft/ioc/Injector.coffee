@@ -71,6 +71,7 @@ Ext.define( 'Deft.ioc.Injector',
 			return provider.resolve( targetInstance )
 		else
 			Ext.Error.raise( "Error while resolving value to inject: no dependency provider found for '#{ identifier }'." )
+		return
 	
 	###*
 	Inject dependencies (by their identifiers) into the target object instance.

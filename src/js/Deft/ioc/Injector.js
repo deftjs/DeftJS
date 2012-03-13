@@ -61,7 +61,7 @@ Ext.define('Deft.ioc.Injector', {
     if (provider != null) {
       return provider.resolve(targetInstance);
     } else {
-      return Ext.Error.raise("Error while resolving value to inject: no dependency provider found for '" + identifier + "'.");
+      Ext.Error.raise("Error while resolving value to inject: no dependency provider found for '" + identifier + "'.");
     }
   },
   /**
