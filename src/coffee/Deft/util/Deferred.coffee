@@ -61,7 +61,7 @@ Ext.define( 'Deft.util.Deferred',
 	always: ( alwaysCallback ) ->
 		return @then( 
 			success: alwaysCallback
-			error: alwaysCallback
+			failure: alwaysCallback
 			cancel: alwaysCallback
 		)
 	
@@ -72,6 +72,8 @@ Ext.define( 'Deft.util.Deferred',
 		if @state is 'pending'
 			@progress = progress
 			@notify( @progressCallbacks, progress )
+		else
+			Ext.Error.raise( 'Error: this Deferred has already been completed and cannot be modified.')
 		return
 	
 	###*

@@ -59,7 +59,7 @@ Ext.define('Deft.util.Deferred', {
   always: function(alwaysCallback) {
     return this.then({
       success: alwaysCallback,
-      error: alwaysCallback,
+      failure: alwaysCallback,
       cancel: alwaysCallback
     });
   },
@@ -70,6 +70,8 @@ Ext.define('Deft.util.Deferred', {
     if (this.state === 'pending') {
       this.progress = progress;
       this.notify(this.progressCallbacks, progress);
+    } else {
+      Ext.Error.raise('Error: this Deferred has already been completed and cannot be modified.');
     }
   },
   /**
