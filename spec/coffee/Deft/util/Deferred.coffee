@@ -296,30 +296,68 @@ describe( 'Deft.util.Deferred', ->
 			deferred = Ext.create( 'Deft.util.Deferred' )
 			
 			alwaysCallback  = jasmine.createSpy()
-			
-			deferred.always( alwaysCallback )
 		)
 		
 		it( 'should call always callback when resolved', ->
+			deferred.always( alwaysCallback )
+			
 			deferred.resolve( 'expected value' )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
 		)
 		
 		it( 'should call always callback when rejected', ->
+			deferred.always( alwaysCallback )
+			
 			deferred.reject( 'error message' )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
 		)
 		
 		it( 'should not call always callback when updated', ->
+			deferred.always( alwaysCallback )
+			
 			deferred.update( 'progress' )
 			
 			expect( alwaysCallback ).not.toHaveBeenCalled()
 		)
 		
 		it( 'should call always callback when cancelled', ->
+			deferred.always( alwaysCallback )
+			
 			deferred.cancel( 'reason' )
+			
+			expect( alwaysCallback ).toHaveBeenCalled()
+		)
+		
+		it( 'should immediately call always callback when already resolved', ->
+			deferred.resolve( 'expected value' )
+			
+			deferred.always( alwaysCallback )
+			
+			expect( alwaysCallback ).toHaveBeenCalled()
+		)
+		
+		it( 'should immediately call always callback when already rejected', ->
+			deferred.reject( 'error message' )
+			
+			deferred.always( alwaysCallback )
+			
+			expect( alwaysCallback ).toHaveBeenCalled()
+		)
+		
+		it( 'should not immediately call always callback when already updated', ->
+			deferred.update( 'progress' )
+			
+			deferred.always( alwaysCallback )
+			
+			expect( alwaysCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should immediately call always callback when already cancelled', ->
+			deferred.cancel( 'reason' )
+			
+			deferred.always( alwaysCallback )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
 		)

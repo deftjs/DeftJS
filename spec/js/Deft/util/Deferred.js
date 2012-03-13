@@ -215,23 +215,46 @@ describe('Deft.util.Deferred', function() {
     alwaysCallback = null;
     beforeEach(function() {
       deferred = Ext.create('Deft.util.Deferred');
-      alwaysCallback = jasmine.createSpy();
-      return deferred.always(alwaysCallback);
+      return alwaysCallback = jasmine.createSpy();
     });
     it('should call always callback when resolved', function() {
+      deferred.always(alwaysCallback);
       deferred.resolve('expected value');
       return expect(alwaysCallback).toHaveBeenCalled();
     });
     it('should call always callback when rejected', function() {
+      deferred.always(alwaysCallback);
       deferred.reject('error message');
       return expect(alwaysCallback).toHaveBeenCalled();
     });
     it('should not call always callback when updated', function() {
+      deferred.always(alwaysCallback);
       deferred.update('progress');
       return expect(alwaysCallback).not.toHaveBeenCalled();
     });
-    return it('should call always callback when cancelled', function() {
+    it('should call always callback when cancelled', function() {
+      deferred.always(alwaysCallback);
       deferred.cancel('reason');
+      return expect(alwaysCallback).toHaveBeenCalled();
+    });
+    it('should immediately call always callback when already resolved', function() {
+      deferred.resolve('expected value');
+      deferred.always(alwaysCallback);
+      return expect(alwaysCallback).toHaveBeenCalled();
+    });
+    it('should immediately call always callback when already rejected', function() {
+      deferred.reject('error message');
+      deferred.always(alwaysCallback);
+      return expect(alwaysCallback).toHaveBeenCalled();
+    });
+    it('should not immediately call always callback when already updated', function() {
+      deferred.update('progress');
+      deferred.always(alwaysCallback);
+      return expect(alwaysCallback).not.toHaveBeenCalled();
+    });
+    return it('should immediately call always callback when already cancelled', function() {
+      deferred.cancel('reason');
+      deferred.always(alwaysCallback);
       return expect(alwaysCallback).toHaveBeenCalled();
     });
   });
