@@ -8,6 +8,15 @@ Jasmine test suite for Deft.util.Deferred
 ###
 describe( 'Deft.util.Deferred', ->
 	
+	beforeEach( ->
+		@addMatchers(
+			toBeInstanceOf: ( className ) ->
+				return @actual instanceof Ext.ClassManager.get( className )
+		)
+		
+		return
+	)
+	
 	describe( 'Registering callbacks via then()', ->
 		
 		createSpecsForThen = ( thenFunction, callbacksFactoryFunction ) ->
@@ -19,6 +28,8 @@ describe( 'Deft.util.Deferred', ->
 				deferred = Ext.create( 'Deft.util.Deferred' )
 				
 				{ success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback } = callbacksFactoryFunction()
+				
+				return
 			)
 			
 			it( 'should call success callback (if specified) when resolved', ->
@@ -30,6 +41,8 @@ describe( 'Deft.util.Deferred', ->
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
 				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
 				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
+				
+				return
 			)
 			
 			it( 'should call failure callback (if specified) when rejected', ->
@@ -41,6 +54,8 @@ describe( 'Deft.util.Deferred', ->
 				expect( failureCallback ).toHaveBeenCalledWith( 'error message' ) if failureCallback?
 				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
 				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
+				
+				return
 			)
 			
 			it( 'should call progress callback (if specified) when updated', ->
@@ -52,6 +67,8 @@ describe( 'Deft.util.Deferred', ->
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
 				expect( progressCallback ).toHaveBeenCalledWith( 'progress' ) if progressCallback?
 				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
+				
+				return
 			)
 			
 			it( 'should call cancel callback (if specified) when cancelled', ->
@@ -63,6 +80,8 @@ describe( 'Deft.util.Deferred', ->
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
 				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
 				expect( cancelCallback ).toHaveBeenCalledWith( 'reason' ) if cancelCallback?
+				
+				return
 			)
 			
 			it( 'should immediately call newly added success callback (if specified) when already resolved', ->
@@ -74,6 +93,8 @@ describe( 'Deft.util.Deferred', ->
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
 				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
 				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
+				
+				return
 			)
 			
 			it( 'should immediately call newly added failure callback (if specified) when already rejected', ->
@@ -85,6 +106,8 @@ describe( 'Deft.util.Deferred', ->
 				expect( failureCallback ).toHaveBeenCalledWith( 'error message' ) if failureCallback?
 				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
 				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
+				
+				return
 			)
 			
 			it( 'should immediately call newly added progress callback (if specified) when already updated', ->
@@ -96,6 +119,8 @@ describe( 'Deft.util.Deferred', ->
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
 				expect( progressCallback ).toHaveBeenCalledWith( 'progress' ) if progressCallback?
 				expect( cancelCallback ).not.toHaveBeenCalled() if cancelCallback?
+				
+				return
 			)
 			
 			it( 'should immediately call newly added cancel callback (if specified) when already cancelled', ->
@@ -107,6 +132,32 @@ describe( 'Deft.util.Deferred', ->
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
 				expect( progressCallback ).not.toHaveBeenCalled() if progressCallback?
 				expect( cancelCallback ).toHaveBeenCalledWith( 'reason' ) if cancelCallback?
+				
+				return
+			)
+			
+			it( 'should throw an error when non-function callback(s) are specified', ->
+				if successCallback or failureCallback or progressCallback or cancelCallback
+					expect( ->
+						thenFunction( 
+							deferred
+							if successCallback  then 'value' else successCallback
+							if failureCallback  then 'value' else failureCallback
+							if progressCallback then 'value' else progressCallback
+							if cancelCallback   then 'value' else cancelCallback
+						)
+						
+						return
+					).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+			)
+			
+			it( 'should return a new Promise', ->
+				result = thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				
+				expect( result ).toBeInstanceOf( 'Deft.util.Promise' )
+				expect( result ).not.toBe( deferred.promise )
+				
+				return
 			)
 			
 			return
@@ -125,21 +176,23 @@ describe( 'Deft.util.Deferred', ->
 				}
 			
 			createSpecsForThen( thenFunction, callbacksFactoryFunction )
+			
+			return
 		)
 		
-		describe( 'with callbacks specified via method parameters, with omitted callbacks', ->
+		describe( 'with callbacks specified via method parameters,', ->
 			
 			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback ) ->
 				deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			
-			createCallbacksFactoryFunction = ( startIndex, endIndex ) ->
+			createCallbacksFactoryFunction = ( index, valueWhenOmitted ) ->
 				callbacksFactoryFunction = ->
 					callbacks = {}
-				
-					callbacks.success  = jasmine.createSpy() unless index is 0
-					callbacks.failure  = jasmine.createSpy() unless index is 1
-					callbacks.progress = jasmine.createSpy() unless index is 2
-					callbacks.cancel   = jasmine.createSpy() unless index is 3
+					
+					callbacks.success  = if index is 0 then jasmine.createSpy() else valueWhenOmitted
+					callbacks.failure  = if index is 1 then jasmine.createSpy() else valueWhenOmitted
+					callbacks.progress = if index is 2 then jasmine.createSpy() else valueWhenOmitted
+					callbacks.cancel   = if index is 3 then jasmine.createSpy() else valueWhenOmitted
 				
 					return callbacks
 				
@@ -147,9 +200,16 @@ describe( 'Deft.util.Deferred', ->
 			
 			callbackNames = [ 'success', 'failure', 'progress', 'cancel' ]
 			for index in [ 0..3 ]
-				describe( "omitting #{ callbackNames[ index ] } callback", ->
-					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index ) )
+				describe( "omitting #{ callbackNames[ index ] } callback as null", ->
+					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index, null ) )
+					return
 				)
+				describe( "omitting #{ callbackNames[ index ] } callback as undefined", ->
+					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index, undefined ) )
+					return
+				)
+			
+			return
 		)
 		
 		describe( 'with callbacks specified via configuration Object', ->
@@ -171,9 +231,11 @@ describe( 'Deft.util.Deferred', ->
 				}
 			
 			createSpecsForThen( thenFunction, callbacksFactoryFunction )
+			
+			return
 		)
 		
-		describe( 'with callbacks specified via configuration Object, with omitted callbacks', ->
+		describe( 'with callbacks specified via configuration Object,', ->
 			
 			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback ) ->
 					deferred.then( 
@@ -183,14 +245,14 @@ describe( 'Deft.util.Deferred', ->
 						cancel: cancelCallback
 					)
 			
-			createCallbacksFactoryFunction = ( startIndex, endIndex ) ->
+			createCallbacksFactoryFunction = ( index, valueWhenOmitted ) ->
 				callbacksFactoryFunction = ->
 					callbacks = {}
-				
-					callbacks.success  = jasmine.createSpy() unless index is 0
-					callbacks.failure  = jasmine.createSpy() unless index is 1
-					callbacks.progress = jasmine.createSpy() unless index is 2
-					callbacks.cancel   = jasmine.createSpy() unless index is 3
+					
+					callbacks.success  = if index is 0 then jasmine.createSpy() else valueWhenOmitted
+					callbacks.failure  = if index is 1 then jasmine.createSpy() else valueWhenOmitted
+					callbacks.progress = if index is 2 then jasmine.createSpy() else valueWhenOmitted
+					callbacks.cancel   = if index is 3 then jasmine.createSpy() else valueWhenOmitted
 					
 					return callbacks
 				
@@ -198,9 +260,17 @@ describe( 'Deft.util.Deferred', ->
 			
 			callbackNames = [ 'success', 'failure', 'progress', 'cancel' ]
 			for index in [ 0..3 ]
-				describe( "omitting #{ callbackNames[ index ] } callback", ->
-					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index ) )
+				describe( "omitting #{ callbackNames[ index ] } callback as null", ->
+					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index, null ) )
+					return
 				)
+				
+				describe( "omitting #{ callbackNames[ index ] } callback as undefined", ->
+					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index, undefined ) )
+					return
+				)
+				
+			return
 		)
 	)
 	
@@ -212,7 +282,9 @@ describe( 'Deft.util.Deferred', ->
 		beforeEach( ->
 			deferred = Ext.create( 'Deft.util.Deferred' )
 			
-			alwaysCallback  = jasmine.createSpy()
+			alwaysCallback = jasmine.createSpy()
+			
+			return
 		)
 		
 		it( 'should call always callback when resolved', ->
@@ -221,6 +293,8 @@ describe( 'Deft.util.Deferred', ->
 			deferred.resolve( 'expected value' )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should call always callback when rejected', ->
@@ -229,6 +303,8 @@ describe( 'Deft.util.Deferred', ->
 			deferred.reject( 'error message' )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not call always callback when updated', ->
@@ -237,6 +313,8 @@ describe( 'Deft.util.Deferred', ->
 			deferred.update( 'progress' )
 			
 			expect( alwaysCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should call always callback when cancelled', ->
@@ -245,6 +323,8 @@ describe( 'Deft.util.Deferred', ->
 			deferred.cancel( 'reason' )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should immediately call always callback when already resolved', ->
@@ -253,6 +333,8 @@ describe( 'Deft.util.Deferred', ->
 			deferred.always( alwaysCallback )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should immediately call always callback when already rejected', ->
@@ -261,6 +343,8 @@ describe( 'Deft.util.Deferred', ->
 			deferred.always( alwaysCallback )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not immediately call always callback when already updated', ->
@@ -269,6 +353,8 @@ describe( 'Deft.util.Deferred', ->
 			deferred.always( alwaysCallback )
 			
 			expect( alwaysCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should immediately call always callback when already cancelled', ->
@@ -277,10 +363,39 @@ describe( 'Deft.util.Deferred', ->
 			deferred.always( alwaysCallback )
 			
 			expect( alwaysCallback ).toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should allow a null callback to be specified', ->
+			expect( ->
+				deferred.always( null )
+				return
+			).not.toThrow()
+			
+			return
+		)
+		
+		it( 'should allow an undefined callback to be specified', ->
+			expect( ->
+				deferred.always( undefined )
+				return
+			).not.toThrow()
+			
+			return
+		)
+		
+		it( 'should throw an error when a non-function callback is specified', ->
+			expect( ->
+				deferred.always( 'value' )
+				return
+			).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+			
+			return
 		)
 	)
 	
-	describe( 'Completion', ->
+	describe( 'State Flow and Completion', ->
 		
 		deferred = null
 		successCallback = failureCallback = progressCallback = cancelCallback = null
@@ -292,6 +407,8 @@ describe( 'Deft.util.Deferred', ->
 			failureCallback  = jasmine.createSpy()
 			progressCallback = jasmine.createSpy()
 			cancelCallback   = jasmine.createSpy()
+			
+			return
 		)
 		
 		it( 'should allow resolution after update', ->
@@ -300,12 +417,15 @@ describe( 'Deft.util.Deferred', ->
 			expect( ->
 				deferred.update( 'progress' )
 				deferred.resolve( 'expected result' )
+				return
 			).not.toThrow()
 			
 			expect( successCallback ).toHaveBeenCalledWith( 'expected result' )
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should allow rejection after update', ->
@@ -314,12 +434,15 @@ describe( 'Deft.util.Deferred', ->
 			expect( ->
 				deferred.update( 'progress' )
 				deferred.reject( 'error message' )
+				return
 			).not.toThrow()
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
 			expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should allow cancellation after update', ->
@@ -328,12 +451,15 @@ describe( 'Deft.util.Deferred', ->
 			expect( ->
 				deferred.update( 'progress' )
 				deferred.cancel( 'reason' )
+				return
 			).not.toThrow()
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
 			expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
+			
+			return
 		)
 		
 		it( 'should not allow resolution after resolution', ->
@@ -344,13 +470,16 @@ describe( 'Deft.util.Deferred', ->
 			successCallback.reset() if successCallback?
 			
 			expect( ->
-				deferred.resolve( 'expected result' ) 
+				deferred.resolve( 'expected result' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow rejection after resolution', ->
@@ -361,13 +490,16 @@ describe( 'Deft.util.Deferred', ->
 			successCallback.reset() if successCallback?
 			
 			expect( ->
-				deferred.reject( 'error message' ) 
+				deferred.reject( 'error message' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow update after resolution', ->
@@ -378,13 +510,16 @@ describe( 'Deft.util.Deferred', ->
 			successCallback.reset() if successCallback?
 			
 			expect( ->
-				deferred.update( 'progress' ) 
+				deferred.update( 'progress' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow cancellation after resolution', ->
@@ -395,13 +530,16 @@ describe( 'Deft.util.Deferred', ->
 			successCallback.reset() if successCallback?
 			
 			expect( ->
-				deferred.cancel( 'reason' ) 
+				deferred.cancel( 'reason' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow resolution after rejection', ->
@@ -412,13 +550,16 @@ describe( 'Deft.util.Deferred', ->
 			failureCallback.reset() if failureCallback?
 			
 			expect( ->
-				deferred.resolve( 'expected result' ) 
+				deferred.resolve( 'expected result' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow rejection after rejection', ->
@@ -429,13 +570,16 @@ describe( 'Deft.util.Deferred', ->
 			failureCallback.reset() if failureCallback?
 			
 			expect( ->
-				deferred.reject( 'error message' ) 
+				deferred.reject( 'error message' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow update after rejection', ->
@@ -446,13 +590,16 @@ describe( 'Deft.util.Deferred', ->
 			failureCallback.reset() if failureCallback?
 			
 			expect( ->
-				deferred.update( 'progress' ) 
+				deferred.update( 'progress' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow cancellation after rejection', ->
@@ -463,13 +610,16 @@ describe( 'Deft.util.Deferred', ->
 			failureCallback.reset() if failureCallback?
 			
 			expect( ->
-				deferred.cancel( 'reason' ) 
+				deferred.cancel( 'reason' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow resolution after cancellation', ->
@@ -480,13 +630,16 @@ describe( 'Deft.util.Deferred', ->
 			cancelCallback.reset() if cancelCallback?
 			
 			expect( ->
-				deferred.resolve( 'expected result' ) 
+				deferred.resolve( 'expected result' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow rejection after cancellation', ->
@@ -497,13 +650,16 @@ describe( 'Deft.util.Deferred', ->
 			cancelCallback.reset() if cancelCallback?
 			
 			expect( ->
-				deferred.reject( 'error message' ) 
+				deferred.reject( 'error message' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow update after cancellation', ->
@@ -514,13 +670,16 @@ describe( 'Deft.util.Deferred', ->
 			cancelCallback.reset()
 			
 			expect( ->
-				deferred.update( 'progress' ) 
+				deferred.update( 'progress' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should not allow cancellation after cancellation', ->
@@ -531,13 +690,18 @@ describe( 'Deft.util.Deferred', ->
 			cancelCallback.reset() if cancelCallback?
 			
 			expect( ->
-				deferred.cancel( 'reason' ) 
+				deferred.cancel( 'reason' )
+				return
 			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( successCallback ).not.toHaveBeenCalled()
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
+		
+		return
 	)
 )
