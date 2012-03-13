@@ -27,25 +27,29 @@ Ext.define('Deft.util.Deferred', {
     }
     deferred = Ext.create('Deft.Deferred');
     wrapCallback = function(callback, action) {
-      return function(value) {
-        var result;
-        if (Ext.isFunction(callback)) {
-          try {
-            result = callback(value);
-            if (result === void 0) {
-              deferred[action](value);
-            } else if (result instanceof Ext.ClassManager.get('Deft.util.Promise') || result instanceof Ext.ClassManager.get('Deft.util.Deferred')) {
-              result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
-            } else {
-              deferred[action](result);
+      if (Ext.isFunction(callback) || callback === null || callback === void 0) {
+        return function(value) {
+          var result;
+          if (Ext.isFunction(callback)) {
+            try {
+              result = callback(value);
+              if (result === void 0) {
+                deferred[action](value);
+              } else if (result instanceof Ext.ClassManager.get('Deft.util.Promise') || result instanceof Ext.ClassManager.get('Deft.util.Deferred')) {
+                result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
+              } else {
+                deferred[action](result);
+              }
+            } catch (error) {
+              deferred.reject(error);
             }
-          } catch (error) {
-            deferred.reject(error);
+          } else {
+            deferred[action](value);
           }
-        } else {
-          deferred[action](value);
-        }
-      };
+        };
+      } else {
+        Ext.Error.raise('Error while configuring callback: a non-function specified.');
+      }
     };
     this.register(wrapCallback(progressCallback, 'update'), this.progressCallbacks, 'pending', this.progress);
     this.register(wrapCallback(successCallback, 'resolve'), this.successCallbacks, 'resolved', this.value);
