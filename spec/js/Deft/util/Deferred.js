@@ -547,22 +547,127 @@ describe('Deft.util.Deferred', function() {
       }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
     });
     it('should return a new Promise', function() {
-      var result;
-      result = deferred.always(alwaysCallback);
-      expect(result).toBeInstanceOf('Deft.util.Promise');
-      expect(result).not.toBe(deferred.promise);
+      var promise;
+      promise = deferred.always(alwaysCallback);
+      expect(promise).toBeInstanceOf('Deft.util.Promise');
+      expect(promise).not.toBe(deferred.promise);
     });
     it('should return a new Promise when a null callback is specified', function() {
-      var result;
-      result = deferred.always(null);
-      expect(result).toBeInstanceOf('Deft.util.Promise');
-      expect(result).not.toBe(deferred.promise);
+      var promise;
+      promise = deferred.always(null);
+      expect(promise).toBeInstanceOf('Deft.util.Promise');
+      expect(promise).not.toBe(deferred.promise);
     });
-    return it('should return a new Promise when an undefined callback is specified', function() {
-      var result;
-      result = deferred.always(void 0);
-      expect(result).toBeInstanceOf('Deft.util.Promise');
-      expect(result).not.toBe(deferred.promise);
+    it('should return a new Promise when an undefined callback is specified', function() {
+      var promise;
+      promise = deferred.always(void 0);
+      expect(promise).toBeInstanceOf('Deft.util.Promise');
+      expect(promise).not.toBe(deferred.promise);
+    });
+    it('should resolve that new Promise when the Deferred is resolved and the callback returns a value', function() {
+      var cancelCallback, failureCallback, progressCallback, promise, successCallback;
+      promise = deferred.always(function(value) {
+        return "processed " + value;
+      });
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('processed value');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is resolved and the callback throws an error', function() {
+      var cancelCallback, error, failureCallback, progressCallback, promise, successCallback;
+      error = new Error('error message');
+      promise = deferred.always(function(value) {
+        throw error;
+      });
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith(error);
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should resolve that new Promise when the Deferred is rejected and the callback returns a value', function() {
+      var cancelCallback, failureCallback, progressCallback, promise, successCallback;
+      promise = deferred.always(function(value) {
+        return "processed " + value;
+      });
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('processed error message');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is rejected and the callback throws an error', function() {
+      var cancelCallback, error, failureCallback, progressCallback, promise, successCallback;
+      error = new Error('error message');
+      promise = deferred.always(function(value) {
+        throw error;
+      });
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('value');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith(error);
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should resolve that new Promise when the Deferred is cancelled and the callback returns a value', function() {
+      var cancelCallback, failureCallback, progressCallback, promise, successCallback;
+      promise = deferred.always(function(value) {
+        return "processed " + value;
+      });
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('processed reason');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    return it('should reject that new Promise when the Deferred is cancelled and the callback throws an error', function() {
+      var cancelCallback, error, failureCallback, progressCallback, promise, successCallback;
+      error = new Error('error message');
+      promise = deferred.always(function(value) {
+        throw error;
+      });
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith(error);
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
     });
   });
 });

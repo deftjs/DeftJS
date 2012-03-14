@@ -781,30 +781,152 @@ describe( 'Deft.util.Deferred', ->
 		)
 		
 		it( 'should return a new Promise', ->
-			result = deferred.always( alwaysCallback )
+			promise = deferred.always( alwaysCallback )
 			
-			expect( result ).toBeInstanceOf( 'Deft.util.Promise' )
-			expect( result ).not.toBe( deferred.promise )
+			expect( promise ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( promise ).not.toBe( deferred.promise )
 			
 			return
 		)
 		
 		it( 'should return a new Promise when a null callback is specified', ->
-			result = deferred.always( null )
+			promise = deferred.always( null )
 			
-			expect( result ).toBeInstanceOf( 'Deft.util.Promise' )
-			expect( result ).not.toBe( deferred.promise )
+			expect( promise ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( promise ).not.toBe( deferred.promise )
 			
 			return
 		)
 		
 		it( 'should return a new Promise when an undefined callback is specified', ->
-			result = deferred.always( undefined )
+			promise = deferred.always( undefined )
 			
-			expect( result ).toBeInstanceOf( 'Deft.util.Promise' )
-			expect( result ).not.toBe( deferred.promise )
+			expect( promise ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( promise ).not.toBe( deferred.promise )
 			
 			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a value', ->
+			promise = deferred.always( ( value ) -> "processed #{ value }" )
+			
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'processed value' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should reject that new Promise when the Deferred is resolved and the callback throws an error', ->
+			error = new Error( 'error message' )
+			promise = deferred.always( ( value ) -> throw error )
+			
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( error )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is rejected and the callback returns a value', ->
+			promise = deferred.always( ( value ) -> "processed #{ value }" )
+			
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'processed error message' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should reject that new Promise when the Deferred is rejected and the callback throws an error', ->
+			error = new Error( 'error message' )
+			promise = deferred.always( ( value ) -> throw error )
+			
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'value' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( error )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is cancelled and the callback returns a value', ->
+			promise = deferred.always( ( value ) -> "processed #{ value }" )
+			
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'processed reason' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should reject that new Promise when the Deferred is cancelled and the callback throws an error', ->
+			error = new Error( 'error message' )
+			promise = deferred.always( ( value ) -> throw error )
+			
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( error )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
 		)
 	)
 )
