@@ -25,10 +25,10 @@ describe( 'Deft.util.Deferred', ->
 		beforeEach( ->
 			deferred = Ext.create( 'Deft.util.Deferred' )
 			
-			successCallback  = jasmine.createSpy()
-			failureCallback  = jasmine.createSpy()
-			progressCallback = jasmine.createSpy()
-			cancelCallback   = jasmine.createSpy()
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
 			
 			return
 		)
@@ -555,10 +555,10 @@ describe( 'Deft.util.Deferred', ->
 			
 			callbacksFactoryFunction = ->
 				{
-					success: jasmine.createSpy()
-					failure: jasmine.createSpy()
-					progress: jasmine.createSpy()
-					cancel: jasmine.createSpy()
+					success:  jasmine.createSpy( 'success callback' )
+					failure:  jasmine.createSpy( 'failure callback' )
+					progress: jasmine.createSpy( 'progress callback' )
+					cancel:   jasmine.createSpy( 'cancel callback' )
 				}
 			
 			createSpecsForThen( thenFunction, callbacksFactoryFunction )
@@ -575,10 +575,10 @@ describe( 'Deft.util.Deferred', ->
 				callbacksFactoryFunction = ->
 					callbacks = {}
 					
-					callbacks.success  = if index is 0 then jasmine.createSpy() else valueWhenOmitted
-					callbacks.failure  = if index is 1 then jasmine.createSpy() else valueWhenOmitted
-					callbacks.progress = if index is 2 then jasmine.createSpy() else valueWhenOmitted
-					callbacks.cancel   = if index is 3 then jasmine.createSpy() else valueWhenOmitted
+					callbacks.success  = if index is 0 then jasmine.createSpy( 'success callback'  ) else valueWhenOmitted
+					callbacks.failure  = if index is 1 then jasmine.createSpy( 'failure callback'  ) else valueWhenOmitted
+					callbacks.progress = if index is 2 then jasmine.createSpy( 'progress callback' ) else valueWhenOmitted
+					callbacks.cancel   = if index is 3 then jasmine.createSpy( 'cancel callback'   ) else valueWhenOmitted
 				
 					return callbacks
 				
@@ -602,18 +602,18 @@ describe( 'Deft.util.Deferred', ->
 			
 			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback ) ->
 					deferred.then( 
-						success: successCallback
-						failure: failureCallback
+						success:  successCallback
+						failure:  failureCallback
 						progress: progressCallback
-						cancel: cancelCallback
+						cancel:   cancelCallback
 					)
 			
 			callbacksFactoryFunction = ->
 				{
-					success: jasmine.createSpy()
-					failure: jasmine.createSpy()
-					progress: jasmine.createSpy()
-					cancel: jasmine.createSpy()
+					success:  jasmine.createSpy( 'success callback' )
+					failure:  jasmine.createSpy( 'failure callback' )
+					progress: jasmine.createSpy( 'progress callback' )
+					cancel:   jasmine.createSpy( 'cancel callback' )
 				}
 			
 			createSpecsForThen( thenFunction, callbacksFactoryFunction )
@@ -625,20 +625,20 @@ describe( 'Deft.util.Deferred', ->
 			
 			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback ) ->
 					deferred.then( 
-						success: successCallback
-						failure: failureCallback
+						success:  successCallback
+						failure:  failureCallback
 						progress: progressCallback
-						cancel: cancelCallback
+						cancel:   cancelCallback
 					)
 			
 			createCallbacksFactoryFunction = ( index, valueWhenOmitted ) ->
 				callbacksFactoryFunction = ->
 					callbacks = {}
 					
-					callbacks.success  = if index is 0 then jasmine.createSpy() else valueWhenOmitted
-					callbacks.failure  = if index is 1 then jasmine.createSpy() else valueWhenOmitted
-					callbacks.progress = if index is 2 then jasmine.createSpy() else valueWhenOmitted
-					callbacks.cancel   = if index is 3 then jasmine.createSpy() else valueWhenOmitted
+					callbacks.success  = if index is 0 then jasmine.createSpy( 'success callback'  ) else valueWhenOmitted
+					callbacks.failure  = if index is 1 then jasmine.createSpy( 'failure callback'  ) else valueWhenOmitted
+					callbacks.progress = if index is 2 then jasmine.createSpy( 'progress callback' ) else valueWhenOmitted
+					callbacks.cancel   = if index is 3 then jasmine.createSpy( 'cancel callback'   ) else valueWhenOmitted
 					
 					return callbacks
 				
@@ -668,7 +668,7 @@ describe( 'Deft.util.Deferred', ->
 		beforeEach( ->
 			deferred = Ext.create( 'Deft.util.Deferred' )
 			
-			alwaysCallback = jasmine.createSpy()
+			alwaysCallback = jasmine.createSpy( 'always callback' )
 			
 			return
 		)
@@ -806,14 +806,26 @@ describe( 'Deft.util.Deferred', ->
 			
 			return
 		)
+	)
+	
+	describe( 'Propagation of return value for callback registered with the new Promise returned by always()', ->
 		
-		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a value', ->
-			promise = deferred.always( ( value ) -> "processed #{ value }" )
+		deferred = null
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			deferred = Ext.create( 'Deft.util.Deferred' )
 			
 			successCallback  = jasmine.createSpy( 'success callback' )
 			failureCallback  = jasmine.createSpy( 'failure callback' )
 			progressCallback = jasmine.createSpy( 'progress callback' )
 			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a value', ->
+			promise = deferred.always( ( value ) -> "processed #{ value }" )
 			
 			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			
@@ -831,11 +843,6 @@ describe( 'Deft.util.Deferred', ->
 			error = new Error( 'error message' )
 			promise = deferred.always( ( value ) -> throw error )
 			
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
-			
 			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			
 			deferred.resolve( 'value' )
@@ -850,11 +857,6 @@ describe( 'Deft.util.Deferred', ->
 		
 		it( 'should resolve that new Promise when the Deferred is rejected and the callback returns a value', ->
 			promise = deferred.always( ( value ) -> "processed #{ value }" )
-			
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
 			
 			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			
@@ -872,11 +874,6 @@ describe( 'Deft.util.Deferred', ->
 			error = new Error( 'error message' )
 			promise = deferred.always( ( value ) -> throw error )
 			
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
-			
 			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			
 			deferred.reject( 'value' )
@@ -892,11 +889,6 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is cancelled and the callback returns a value', ->
 			promise = deferred.always( ( value ) -> "processed #{ value }" )
 			
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
-			
 			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			deferred.cancel( 'reason' )
 			
@@ -911,11 +903,6 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is cancelled and the callback throws an error', ->
 			error = new Error( 'error message' )
 			promise = deferred.always( ( value ) -> throw error )
-			
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
 			
 			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			

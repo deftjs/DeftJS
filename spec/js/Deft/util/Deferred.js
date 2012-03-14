@@ -19,10 +19,10 @@ describe('Deft.util.Deferred', function() {
     successCallback = failureCallback = progressCallback = cancelCallback = null;
     beforeEach(function() {
       deferred = Ext.create('Deft.util.Deferred');
-      successCallback = jasmine.createSpy();
-      failureCallback = jasmine.createSpy();
-      progressCallback = jasmine.createSpy();
-      cancelCallback = jasmine.createSpy();
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
     });
     it('should allow access to the associated Promise', function() {
       expect(deferred.getPromise()).toBeInstanceOf('Deft.util.Promise');
@@ -393,10 +393,10 @@ describe('Deft.util.Deferred', function() {
       };
       callbacksFactoryFunction = function() {
         return {
-          success: jasmine.createSpy(),
-          failure: jasmine.createSpy(),
-          progress: jasmine.createSpy(),
-          cancel: jasmine.createSpy()
+          success: jasmine.createSpy('success callback'),
+          failure: jasmine.createSpy('failure callback'),
+          progress: jasmine.createSpy('progress callback'),
+          cancel: jasmine.createSpy('cancel callback')
         };
       };
       createSpecsForThen(thenFunction, callbacksFactoryFunction);
@@ -411,10 +411,10 @@ describe('Deft.util.Deferred', function() {
         callbacksFactoryFunction = function() {
           var callbacks;
           callbacks = {};
-          callbacks.success = index === 0 ? jasmine.createSpy() : valueWhenOmitted;
-          callbacks.failure = index === 1 ? jasmine.createSpy() : valueWhenOmitted;
-          callbacks.progress = index === 2 ? jasmine.createSpy() : valueWhenOmitted;
-          callbacks.cancel = index === 3 ? jasmine.createSpy() : valueWhenOmitted;
+          callbacks.success = index === 0 ? jasmine.createSpy('success callback') : valueWhenOmitted;
+          callbacks.failure = index === 1 ? jasmine.createSpy('failure callback') : valueWhenOmitted;
+          callbacks.progress = index === 2 ? jasmine.createSpy('progress callback') : valueWhenOmitted;
+          callbacks.cancel = index === 3 ? jasmine.createSpy('cancel callback') : valueWhenOmitted;
           return callbacks;
         };
         return callbacksFactoryFunction;
@@ -441,10 +441,10 @@ describe('Deft.util.Deferred', function() {
       };
       callbacksFactoryFunction = function() {
         return {
-          success: jasmine.createSpy(),
-          failure: jasmine.createSpy(),
-          progress: jasmine.createSpy(),
-          cancel: jasmine.createSpy()
+          success: jasmine.createSpy('success callback'),
+          failure: jasmine.createSpy('failure callback'),
+          progress: jasmine.createSpy('progress callback'),
+          cancel: jasmine.createSpy('cancel callback')
         };
       };
       createSpecsForThen(thenFunction, callbacksFactoryFunction);
@@ -464,10 +464,10 @@ describe('Deft.util.Deferred', function() {
         callbacksFactoryFunction = function() {
           var callbacks;
           callbacks = {};
-          callbacks.success = index === 0 ? jasmine.createSpy() : valueWhenOmitted;
-          callbacks.failure = index === 1 ? jasmine.createSpy() : valueWhenOmitted;
-          callbacks.progress = index === 2 ? jasmine.createSpy() : valueWhenOmitted;
-          callbacks.cancel = index === 3 ? jasmine.createSpy() : valueWhenOmitted;
+          callbacks.success = index === 0 ? jasmine.createSpy('success callback') : valueWhenOmitted;
+          callbacks.failure = index === 1 ? jasmine.createSpy('failure callback') : valueWhenOmitted;
+          callbacks.progress = index === 2 ? jasmine.createSpy('progress callback') : valueWhenOmitted;
+          callbacks.cancel = index === 3 ? jasmine.createSpy('cancel callback') : valueWhenOmitted;
           return callbacks;
         };
         return callbacksFactoryFunction;
@@ -483,13 +483,13 @@ describe('Deft.util.Deferred', function() {
       }
     });
   });
-  return describe('Callback registration via always()', function() {
+  describe('Callback registration via always()', function() {
     var alwaysCallback, deferred;
     deferred = null;
     alwaysCallback = null;
     beforeEach(function() {
       deferred = Ext.create('Deft.util.Deferred');
-      alwaysCallback = jasmine.createSpy();
+      alwaysCallback = jasmine.createSpy('always callback');
     });
     it('should call always callback when resolved', function() {
       deferred.always(alwaysCallback);
@@ -558,21 +558,29 @@ describe('Deft.util.Deferred', function() {
       expect(promise).toBeInstanceOf('Deft.util.Promise');
       expect(promise).not.toBe(deferred.promise);
     });
-    it('should return a new Promise when an undefined callback is specified', function() {
+    return it('should return a new Promise when an undefined callback is specified', function() {
       var promise;
       promise = deferred.always(void 0);
       expect(promise).toBeInstanceOf('Deft.util.Promise');
       expect(promise).not.toBe(deferred.promise);
     });
-    it('should resolve that new Promise when the Deferred is resolved and the callback returns a value', function() {
-      var cancelCallback, failureCallback, progressCallback, promise, successCallback;
-      promise = deferred.always(function(value) {
-        return "processed " + value;
-      });
+  });
+  return describe('Propagation of return value for callback registered with the new Promise returned by always()', function() {
+    var cancelCallback, deferred, failureCallback, progressCallback, successCallback;
+    deferred = null;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    beforeEach(function() {
+      deferred = Ext.create('Deft.util.Deferred');
       successCallback = jasmine.createSpy('success callback');
       failureCallback = jasmine.createSpy('failure callback');
       progressCallback = jasmine.createSpy('progress callback');
       cancelCallback = jasmine.createSpy('cancel callback');
+    });
+    it('should resolve that new Promise when the Deferred is resolved and the callback returns a value', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        return "processed " + value;
+      });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.resolve('value');
       expect(promise.getState()).toBe('resolved');
@@ -582,15 +590,11 @@ describe('Deft.util.Deferred', function() {
       return expect(cancelCallback).not.toHaveBeenCalled();
     });
     it('should reject that new Promise when the Deferred is resolved and the callback throws an error', function() {
-      var cancelCallback, error, failureCallback, progressCallback, promise, successCallback;
+      var error, promise;
       error = new Error('error message');
       promise = deferred.always(function(value) {
         throw error;
       });
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.resolve('value');
       expect(promise.getState()).toBe('rejected');
@@ -600,14 +604,10 @@ describe('Deft.util.Deferred', function() {
       return expect(cancelCallback).not.toHaveBeenCalled();
     });
     it('should resolve that new Promise when the Deferred is rejected and the callback returns a value', function() {
-      var cancelCallback, failureCallback, progressCallback, promise, successCallback;
+      var promise;
       promise = deferred.always(function(value) {
         return "processed " + value;
       });
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.reject('error message');
       expect(promise.getState()).toBe('resolved');
@@ -617,15 +617,11 @@ describe('Deft.util.Deferred', function() {
       return expect(cancelCallback).not.toHaveBeenCalled();
     });
     it('should reject that new Promise when the Deferred is rejected and the callback throws an error', function() {
-      var cancelCallback, error, failureCallback, progressCallback, promise, successCallback;
+      var error, promise;
       error = new Error('error message');
       promise = deferred.always(function(value) {
         throw error;
       });
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.reject('value');
       expect(promise.getState()).toBe('rejected');
@@ -635,14 +631,10 @@ describe('Deft.util.Deferred', function() {
       return expect(cancelCallback).not.toHaveBeenCalled();
     });
     it('should resolve that new Promise when the Deferred is cancelled and the callback returns a value', function() {
-      var cancelCallback, failureCallback, progressCallback, promise, successCallback;
+      var promise;
       promise = deferred.always(function(value) {
         return "processed " + value;
       });
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.cancel('reason');
       expect(promise.getState()).toBe('resolved');
@@ -652,15 +644,11 @@ describe('Deft.util.Deferred', function() {
       return expect(cancelCallback).not.toHaveBeenCalled();
     });
     return it('should reject that new Promise when the Deferred is cancelled and the callback throws an error', function() {
-      var cancelCallback, error, failureCallback, progressCallback, promise, successCallback;
+      var error, promise;
       error = new Error('error message');
       promise = deferred.always(function(value) {
         throw error;
       });
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.cancel('reason');
       expect(promise.getState()).toBe('rejected');
