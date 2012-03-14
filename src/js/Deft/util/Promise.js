@@ -151,13 +151,25 @@ Ext.define('Deft.util.Promise', {
   	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
   */
   then: function(callbacks) {
-    return this.deferred.then(callbacks);
+    return this.deferred.then.apply(this.deferred, arguments);
+  },
+  /**
+  	Returns a new {@link Deft.util.Promise} with the specified callback registered to be called when this {@link Deft.util.Promise} is resolved, rejected or cancelled.
+  */
+  always: function(callback) {
+    return this.deferred.always(callback);
   },
   /**
   	Cancel this {@link Deft.util.Promise} and notify relevant callbacks.
   */
   cancel: function(reason) {
     return this.deferred.cancel(reason);
+  },
+  /**
+  	Get this {@link Deft.util.Promise}'s current state.
+  */
+  getState: function() {
+    return this.deferred.getState();
   }
 }, function() {
   if (Array.prototype.reduce != null) this.reduceArray = Array.prototype.reduce;

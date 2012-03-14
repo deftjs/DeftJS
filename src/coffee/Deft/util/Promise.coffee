@@ -154,13 +154,25 @@ Ext.define( 'Deft.util.Promise',
 	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
 	###
 	then: ( callbacks ) ->
-		return @deferred.then( callbacks )
+		return @deferred.then.apply( @deferred, arguments )
+	
+	###*
+	Returns a new {@link Deft.util.Promise} with the specified callback registered to be called when this {@link Deft.util.Promise} is resolved, rejected or cancelled.
+	###	
+	always: ( callback ) ->
+		return @deferred.always( callback )
 	
 	###*
 	Cancel this {@link Deft.util.Promise} and notify relevant callbacks.
 	###
 	cancel: ( reason ) ->
 		return @deferred.cancel( reason )
+	
+	###*
+	Get this {@link Deft.util.Promise}'s current state.
+	###
+	getState: ->
+		return @deferred.getState()
 ,
 	->
 		# Use native reduce implementation, if available.
