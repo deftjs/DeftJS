@@ -13,7 +13,239 @@ describe('Deft.util.Deferred', function() {
       }
     });
   });
-  describe('Registering callbacks via then()', function() {
+  describe('State Flow and Completion', function() {
+    var cancelCallback, deferred, failureCallback, progressCallback, successCallback;
+    deferred = null;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    beforeEach(function() {
+      deferred = Ext.create('Deft.util.Deferred');
+      successCallback = jasmine.createSpy();
+      failureCallback = jasmine.createSpy();
+      progressCallback = jasmine.createSpy();
+      cancelCallback = jasmine.createSpy();
+    });
+    it('should allow access to the associated Promise', function() {
+      expect(deferred.getPromise()).toBeInstanceOf('Deft.util.Promise');
+    });
+    it('should resolve', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('expected value');
+      expect(deferred.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('expected value');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      expect(deferred.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('error message');
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should update', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.update('progress');
+      expect(deferred.getState()).toBe('pending');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).toHaveBeenCalledWith('progress');
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      expect(deferred.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).toHaveBeenCalledWith('reason');
+    });
+    it('should allow resolution after update', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.update('progress');
+      expect(deferred.getState()).toBe('pending');
+      deferred.resolve('expected value');
+      expect(deferred.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('expected value');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).toHaveBeenCalledWith('progress');
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should allow rejection after update', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.update('progress');
+      expect(deferred.getState()).toBe('pending');
+      deferred.reject('error message');
+      expect(deferred.getState()).toBe('rejected');
+    });
+    it('should allow cancellation after update', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.update('progress');
+      expect(deferred.getState()).toBe('pending');
+      deferred.cancel('reason');
+      expect(deferred.getState()).toBe('cancelled');
+    });
+    it('should not allow resolution after resolution', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('expected value');
+      if (successCallback != null) successCallback.reset();
+      expect(function() {
+        deferred.resolve('expected value');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('resolved');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow rejection after resolution', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('expected value');
+      if (successCallback != null) successCallback.reset();
+      expect(function() {
+        deferred.reject('error message');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('resolved');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow update after resolution', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('expected value');
+      if (successCallback != null) successCallback.reset();
+      expect(function() {
+        deferred.update('progress');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('resolved');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow cancellation after resolution', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('expected value');
+      if (successCallback != null) successCallback.reset();
+      expect(function() {
+        deferred.cancel('reason');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('resolved');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow resolution after rejection', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      if (failureCallback != null) failureCallback.reset();
+      expect(function() {
+        deferred.resolve('expected value');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow rejection after rejection', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      if (failureCallback != null) failureCallback.reset();
+      expect(function() {
+        deferred.reject('error message');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow update after rejection', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      if (failureCallback != null) failureCallback.reset();
+      expect(function() {
+        deferred.update('progress');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow cancellation after rejection', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      if (failureCallback != null) failureCallback.reset();
+      expect(function() {
+        deferred.cancel('reason');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow resolution after cancellation', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      if (cancelCallback != null) cancelCallback.reset();
+      expect(function() {
+        deferred.resolve('expected value');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow rejection after cancellation', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      if (cancelCallback != null) cancelCallback.reset();
+      expect(function() {
+        deferred.reject('error message');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow update after cancellation', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      cancelCallback.reset();
+      expect(function() {
+        deferred.update('progress');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should not allow cancellation after cancellation', function() {
+      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      if (cancelCallback != null) cancelCallback.reset();
+      expect(function() {
+        deferred.cancel('reason');
+      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      expect(deferred.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+    });
+  });
+  describe('Callback registration via then()', function() {
     var createSpecsForThen;
     createSpecsForThen = function(thenFunction, callbacksFactoryFunction) {
       var cancelCallback, deferred, failureCallback, progressCallback, successCallback;
@@ -26,9 +258,9 @@ describe('Deft.util.Deferred', function() {
       });
       it('should call success callback (if specified) when resolved', function() {
         thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
-        deferred.resolve('expected result');
+        deferred.resolve('expected value');
         if (successCallback != null) {
-          expect(successCallback).toHaveBeenCalledWith('expected result');
+          expect(successCallback).toHaveBeenCalledWith('expected value');
         }
         if (failureCallback != null) {
           expect(failureCallback).not.toHaveBeenCalled();
@@ -83,10 +315,10 @@ describe('Deft.util.Deferred', function() {
         }
       });
       it('should immediately call newly added success callback (if specified) when already resolved', function() {
-        deferred.resolve('expected result');
+        deferred.resolve('expected value');
         thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
         if (successCallback != null) {
-          expect(successCallback).toHaveBeenCalledWith('expected result');
+          expect(successCallback).toHaveBeenCalledWith('expected value');
         }
         if (failureCallback != null) {
           expect(failureCallback).not.toHaveBeenCalled();
@@ -251,7 +483,7 @@ describe('Deft.util.Deferred', function() {
       }
     });
   });
-  describe('Registering callback via always()', function() {
+  return describe('Callback registration via always()', function() {
     var alwaysCallback, deferred;
     deferred = null;
     alwaysCallback = null;
@@ -331,195 +563,6 @@ describe('Deft.util.Deferred', function() {
       result = deferred.always(void 0);
       expect(result).toBeInstanceOf('Deft.util.Promise');
       expect(result).not.toBe(deferred.promise);
-    });
-  });
-  return describe('State Flow and Completion', function() {
-    var cancelCallback, deferred, failureCallback, progressCallback, successCallback;
-    deferred = null;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
-    beforeEach(function() {
-      deferred = Ext.create('Deft.util.Deferred');
-      successCallback = jasmine.createSpy();
-      failureCallback = jasmine.createSpy();
-      progressCallback = jasmine.createSpy();
-      cancelCallback = jasmine.createSpy();
-    });
-    it('should allow resolution after update', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      expect(function() {
-        deferred.update('progress');
-        deferred.resolve('expected result');
-      }).not.toThrow();
-      expect(successCallback).toHaveBeenCalledWith('expected result');
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).toHaveBeenCalledWith('progress');
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should allow rejection after update', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      expect(function() {
-        deferred.update('progress');
-        deferred.reject('error message');
-      }).not.toThrow();
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).toHaveBeenCalledWith('error message');
-      expect(progressCallback).toHaveBeenCalledWith('progress');
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should allow cancellation after update', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      expect(function() {
-        deferred.update('progress');
-        deferred.cancel('reason');
-      }).not.toThrow();
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).toHaveBeenCalledWith('progress');
-      expect(cancelCallback).toHaveBeenCalledWith('reason');
-    });
-    it('should not allow resolution after resolution', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.resolve('expected result');
-      if (successCallback != null) successCallback.reset();
-      expect(function() {
-        deferred.resolve('expected result');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow rejection after resolution', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.resolve('expected result');
-      if (successCallback != null) successCallback.reset();
-      expect(function() {
-        deferred.reject('error message');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow update after resolution', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.resolve('expected result');
-      if (successCallback != null) successCallback.reset();
-      expect(function() {
-        deferred.update('progress');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow cancellation after resolution', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.resolve('expected result');
-      if (successCallback != null) successCallback.reset();
-      expect(function() {
-        deferred.cancel('reason');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow resolution after rejection', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.reject('error message');
-      if (failureCallback != null) failureCallback.reset();
-      expect(function() {
-        deferred.resolve('expected result');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow rejection after rejection', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.reject('error message');
-      if (failureCallback != null) failureCallback.reset();
-      expect(function() {
-        deferred.reject('error message');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow update after rejection', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.reject('error message');
-      if (failureCallback != null) failureCallback.reset();
-      expect(function() {
-        deferred.update('progress');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow cancellation after rejection', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.reject('error message');
-      if (failureCallback != null) failureCallback.reset();
-      expect(function() {
-        deferred.cancel('reason');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow resolution after cancellation', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.cancel('reason');
-      if (cancelCallback != null) cancelCallback.reset();
-      expect(function() {
-        deferred.resolve('expected result');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow rejection after cancellation', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.cancel('reason');
-      if (cancelCallback != null) cancelCallback.reset();
-      expect(function() {
-        deferred.reject('error message');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow update after cancellation', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.cancel('reason');
-      cancelCallback.reset();
-      expect(function() {
-        deferred.update('progress');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
-    });
-    it('should not allow cancellation after cancellation', function() {
-      deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
-      deferred.cancel('reason');
-      if (cancelCallback != null) cancelCallback.reset();
-      expect(function() {
-        deferred.cancel('reason');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
     });
   });
 });
