@@ -38,7 +38,7 @@ Ext.define('Deft.util.Deferred', {
               } else if (result instanceof Ext.ClassManager.get('Deft.util.Promise') || result instanceof Ext.ClassManager.get('Deft.util.Deferred')) {
                 result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
               } else {
-                deferred[action](result);
+                deferred.resolve(result);
               }
             } catch (error) {
               deferred.reject(error);
