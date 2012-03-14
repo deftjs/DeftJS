@@ -55,7 +55,7 @@ Ext.define('Deft.util.Deferred', {
     this.register(wrapCallback(successCallback, 'resolve'), this.successCallbacks, 'resolved', this.value);
     this.register(wrapCallback(failureCallback, 'reject'), this.failureCallbacks, 'rejected', this.value);
     this.register(wrapCallback(cancelCallback, 'cancel'), this.cancelCallbacks, 'cancelled', this.value);
-    return deferred.promise;
+    return deferred.getPromise();
   },
   /**
   	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Deferred} is either resolved, rejected, or cancelled.
@@ -95,6 +95,18 @@ Ext.define('Deft.util.Deferred', {
   */
   cancel: function(reason) {
     this.complete('cancelled', reason, this.cancelCallbacks);
+  },
+  /**
+  	Get this {@link Deft.util.Deferred}'s associated {@link Deft.util.Promise}.
+  */
+  getPromise: function() {
+    return this.promise;
+  },
+  /**
+  	Get this {@link Deft.util.Deferred}'s current state.
+  */
+  getState: function() {
+    return this.state;
   },
   /**
   	Register a callback for this {@link Deft.util.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).

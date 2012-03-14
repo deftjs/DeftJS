@@ -12,9 +12,9 @@ Ext.define( 'Deft.util.Deferred',
 		@value = undefined
 		
 		@progressCallbacks = []
-		@successCallbacks = []
-		@failureCallbacks = []
-		@cancelCallbacks = []
+		@successCallbacks  = []
+		@failureCallbacks  = []
+		@cancelCallbacks   = []
 		
 		@promise = Ext.create( 'Deft.Promise', @ )
 		
@@ -57,7 +57,7 @@ Ext.define( 'Deft.util.Deferred',
 		@register( wrapCallback( failureCallback,  'reject'  ), @failureCallbacks,  'rejected',  @value    )
 		@register( wrapCallback( cancelCallback,   'cancel'  ), @cancelCallbacks,   'cancelled', @value    )
 		
-		return deferred.promise
+		return deferred.getPromise()
 	
 	###*
 	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Deferred} is either resolved, rejected, or cancelled.
@@ -102,6 +102,18 @@ Ext.define( 'Deft.util.Deferred',
 		return
 	
 	###*
+	Get this {@link Deft.util.Deferred}'s associated {@link Deft.util.Promise}.
+	###
+	getPromise: ->
+		return @promise
+	
+	###*
+	Get this {@link Deft.util.Deferred}'s current state.
+	###
+	getState: ->
+		return @state
+	
+	###*
 	Register a callback for this {@link Deft.util.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
 	@private
 	###
@@ -142,9 +154,9 @@ Ext.define( 'Deft.util.Deferred',
 	###
 	releaseCallbacks: ->
 		@progressCallbacks = null
-		@successCallbacks = null
-		@failureCallbacks = null
-		@cancelCallbacks = null
+		@successCallbacks  = null
+		@failureCallbacks  = null
+		@cancelCallbacks   = null
 		return
 	
 )

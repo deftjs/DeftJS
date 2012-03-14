@@ -292,6 +292,18 @@ Ext.define('Deft.util.Deferred', {
     this.complete('cancelled', reason, this.cancelCallbacks);
   },
   /**
+  	Get this {@link Deft.util.Deferred}'s associated {@link Deft.util.Promise}.
+  */
+  getPromise: function() {
+    return this.promise;
+  },
+  /**
+  	Get this {@link Deft.util.Deferred}'s current state.
+  */
+  getState: function() {
+    return this.state;
+  },
+  /**
   	Register a callback for this {@link Deft.util.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
   	@private
   */
