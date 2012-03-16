@@ -196,3 +196,324 @@ Ext.define('Deft.mixin.Injectable', {
     });
   }
 });
+
+Ext.define('Deft.util.Deferred', {
+  alternateClassName: ['Deft.Deferred'],
+  constructor: function() {
+    this.state = 'pending';
+    this.progress = void 0;
+    this.value = void 0;
+    this.progressCallbacks = [];
+    this.successCallbacks = [];
+    this.failureCallbacks = [];
+    this.cancelCallbacks = [];
+    this.promise = Ext.create('Deft.Promise', this);
+    return this;
+  },
+  /**
+  	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Deferred} is resolved, rejected, updated or cancelled.
+  */
+  then: function(callbacks) {
+    var cancelCallback, deferred, failureCallback, progressCallback, successCallback, wrapCallback;
+    if (Ext.isObject(callbacks)) {
+      successCallback = callbacks.success, failureCallback = callbacks.failure, progressCallback = callbacks.progress, cancelCallback = callbacks.cancel;
+    } else {
+      successCallback = arguments[0], failureCallback = arguments[1], progressCallback = arguments[2], cancelCallback = arguments[3];
+    }
+    deferred = Ext.create('Deft.Deferred');
+    wrapCallback = function(callback, action) {
+      if (Ext.isFunction(callback) || callback === null || callback === void 0) {
+        return function(value) {
+          var result;
+          if (Ext.isFunction(callback)) {
+            try {
+              result = callback(value);
+              if (result === void 0) {
+                deferred[action](value);
+              } else if (result instanceof Ext.ClassManager.get('Deft.util.Promise') || result instanceof Ext.ClassManager.get('Deft.util.Deferred')) {
+                result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
+              } else {
+                deferred.resolve(result);
+              }
+            } catch (error) {
+              deferred.reject(error);
+            }
+          } else {
+            deferred[action](value);
+          }
+        };
+      } else {
+        Ext.Error.raise('Error while configuring callback: a non-function specified.');
+      }
+    };
+    this.register(wrapCallback(progressCallback, 'update'), this.progressCallbacks, 'pending', this.progress);
+    this.register(wrapCallback(successCallback, 'resolve'), this.successCallbacks, 'resolved', this.value);
+    this.register(wrapCallback(failureCallback, 'reject'), this.failureCallbacks, 'rejected', this.value);
+    this.register(wrapCallback(cancelCallback, 'cancel'), this.cancelCallbacks, 'cancelled', this.value);
+    return deferred.getPromise();
+  },
+  /**
+  	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Deferred} is either resolved, rejected, or cancelled.
+  */
+  always: function(alwaysCallback) {
+    return this.then({
+      success: alwaysCallback,
+      failure: alwaysCallback,
+      cancel: alwaysCallback
+    });
+  },
+  /**
+  	Update progress for this {@link Deft.util.Deferred} and notify relevant callbacks.
+  */
+  update: function(progress) {
+    if (this.state === 'pending') {
+      this.progress = progress;
+      this.notify(this.progressCallbacks, progress);
+    } else {
+      Ext.Error.raise('Error: this Deferred has already been completed and cannot be modified.');
+    }
+  },
+  /**
+  	Resolve this {@link Deft.util.Deferred} and notify relevant callbacks.
+  */
+  resolve: function(value) {
+    this.complete('resolved', value, this.successCallbacks);
+  },
+  /**
+  	Reject this {@link Deft.util.Deferred} and notify relevant callbacks.
+  */
+  reject: function(error) {
+    this.complete('rejected', error, this.failureCallbacks);
+  },
+  /**
+  	Cancel this {@link Deft.util.Deferred} and notify relevant callbacks.
+  */
+  cancel: function(reason) {
+    this.complete('cancelled', reason, this.cancelCallbacks);
+  },
+  /**
+  	Get this {@link Deft.util.Deferred}'s associated {@link Deft.util.Promise}.
+  */
+  getPromise: function() {
+    return this.promise;
+  },
+  /**
+  	Get this {@link Deft.util.Deferred}'s current state.
+  */
+  getState: function() {
+    return this.state;
+  },
+  /**
+  	Register a callback for this {@link Deft.util.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
+  	@private
+  */
+  register: function(callback, callbacks, state, value) {
+    if (Ext.isFunction(callback)) {
+      if (this.state === 'pending') callbacks.push(callback);
+      if (this.state === state && value !== void 0) this.notify([callback], value);
+    }
+  },
+  /**
+  	Complete this {@link Deft.util.Deferred} with the specified state and value.
+  	@private
+  */
+  complete: function(state, value, callbacks) {
+    if (this.state === 'pending') {
+      this.state = state;
+      this.value = value;
+      this.notify(callbacks, value);
+      this.releaseCallbacks();
+    } else {
+      Ext.Error.raise('Error: this Deferred has already been completed and cannot be modified.');
+    }
+  },
+  /**
+  	@private
+  	Notify the specified callbacks with the specified value.
+  */
+  notify: function(callbacks, value) {
+    var callback, _i, _len;
+    for (_i = 0, _len = callbacks.length; _i < _len; _i++) {
+      callback = callbacks[_i];
+      callback(value);
+    }
+  },
+  /**
+  	@private
+  	Release references to all callbacks registered with this {@link Deft.util.Deferred}.
+  */
+  releaseCallbacks: function() {
+    this.progressCallbacks = null;
+    this.successCallbacks = null;
+    this.failureCallbacks = null;
+    this.cancelCallbacks = null;
+  }
+});
+
+Ext.define('Deft.util.Promise', {
+  alternateClassName: ['Deft.Promise'],
+  statics: {
+    /**
+    		Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called:
+    		- immediately for the specified value, or
+    		- when the specified {@link Deft.util.Deferred} or {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
+    */
+    when: function(promiseOrValue, callbacks) {
+      var deferred;
+      if (promiseOrValue instanceof Ext.ClassManager.get('Deft.util.Promise') || promiseOrValue instanceof Ext.ClassManager.get('Deft.util.Deferred')) {
+        return promiseOrValue.then(callbacks);
+      } else {
+        deferred = Ext.create('Deft.util.Deferred');
+        deferred.resolve(promiseOrValue);
+        return deferred.then(callbacks);
+      }
+    },
+    /**
+    		Returns a new {@link Deft.util.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
+    		The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
+    */
+    all: function(promisesOrValues, callbacks) {
+      var promise, results;
+      results = new Array(promisesOrValues.length);
+      promise = this.reduce(promisesOrValues, this.reduceIntoArray, results);
+      return this.when(promise, callbacks);
+    },
+    /**
+    		Returns a new {@link Deft.util.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
+    		The resolution value will be the resolution value of the triggering `promiseOrValue`.
+    */
+    any: function(promisesOrValues, callbacks) {
+      var complete, deferred, index, progressFunction, promiseOrValue, rejectFunction, rejecter, resolveFunction, resolver, updater, _len;
+      deferred = Ext.create('Deft.util.Deferred');
+      updater = function(progress) {
+        deferred.update(progress);
+      };
+      resolver = function(value) {
+        complete();
+        deferred.resolve(value);
+      };
+      rejecter = function(error) {
+        complete();
+        deferred.reject(error);
+      };
+      complete = function() {
+        return updater = resolver = rejecter = function() {};
+      };
+      resolveFunction = function(value) {
+        return resolver(value);
+      };
+      rejectFunction = function(value) {
+        return rejector(value);
+      };
+      progressFunction = function(value) {
+        return updater(value);
+      };
+      for (index = 0, _len = promisesOrValues.length; index < _len; index++) {
+        promiseOrValue = promisesOrValues[index];
+        if (index in promisesOrValues) {
+          this.when(promiseOrValue, resolveFunction, rejectFunction, progressFunction);
+        }
+      }
+      return deferred.then(callbacks);
+    },
+    /**
+    		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
+    		The specified map function may return either a value or a promise.
+    */
+    map: function(promisesOrValues, mapFunction) {
+      var index, promiseOrValue, results, _len;
+      results = new Array(promisesOrValues.length);
+      for (index = 0, _len = promisesOrValues.length; index < _len; index++) {
+        promiseOrValue = promisesOrValues[index];
+        if (index in promisesOrValues) {
+          results[index] = this.when(promiseOrValue, mapFunction);
+        }
+      }
+      return this.reduce(results, this.reduceIntoArray, results);
+    },
+    /**
+    		Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
+    */
+    reduce: function(promisesOrValues, reduceFunction, initialValue) {
+      var reduceArguments, whenResolved;
+      whenResolved = this.when;
+      reduceArguments = [
+        function(previousValueOrPromise, currentValueOrPromise, currentIndex) {
+          return whenResolved(previousValueOrPromise, function(previousValue) {
+            return whenResolved(currentValueOrPromise, function(currentValue) {
+              return reduceFunction(previousValue, currentValue, currentIndex, promisesOrValues);
+            });
+          });
+        }
+      ];
+      if (arguments.length === 3) reduceArguments.push(initialValue);
+      return this.when(this.reduceArray.apply(promisesOrValues, reduceArguments));
+    },
+    /**
+    		Internal reduce implementation - includes fallback when Array.reduce is not available.
+    		@private
+    */
+    reduceArray: function(reduceFunction, initialValue) {
+      var args, array, index, length, reduced;
+      index = 0;
+      array = Object(this);
+      length = array.length >>> 0;
+      args = arguments;
+      if (args.length <= 1) {
+        while (true) {
+          if (index in array) {
+            reduced = array[index++];
+            break;
+          }
+          if (++index >= length) throw new TypeError();
+        }
+      } else {
+        reduced = args[1];
+      }
+      while (index < length) {
+        if (index in array) {
+          reduced = reduceFunction(reduced, array[index], index, array);
+        }
+        index++;
+      }
+      return reduced;
+    },
+    /**
+    		@private
+    */
+    reduceIntoArray: function(previousValue, currentValue, currentIndex) {
+      previousValue[currentIndex] = currentValue;
+      return previousValue;
+    }
+  },
+  constructor: function(deferred) {
+    this.deferred = deferred;
+    return this;
+  },
+  /**
+  	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
+  */
+  then: function(callbacks) {
+    return this.deferred.then.apply(this.deferred, arguments);
+  },
+  /**
+  	Returns a new {@link Deft.util.Promise} with the specified callback registered to be called when this {@link Deft.util.Promise} is resolved, rejected or cancelled.
+  */
+  always: function(callback) {
+    return this.deferred.always(callback);
+  },
+  /**
+  	Cancel this {@link Deft.util.Promise} and notify relevant callbacks.
+  */
+  cancel: function(reason) {
+    return this.deferred.cancel(reason);
+  },
+  /**
+  	Get this {@link Deft.util.Promise}'s current state.
+  */
+  getState: function() {
+    return this.deferred.getState();
+  }
+}, function() {
+  if (Array.prototype.reduce != null) this.reduceArray = Array.prototype.reduce;
+});
