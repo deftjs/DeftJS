@@ -29,33 +29,47 @@ Ext.define( 'Deft.util.Deferred',
 		else
 			[ successCallback, failureCallback, progressCallback, cancelCallback ] = arguments
 		
+		for callback in [ successCallback, failureCallback, progressCallback, cancelCallback ]
+			if not ( Ext.isFunction( callback ) or callback is null or callback is undefined )
+				Ext.Error.raise( 'Error while configuring callback: a non-function specified.' )
+		
 		deferred = Ext.create( 'Deft.Deferred' )
 		
 		wrapCallback = ( callback, action ) ->
-			if Ext.isFunction( callback ) or callback is null or callback is undefined
-				return ( value ) ->
-					if Ext.isFunction( callback )
-						try
-							result = callback( value )
-							if result is undefined
-								deferred[ action ]( value )
-							else if result instanceof Ext.ClassManager.get( 'Deft.util.Promise' ) or result instanceof Ext.ClassManager.get( 'Deft.util.Deferred' )
-								result.then( Ext.bind( deferred.resolve, deferred ), Ext.bind( deferred.reject, deferred ), Ext.bind( deferred.update, deferred ), Ext.bind( deferred.cancel, deferred ) )
-							else
-								deferred.resolve( result )
-						catch error
-							deferred.reject( error )
-					else
-						deferred[ action ]( value )
-					return
-			else
-				Ext.Error.raise( 'Error while configuring callback: a non-function specified.' )
-			return
+			return ( value ) ->
+				if Ext.isFunction( callback )
+					try
+						result = callback( value )
+						if result is undefined
+							deferred[ action ]( value )
+						else if result instanceof Ext.ClassManager.get( 'Deft.util.Promise' ) or result instanceof Ext.ClassManager.get( 'Deft.util.Deferred' )
+							result.then( Ext.bind( deferred.resolve, deferred ), Ext.bind( deferred.reject, deferred ), Ext.bind( deferred.update, deferred ), Ext.bind( deferred.cancel, deferred ) )
+						else
+							deferred.resolve( result )
+					catch error
+						deferred.reject( error )
+				else
+					deferred[ action ]( value )
+				return
 		
-		@register( wrapCallback( progressCallback, 'update'  ), @progressCallbacks, 'pending',   @progress )
-		@register( wrapCallback( successCallback,  'resolve' ), @successCallbacks,  'resolved',  @value    )
-		@register( wrapCallback( failureCallback,  'reject'  ), @failureCallbacks,  'rejected',  @value    )
-		@register( wrapCallback( cancelCallback,   'cancel'  ), @cancelCallbacks,   'cancelled', @value    )
+		
+		@register( wrapCallback( successCallback, 'resolve' ), @successCallbacks, 'resolved',  @value )
+		@register( wrapCallback( failureCallback, 'reject'  ), @failureCallbacks, 'rejected',  @value )
+		@register( wrapCallback( cancelCallback,  'cancel'  ), @cancelCallbacks,  'cancelled', @value )
+		
+		wrapProgressCallback = ( callback ) ->
+			return ( value ) ->
+				if Ext.isFunction( callback )
+					result = callback( value )
+					if result is undefined
+						deferred.update( value )
+					else
+						deferred.update( result )
+				else
+					deferred.update( value )
+				return
+		
+		@register( wrapProgressCallback( progressCallback ), @progressCallbacks, 'pending', @progress )
 		
 		return deferred.getPromise()
 	

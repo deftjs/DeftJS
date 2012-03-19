@@ -19,42 +19,60 @@ Ext.define('Deft.util.Deferred', {
   	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Deferred} is resolved, rejected, updated or cancelled.
   */
   then: function(callbacks) {
-    var cancelCallback, deferred, failureCallback, progressCallback, successCallback, wrapCallback;
+    var callback, cancelCallback, deferred, failureCallback, progressCallback, successCallback, wrapCallback, wrapProgressCallback, _i, _len, _ref;
     if (Ext.isObject(callbacks)) {
       successCallback = callbacks.success, failureCallback = callbacks.failure, progressCallback = callbacks.progress, cancelCallback = callbacks.cancel;
     } else {
       successCallback = arguments[0], failureCallback = arguments[1], progressCallback = arguments[2], cancelCallback = arguments[3];
     }
-    deferred = Ext.create('Deft.Deferred');
-    wrapCallback = function(callback, action) {
-      if (Ext.isFunction(callback) || callback === null || callback === void 0) {
-        return function(value) {
-          var result;
-          if (Ext.isFunction(callback)) {
-            try {
-              result = callback(value);
-              if (result === void 0) {
-                deferred[action](value);
-              } else if (result instanceof Ext.ClassManager.get('Deft.util.Promise') || result instanceof Ext.ClassManager.get('Deft.util.Deferred')) {
-                result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
-              } else {
-                deferred.resolve(result);
-              }
-            } catch (error) {
-              deferred.reject(error);
-            }
-          } else {
-            deferred[action](value);
-          }
-        };
-      } else {
+    _ref = [successCallback, failureCallback, progressCallback, cancelCallback];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      callback = _ref[_i];
+      if (!(Ext.isFunction(callback) || callback === null || callback === void 0)) {
         Ext.Error.raise('Error while configuring callback: a non-function specified.');
       }
+    }
+    deferred = Ext.create('Deft.Deferred');
+    wrapCallback = function(callback, action) {
+      return function(value) {
+        var result;
+        if (Ext.isFunction(callback)) {
+          try {
+            result = callback(value);
+            if (result === void 0) {
+              deferred[action](value);
+            } else if (result instanceof Ext.ClassManager.get('Deft.util.Promise') || result instanceof Ext.ClassManager.get('Deft.util.Deferred')) {
+              result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
+            } else {
+              deferred.resolve(result);
+            }
+          } catch (error) {
+            deferred.reject(error);
+          }
+        } else {
+          deferred[action](value);
+        }
+      };
     };
-    this.register(wrapCallback(progressCallback, 'update'), this.progressCallbacks, 'pending', this.progress);
     this.register(wrapCallback(successCallback, 'resolve'), this.successCallbacks, 'resolved', this.value);
     this.register(wrapCallback(failureCallback, 'reject'), this.failureCallbacks, 'rejected', this.value);
     this.register(wrapCallback(cancelCallback, 'cancel'), this.cancelCallbacks, 'cancelled', this.value);
+    wrapProgressCallback = function(callback) {
+      return function(value) {
+        var result;
+        if (Ext.isFunction(callback)) {
+          result = callback(value);
+          if (result === void 0) {
+            deferred.update(value);
+          } else {
+            deferred.update(result);
+          }
+        } else {
+          deferred.update(value);
+        }
+      };
+    };
+    this.register(wrapProgressCallback(progressCallback), this.progressCallbacks, 'pending', this.progress);
     return deferred.getPromise();
   },
   /**
