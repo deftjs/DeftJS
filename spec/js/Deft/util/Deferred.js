@@ -565,7 +565,68 @@ describe('Deft.util.Deferred', function() {
       expect(promise).not.toBe(deferred.promise);
     });
   });
-  return describe('Propagation of return value for callback registered with the new Promise returned by always()', function() {
+  describe('Return value propagation for callback registered with the new Promise returned by then()', function() {
+    var cancelCallback, deferred, failureCallback, progressCallback, successCallback;
+    deferred = null;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    beforeEach(function() {
+      deferred = Ext.create('Deft.util.Deferred');
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+    it('should update with the value and not complete that new Promise when the Deferred is updated and the callback returns a value', function() {
+      var promise;
+      promise = deferred.then({
+        progress: function(value) {
+          return "processed " + value;
+        }
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.update('progress');
+      expect(promise.getState()).toBe('pending');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).toHaveBeenCalledWith('processed progress');
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should update with the value and not complete that new Promise when the Deferred is updated and the callback returns a Deferred', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.then({
+        progress: function(value) {
+          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          return deferredReturnValue;
+        }
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.update('progress');
+      expect(promise.getState()).toBe('pending');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).toHaveBeenCalledWith(deferredReturnValue);
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    return it('should update with the value and not complete that new Promise when the Deferred is updated and the callback returns a Promise', function() {
+      var promise, promiseReturnValue;
+      promiseReturnValue = null;
+      promise = deferred.then({
+        progress: function(value) {
+          promiseReturnValue = Ext.create('Deft.util.Deferred').promise;
+          return promiseReturnValue;
+        }
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.update('progress');
+      expect(promise.getState()).toBe('pending');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).toHaveBeenCalledWith(promiseReturnValue);
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+  });
+  return describe('Return value propagation for callback registered with the new Promise returned by always()', function() {
     var cancelCallback, deferred, failureCallback, progressCallback, successCallback;
     deferred = null;
     successCallback = failureCallback = progressCallback = cancelCallback = null;
@@ -643,7 +704,7 @@ describe('Deft.util.Deferred', function() {
       expect(progressCallback).not.toHaveBeenCalled();
       return expect(cancelCallback).not.toHaveBeenCalled();
     });
-    return it('should reject that new Promise when the Deferred is cancelled and the callback throws an error', function() {
+    it('should reject that new Promise when the Deferred is cancelled and the callback throws an error', function() {
       var error, promise;
       error = new Error('error message');
       promise = deferred.always(function(value) {
@@ -656,6 +717,582 @@ describe('Deft.util.Deferred', function() {
       expect(failureCallback).toHaveBeenCalledWith(error);
       expect(progressCallback).not.toHaveBeenCalled();
       return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should resolve that new Promise when the Deferred is resolved and the callback returns a resolved Deferred', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.resolve("resolved " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved value');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is resolved and the callback returns a rejected Deferred', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.reject("rejected " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected value');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is resolved and the callback returns a cancelled Deferred', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.cancel("cancelled " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled value');
+    });
+    it('should resolve that new Promise when the Deferred is rejected and the callback returns a resolved Deferred', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.resolve("resolved " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved error message');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is rejected and the callback returns a rejected Deferred', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.reject("rejected " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected error message');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is rejected and the callback returns a cancelled Deferred', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.cancel("cancelled " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled error message');
+    });
+    it('should resolve that new Promise when the Deferred is cancelled and the callback returns a resolved Deferred', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.resolve("resolved " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved reason');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is cancelled and the callback returns a rejected Deferred', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.reject("rejected " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected reason');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is cancelled and the callback returns a cancelled Deferred', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.cancel("cancelled " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled reason');
+    });
+    it('should resolve that new Promise when the Deferred is resolved and the callback returns a Deferred that is later resolved', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.resolve("resolved " + value);
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved value');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is resolved and the callback returns a Deferred that is later rejected', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      deferredReturnValue.reject("rejected value");
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected value');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is resolved and the callback returns a Deferred that is later cancelled', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      deferredReturnValue.cancel("cancelled value");
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled value');
+    });
+    it('should resolve that new Promise when the Deferred is rejected and the callback returns a Deferred that is later resolved', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      deferredReturnValue.resolve("resolved error message");
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved error message');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is rejected and the callback returns a Deferred that is later rejected', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      deferredReturnValue.reject("rejected error message");
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected error message');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is rejected and the callback returns a Deferred that is later cancelled', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      deferredReturnValue.cancel("cancelled error message");
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled error message');
+    });
+    it('should resolve that new Promise when the Deferred is cancelled and the callback returns a Deferred that is later resolved', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      deferredReturnValue.resolve("resolved reason");
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved reason');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is cancelled and the callback returns a Deferred that is later rejected', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      deferredReturnValue.reject("rejected reason");
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected reason');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is cancelled and the callback returns a Deferred that is later cancelled', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      deferredReturnValue.cancel("cancelled reason");
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled reason');
+    });
+    it('should resolve that new Promise when the Deferred is resolved and the callback returns a resolved Promise', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.resolve("resolved " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved value');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is resolved and the callback returns a rejected Promise', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.reject("rejected " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected value');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is resolved and the callback returns a cancelled Promise', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.cancel("cancelled " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled value');
+    });
+    it('should resolve that new Promise when the Deferred is rejected and the callback returns a resolved Promise', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.resolve("resolved " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved error message');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is rejected and the callback returns a rejected Promise', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.reject("rejected " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected error message');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is rejected and the callback returns a cancelled Promise', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.cancel("cancelled " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled error message');
+    });
+    it('should resolve that new Promise when the Deferred is cancelled and the callback returns a resolved Promise', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.resolve("resolved " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved reason');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is cancelled and the callback returns a rejected Promise', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.reject("rejected " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected reason');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is cancelled and the callback returns a cancelled Promise', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.cancel("cancelled " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled reason');
+    });
+    it('should resolve that new Promise when the Deferred is resolved and the callback returns a Promise that is later resolved', function() {
+      var promise;
+      promise = deferred.always(function(value) {
+        var deferredReturnValue;
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue.resolve("resolved " + value);
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved value');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is resolved and the callback returns a Promise that is later rejected', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      deferredReturnValue.reject("rejected value");
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected value');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is resolved and the callback returns a Promise that is later cancelled', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.resolve('value');
+      deferredReturnValue.cancel("cancelled value");
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled value');
+    });
+    it('should resolve that new Promise when the Deferred is rejected and the callback returns a Promise that is later resolved', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      deferredReturnValue.resolve("resolved error message");
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved error message');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is rejected and the callback returns a Promise that is later rejected', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      deferredReturnValue.reject("rejected error message");
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected error message');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should cancel that new Promise when the Deferred is rejected and the callback returns a Promise that is later cancelled', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.reject('error message');
+      deferredReturnValue.cancel("cancelled error message");
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled error message');
+    });
+    it('should resolve that new Promise when the Deferred is cancelled and the callback returns a Promise that is later resolved', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      deferredReturnValue.resolve("resolved reason");
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('resolved reason');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    it('should reject that new Promise when the Deferred is cancelled and the callback returns a Promise that is later rejected', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      deferredReturnValue.reject("rejected reason");
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('rejected reason');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    return it('should cancel that new Promise when the Deferred is cancelled and the callback returns a Promise that is later cancelled', function() {
+      var deferredReturnValue, promise;
+      deferredReturnValue = null;
+      promise = deferred.always(function(value) {
+        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        return deferredReturnValue.promise;
+      });
+      promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
+      deferred.cancel('reason');
+      deferredReturnValue.cancel("cancelled reason");
+      expect(promise.getState()).toBe('cancelled');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).toHaveBeenCalledWith('cancelled reason');
     });
   });
 });
