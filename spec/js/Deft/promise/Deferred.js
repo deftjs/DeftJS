@@ -3,9 +3,9 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 /*
-Jasmine test suite for Deft.util.Deferred
+Jasmine test suite for Deft.promise.Deferred
 */
-describe('Deft.util.Deferred', function() {
+describe('Deft.promise.Deferred', function() {
   beforeEach(function() {
     this.addMatchers({
       toBeInstanceOf: function(className) {
@@ -18,14 +18,14 @@ describe('Deft.util.Deferred', function() {
     deferred = null;
     successCallback = failureCallback = progressCallback = cancelCallback = null;
     beforeEach(function() {
-      deferred = Ext.create('Deft.util.Deferred');
+      deferred = Ext.create('Deft.promise.Deferred');
       successCallback = jasmine.createSpy('success callback');
       failureCallback = jasmine.createSpy('failure callback');
       progressCallback = jasmine.createSpy('progress callback');
       cancelCallback = jasmine.createSpy('cancel callback');
     });
     it('should allow access to the associated Promise', function() {
-      expect(deferred.getPromise()).toBeInstanceOf('Deft.util.Promise');
+      expect(deferred.getPromise()).toBeInstanceOf('Deft.promise.Promise');
     });
     it('should resolve', function() {
       deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -253,7 +253,7 @@ describe('Deft.util.Deferred', function() {
       successCallback = failureCallback = progressCallback = cancelCallback = null;
       beforeEach(function() {
         var _ref;
-        deferred = Ext.create('Deft.util.Deferred');
+        deferred = Ext.create('Deft.promise.Deferred');
         _ref = callbacksFactoryFunction(), successCallback = _ref.success, failureCallback = _ref.failure, progressCallback = _ref.progress, cancelCallback = _ref.cancel;
       });
       it('should call success callback (if specified) when resolved', function() {
@@ -382,7 +382,7 @@ describe('Deft.util.Deferred', function() {
       it('should return a new Promise', function() {
         var result;
         result = thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
-        expect(result).toBeInstanceOf('Deft.util.Promise');
+        expect(result).toBeInstanceOf('Deft.promise.Promise');
         expect(result).not.toBe(deferred.promise);
       });
     };
@@ -488,7 +488,7 @@ describe('Deft.util.Deferred', function() {
     deferred = null;
     alwaysCallback = null;
     beforeEach(function() {
-      deferred = Ext.create('Deft.util.Deferred');
+      deferred = Ext.create('Deft.promise.Deferred');
       alwaysCallback = jasmine.createSpy('always callback');
     });
     it('should call always callback when resolved', function() {
@@ -549,19 +549,19 @@ describe('Deft.util.Deferred', function() {
     it('should return a new Promise', function() {
       var promise;
       promise = deferred.always(alwaysCallback);
-      expect(promise).toBeInstanceOf('Deft.util.Promise');
+      expect(promise).toBeInstanceOf('Deft.promise.Promise');
       expect(promise).not.toBe(deferred.promise);
     });
     it('should return a new Promise when a null callback is specified', function() {
       var promise;
       promise = deferred.always(null);
-      expect(promise).toBeInstanceOf('Deft.util.Promise');
+      expect(promise).toBeInstanceOf('Deft.promise.Promise');
       expect(promise).not.toBe(deferred.promise);
     });
     return it('should return a new Promise when an undefined callback is specified', function() {
       var promise;
       promise = deferred.always(void 0);
-      expect(promise).toBeInstanceOf('Deft.util.Promise');
+      expect(promise).toBeInstanceOf('Deft.promise.Promise');
       expect(promise).not.toBe(deferred.promise);
     });
   });
@@ -570,7 +570,7 @@ describe('Deft.util.Deferred', function() {
     deferred = null;
     successCallback = failureCallback = progressCallback = cancelCallback = null;
     beforeEach(function() {
-      deferred = Ext.create('Deft.util.Deferred');
+      deferred = Ext.create('Deft.promise.Deferred');
       successCallback = jasmine.createSpy('success callback');
       failureCallback = jasmine.createSpy('failure callback');
       progressCallback = jasmine.createSpy('progress callback');
@@ -674,7 +674,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         success: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.resolve("resolved " + value);
           return deferredReturnValue;
         }
@@ -692,7 +692,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         success: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.reject("rejected " + value);
           return deferredReturnValue;
         }
@@ -710,7 +710,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         success: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.cancel("cancelled " + value);
           return deferredReturnValue;
         }
@@ -728,7 +728,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         failure: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.resolve("resolved " + value);
           return deferredReturnValue;
         }
@@ -746,7 +746,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         failure: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.reject("rejected " + value);
           return deferredReturnValue;
         }
@@ -764,7 +764,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         failure: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.cancel("cancelled " + value);
           return deferredReturnValue;
         }
@@ -782,7 +782,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         cancel: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.resolve("resolved " + value);
           return deferredReturnValue;
         }
@@ -800,7 +800,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         cancel: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.reject("rejected " + value);
           return deferredReturnValue;
         }
@@ -818,7 +818,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         cancel: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.cancel("cancelled " + value);
           return deferredReturnValue;
         }
@@ -836,7 +836,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         success: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.resolve("resolved " + value);
           return deferredReturnValue;
         }
@@ -854,7 +854,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         success: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue;
         }
       });
@@ -872,7 +872,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         success: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue;
         }
       });
@@ -890,7 +890,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         failure: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue;
         }
       });
@@ -908,7 +908,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         failure: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue;
         }
       });
@@ -926,7 +926,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         failure: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue;
         }
       });
@@ -944,7 +944,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         cancel: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue;
         }
       });
@@ -962,7 +962,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         cancel: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue;
         }
       });
@@ -980,7 +980,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         cancel: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue;
         }
       });
@@ -998,7 +998,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         success: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.resolve("resolved " + value);
           return deferredReturnValue.promise;
         }
@@ -1016,7 +1016,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         success: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.reject("rejected " + value);
           return deferredReturnValue.promise;
         }
@@ -1034,7 +1034,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         success: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.cancel("cancelled " + value);
           return deferredReturnValue.promise;
         }
@@ -1052,7 +1052,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         failure: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.resolve("resolved " + value);
           return deferredReturnValue.promise;
         }
@@ -1070,7 +1070,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         failure: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.reject("rejected " + value);
           return deferredReturnValue.promise;
         }
@@ -1088,7 +1088,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         failure: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.cancel("cancelled " + value);
           return deferredReturnValue.promise;
         }
@@ -1106,7 +1106,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         cancel: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.resolve("resolved " + value);
           return deferredReturnValue.promise;
         }
@@ -1124,7 +1124,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         cancel: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.reject("rejected " + value);
           return deferredReturnValue.promise;
         }
@@ -1142,7 +1142,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         cancel: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.cancel("cancelled " + value);
           return deferredReturnValue.promise;
         }
@@ -1160,7 +1160,7 @@ describe('Deft.util.Deferred', function() {
       promise = deferred.then({
         success: function(value) {
           var deferredReturnValue;
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           deferredReturnValue.resolve("resolved " + value);
           return deferredReturnValue.promise;
         }
@@ -1178,7 +1178,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         success: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue.promise;
         }
       });
@@ -1196,7 +1196,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         success: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue.promise;
         }
       });
@@ -1214,7 +1214,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         failure: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue.promise;
         }
       });
@@ -1232,7 +1232,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         failure: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue.promise;
         }
       });
@@ -1250,7 +1250,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         failure: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue.promise;
         }
       });
@@ -1268,7 +1268,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         cancel: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue.promise;
         }
       });
@@ -1286,7 +1286,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         cancel: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue.promise;
         }
       });
@@ -1304,7 +1304,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         cancel: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue.promise;
         }
       });
@@ -1337,7 +1337,7 @@ describe('Deft.util.Deferred', function() {
       deferredReturnValue = null;
       promise = deferred.then({
         progress: function(value) {
-          deferredReturnValue = Ext.create('Deft.util.Deferred');
+          deferredReturnValue = Ext.create('Deft.promise.Deferred');
           return deferredReturnValue;
         }
       });
@@ -1354,7 +1354,7 @@ describe('Deft.util.Deferred', function() {
       promiseReturnValue = null;
       promise = deferred.then({
         progress: function(value) {
-          promiseReturnValue = Ext.create('Deft.util.Deferred').promise;
+          promiseReturnValue = Ext.create('Deft.promise.Deferred').promise;
           return promiseReturnValue;
         }
       });
@@ -1372,7 +1372,7 @@ describe('Deft.util.Deferred', function() {
     deferred = null;
     successCallback = failureCallback = progressCallback = cancelCallback = null;
     beforeEach(function() {
-      deferred = Ext.create('Deft.util.Deferred');
+      deferred = Ext.create('Deft.promise.Deferred');
       successCallback = jasmine.createSpy('success callback');
       failureCallback = jasmine.createSpy('failure callback');
       progressCallback = jasmine.createSpy('progress callback');
@@ -1463,7 +1463,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.resolve("resolved " + value);
         return deferredReturnValue;
       });
@@ -1479,7 +1479,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.reject("rejected " + value);
         return deferredReturnValue;
       });
@@ -1495,7 +1495,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.cancel("cancelled " + value);
         return deferredReturnValue;
       });
@@ -1511,7 +1511,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.resolve("resolved " + value);
         return deferredReturnValue;
       });
@@ -1527,7 +1527,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.reject("rejected " + value);
         return deferredReturnValue;
       });
@@ -1543,7 +1543,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.cancel("cancelled " + value);
         return deferredReturnValue;
       });
@@ -1559,7 +1559,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.resolve("resolved " + value);
         return deferredReturnValue;
       });
@@ -1575,7 +1575,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.reject("rejected " + value);
         return deferredReturnValue;
       });
@@ -1591,7 +1591,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.cancel("cancelled " + value);
         return deferredReturnValue;
       });
@@ -1607,7 +1607,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.resolve("resolved " + value);
         return deferredReturnValue;
       });
@@ -1623,7 +1623,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1639,7 +1639,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1655,7 +1655,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1671,7 +1671,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1687,7 +1687,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1703,7 +1703,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1719,7 +1719,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1735,7 +1735,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1751,7 +1751,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.resolve("resolved " + value);
         return deferredReturnValue.promise;
       });
@@ -1767,7 +1767,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.reject("rejected " + value);
         return deferredReturnValue.promise;
       });
@@ -1783,7 +1783,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.cancel("cancelled " + value);
         return deferredReturnValue.promise;
       });
@@ -1799,7 +1799,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.resolve("resolved " + value);
         return deferredReturnValue.promise;
       });
@@ -1815,7 +1815,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.reject("rejected " + value);
         return deferredReturnValue.promise;
       });
@@ -1831,7 +1831,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.cancel("cancelled " + value);
         return deferredReturnValue.promise;
       });
@@ -1847,7 +1847,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.resolve("resolved " + value);
         return deferredReturnValue.promise;
       });
@@ -1863,7 +1863,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.reject("rejected " + value);
         return deferredReturnValue.promise;
       });
@@ -1879,7 +1879,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.cancel("cancelled " + value);
         return deferredReturnValue.promise;
       });
@@ -1895,7 +1895,7 @@ describe('Deft.util.Deferred', function() {
       var promise;
       promise = deferred.always(function(value) {
         var deferredReturnValue;
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         deferredReturnValue.resolve("resolved " + value);
         return deferredReturnValue.promise;
       });
@@ -1911,7 +1911,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue.promise;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1927,7 +1927,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue.promise;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1943,7 +1943,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue.promise;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1959,7 +1959,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue.promise;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1975,7 +1975,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue.promise;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -1991,7 +1991,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue.promise;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -2007,7 +2007,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue.promise;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);
@@ -2023,7 +2023,7 @@ describe('Deft.util.Deferred', function() {
       var deferredReturnValue, promise;
       deferredReturnValue = null;
       promise = deferred.always(function(value) {
-        deferredReturnValue = Ext.create('Deft.util.Deferred');
+        deferredReturnValue = Ext.create('Deft.promise.Deferred');
         return deferredReturnValue.promise;
       });
       promise.then(successCallback, failureCallback, progressCallback, cancelCallback);

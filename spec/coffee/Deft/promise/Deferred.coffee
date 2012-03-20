@@ -4,9 +4,9 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
 ###
-Jasmine test suite for Deft.util.Deferred
+Jasmine test suite for Deft.promise.Deferred
 ###
-describe( 'Deft.util.Deferred', ->
+describe( 'Deft.promise.Deferred', ->
 	
 	beforeEach( ->
 		@addMatchers(
@@ -23,7 +23,7 @@ describe( 'Deft.util.Deferred', ->
 		successCallback = failureCallback = progressCallback = cancelCallback = null
 		
 		beforeEach( ->
-			deferred = Ext.create( 'Deft.util.Deferred' )
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			
 			successCallback  = jasmine.createSpy( 'success callback' )
 			failureCallback  = jasmine.createSpy( 'failure callback' )
@@ -34,7 +34,7 @@ describe( 'Deft.util.Deferred', ->
 		)
 		
 		it( 'should allow access to the associated Promise', ->
-			expect( deferred.getPromise() ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( deferred.getPromise() ).toBeInstanceOf( 'Deft.promise.Promise' )
 			
 			return
 		)
@@ -411,7 +411,7 @@ describe( 'Deft.util.Deferred', ->
 			successCallback = failureCallback = progressCallback = cancelCallback = null
 			
 			beforeEach( ->
-				deferred = Ext.create( 'Deft.util.Deferred' )
+				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
 				{ success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback } = callbacksFactoryFunction()
 				
@@ -540,7 +540,7 @@ describe( 'Deft.util.Deferred', ->
 			it( 'should return a new Promise', ->
 				result = thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
 				
-				expect( result ).toBeInstanceOf( 'Deft.util.Promise' )
+				expect( result ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( result ).not.toBe( deferred.promise )
 				
 				return
@@ -666,7 +666,7 @@ describe( 'Deft.util.Deferred', ->
 		alwaysCallback = null
 		
 		beforeEach( ->
-			deferred = Ext.create( 'Deft.util.Deferred' )
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			
 			alwaysCallback = jasmine.createSpy( 'always callback' )
 			
@@ -783,7 +783,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should return a new Promise', ->
 			promise = deferred.always( alwaysCallback )
 			
-			expect( promise ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 			expect( promise ).not.toBe( deferred.promise )
 			
 			return
@@ -792,7 +792,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should return a new Promise when a null callback is specified', ->
 			promise = deferred.always( null )
 			
-			expect( promise ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 			expect( promise ).not.toBe( deferred.promise )
 			
 			return
@@ -801,7 +801,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should return a new Promise when an undefined callback is specified', ->
 			promise = deferred.always( undefined )
 			
-			expect( promise ).toBeInstanceOf( 'Deft.util.Promise' )
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 			expect( promise ).not.toBe( deferred.promise )
 			
 			return
@@ -814,7 +814,7 @@ describe( 'Deft.util.Deferred', ->
 		successCallback = failureCallback = progressCallback = cancelCallback = null
 		
 		beforeEach( ->
-			deferred = Ext.create( 'Deft.util.Deferred' )
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			
 			successCallback  = jasmine.createSpy( 'success callback' )
 			failureCallback  = jasmine.createSpy( 'failure callback' )
@@ -943,7 +943,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is resolved and the success callback returns a resolved Deferred', ->
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue
 			)
@@ -965,7 +965,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is resolved and the success callback returns a rejected Deferred', ->
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue
 			)
@@ -987,7 +987,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is resolved and the success callback returns a cancelled Deferred', ->
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue
 			)
@@ -1009,7 +1009,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is rejected and the failure callback returns a resolved Deferred', ->
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue
 			)
@@ -1031,7 +1031,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is rejected and the failure callback returns a rejected Deferred', ->
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue
 			)
@@ -1053,7 +1053,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is rejected and the failure callback returns a cancelled Deferred', ->
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue
 			)
@@ -1075,7 +1075,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is cancelled and the cancel callback returns a resolved Deferred', ->
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue
 			)
@@ -1097,7 +1097,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is cancelled and the cancel callback returns a rejected Deferred', ->
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue
 			)
@@ -1119,7 +1119,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is cancelled and the cancel callback returns a cancelled Deferred', ->
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue
 			)
@@ -1141,7 +1141,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is resolved and the success callback returns a Deferred that is later resolved', ->
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue
 			)
@@ -1165,7 +1165,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -1190,7 +1190,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -1215,7 +1215,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -1240,7 +1240,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -1265,7 +1265,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -1290,7 +1290,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -1315,7 +1315,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -1340,7 +1340,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -1363,7 +1363,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is resolved and the success callback returns a resolved Promise', ->
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1385,7 +1385,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is resolved and the success callback returns a rejected Promise', ->
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1407,7 +1407,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is resolved and the success callback returns a cancelled Promise', ->
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1429,7 +1429,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is rejected and the failure callback returns a resolved Promise', ->
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1451,7 +1451,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is rejected and the failure callback returns a rejected Promise', ->
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1473,7 +1473,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is rejected and the failure callback returns a cancelled Promise', ->
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1495,7 +1495,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is cancelled and the cancel callback returns a resolved Promise', ->
 			promise = deferred.then(
 				cancel:  ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1517,7 +1517,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is cancelled and the cancel callback returns a rejected Promise', ->
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1539,7 +1539,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is cancelled and the cancel callback returns a cancelled Promise', ->
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1561,7 +1561,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is resolved and the success callback returns a Promise that is later resolved', ->
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -1585,7 +1585,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -1610,7 +1610,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				success: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -1635,7 +1635,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -1660,7 +1660,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -1685,7 +1685,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				failure: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -1710,7 +1710,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -1735,7 +1735,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -1760,7 +1760,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.then(
 				cancel: ( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -1805,7 +1805,7 @@ describe( 'Deft.util.Deferred', ->
 			promise = deferred.then( 
 				progress:
 					( value ) ->
-						deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+						deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 						return deferredReturnValue
 			)
 			
@@ -1829,7 +1829,7 @@ describe( 'Deft.util.Deferred', ->
 			promise = deferred.then( 
 				progress:
 					( value ) ->
-						promiseReturnValue = Ext.create( 'Deft.util.Deferred' ).promise
+						promiseReturnValue = Ext.create( 'Deft.promise.Deferred' ).promise
 						return promiseReturnValue
 			)
 			
@@ -1854,7 +1854,7 @@ describe( 'Deft.util.Deferred', ->
 		successCallback = failureCallback = progressCallback = cancelCallback = null
 		
 		beforeEach( ->
-			deferred = Ext.create( 'Deft.util.Deferred' )
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			
 			successCallback  = jasmine.createSpy( 'success callback' )
 			failureCallback  = jasmine.createSpy( 'failure callback' )
@@ -1971,7 +1971,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a resolved Deferred', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue
 			)
@@ -1993,7 +1993,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is resolved and the callback returns a rejected Deferred', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue
 			)
@@ -2015,7 +2015,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is resolved and the callback returns a cancelled Deferred', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue
 			)
@@ -2037,7 +2037,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is rejected and the callback returns a resolved Deferred', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue
 			)
@@ -2059,7 +2059,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is rejected and the callback returns a rejected Deferred', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue
 			)
@@ -2081,7 +2081,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is rejected and the callback returns a cancelled Deferred', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue
 			)
@@ -2103,7 +2103,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is cancelled and the callback returns a resolved Deferred', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue
 			)
@@ -2125,7 +2125,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is cancelled and the callback returns a rejected Deferred', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue
 			)
@@ -2147,7 +2147,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is cancelled and the callback returns a cancelled Deferred', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue
 			)
@@ -2169,7 +2169,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a Deferred that is later resolved', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue
 			)
@@ -2193,7 +2193,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -2218,7 +2218,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -2243,7 +2243,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -2268,7 +2268,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -2293,7 +2293,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -2318,7 +2318,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -2343,7 +2343,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -2368,7 +2368,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue
 			)
 			
@@ -2391,7 +2391,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a resolved Promise', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2413,7 +2413,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is resolved and the callback returns a rejected Promise', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2435,7 +2435,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is resolved and the callback returns a cancelled Promise', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2457,7 +2457,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is rejected and the callback returns a resolved Promise', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2479,7 +2479,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is rejected and the callback returns a rejected Promise', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2501,7 +2501,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is rejected and the callback returns a cancelled Promise', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2523,7 +2523,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is cancelled and the callback returns a resolved Promise', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2545,7 +2545,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should reject that new Promise when the Deferred is cancelled and the callback returns a rejected Promise', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.reject( "rejected #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2567,7 +2567,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should cancel that new Promise when the Deferred is cancelled and the callback returns a cancelled Promise', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.cancel( "cancelled #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2589,7 +2589,7 @@ describe( 'Deft.util.Deferred', ->
 		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a Promise that is later resolved', ->
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					deferredReturnValue.resolve( "resolved #{ value }" )
 					return deferredReturnValue.promise
 			)
@@ -2613,7 +2613,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -2638,7 +2638,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -2663,7 +2663,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -2688,7 +2688,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -2713,7 +2713,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -2738,7 +2738,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -2763,7 +2763,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
@@ -2788,7 +2788,7 @@ describe( 'Deft.util.Deferred', ->
 			
 			promise = deferred.always( 
 				( value ) ->
-					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue = Ext.create( 'Deft.promise.Deferred' )
 					return deferredReturnValue.promise
 			)
 			
