@@ -824,6 +824,962 @@ describe( 'Deft.util.Deferred', ->
 			return
 		)
 		
+		it( 'should resolve that new Promise when the Deferred is resolved and the success callback returns a value', ->
+			promise = deferred.then(
+				success: ( value ) -> "processed #{ value }"
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'processed value' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+	
+		it( 'should reject that new Promise when the Deferred is resolved and the success callback throws an error', ->
+			error = new Error( 'error message' )
+			promise = deferred.then(
+				success: ( value ) -> throw error
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( error )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is rejected and the failure callback returns a value', ->
+			promise = deferred.then(
+				failure: ( value ) -> "processed #{ value }"
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'processed error message' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is rejected and the failure callback throws an error', ->
+			error = new Error( 'error message' )
+			promise = deferred.then(
+				failure: ( value ) -> throw error
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'value' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( error )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is cancelled and the cancel callback returns a value', ->
+			promise = deferred.then(
+				cancel: ( value ) -> "processed #{ value }"
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'processed reason' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is cancelled and the cancel callback throws an error', ->
+			error = new Error( 'error message' )
+			promise = deferred.then(
+				cancel: ( value ) -> throw error
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( error )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is resolved and the success callback returns a resolved Deferred', ->
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.resolve( "resolved #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved value' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is resolved and the success callback returns a rejected Deferred', ->
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.reject( "rejected #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected value' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is resolved and the success callback returns a cancelled Deferred', ->
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.cancel( "cancelled #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled value' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is rejected and the failure callback returns a resolved Deferred', ->
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.resolve( "resolved #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved error message' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is rejected and the failure callback returns a rejected Deferred', ->
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.reject( "rejected #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected error message' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is rejected and the failure callback returns a cancelled Deferred', ->
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.cancel( "cancelled #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled error message' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is cancelled and the cancel callback returns a resolved Deferred', ->
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.resolve( "resolved #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved reason' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is cancelled and the cancel callback returns a rejected Deferred', ->
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.reject( "rejected #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected reason' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is cancelled and the cancel callback returns a cancelled Deferred', ->
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.cancel( "cancelled #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled reason' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is resolved and the success callback returns a Deferred that is later resolved', ->
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.resolve( "resolved #{ value }" )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved value' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is resolved and the success callback returns a Deferred that is later rejected', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			deferredReturnValue.reject( "rejected value" )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected value' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is resolved and the success callback returns a Deferred that is later cancelled', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			deferredReturnValue.cancel( "cancelled value" )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled value' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is rejected and the failure callback returns a Deferred that is later resolved', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			deferredReturnValue.resolve( "resolved error message" )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved error message' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is rejected and the failure callback returns a Deferred that is later rejected', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			deferredReturnValue.reject( "rejected error message" )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected error message' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is rejected and the failure callback returns a Deferred that is later cancelled', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			deferredReturnValue.cancel( "cancelled error message" )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled error message' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is cancelled and the cancel callback returns a Deferred that is later resolved', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			deferredReturnValue.resolve( "resolved reason" )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved reason' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is cancelled and the cancel callback returns a Deferred that is later rejected', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			deferredReturnValue.reject( "rejected reason" )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected reason' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is cancelled and the cancel callback returns a Deferred that is later cancelled', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			deferredReturnValue.cancel( "cancelled reason" )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled reason' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is resolved and the success callback returns a resolved Promise', ->
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.resolve( "resolved #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved value' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is resolved and the success callback returns a rejected Promise', ->
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.reject( "rejected #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected value' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is resolved and the success callback returns a cancelled Promise', ->
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.cancel( "cancelled #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled value' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is rejected and the failure callback returns a resolved Promise', ->
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.resolve( "resolved #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved error message' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is rejected and the failure callback returns a rejected Promise', ->
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.reject( "rejected #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected error message' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is rejected and the failure callback returns a cancelled Promise', ->
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.cancel( "cancelled #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled error message' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is cancelled and the cancel callback returns a resolved Promise', ->
+			promise = deferred.then(
+				cancel:  ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.resolve( "resolved #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved reason' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is cancelled and the cancel callback returns a rejected Promise', ->
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.reject( "rejected #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected reason' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is cancelled and the cancel callback returns a cancelled Promise', ->
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.cancel( "cancelled #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled reason' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is resolved and the success callback returns a Promise that is later resolved', ->
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					deferredReturnValue.resolve( "resolved #{ value }" )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved value' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is resolved and the success callback returns a Promise that is later rejected', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			deferredReturnValue.reject( "rejected value" )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected value' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is resolved and the success callback returns a Promise that is later cancelled', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				success: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.resolve( 'value' )
+			
+			deferredReturnValue.cancel( "cancelled value" )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled value' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is rejected and the failure callback returns a Promise that is later resolved', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			deferredReturnValue.resolve( "resolved error message" )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved error message' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is rejected and the failure callback returns a Promise that is later rejected', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			deferredReturnValue.reject( "rejected error message" )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected error message' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should cancel that new Promise when the Deferred is rejected and the failure callback returns a Promise that is later cancelled', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				failure: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.reject( 'error message' )
+			
+			deferredReturnValue.cancel( "cancelled error message" )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled error message' )
+			
+			return
+		)
+		
+		it( 'should resolve that new Promise when the Deferred is cancelled and the cancel callback returns a Promise that is later resolved', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			deferredReturnValue.resolve( "resolved reason" )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( 'resolved reason' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is cancelled and the cancel callback returns a Promise that is later rejected', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			deferredReturnValue.reject( "rejected reason" )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'rejected reason' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should reject that new Promise when the Deferred is cancelled and the cancel callback returns a Promise that is later rejected', ->
+			deferredReturnValue = null
+			
+			promise = deferred.then(
+				cancel: ( value ) ->
+					deferredReturnValue = Ext.create( 'Deft.util.Deferred' )
+					return deferredReturnValue.promise
+			)
+			
+			promise.then( successCallback, failureCallback, progressCallback, cancelCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			deferredReturnValue.cancel( "cancelled reason" )
+			
+			expect( promise.getState() ).toBe( 'cancelled' )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled reason' )
+			
+			return
+		)
+		
 		it( 'should update with the value and not complete that new Promise when the Deferred is updated and the callback returns a value', ->
 			promise = deferred.then( 
 				progress: ( value ) -> "processed #{ value }"
@@ -839,6 +1795,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).toHaveBeenCalledWith( 'processed progress' )
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should update with the value and not complete that new Promise when the Deferred is updated and the callback returns a Deferred', ->
@@ -861,6 +1819,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).toHaveBeenCalledWith( deferredReturnValue )
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should update with the value and not complete that new Promise when the Deferred is updated and the callback returns a Promise', ->
@@ -883,6 +1843,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).toHaveBeenCalledWith( promiseReturnValue )
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 	)
 	
@@ -915,6 +1877,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is resolved and the callback throws an error', ->
@@ -931,6 +1895,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( error )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is rejected and the callback returns a value', ->
@@ -946,6 +1912,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is rejected and the callback throws an error', ->
@@ -962,6 +1930,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( error )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is cancelled and the callback returns a value', ->
@@ -976,6 +1946,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is cancelled and the callback throws an error', ->
@@ -992,6 +1964,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( error )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a resolved Deferred', ->
@@ -1012,6 +1986,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is resolved and the callback returns a rejected Deferred', ->
@@ -1032,6 +2008,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected value' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is resolved and the callback returns a cancelled Deferred', ->
@@ -1052,6 +2030,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled value' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is rejected and the callback returns a resolved Deferred', ->
@@ -1072,6 +2052,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is rejected and the callback returns a rejected Deferred', ->
@@ -1092,6 +2074,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected error message' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is rejected and the callback returns a cancelled Deferred', ->
@@ -1112,6 +2096,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled error message' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is cancelled and the callback returns a resolved Deferred', ->
@@ -1132,6 +2118,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is cancelled and the callback returns a rejected Deferred', ->
@@ -1152,6 +2140,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected reason' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is cancelled and the callback returns a cancelled Deferred', ->
@@ -1172,6 +2162,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled reason' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a Deferred that is later resolved', ->
@@ -1192,6 +2184,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is resolved and the callback returns a Deferred that is later rejected', ->
@@ -1215,6 +2209,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected value' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is resolved and the callback returns a Deferred that is later cancelled', ->
@@ -1238,6 +2234,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled value' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is rejected and the callback returns a Deferred that is later resolved', ->
@@ -1261,6 +2259,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is rejected and the callback returns a Deferred that is later rejected', ->
@@ -1284,6 +2284,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected error message' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is rejected and the callback returns a Deferred that is later cancelled', ->
@@ -1307,6 +2309,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled error message' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is cancelled and the callback returns a Deferred that is later resolved', ->
@@ -1330,6 +2334,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is cancelled and the callback returns a Deferred that is later rejected', ->
@@ -1353,6 +2359,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected reason' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is cancelled and the callback returns a Deferred that is later cancelled', ->
@@ -1376,6 +2384,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled reason' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a resolved Promise', ->
@@ -1396,6 +2406,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is resolved and the callback returns a rejected Promise', ->
@@ -1416,6 +2428,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected value' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is resolved and the callback returns a cancelled Promise', ->
@@ -1436,6 +2450,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled value' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is rejected and the callback returns a resolved Promise', ->
@@ -1456,6 +2472,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is rejected and the callback returns a rejected Promise', ->
@@ -1476,6 +2494,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected error message' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is rejected and the callback returns a cancelled Promise', ->
@@ -1496,6 +2516,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled error message' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is cancelled and the callback returns a resolved Promise', ->
@@ -1516,6 +2538,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is cancelled and the callback returns a rejected Promise', ->
@@ -1536,6 +2560,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected reason' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is cancelled and the callback returns a cancelled Promise', ->
@@ -1556,6 +2582,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled reason' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is resolved and the callback returns a Promise that is later resolved', ->
@@ -1576,6 +2604,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is resolved and the callback returns a Promise that is later rejected', ->
@@ -1599,6 +2629,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected value' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is resolved and the callback returns a Promise that is later cancelled', ->
@@ -1622,6 +2654,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled value' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is rejected and the callback returns a Promise that is later resolved', ->
@@ -1645,6 +2679,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is rejected and the callback returns a Promise that is later rejected', ->
@@ -1668,6 +2704,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected error message' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is rejected and the callback returns a Promise that is later cancelled', ->
@@ -1691,6 +2729,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled error message' )
+			
+			return
 		)
 		
 		it( 'should resolve that new Promise when the Deferred is cancelled and the callback returns a Promise that is later resolved', ->
@@ -1714,6 +2754,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should reject that new Promise when the Deferred is cancelled and the callback returns a Promise that is later rejected', ->
@@ -1737,6 +2779,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).toHaveBeenCalledWith( 'rejected reason' )
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			return
 		)
 		
 		it( 'should cancel that new Promise when the Deferred is cancelled and the callback returns a Promise that is later cancelled', ->
@@ -1760,6 +2804,8 @@ describe( 'Deft.util.Deferred', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'cancelled reason' )
+			
+			return
 		)
 	)
 )
