@@ -245,13 +245,13 @@ Ext.define( 'MyApp.manager.ContactManager', {
 
 * Logo (*in progress*)
 * Website (*in progress*)
+* Alternative MVC implementation - Model View ViewController (*in progress*)
+* Deferreds / Promises (*in progress*)
+* Forums (*in progress*)
 * FAQ
-* Mailing list
 * Example Ext JS and Sencha Touch applications
-* Alternative MVC implementation (Model View ViewController)
 * Routing
 * Navigation - support for hierarchical views, route-aware
-* Deferreds / Promises
 * AOP with an Ext JS-style API (i.e. JSON style configuration)
 * Occasionally-Connected Store (simplifing online / offline capabilities)
 
