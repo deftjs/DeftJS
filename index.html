@@ -128,7 +128,7 @@
 				<p>Additionally, you can configure dependency providers to be eagerly or lazily (the default) instantiated:</p>
 <pre><code>Deft.Injector.configure({
     preferences:  {
-        preferences: 'MyApp.preferences.Preferences',
+        className: 'MyApp.preferences.Preferences',
         eager: true
     },
     ...
@@ -206,7 +206,7 @@
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
 
-    inject: [ 'contactManager' ],
+    inject: [ 'contactStore' ],
     ...
 });
 </code></pre>
@@ -218,29 +218,29 @@
     mixins: [ 'Deft.mixin.Injectable' ],
 
     inject: {
-        manager: 'contactManager'
+        store: 'contactStore'
     },
     ...
 });
 </code></pre>
-				<p>In this case, the <code>contactManager</code> dependency will be resolved into a new <code>manager</code> property.</p>
+				<p>In this case, the <code>contactStore</code> dependency will be resolved into a new <code>store</code> property.</p>
 				<p>A class does not need to explicitly define a config or property for the property to be injected. However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.</p>
 <pre><code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
 
     inject: {
-        manager: 'contactManager'
+        store: 'contactStore'
     },
 
     config: {
-        manager: null
+        store: null
     },
 
     constructor: function( config ) {
         this.initConfig( config );
 
-        // this.getManager() will return the injected value.
+        // this.getStore() will return the injected value.
 
         return this.callParent( arguments )
     }
