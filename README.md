@@ -8,16 +8,18 @@ DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks t
 
 # Goals
 
-* **Simplicity**
-	* Eliminates boilerplate code in favor of the simplest expression of developer intent.
-* **Approachability**
-	* Builds on familiar Ext JS API syntax conventions for 'pay-as-you-go' complexity.
 * **Flexibility**
 	* Coordinates dynamic assembly of object dependencies based on a configurable IoC container.
-* **Reusability**
-	* Enables business layer code reuse between Ext JS and Sencha Touch applications.
+* **Approachability**
+	* Builds on familiar Ext JS API syntax conventions for 'pay-as-you-go' complexity.
+* **Simplicity**
+	* Eliminates boilerplate code in favor of the simplest expression of developer intent.
 * **Testability**
 	* Promotes loose coupling through class annotation driven dependency injection.
+* **Extensibility**
+	* Leverages the advanced class system provided by Ext JS and Sencha Touch.
+* **Reusability**
+	* Enables business layer code reuse between Ext JS and Sencha Touch applications.
 
 # Features
 
