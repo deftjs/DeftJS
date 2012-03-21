@@ -220,13 +220,13 @@ Ext.define( 'MyApp.manager.ContactManager', {
 	},
 	
 	config: {
-		manager: null
+		store: null
 	},
 	
 	constructor: function( config ) {
 		this.initConfig( config );
 		
-		// this.getManager() will return the injected value.
+		// this.getStore() will return the injected value.
 		
 		return this.callParent( arguments )
 	}
