@@ -20,7 +20,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	constructor: ( config ) ->
 		@initConfig( config )
 		
-		if not getView() instanceof Ext.ClassManager.get( 'Ext.Component' )
+		if not @getView() instanceof Ext.ClassManager.get( 'Ext.Component' )
 			Ext.Error.raise( 'Error constructing ViewController: the \'view\' is not an Ext.Component.' )
 		
 		@registeredComponents = {}
@@ -61,7 +61,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	###
 	onBeforeDestroy: ->
 		if @destroy()
-			getView().un( 'onBeforeDestroy', @onBeforeDestroy, @ )
+			@getView().un( 'onBeforeDestroy', @onBeforeDestroy, @ )
 			return true
 		return false
 	
@@ -133,7 +133,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	@private
 	###
 	locateComponent: ( id, config ) ->
-		view = getView()
+		view = @getView()
 		if id is 'view'
 			return view
 			

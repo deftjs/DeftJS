@@ -18,7 +18,7 @@ Ext.define('Deft.mvc.ViewController', {
   constructor: function(config) {
     var initializationEvent;
     this.initConfig(config);
-    if (!getView() instanceof Ext.ClassManager.get('Ext.Component')) {
+    if (!this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
       Ext.Error.raise('Error constructing ViewController: the \'view\' is not an Ext.Component.');
     }
     this.registeredComponents = {};
@@ -61,7 +61,7 @@ Ext.define('Deft.mvc.ViewController', {
   */
   onBeforeDestroy: function() {
     if (this.destroy()) {
-      getView().un('onBeforeDestroy', this.onBeforeDestroy, this);
+      this.getView().un('onBeforeDestroy', this.onBeforeDestroy, this);
       return true;
     }
     return false;
@@ -138,7 +138,7 @@ Ext.define('Deft.mvc.ViewController', {
   */
   locateComponent: function(id, config) {
     var matches, view;
-    view = getView();
+    view = this.getView();
     if (id === 'view') return view;
     if (Ext.isString(config)) {
       matches = view.query(config);
