@@ -535,3 +535,20 @@ Ext.define('Deft.promise.Promise', {
 }, function() {
   if (Array.prototype.reduce != null) this.reduceArray = Array.prototype.reduce;
 });
+
+Ext.define('Deft.util.Function', {
+  alternateClassName: ['Deft.Function'],
+  statics: {
+    /**
+    		TODO: document
+    */
+    spread: function(fn, scope) {
+      return function(array) {
+        if (!Ext.isArray(array)) {
+          Ext.Error.raise("Error spreading passed Array to target function arguments: passed a non-Array.");
+        }
+        return fn.apply(scope, array);
+      };
+    }
+  }
+});
