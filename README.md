@@ -90,7 +90,7 @@ Additionally, you can configure dependency providers to be eagerly or lazily (th
 ```javascript
 Deft.Injector.configure({
 	preferences:  {
-		preferences: 'MyApp.preferences.Preferences',
+		className: 'MyApp.preferences.Preferences',
 		eager: true
 	},
 	...
@@ -183,7 +183,7 @@ Ext.define( 'MyApp.manager.ContactManager', {
 	extend: 'MyApp.manager.AbstractManager',
 	mixins: [ 'Deft.mixin.Injectable' ],
 	
-	inject: [ 'contactManager' ],
+	inject: [ 'contactStore' ],
 	...
 });
 ```
@@ -200,13 +200,13 @@ Ext.define( 'MyApp.manager.ContactManager', {
 	mixins: [ 'Deft.mixin.Injectable' ],
 	
 	inject: {
-		manager: 'contactManager'
+		store: 'contactStore'
 	},
 	...
 });
 ```
 
-In this case, the `contactManager` dependency will be resolved into a new `manager` property.
+In this case, the `contactStore` dependency will be resolved into a new `store` property.
 
 A class does not need to explicitly define a config or property for the property to be injected.  However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.
 
@@ -216,7 +216,7 @@ Ext.define( 'MyApp.manager.ContactManager', {
 	mixins: [ 'Deft.mixin.Injectable' ],
 	
 	inject: {
-		manager: 'contactManager'
+		store: 'contactStore'
 	},
 	
 	config: {
