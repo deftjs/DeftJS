@@ -20,7 +20,7 @@ Ext.define( 'Deft.mixin.Controllable',
 				Ext.Error.raise( 'Error initializing Controllable instance: \`controller\` is null.' )
 			controllers = if Ext.isArray( @controller ) then @controller else [ @controller ]
 			for controllerClass in controllers
-				controller = Ext.create( controllerClass,
+				Ext.create( controllerClass,
 					view: @
 				)
 			return

@@ -14,14 +14,14 @@ Ext.define('Deft.mixin.Controllable', {
   */
   onClassMixedIn: function(targetClass) {
     targetClass.prototype.constructor = Ext.Function.createSequence(targetClass.prototype.constructor, function() {
-      var controller, controllerClass, controllers, _i, _len;
+      var controllerClass, controllers, _i, _len;
       if (!(this.controller != null)) {
         Ext.Error.raise('Error initializing Controllable instance: \`controller\` is null.');
       }
       controllers = Ext.isArray(this.controller) ? this.controller : [this.controller];
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
         controllerClass = controllers[_i];
-        controller = Ext.create(controllerClass, {
+        Ext.create(controllerClass, {
           view: this
         });
       }
