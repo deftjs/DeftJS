@@ -22,7 +22,7 @@ Ext.define('Deft.mvc.ViewController', {
       Ext.Error.raise('Error constructing ViewController: the \'view\' is not an Ext.Component.');
     }
     this.registeredComponents = {};
-    initializationEvent = view.events.initialize != null ? 'initialize' : 'beforeRender';
+    initializationEvent = view.events.initialize ? 'initialize' : 'beforeRender';
     view.on(initializationEvent, this.onInitialize, this, {
       single: true
     });

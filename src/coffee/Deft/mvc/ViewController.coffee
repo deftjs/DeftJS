@@ -25,7 +25,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		@registeredComponents = {}
 		
-		initializationEvent = if view.events.initialize? then 'initialize' else 'beforeRender'
+		initializationEvent = if view.events.initialize then 'initialize' else 'beforeRender'
 		
 		view.on( initializationEvent, @onInitialize, @, single: true )
 		view.on( 'beforedestroy', @onBeforeDestroy, @ )
