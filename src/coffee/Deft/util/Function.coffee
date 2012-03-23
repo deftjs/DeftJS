@@ -8,7 +8,7 @@ Ext.define( 'Deft.util.Function',
 	
 	statics:
 		###*
-		TODO: document
+		Creates a new wrapper function that spreads the passed Array over the target function arguments.
 		###
 		spread: ( fn, scope ) ->
 			return ( array ) ->

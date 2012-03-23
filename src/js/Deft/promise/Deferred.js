@@ -151,8 +151,8 @@ Ext.define('Deft.promise.Deferred', {
     }
   },
   /**
-  	@private
   	Notify the specified callbacks with the specified value.
+  	@private
   */
   notify: function(callbacks, value) {
     var callback, _i, _len;
@@ -162,8 +162,8 @@ Ext.define('Deft.promise.Deferred', {
     }
   },
   /**
-  	@private
   	Release references to all callbacks registered with this {@link Deft.promise.Deferred}.
+  	@private
   */
   releaseCallbacks: function() {
     this.progressCallbacks = null;

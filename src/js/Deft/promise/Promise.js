@@ -107,7 +107,7 @@ Ext.define('Deft.promise.Promise', {
       return this.when(this.reduceArray.apply(promisesOrValues, reduceArguments));
     },
     /**
-    		Internal reduce implementation - includes fallback when Array.reduce is not available.
+    		Fallback implementation when Array.reduce is not available.
     		@private
     */
     reduceArray: function(reduceFunction, initialValue) {

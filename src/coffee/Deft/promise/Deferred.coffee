@@ -154,8 +154,8 @@ Ext.define( 'Deft.promise.Deferred',
 		return
 	
 	###*
-	@private
 	Notify the specified callbacks with the specified value.
+	@private
 	###
 	notify: ( callbacks, value ) ->
 		for callback in callbacks
@@ -163,8 +163,8 @@ Ext.define( 'Deft.promise.Deferred',
 		return
 	
 	###*
-	@private
 	Release references to all callbacks registered with this {@link Deft.promise.Deferred}.
+	@private
 	###
 	releaseCallbacks: ->
 		@progressCallbacks = null

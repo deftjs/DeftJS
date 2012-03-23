@@ -102,7 +102,7 @@ Ext.define( 'Deft.promise.Promise',
 			return @when( @reduceArray.apply( promisesOrValues, reduceArguments ) )
 		
 		###*
-		Internal reduce implementation - includes fallback when Array.reduce is not available.
+		Fallback implementation when Array.reduce is not available.
 		@private
 		###
 		reduceArray: ( reduceFunction, initialValue ) ->

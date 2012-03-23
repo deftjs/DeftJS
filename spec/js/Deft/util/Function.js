@@ -7,7 +7,7 @@ Jasmine test suite for Deft.util.Function
 */
 describe('Deft.util.Function', function() {
   return describe('spread()', function() {
-    it('should create a new wrapper function that spreads the passed Array as the target function arguments', function() {
+    it('should create a new wrapper function that spreads the passed Array over the target function arguments', function() {
       var targetFunction, wrapperFunction;
       targetFunction = jasmine.createSpy('target function');
       wrapperFunction = Deft.util.Function.spread(targetFunction);
@@ -22,7 +22,7 @@ describe('Deft.util.Function', function() {
       expect(Ext.isFunction(wrapperFunction)).toBe(true);
       expect(function() {
         return wrapperFunction('value');
-      }).toThrow(new Error('Error spreading passed Array to target function arguments: passed a non-Array.'));
+      }).toThrow(new Error('Error spreading passed Array over target function arguments: passed a non-Array.'));
       return expect(targetFunction).not.toHaveBeenCalled();
     });
   });

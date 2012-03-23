@@ -10,7 +10,7 @@ describe( 'Deft.util.Function', ->
 	
 	describe( 'spread()', ->
 		
-		it( 'should create a new wrapper function that spreads the passed Array as the target function arguments', ->
+		it( 'should create a new wrapper function that spreads the passed Array over the target function arguments', ->
 			targetFunction = jasmine.createSpy( 'target function' )
 			
 			wrapperFunction = Deft.util.Function.spread( targetFunction )
@@ -28,7 +28,7 @@ describe( 'Deft.util.Function', ->
 			
 			expect( ->
 				wrapperFunction( 'value' )
-			).toThrow( new Error( 'Error spreading passed Array to target function arguments: passed a non-Array.' ) )
+			).toThrow( new Error( 'Error spreading passed Array over target function arguments: passed a non-Array.' ) )
 			
 			expect( targetFunction ).not.toHaveBeenCalled()
 		)
