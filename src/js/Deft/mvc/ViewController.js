@@ -22,12 +22,8 @@ Ext.define('Deft.mvc.ViewController', {
       Ext.Error.raise('Error constructing ViewController: the \'view\' is not an Ext.Component.');
     }
     this.registeredComponents = {};
-    initializationEvent = view.events.initialize ? 'initialize' : 'beforeRender';
-    view.on(initializationEvent, this.onInitialize, this, {
-      single: true
-    });
-    view.on('beforedestroy', this.onBeforeDestroy, this);
-    view.on('destroy', this.onDestroy, this, {
+    initializationEvent = view.events.initialize ? 'initialize' : 'beforerender';
+    view.on(initializationEvent, this.onViewInitialize, this, {
       single: true
     });
     return this;
@@ -45,8 +41,12 @@ Ext.define('Deft.mvc.ViewController', {
   /**
   	@private
   */
-  onInitialize: function() {
+  onViewInitialize: function() {
     var component, config, id, listeners, _ref;
+    view.on('beforedestroy', this.onViewBeforeDestroy, this);
+    view.on('destroy', this.onViewDestroy, this, {
+      single: true
+    });
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
@@ -59,9 +59,9 @@ Ext.define('Deft.mvc.ViewController', {
   /**
   	@private
   */
-  onBeforeDestroy: function() {
+  onViewBeforeDestroy: function() {
     if (this.destroy()) {
-      this.getView().un('onBeforeDestroy', this.onBeforeDestroy, this);
+      this.getView().un('beforedestroy', this.onBeforeDestroy, this);
       return true;
     }
     return false;
@@ -69,7 +69,7 @@ Ext.define('Deft.mvc.ViewController', {
   /**
   	@private
   */
-  onDestroy: function() {
+  onViewDestroy: function() {
     var id;
     for (id in this.registeredComponents) {
       this.unregisterComponent(id);
@@ -85,7 +85,7 @@ Ext.define('Deft.mvc.ViewController', {
   	@private
   */
   registerComponent: function(id, component, listeners) {
-    var event, existingComponent, getterName, handler;
+    var event, existingComponent, getterName, listener;
     Ext.log("Registering '" + id + "' component.");
     existingComponent = this.getComponent(id);
     if (existingComponent != null) {
@@ -103,9 +103,13 @@ Ext.define('Deft.mvc.ViewController', {
     }
     if (Ext.isObject(listeners)) {
       for (event in listeners) {
-        handler = listeners[event];
+        listener = listeners[event];
         Ext.log("Adding '" + event + "' listener to '" + id + "'.");
-        component.on(event, this[handler], this);
+        if (Ext.isFunction(this[listener])) {
+          component.on(event, this[listener], this);
+        } else {
+          Ext.Error.raise("Error adding '" + event + "' listener: the specified handler '" + listener + "' is not a Function or does not exist.");
+        }
       }
     }
   },
@@ -113,7 +117,7 @@ Ext.define('Deft.mvc.ViewController', {
   	@private
   */
   unregisterComponent: function(id) {
-    var component, event, existingComponent, getterName, handler, listeners, _ref;
+    var component, event, existingComponent, getterName, listener, listeners, _ref;
     Ext.log("Unregistering '" + id + "' component.");
     existingComponent = this.getComponent(id);
     if (!(existingComponent != null)) {
@@ -122,9 +126,13 @@ Ext.define('Deft.mvc.ViewController', {
     _ref = this.registeredComponents[id], component = _ref.component, listeners = _ref.listeners;
     if (Ext.isObject(listeners)) {
       for (event in listeners) {
-        handler = listeners[event];
+        listener = listeners[event];
         Ext.log("Removing '" + event + "' listener from '" + id + "'.");
-        component.un(event, this[handler], this);
+        if (Ext.isFunction(this[listener])) {
+          component.un(event, this[listener], this);
+        } else {
+          Ext.Error.raise("Error removing '" + event + "' listener: the specified handler '" + listener + "' is not a Function or does not exist.");
+        }
       }
     }
     if (id !== 'view') {

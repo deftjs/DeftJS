@@ -25,11 +25,8 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		@registeredComponents = {}
 		
-		initializationEvent = if view.events.initialize then 'initialize' else 'beforeRender'
-		
-		view.on( initializationEvent, @onInitialize, @, single: true )
-		view.on( 'beforedestroy', @onBeforeDestroy, @ )
-		view.on( 'destroy', @onDestroy, @, single: true )
+		initializationEvent = if view.events.initialize then 'initialize' else 'beforerender'
+		view.on( initializationEvent, @onViewInitialize, @, single: true )
 		
 		return @
 	
@@ -48,7 +45,10 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	@private
 	###
-	onInitialize: ->
+	onViewInitialize: ->
+		view.on( 'beforedestroy', @onViewBeforeDestroy, @ )
+		view.on( 'destroy', @onViewDestroy, @, single: true )
+		
 		for id, config of @control
 			component = @locateComponent( id, config )
 			listeners = if Ext.isObject( config.listeners ) then config.listeners else config
@@ -59,16 +59,16 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	@private
 	###
-	onBeforeDestroy: ->
+	onViewBeforeDestroy: ->
 		if @destroy()
-			@getView().un( 'onBeforeDestroy', @onBeforeDestroy, @ )
+			@getView().un( 'beforedestroy', @onBeforeDestroy, @ )
 			return true
 		return false
 	
 	###*
 	@private
 	###
-	onDestroy: ->
+	onViewDestroy: ->
 		for id of @registeredComponents
 			@unregisterComponent( id )
 		return
@@ -98,9 +98,12 @@ Ext.define( 'Deft.mvc.ViewController',
 			@[ getterName ] = Ext.Function.pass( @getComponent, [ id ], @ ) unless @[ getterName ]
 		
 		if Ext.isObject( listeners )
-			for event, handler of listeners
+			for event, listener of listeners
 				Ext.log( "Adding '#{ event }' listener to '#{ id }'." )
-				component.on( event, @[ handler ], @ )
+				if Ext.isFunction( @[ listener ] )
+					component.on( event, @[ listener ], @ )
+				else
+					Ext.Error.raise( "Error adding '#{ event }' listener: the specified handler '#{ listener }' is not a Function or does not exist." )
 		
 		return
 	
@@ -117,9 +120,12 @@ Ext.define( 'Deft.mvc.ViewController',
 		{ component, listeners } = @registeredComponents[ id ]
 			
 		if Ext.isObject( listeners )
-			for event, handler of listeners
+			for event, listener of listeners
 				Ext.log( "Removing '#{ event }' listener from '#{ id }'." )
-				component.un( event, @[ handler ], @ )
+				if Ext.isFunction( @[ listener ] )
+					component.un( event, @[ listener ], @ )
+				else
+					Ext.Error.raise( "Error removing '#{ event }' listener: the specified handler '#{ listener }' is not a Function or does not exist." )
 		
 		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
