@@ -69,7 +69,6 @@ h5,
 h6 {
 	color: #126499;
 	border-color: #ffffff;
-	text-shadow: 1px 1px #dddddd;
 	font-weight: lighter;
 	text-transform: capitalize;
 	margin-top: 40px;
@@ -150,16 +149,22 @@ pre {
 	word-wrap: break-word;
 }
 
-.title {
-	font-size: 400%;
-	text-transform: none;
-	border-bottom: none;
-	margin-bottom: 30px;
+.github-ribbon {
+	position: absolute;
+	top: 0;
+	left: 0;
+	border: 0;
+	z-index: 10;
 }
-.tagline, .tagline {
+.tagline {
 	font-size: 150%;
 	line-height: 29.548799999999996px;
 	margin-bottom: 30px;
+}
+.logo {
+	position: relative;
+	left: -50px;
+	margin-bottom: 10px;
 }
 
 .border_radius( @radius ) {
