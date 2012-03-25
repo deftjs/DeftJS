@@ -15,9 +15,15 @@ Ext.define( 'Deft.mixin.Controllable',
 	@private
 	###  
 	onClassMixedIn: ( targetClass ) ->
-		targetClass::constructor = Ext.Function.createInterceptor( targetClass::constructor, ->
+		targetClass::constructor = Ext.Function.createSequence( targetClass::constructor, ->
+			if not @controller?
+				Ext.Error.raise( 'Error initializing Controllable instance: \`controller\` is null.' )
 			controllers = if Ext.isArray( @controller ) then @controller else [ @controller ]
-			Ext.create( controllerClass, @ ) for controllerClass in controllers
+			for controllerClass in controllers
+				Ext.create( controllerClass,
+					view: @
+				)
+			return
 		)
 		return
 )
