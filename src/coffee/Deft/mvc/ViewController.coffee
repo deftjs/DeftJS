@@ -25,8 +25,8 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		@registeredComponents = {}
 		
-		initializationEvent = if view.events.initialize then 'initialize' else 'beforerender'
-		view.on( initializationEvent, @onViewInitialize, @, single: true )
+		initializationEvent = if getView().events.initialize then 'initialize' else 'beforerender'
+		getView().events.on( initializationEvent, @onViewInitialize, @, single: true )
 		
 		return @
 	
@@ -46,8 +46,8 @@ Ext.define( 'Deft.mvc.ViewController',
 	@private
 	###
 	onViewInitialize: ->
-		view.on( 'beforedestroy', @onViewBeforeDestroy, @ )
-		view.on( 'destroy', @onViewDestroy, @, single: true )
+		getView().events.on( 'beforedestroy', @onViewBeforeDestroy, @ )
+		getView().events.on( 'destroy', @onViewDestroy, @, single: true )
 		
 		for id, config of @control
 			component = @locateComponent( id, config )
@@ -93,7 +93,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			component: component
 			listeners: listeners
 		
-		if id isnt view
+		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
 			@[ getterName ] = Ext.Function.pass( @getComponent, [ id ], @ ) unless @[ getterName ]
 		

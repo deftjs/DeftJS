@@ -22,8 +22,8 @@ Ext.define('Deft.mvc.ViewController', {
       Ext.Error.raise('Error constructing ViewController: the \'view\' is not an Ext.Component.');
     }
     this.registeredComponents = {};
-    initializationEvent = view.events.initialize ? 'initialize' : 'beforerender';
-    view.on(initializationEvent, this.onViewInitialize, this, {
+    initializationEvent = getView().events.initialize ? 'initialize' : 'beforerender';
+    getView().events.on(initializationEvent, this.onViewInitialize, this, {
       single: true
     });
     return this;
@@ -43,8 +43,8 @@ Ext.define('Deft.mvc.ViewController', {
   */
   onViewInitialize: function() {
     var component, config, id, listeners, _ref;
-    view.on('beforedestroy', this.onViewBeforeDestroy, this);
-    view.on('destroy', this.onViewDestroy, this, {
+    getView().events.on('beforedestroy', this.onViewBeforeDestroy, this);
+    getView().events.on('destroy', this.onViewDestroy, this, {
       single: true
     });
     _ref = this.control;
@@ -95,7 +95,7 @@ Ext.define('Deft.mvc.ViewController', {
       component: component,
       listeners: listeners
     };
-    if (id !== view) {
+    if (id !== 'view') {
       getterName = 'get' + Ext.String.capitalize(id);
       if (!this[getterName]) {
         this[getterName] = Ext.Function.pass(this.getComponent, [id], this);
