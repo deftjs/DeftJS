@@ -25,8 +25,13 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		@registeredComponents = {}
 		
-		initializationEvent = if getView().events.initialize then 'initialize' else 'beforerender'
-		getView().events.on( initializationEvent, @onViewInitialize, @, single: true )
+		if @getView().events.initialize
+			@getView().events.on( 'initialize', @onViewInitialize, @, single: true )
+		else
+			if @getView().rendered
+				@init()
+			else
+				@getView().events.on( 'afterrender', @onViewInitialize, @, single: true )
 		
 		return @
 	
