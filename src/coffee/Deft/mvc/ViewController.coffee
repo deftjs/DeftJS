@@ -82,7 +82,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	@private
 	###
 	getComponent: ( id ) ->
-		return @registeredComponents[ id ].component
+		return @registeredComponents[ id ]?.component
 	
 	###*
 	@private

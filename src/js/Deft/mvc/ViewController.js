@@ -87,7 +87,8 @@ Ext.define('Deft.mvc.ViewController', {
   	@private
   */
   getComponent: function(id) {
-    return this.registeredComponents[id].component;
+    var _ref;
+    return (_ref = this.registeredComponents[id]) != null ? _ref.component : void 0;
   },
   /**
   	@private
