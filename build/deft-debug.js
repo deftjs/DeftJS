@@ -195,22 +195,23 @@ Ext.define('Deft.mvc.ViewController', {
   },
   constructor: function(config) {
     this.initConfig(config);
-    if (!this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
-      Ext.Error.raise('Error constructing ViewController: the \'view\' is not an Ext.Component.');
-    }
-    this.registeredComponents = {};
-    if (this.getView().events.initialize) {
-      this.getView().on('initialize', this.onViewInitialize, this, {
-        single: true
-      });
-    } else {
-      if (this.getView().rendered) {
-        this.init();
-      } else {
-        this.getView().on('afterrender', this.onViewInitialize, this, {
+    if (this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
+      this.registeredComponents = {};
+      if (this.getView().events.initialize) {
+        this.getView().on('initialize', this.onViewInitialize, this, {
           single: true
         });
+      } else {
+        if (this.getView().rendered) {
+          this.onViewInitialize();
+        } else {
+          this.getView().on('afterrender', this.onViewInitialize, this, {
+            single: true
+          });
+        }
       }
+    } else {
+      Ext.Error.raise('Error constructing ViewController: the configured \'view\' is not an Ext.Component.');
     }
     return this;
   },
@@ -237,7 +238,7 @@ Ext.define('Deft.mvc.ViewController', {
     for (id in _ref) {
       config = _ref[id];
       component = this.locateComponent(id, config);
-      listeners = Ext.isObject(config.listeners) ? config.listeners : config;
+      listeners = Ext.isObject(config.listeners) ? config.listeners : !(config.selector != null) ? config : void 0;
       this.registerComponent(id, component, listeners);
     }
     this.init();
@@ -397,15 +398,20 @@ Ext.define('Deft.mixin.Controllable', {
     targetClass.prototype.constructor = Ext.Function.createSequence(targetClass.prototype.constructor, function() {
       var controllerClass, controllers, _i, _len;
       if (!(this.controller != null)) {
-        Ext.Error.raise('Error initializing Controllable instance: \`controller\` is null.');
+        Ext.Error.raise('Error initializing Controllable instance: \`controller\` was not specified.');
       }
       controllers = Ext.isArray(this.controller) ? this.controller : [this.controller];
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
         controllerClass = controllers[_i];
-        Ext.create(controllerClass, {
-          view: this
-        });
+        try {
+          Ext.create(controllerClass, {
+            view: this
+          });
+        } catch (error) {
+          Ext.Error.raise("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+        }
       }
     });
   }
 });
+
