@@ -29,8 +29,37 @@ describe( 'Deft.mixin.Controllable', ->
 		
 		exampleViewInstance = Ext.create( 'ExampleView' )
 		
-		expect( ExampleViewController.prototype.constructor ).toHaveBeenCalled()
-		expect( ExampleViewController.prototype.constructor.callCount ).toBe( 1 )
+		expect( ExampleViewController::constructor ).toHaveBeenCalled()
+		expect( ExampleViewController::constructor.callCount ).toBe( 1 )
 		expect( exampleViewControllerInstance.getView() ).toBe( exampleViewInstance )
+	)
+	
+	it( 'should throw an error if the target view \`controller\` property is not populated', ->
+		
+		Ext.define( 'ExampleView',
+			extend: 'Ext.container.Container'
+			mixins: [ 'Deft.mixin.Controllable' ]
+		)
+		
+		Ext.define( 'ExampleViewController',
+			extend: 'Deft.mvc.ViewController'
+		)
+		
+		expect( ->
+			Ext.create( 'ExampleView' )
+		).toThrow( 'Error initializing Controllable instance: `controller` was not specified.' )
+	)
+	
+	it( 'should throw an error if the target view \`controller\` property specifies a non-existent class', ->
+		
+		Ext.define( 'ExampleView',
+			extend: 'Ext.container.Container'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'doesntexist'
+		)
+		
+		expect( ->
+			Ext.create( 'ExampleView' )
+		).toThrow( 'Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: \'doesntexist\'.' )
 	)
 )
