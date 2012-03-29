@@ -20,18 +20,20 @@ Ext.define( 'Deft.mvc.ViewController',
 	constructor: ( config ) ->
 		@initConfig( config )
 		
-		if not @getView() instanceof Ext.ClassManager.get( 'Ext.Component' )
-			Ext.Error.raise( 'Error constructing ViewController: the \'view\' is not an Ext.Component.' )
-		
-		@registeredComponents = {}
-		
-		if @getView().events.initialize
-			@getView().on( 'initialize', @onViewInitialize, @, single: true )
-		else
-			if @getView().rendered
-				@init()
+		if @getView() instanceof Ext.ClassManager.get( 'Ext.Component' )
+			@registeredComponents = {}
+			
+			if @getView().events.initialize
+				# Sencha Touch
+				@getView().on( 'initialize', @onViewInitialize, @, single: true )
 			else
-				@getView().on( 'afterrender', @onViewInitialize, @, single: true )
+				# Ext JS
+				if @getView().rendered
+					@onViewInitialize()
+				else
+					@getView().on( 'afterrender', @onViewInitialize, @, single: true )
+		else
+			Ext.Error.raise( 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
 		
 		return @
 	
@@ -56,7 +58,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		for id, config of @control
 			component = @locateComponent( id, config )
-			listeners = if Ext.isObject( config.listeners ) then config.listeners else config
+			listeners = if Ext.isObject( config.listeners ) then config.listeners else config if not config.selector?
 			@registerComponent( id, component, listeners )
 		@init()
 		return

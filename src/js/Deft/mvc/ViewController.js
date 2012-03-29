@@ -17,22 +17,23 @@ Ext.define('Deft.mvc.ViewController', {
   },
   constructor: function(config) {
     this.initConfig(config);
-    if (!this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
-      Ext.Error.raise('Error constructing ViewController: the \'view\' is not an Ext.Component.');
-    }
-    this.registeredComponents = {};
-    if (this.getView().events.initialize) {
-      this.getView().on('initialize', this.onViewInitialize, this, {
-        single: true
-      });
-    } else {
-      if (this.getView().rendered) {
-        this.init();
-      } else {
-        this.getView().on('afterrender', this.onViewInitialize, this, {
+    if (this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
+      this.registeredComponents = {};
+      if (this.getView().events.initialize) {
+        this.getView().on('initialize', this.onViewInitialize, this, {
           single: true
         });
+      } else {
+        if (this.getView().rendered) {
+          this.onViewInitialize();
+        } else {
+          this.getView().on('afterrender', this.onViewInitialize, this, {
+            single: true
+          });
+        }
       }
+    } else {
+      Ext.Error.raise('Error constructing ViewController: the configured \'view\' is not an Ext.Component.');
     }
     return this;
   },
@@ -59,7 +60,7 @@ Ext.define('Deft.mvc.ViewController', {
     for (id in _ref) {
       config = _ref[id];
       component = this.locateComponent(id, config);
-      listeners = Ext.isObject(config.listeners) ? config.listeners : config;
+      listeners = Ext.isObject(config.listeners) ? config.listeners : !(config.selector != null) ? config : void 0;
       this.registerComponent(id, component, listeners);
     }
     this.init();
