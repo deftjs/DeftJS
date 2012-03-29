@@ -31,7 +31,7 @@ describe( 'Deft.ioc.Injector', ->
 		describe( 'Configuration with a class name as a String', ->
 			
 			it( 'should be configurable with a class name as a String', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameAsString: 'ExampleClass'
@@ -72,7 +72,7 @@ describe( 'Deft.ioc.Injector', ->
 			expectedClassNameAsSingletonEagerlyInstance = null
 			
 			it( 'should be configurable with a class name', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					className:
@@ -114,7 +114,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name, (explicity) lazily', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameLazily:
@@ -132,7 +132,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name, (explicitly) as a singleton', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameAsSingleton:
@@ -176,7 +176,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name, (explicitly) as a singleton, (explicitly) lazily', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameAsSingletonLazily:
@@ -195,7 +195,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name, as a prototype', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameAsPrototype:
@@ -227,7 +227,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name, as a prototype, (explicitly) lazily', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameAsPrototypeLazily:
@@ -369,7 +369,7 @@ describe( 'Deft.ioc.Injector', ->
 			expectedClassNameWithParametersAsSingletonEagerlyInstance = null
 			
 			it( 'should be configurable with a class name and constructor parameters', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameWithParameters:
@@ -416,7 +416,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name and constructor parameters, (explicitly) lazily', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameWithParametersLazily:
@@ -435,7 +435,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name and constructor parameters, (explicitly) as a singleton', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameWithParametersAsSingleton:
@@ -484,7 +484,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name and constructor parameters, (explicitly) as a singleton, (explicitly) lazily', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameWithParametersAsSingletonLazily:
@@ -504,7 +504,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name and constructor parameters, as a prototype', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameWithParametersAsPrototype:
@@ -538,7 +538,7 @@ describe( 'Deft.ioc.Injector', ->
 			)
 			
 			it( 'should be configurable with a class name and constructor parameters, as a prototype, (explicitly) lazily', ->
-				spy = spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
+				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
 				
 				Deft.Injector.configure(
 					classNameWithParametersAsPrototypeLazily:
