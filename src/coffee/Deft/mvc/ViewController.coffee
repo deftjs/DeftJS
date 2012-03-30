@@ -20,13 +20,20 @@ Ext.define( 'Deft.mvc.ViewController',
 	constructor: ( config ) ->
 		@initConfig( config )
 		
-		if not @getView() instanceof Ext.ClassManager.get( 'Ext.Component' )
-			Ext.Error.raise( 'Error constructing ViewController: the \'view\' is not an Ext.Component.' )
-		
-		@registeredComponents = {}
-		
-		initializationEvent = if view.events.initialize then 'initialize' else 'beforerender'
-		view.on( initializationEvent, @onViewInitialize, @, single: true )
+		if @getView() instanceof Ext.ClassManager.get( 'Ext.Component' )
+			@registeredComponents = {}
+			
+			if @getView().events.initialize
+				# Sencha Touch
+				@getView().on( 'initialize', @onViewInitialize, @, single: true )
+			else
+				# Ext JS
+				if @getView().rendered
+					@onViewInitialize()
+				else
+					@getView().on( 'afterrender', @onViewInitialize, @, single: true )
+		else
+			Ext.Error.raise( 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
 		
 		return @
 	
@@ -46,12 +53,12 @@ Ext.define( 'Deft.mvc.ViewController',
 	@private
 	###
 	onViewInitialize: ->
-		view.on( 'beforedestroy', @onViewBeforeDestroy, @ )
-		view.on( 'destroy', @onViewDestroy, @, single: true )
+		@getView().on( 'beforedestroy', @onViewBeforeDestroy, @ )
+		@getView().on( 'destroy', @onViewDestroy, @, single: true )
 		
 		for id, config of @control
 			component = @locateComponent( id, config )
-			listeners = if Ext.isObject( config.listeners ) then config.listeners else config
+			listeners = if Ext.isObject( config.listeners ) then config.listeners else config if not config.selector?
 			@registerComponent( id, component, listeners )
 		@init()
 		return
@@ -77,7 +84,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	@private
 	###
 	getComponent: ( id ) ->
-		return @registeredComponents[ id ].component
+		return @registeredComponents[ id ]?.component
 	
 	###*
 	@private
@@ -93,7 +100,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			component: component
 			listeners: listeners
 		
-		if id isnt view
+		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
 			@[ getterName ] = Ext.Function.pass( @getComponent, [ id ], @ ) unless @[ getterName ]
 		

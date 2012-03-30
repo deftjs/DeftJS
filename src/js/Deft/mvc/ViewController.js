@@ -16,16 +16,25 @@ Ext.define('Deft.mvc.ViewController', {
     view: null
   },
   constructor: function(config) {
-    var initializationEvent;
     this.initConfig(config);
-    if (!this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
-      Ext.Error.raise('Error constructing ViewController: the \'view\' is not an Ext.Component.');
+    if (this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
+      this.registeredComponents = {};
+      if (this.getView().events.initialize) {
+        this.getView().on('initialize', this.onViewInitialize, this, {
+          single: true
+        });
+      } else {
+        if (this.getView().rendered) {
+          this.onViewInitialize();
+        } else {
+          this.getView().on('afterrender', this.onViewInitialize, this, {
+            single: true
+          });
+        }
+      }
+    } else {
+      Ext.Error.raise('Error constructing ViewController: the configured \'view\' is not an Ext.Component.');
     }
-    this.registeredComponents = {};
-    initializationEvent = view.events.initialize ? 'initialize' : 'beforerender';
-    view.on(initializationEvent, this.onViewInitialize, this, {
-      single: true
-    });
     return this;
   },
   /**
@@ -43,15 +52,15 @@ Ext.define('Deft.mvc.ViewController', {
   */
   onViewInitialize: function() {
     var component, config, id, listeners, _ref;
-    view.on('beforedestroy', this.onViewBeforeDestroy, this);
-    view.on('destroy', this.onViewDestroy, this, {
+    this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
+    this.getView().on('destroy', this.onViewDestroy, this, {
       single: true
     });
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
       component = this.locateComponent(id, config);
-      listeners = Ext.isObject(config.listeners) ? config.listeners : config;
+      listeners = Ext.isObject(config.listeners) ? config.listeners : !(config.selector != null) ? config : void 0;
       this.registerComponent(id, component, listeners);
     }
     this.init();
@@ -79,7 +88,8 @@ Ext.define('Deft.mvc.ViewController', {
   	@private
   */
   getComponent: function(id) {
-    return this.registeredComponents[id].component;
+    var _ref;
+    return (_ref = this.registeredComponents[id]) != null ? _ref.component : void 0;
   },
   /**
   	@private
@@ -95,7 +105,7 @@ Ext.define('Deft.mvc.ViewController', {
       component: component,
       listeners: listeners
     };
-    if (id !== view) {
+    if (id !== 'view') {
       getterName = 'get' + Ext.String.capitalize(id);
       if (!this[getterName]) {
         this[getterName] = Ext.Function.pass(this.getComponent, [id], this);
