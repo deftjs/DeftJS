@@ -8,16 +8,18 @@ DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks t
 
 # Goals
 
-* **Simplicity**
-	* Eliminates boilerplate code in favor of the simplest expression of developer intent.
-* **Approachability**
-	* Builds on familiar Ext JS API syntax conventions for 'pay-as-you-go' complexity.
 * **Flexibility**
 	* Coordinates dynamic assembly of object dependencies based on a configurable IoC container.
-* **Reusability**
-	* Enables business layer code reuse between Ext JS and Sencha Touch applications.
+* **Approachability**
+	* Builds on familiar Ext JS API syntax conventions for 'pay-as-you-go' complexity.
+* **Simplicity**
+	* Eliminates boilerplate code in favor of the simplest expression of developer intent.
 * **Testability**
 	* Promotes loose coupling through class annotation driven dependency injection.
+* **Extensibility**
+	* Leverages the advanced class system provided by Ext JS and Sencha Touch.
+* **Reusability**
+	* Enables business layer code reuse between Ext JS and Sencha Touch applications.
 
 # Features
 
@@ -90,7 +92,7 @@ Additionally, you can configure dependency providers to be eagerly or lazily (th
 ```javascript
 Deft.Injector.configure({
 	preferences:  {
-		preferences: 'MyApp.preferences.Preferences',
+		className: 'MyApp.preferences.Preferences',
 		eager: true
 	},
 	...
@@ -183,7 +185,7 @@ Ext.define( 'MyApp.manager.ContactManager', {
 	extend: 'MyApp.manager.AbstractManager',
 	mixins: [ 'Deft.mixin.Injectable' ],
 	
-	inject: [ 'contactManager' ],
+	inject: [ 'contactStore' ],
 	...
 });
 ```
@@ -200,13 +202,13 @@ Ext.define( 'MyApp.manager.ContactManager', {
 	mixins: [ 'Deft.mixin.Injectable' ],
 	
 	inject: {
-		manager: 'contactManager'
+		store: 'contactStore'
 	},
 	...
 });
 ```
 
-In this case, the `contactManager` dependency will be resolved into a new `manager` property.
+In this case, the `contactStore` dependency will be resolved into a new `store` property.
 
 A class does not need to explicitly define a config or property for the property to be injected.  However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.
 
@@ -216,17 +218,17 @@ Ext.define( 'MyApp.manager.ContactManager', {
 	mixins: [ 'Deft.mixin.Injectable' ],
 	
 	inject: {
-		manager: 'contactManager'
+		store: 'contactStore'
 	},
 	
 	config: {
-		manager: null
+		store: null
 	},
 	
 	constructor: function( config ) {
 		this.initConfig( config );
 		
-		// this.getManager() will return the injected value.
+		// this.getStore() will return the injected value.
 		
 		return this.callParent( arguments )
 	}
@@ -243,13 +245,13 @@ Ext.define( 'MyApp.manager.ContactManager', {
 
 * Logo (*in progress*)
 * Website (*in progress*)
+* Alternative MVC implementation - Model View ViewController (*in progress*)
+* Deferreds / Promises (*in progress*)
+* Forums (*in progress*)
 * FAQ
-* Mailing list
 * Example Ext JS and Sencha Touch applications
-* Alternative MVC implementation (Model View ViewController)
 * Routing
 * Navigation - support for hierarchical views, route-aware
-* Deferreds / Promises
 * AOP with an Ext JS-style API (i.e. JSON style configuration)
 * Occasionally-Connected Store (simplifing online / offline capabilities)
 
