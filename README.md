@@ -31,6 +31,22 @@ DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks t
 	* Offers eager and lazy instantiation of dependencies.
 	* Injects dependencies into Ext JS class configs and properties before the class constructor is executed.
 
+* **MVC with View Controllers**
+	* Provides class annotation driven association between a given view and its view controller.
+	* Simplifies MVC development: create an instance of the view, and its view controller is automatically created and associated with it.
+	* Clarifies the role of the controller - i.e. controlling a view and delegating work to injected business services (ex. Stores).
+	* Supports complex user interfaces containing multiple independent instances of a given view, each with their own view controller instance.
+	* Reduces memory usage by utilizing view controllers that are created and destroyed in tandem with their associated views.
+	* Supports flexible and concise configuration for referencing view components by itemId and selector, and registering event listeners with view controller methods.
+	* Integrates with the view destruction lifecycle to allow the view controller to potentially cancel removal and destruction.
+	* Simplifies clean-up by automatically removing view and view component references and event listeners.
+
+* **Promises and Deferreds**
+	* Provides an elegant way to represent an asynchronous 'future value' and chain the transformation and processing of such values.
+	* Offers a consistent, readable API for registering success, failure, cancellation or progress callback handlers to the completion of that future value.
+	* Implements the CommonJS Promises/A spec.
+	* Simplifies the processing of a batch of future values through utility functions including all(), any(), map() and reduce().
+
 # API
 
 ## Deft.ioc.Injector
@@ -238,19 +254,16 @@ Ext.define( 'MyApp.manager.ContactManager', {
 
 # Version History
 
+* 0.6.0 - Introducing View Controller, Controllable, Deferred and Promise.
 * 0.1.1 - Preview release, added Jasmine test suite.
 * 0.1.0 - Preview release, introducing an IoC container for dependency injection.
 
 # Roadmap
 
-* Logo (*in progress*)
 * Website (*in progress*)
-* Alternative MVC implementation - Model View ViewController (*in progress*)
-* Deferreds / Promises (*in progress*)
 * Forums (*in progress*)
 * FAQ
 * Example Ext JS and Sencha Touch applications
-* Routing
 * Navigation - support for hierarchical views, route-aware
 * AOP with an Ext JS-style API (i.e. JSON style configuration)
 * Occasionally-Connected Store (simplifing online / offline capabilities)
@@ -271,6 +284,7 @@ Ext.define( 'MyApp.manager.ContactManager', {
 	* [AngularJS](http://angularjs.org/)
 * Special thanks to:
 	* [David Tucker](http://www.davidtucker.net/) for reviewing several iterations of the proposed syntax.
+	* [Thomas Burleson](http://twitter.com/thomasburleson) for beta-testing and providing feedback on view controllers and promises.
 	* [Claude Gauthier](http://www.sencha.com/training) for leading the 5-day 'Fast Track to Ext JS' training where this idea was born.
 	* [Tim Marshall](http://twitter.com/timothymarshall) for parting with the twitter account and project name, which he'd previously used for a personal project.
 
