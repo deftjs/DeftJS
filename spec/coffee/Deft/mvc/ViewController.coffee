@@ -356,4 +356,154 @@ describe( 'Deft.mvc.ViewController', ->
 			).toThrow( 'Error adding \'exampleevent\' listener: the specified handler \'onExampleComponentExampleEvent\' is not a Function or does not exist.' )
 		)
 	)
+	
+	describe( 'Destruction and clean-up', ->
+		
+		beforeEach( ->
+			Ext.define( 'ExampleComponent',
+				extend: 'Ext.Component'
+				alias: 'widget.example'
+				
+				initComponent: ( config ) ->
+					@addEvents(
+						exampleevent: true
+					)
+					return @callParent( arguments )
+			)
+			
+			Ext.define( 'ExampleView',
+				extend: 'Ext.container.Container'
+				
+				renderTo: 'componentTestArea'
+				items: [
+					{
+						xtype: 'example'
+						itemId: 'example'
+					}
+				]
+				
+				initComponent: ( config ) ->
+					@addEvents(
+						exampleevent: true
+					)
+					
+					return @callParent( arguments )
+			)
+			
+			Ext.DomHelper.append( Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>' )
+		)
+		
+		it( 'should be called to destroy when the associated view is destroyed', ->
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			spyOn( viewController, 'destroy' ).andCallThrough()
+			
+			isViewDestroyed = false
+			view.on( 'destroy', -> isViewDestroyed = true )
+			view.destroy()
+			
+			expect( viewController.destroy ).toHaveBeenCalled()
+			expect( isViewDestroyed ).toBe( true )
+		)
+		
+		it( 'should cancel destruction of the view if destroy() returns false', ->
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				
+				destroy: ->
+					return false
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			spyOn( viewController, 'destroy' ).andCallThrough()
+			
+			isViewDestroyed = false
+			view.on( 'destroy', -> isViewDestroyed = true )
+			view.destroy()
+			
+			expect( viewController.destroy ).toHaveBeenCalled()
+			expect( isViewDestroyed ).toBe( false )
+		)
+		
+		it( 'should remove event listeners it attached to the view when the associated view (and view controller) is destroyed', ->
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEvent'
+				
+				onExampleViewExampleEvent: ( event ) ->
+					return
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
+			
+			spyOn( viewController, 'destroy' ).andCallThrough()
+			
+			isViewDestroyed = false
+			view.on( 'destroy', -> isViewDestroyed = true )
+			view.destroy()
+			
+			expect( viewController.destroy ).toHaveBeenCalled()
+			expect( isViewDestroyed ).toBe( true )
+			
+			expect( view.hasListener( 'exampleevent' ) ).toBe( false )
+		)
+		
+		it( 'should remove event listeners it attached to view components when the associated view (and view controller) is destroyed', ->
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				
+				control:
+					example:
+						selector: '#example'
+						listeners:
+							exampleevent: 'onExampleComponentExampleEvent'
+				
+				onExampleComponentExampleEvent: ->
+					return
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			component = view.query( '#example' )[ 0 ]
+			
+			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			
+			spyOn( viewController, 'destroy' ).andCallThrough()
+			
+			isViewDestroyed = false
+			view.on( 'destroy', -> isViewDestroyed = true )
+			view.destroy()
+			
+			expect( viewController.destroy ).toHaveBeenCalled()
+			expect( isViewDestroyed ).toBe( true )
+			
+			expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+		)
+	)
 )

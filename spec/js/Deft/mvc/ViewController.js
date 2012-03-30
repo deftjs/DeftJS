@@ -28,7 +28,7 @@ describe('Deft.mvc.ViewController', function() {
       }).toThrow(new Error("Error constructing ViewController: the configured 'view' is not an Ext.Component."));
     });
   });
-  return describe('Creation of getters and event listeners using the \'control\' property', function() {
+  describe('Creation of getters and event listeners using the \'control\' property', function() {
     beforeEach(function() {
       Ext.define('ExampleComponent', {
         extend: 'Ext.Component',
@@ -305,6 +305,132 @@ describe('Deft.mvc.ViewController', function() {
           view: view
         });
       }).toThrow('Error adding \'exampleevent\' listener: the specified handler \'onExampleComponentExampleEvent\' is not a Function or does not exist.');
+    });
+  });
+  return describe('Destruction and clean-up', function() {
+    beforeEach(function() {
+      Ext.define('ExampleComponent', {
+        extend: 'Ext.Component',
+        alias: 'widget.example',
+        initComponent: function(config) {
+          this.addEvents({
+            exampleevent: true
+          });
+          return this.callParent(arguments);
+        }
+      });
+      Ext.define('ExampleView', {
+        extend: 'Ext.container.Container',
+        renderTo: 'componentTestArea',
+        items: [
+          {
+            xtype: 'example',
+            itemId: 'example'
+          }
+        ],
+        initComponent: function(config) {
+          this.addEvents({
+            exampleevent: true
+          });
+          return this.callParent(arguments);
+        }
+      });
+      return Ext.DomHelper.append(Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>');
+    });
+    it('should be called to destroy when the associated view is destroyed', function() {
+      var isViewDestroyed, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController'
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      spyOn(viewController, 'destroy').andCallThrough();
+      isViewDestroyed = false;
+      view.on('destroy', function() {
+        return isViewDestroyed = true;
+      });
+      view.destroy();
+      expect(viewController.destroy).toHaveBeenCalled();
+      return expect(isViewDestroyed).toBe(true);
+    });
+    it('should cancel destruction of the view if destroy() returns false', function() {
+      var isViewDestroyed, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        destroy: function() {
+          return false;
+        }
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      spyOn(viewController, 'destroy').andCallThrough();
+      isViewDestroyed = false;
+      view.on('destroy', function() {
+        return isViewDestroyed = true;
+      });
+      view.destroy();
+      expect(viewController.destroy).toHaveBeenCalled();
+      return expect(isViewDestroyed).toBe(false);
+    });
+    it('should remove event listeners it attached to the view when the associated view (and view controller) is destroyed', function() {
+      var isViewDestroyed, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          view: {
+            exampleevent: 'onExampleViewExampleEvent'
+          }
+        },
+        onExampleViewExampleEvent: function(event) {}
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(view.hasListener('exampleevent')).toBe(true);
+      spyOn(viewController, 'destroy').andCallThrough();
+      isViewDestroyed = false;
+      view.on('destroy', function() {
+        return isViewDestroyed = true;
+      });
+      view.destroy();
+      expect(viewController.destroy).toHaveBeenCalled();
+      expect(isViewDestroyed).toBe(true);
+      return expect(view.hasListener('exampleevent')).toBe(false);
+    });
+    return it('should remove event listeners it attached to view components when the associated view (and view controller) is destroyed', function() {
+      var component, isViewDestroyed, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          example: {
+            selector: '#example',
+            listeners: {
+              exampleevent: 'onExampleComponentExampleEvent'
+            }
+          }
+        },
+        onExampleComponentExampleEvent: function() {}
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      component = view.query('#example')[0];
+      expect(component.hasListener('exampleevent')).toBe(true);
+      spyOn(viewController, 'destroy').andCallThrough();
+      isViewDestroyed = false;
+      view.on('destroy', function() {
+        return isViewDestroyed = true;
+      });
+      view.destroy();
+      expect(viewController.destroy).toHaveBeenCalled();
+      expect(isViewDestroyed).toBe(true);
+      return expect(component.hasListener('exampleevent')).toBe(false);
     });
   });
 });
