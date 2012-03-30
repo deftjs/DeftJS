@@ -144,7 +144,7 @@ Ext.define('Deft.ioc.Injector', {
     if (provider != null) {
       return provider.resolve(targetInstance);
     } else {
-      return Ext.Error.raise("Error while resolving value to inject: no dependency provider found for '" + identifier + "'.");
+      Ext.Error.raise("Error while resolving value to inject: no dependency provider found for '" + identifier + "'.");
     }
   },
   /**
@@ -177,6 +177,23 @@ Ext.define('Deft.ioc.Injector', {
       targetInstance.config = Ext.Object.merge({}, targetInstance.config || {}, config);
     }
     return targetInstance;
+  }
+});
+
+/**
+A mixin that marks a class as participating in dependency injection.
+
+Used in conjunction with {@link Deft.ioc.Injector}.
+*/
+Ext.define('Deft.mixin.Injectable', {
+  requires: ['Deft.ioc.Injector'],
+  /**
+  	@private
+  */
+  onClassMixedIn: function(targetClass) {
+    targetClass.prototype.constructor = Ext.Function.createInterceptor(targetClass.prototype.constructor, function() {
+      return Deft.Injector.inject(this.inject, this);
+    });
   }
 });
 
@@ -368,166 +385,37 @@ Ext.define('Deft.mvc.ViewController', {
 });
 
 /**
-A mixin that marks a class as participating in dependency injection.
+A mixin that creates and attaches the specified view controller(s) to the target view.
 
-Used in conjunction with {@link Deft.ioc.Injector}.
+Used in conjunction with {@link Deft.mvc.ViewController}.
 */
-Ext.define('Deft.mixin.Injectable', {
-  requires: ['Deft.ioc.Injector'],
+Ext.define('Deft.mixin.Controllable', {
+  requires: ['Deft.mvc.ViewController'],
   /**
   	@private
   */
   onClassMixedIn: function(targetClass) {
-    targetClass.prototype.constructor = Ext.Function.createInterceptor(targetClass.prototype.constructor, function() {
-      return Deft.Injector.inject(this.inject, this);
+    targetClass.prototype.constructor = Ext.Function.createSequence(targetClass.prototype.constructor, function() {
+      var controllerClass, controllers, _i, _len;
+      if (!(this.controller != null)) {
+        Ext.Error.raise('Error initializing Controllable instance: \`controller\` was not specified.');
+      }
+      controllers = Ext.isArray(this.controller) ? this.controller : [this.controller];
+      for (_i = 0, _len = controllers.length; _i < _len; _i++) {
+        controllerClass = controllers[_i];
+        try {
+          Ext.create(controllerClass, {
+            view: this
+          });
+        } catch (error) {
+          Ext.Error.raise("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+        }
+      }
     });
   }
 });
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-/**
- A mixin that attaches a view to a view controller.
-
- Used in conjunction with {@link Deft.mvc.ViewController}.
- */
-Ext.define('Deft.mixin.Controllable', {
-    requires: ['Deft.mvc.ViewController'],
-    /**
-     @private
-     */
-    onClassMixedIn: function(targetClass) {
-        targetClass.prototype.constructor = Ext.Function.createInterceptor(targetClass.prototype.constructor, function() {
-            var controllers = Ext.isArray(this.controller) ? this.controller : [ this.controller ];
-            Ext.each(controllers, function(controllerClass) {
-                Ext.create(controllerClass, this);
-            }, this);
-        });
-    }
-});
-
-/**
- A lightweight MVC view controller.
-
- Used in conjunction with {@link Deft.mixin.Controllable}.
- */
-Ext.define('Deft.mvc.ViewController', {
-    alternateClassName: ['Deft.ViewController'],
-    constructor: function(view) {
-        this.components = {view: view};
-        view.on('initialize', this.configure, this);
-        return this;
-    },
-    /**
-     Configure the ViewController.
-     */
-    configure: function() {
-        Ext.Logger.log('Configuring view controller.');
-
-        var view = this.getView();
-
-        view.un('initialize', this.configure, this);
-        view.on('beforedestroy', this.destroy, this);
-
-        if (Ext.isObject(this.control)) {
-            Ext.Object.each(this.control, function(key, config) {
-                var component = this.locateComponent(key, config);
-
-                this.setComponent(key, component);
-
-                if (Ext.isObject(config)) {
-                    var listeners = Ext.isObject(config.listeners) ? config.listeners : config;
-
-                    Ext.Object.each(listeners, function(event, handler, obj) {
-                        Ext.Logger.log('adding component ' + component + ' event ' + event + ' listener to ' + handler );
-
-                        component.on(event, this[handler], this);
-                    }, this);
-                }
-            }, this);
-        }
-
-        if (Ext.isFunction(this.setup)) {
-            this.setup();
-        }
-    },
-
-    /**
-     * Destroy the ViewController.
-     */
-    destroy: function(e) {
-        Ext.Logger.log('Destroying view controller.');
-
-        var view = this.getView();
-        view.un('beforedestroy', this.destroy, this);
-
-        if (Ext.isFunction(this.tearDown) && this.tearDown() == false)
-            return false;
-
-        if (Ext.isObject(this.control)) {
-            Ext.Object.each(this.control, function(key, config) {
-                var component = this.getComponent( key );
-
-                if (Ext.isObject(config)) {
-                    var listeners = Ext.isObject(config.listeners) ? config.listeners : config;
-
-                    Ext.Object.each(listeners, function(event, handler, obj) {
-                        Ext.Logger.log('removing component ' + component + ' event ' + event + ' listener to ' + handler);
-
-                        component.un(event, this[handler], this);
-                    }, this);
-                }
-
-                var getterName = 'get' + Ext.String.capitalize(key);
-                this[getterName] = null;
-
-            }, this);
-        }
-
-        this.components = null;
-
-        return true;
-    },
-
-    locateComponent: function(key, config) {
-        var view = this.getView();
-
-        if (key == 'view')
-            return view;
-
-        if (Ext.isString(config))
-            return view.query(config)[0];
-
-        if (Ext.isString(config.selector))
-            return view.query(config.selector)[0];
-
-        return view.query('#' + key)[0];
-    },
-
-    getComponent: function(key) {
-        return this.components[key];
-    },
-
-    setComponent: function(key, value) {
-        var getterName = 'get' + Ext.String.capitalize(key);
-
-        // create getter method
-        if (!this[getterName])
-            this[getterName] = Ext.Function.pass(this.getElement, [key], this);
-
-        this.components[key] = value;
-    },
-
-    getView: function() {
-        return this.components.view;
-    }
-
-});
-
-Ext.define('Deft.util.Deferred', {
-=======
 Ext.define('Deft.promise.Deferred', {
->>>>>>> refs/heads/develop/promise
   alternateClassName: ['Deft.Deferred'],
   constructor: function() {
     this.state = 'pending';
@@ -676,8 +564,8 @@ Ext.define('Deft.promise.Deferred', {
     }
   },
   /**
-  	@private
   	Notify the specified callbacks with the specified value.
+  	@private
   */
   notify: function(callbacks, value) {
     var callback, _i, _len;
@@ -687,8 +575,8 @@ Ext.define('Deft.promise.Deferred', {
     }
   },
   /**
-  	@private
   	Release references to all callbacks registered with this {@link Deft.promise.Deferred}.
+  	@private
   */
   releaseCallbacks: function() {
     this.progressCallbacks = null;
@@ -698,6 +586,12 @@ Ext.define('Deft.promise.Deferred', {
   }
 });
 
+/*
+Promise.when(), all(), any(), map() and reduce() methods adapted from:
+[when.js](https://github.com/cujojs/when)
+Copyright (c) B Cavalier & J Hann
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 Ext.define('Deft.promise.Promise', {
   alternateClassName: ['Deft.Promise'],
   statics: {
@@ -798,7 +692,7 @@ Ext.define('Deft.promise.Promise', {
       return this.when(this.reduceArray.apply(promisesOrValues, reduceArguments));
     },
     /**
-    		Internal reduce implementation - includes fallback when Array.reduce is not available.
+    		Fallback implementation when Array.reduce is not available.
     		@private
     */
     reduceArray: function(reduceFunction, initialValue) {
@@ -870,48 +764,15 @@ Ext.define('Deft.util.Function', {
   alternateClassName: ['Deft.Function'],
   statics: {
     /**
-    		TODO: document
+    		Creates a new wrapper function that spreads the passed Array over the target function arguments.
     */
     spread: function(fn, scope) {
       return function(array) {
         if (!Ext.isArray(array)) {
-          Ext.Error.raise("Error spreading passed Array to target function arguments: passed a non-Array.");
+          Ext.Error.raise("Error spreading passed Array over target function arguments: passed a non-Array.");
         }
         return fn.apply(scope, array);
       };
     }
   }
 });
-=======
-/**
-A mixin that creates and attaches the specified view controller(s) to the target view.
-
-Used in conjunction with {@link Deft.mvc.ViewController}.
-*/
-Ext.define('Deft.mixin.Controllable', {
-  requires: ['Deft.mvc.ViewController'],
-  /**
-  	@private
-  */
-  onClassMixedIn: function(targetClass) {
-    targetClass.prototype.constructor = Ext.Function.createSequence(targetClass.prototype.constructor, function() {
-      var controllerClass, controllers, _i, _len;
-      if (!(this.controller != null)) {
-        Ext.Error.raise('Error initializing Controllable instance: \`controller\` was not specified.');
-      }
-      controllers = Ext.isArray(this.controller) ? this.controller : [this.controller];
-      for (_i = 0, _len = controllers.length; _i < _len; _i++) {
-        controllerClass = controllers[_i];
-        try {
-          Ext.create(controllerClass, {
-            view: this
-          });
-        } catch (error) {
-          Ext.Error.raise("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
-        }
-      }
-    });
-  }
-});
-
->>>>>>> refs/heads/develop/mvc
