@@ -28,90 +28,155 @@
 				<a href="https://twitter.com/DeftJS" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @DeftJS</a>
 				<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 				
-				<h1>About</h1>
-				
-				<p>DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks that enable large development teams to rapidly build enterprise scale applications, leveraging best practices and proven patterns discovered by top RIA developers at some of the best consulting firms in the industry.</p>
-				
-				<h1>Goals</h1>
-				
-				<ul>
-					<li>
-						<strong>Flexibility</strong>
-						<ul>
-							<li>Coordinates dynamic assembly of object dependencies based on a configurable IoC container.</li>
-						</ul>
-					</li>
-					<li>
-						<strong>Approachability</strong>
-						<ul>
-							<li>Builds on familiar Ext JS API syntax conventions for ‘pay-as-you-go’ complexity.</li>
-						</ul>
-					</li>
-					<li>
-						<strong>Simplicity</strong>
-						<ul>
-							<li>Eliminates boilerplate code in favor of the simplest expression of developer intent.</li>
-						</ul>
-					</li>
-					<li>
-						<strong>Testability</strong>
-						<ul>
-							<li>Promotes loose coupling through class annotation driven dependency injection.</li>
-						</ul>
-					</li>
-					<li>
-						<strong>Extensibility</strong>
-						<ul>
-							<li>Leverages the advanced class system provided by Ext JS and Sencha Touch.</li>
-						</ul>
-					</li>
-					<li>
-						<strong>Reusability</strong>
-						<ul>
-							<li>Enables business layer code reuse between Ext JS and Sencha Touch applications.</li>
-						</ul>
-					</li>
-				</ul>
-				
-				<h1>Features</h1>
-				
-				<ul>
-					<li>
+			<h1>
+				About
+			</h1>
+			<p>
+				DeftJS enhances Ext JS and Sencha Touch’s APIs with additional building blocks that enable large development teams to rapidly build enterprise scale applications, leveraging best practices and proven patterns discovered by top RIA developers at some of the best consulting firms in the industry.
+			</p>
+			<h1>
+				Goals
+			</h1>
+			<ul>
+				<li>
+					<strong>Flexibility</strong>
+					<ul>
+						<li>Coordinates dynamic assembly of object dependencies based on a configurable IoC container.
+						</li>
+					</ul>
+				</li>
+				<li>
+					<strong>Approachability</strong>
+					<ul>
+						<li>Builds on familiar Ext JS API syntax conventions for ‘pay-as-you-go’ complexity.
+						</li>
+					</ul>
+				</li>
+				<li>
+					<strong>Simplicity</strong>
+					<ul>
+						<li>Eliminates boilerplate code in favor of the simplest expression of developer intent.
+						</li>
+					</ul>
+				</li>
+				<li>
+					<strong>Testability</strong>
+					<ul>
+						<li>Promotes loose coupling through class annotation driven dependency injection.
+						</li>
+					</ul>
+				</li>
+				<li>
+					<strong>Extensibility</strong>
+					<ul>
+						<li>Leverages the advanced class system provided by Ext JS and Sencha Touch.
+						</li>
+					</ul>
+				</li>
+				<li>
+					<strong>Reusability</strong>
+					<ul>
+						<li>Enables business layer code reuse between Ext JS and Sencha Touch applications.
+						</li>
+					</ul>
+				</li>
+			</ul>
+			<h1>
+				Features
+			</h1>
+			<ul>
+				<li>
+					<p>
 						<strong>IoC Container</strong>
-						<ul>
-							<li>Provides class annotation driven dependency injection.</li>
-							<li>Maps dependencies by user-defined identifiers.</li>
-							<li>Resolves dependencies by class instance, factory function or value.</li>
-							<li>Supports singleton and prototype resolution of class instance and factory function dependencies.</li>
-							<li>Offers eager and lazy instantiation of dependencies.</li>
-							<li>Injects dependencies into Ext JS class configs and properties before the class constructor is executed.</li>
-						</ul>
-					</li>
-				</ul>
-				
-				<h1>API</h1>
-				
-				<h2>Deft.ioc.Injector</h2>
-				<p>A lightweight IoC container for dependency injection.</p>
-				
-				<h3>Configuration</h3>
-				
-				<p><strong>Classes</strong></p>
-				
-				<p>In the simplest scenario, the Injector can be configured to map identifiers by class names:</p>
-<pre><code>Deft.Injector.configure({
+					</p>
+					<ul>
+						<li>Provides class annotation driven dependency injection.
+						</li>
+						<li>Maps dependencies by user-defined identifiers.
+						</li>
+						<li>Resolves dependencies by class instance, factory function or value.
+						</li>
+						<li>Supports singleton and prototype resolution of class instance and factory function dependencies.
+						</li>
+						<li>Offers eager and lazy instantiation of dependencies.
+						</li>
+						<li>Injects dependencies into Ext JS class configs and properties before the class constructor is executed.
+						</li>
+					</ul>
+				</li>
+				<li>
+					<p>
+						<strong>MVC with View Controllers</strong>
+					</p>
+					<ul>
+						<li>Provides class annotation driven association between a given view and its view controller.
+						</li>
+						<li>Clarifies the role of the controller - i.e. controlling a view and delegating work to injected business services (ex. Stores).
+						</li>
+						<li>Supports multiple independent instances of a given view, each with their own view controller instance.
+						</li>
+						<li>Reduces memory usage by automatically creating and destroying view controllers in tandem with their associated views.
+						</li>
+						<li>Supports concise configuration for referencing view components and registering event listeners with view controller methods.
+						</li>
+						<li>Integrates with the view destruction lifecycle to allow the view controller to potentially cancel removal and destruction.
+						</li>
+						<li>Simplifies clean-up by automatically removing view and view component references and event listeners.
+						</li>
+					</ul>
+				</li>
+				<li>
+					<p>
+						<strong>Promises and Deferreds</strong>
+					</p>
+					<ul>
+						<li>Provides an elegant way to represent a ‘future value’ resulting from an asynchronous operation.
+						</li>
+						<li>Offers a consistent, readable API for registering success, failure, cancellation or progress callbacks.
+						</li>
+						<li>Allows chaining of transformation and processing of future values.
+						</li>
+						<li>Simplifies processing of a set of future values via utility functions including all(), any(), map() and reduce().
+						</li>
+						<li>Implements the CommonJS Promises/A specification.
+						</li>
+					</ul>
+				</li>
+			</ul>
+			<h1>
+				API
+			</h1>
+			<h2>
+				Deft.ioc.Injector
+			</h2>
+			<p>
+				A lightweight IoC container for dependency injection.
+			</p>
+			<h3>
+				Configuration
+			</h3>
+			<p>
+				<strong>Classes</strong>
+			</p>
+			<p>
+				In the simplest scenario, the Injector can be configured to map identifiers by class names:
+			</p>
+			<pre>
+<code>Deft.Injector.configure({
     contactStore: 'MyApp.store.ContactStore',
     contactManager: 'MyApp.manager.ContactManager',
     ...
 });
-</code></pre>
-				<p>
-					When the Injector is called to resolve dependencies for these identifiers, a singleton instance of the specified class will be created and returned.
-				</p>
-				<p>
-					Where necessary, you can also specify constructor parameters:
-				</p>
-<pre><code>Deft.Injector.configure({
+</code>
+</pre>
+			<p>
+				When the Injector is called to resolve dependencies for these identifiers, a singleton instance of the specified class will be created and returned.
+			</p>
+			<p>
+				Where necessary, you can also specify constructor parameters:
+			</p>
+			<pre>
+<code>Deft.Injector.configure({
     contactStore: {
         className: 'MyApp.store.ContactStore',
         parameters: [{
@@ -128,34 +193,51 @@
     contactManager: 'MyApp.manager.ContactManager',
     ...
 });
-</code></pre>
-				<p>You can also specify whether a class is instantiated as a singleton (the default) or a prototype:</p>
-<pre><code>Deft.Injector.configure({
-    contactController: {
-        className: 'MyApp.controller.ContactViewController',
+</code>
+</pre>
+		<p>
+			You can also specify whether a class is instantiated as a singleton (the default) or a prototype:
+		</p>
+		<pre>
+<code>Deft.Injector.configure({
+    contactManager: {
+        className: 'MyApp.manager.ContactManager',
         singleton: false
     },
     ...
 });
-</code></pre>
-				<p>Additionally, you can configure dependency providers to be eagerly or lazily (the default) instantiated:</p>
-<pre><code>Deft.Injector.configure({
+</code>
+</pre>
+			<p>
+				When configured as a prototype, each call to resolve an identifier will return a new instance of the specified class.
+			</p>
+			<p>
+				Additionally, you can configure dependency providers to be eagerly or lazily (the default) instantiated:
+			</p>
+			<pre>
+<code>Deft.Injector.configure({
     preferences:  {
         className: 'MyApp.preferences.Preferences',
         eager: true
     },
     ...
 });
-</code></pre>
-				<p>
-					When a dependency provider is configured for eager instantiation, it will be created and cached in the Injector immediately after all the identifiers in that <code>configure()</code> call have been processed.
-				</p>
-				<p><em>NOTE:</em> Only singletons can be eagerly instantiated.</p>
-				
-				<p><strong>Factory Functions</strong></p>
-				
-				<p>The Injector can also be configured to map identifiers to factory functions:</p>
-<pre><code>Deft.Injector.configure({
+</code>
+</pre>
+			<p>
+				When a dependency provider is configured for eager instantiation, it will be created and cached in the Injector immediately after all the identifiers in that <code>configure()</code> call have been processed.
+			</p>
+			<p>
+				<em>NOTE:</em> Only singletons can be eagerly instantiated.
+			</p>
+			<p>
+				<strong>Factory Functions</strong>
+			</p>
+			<p>
+				The Injector can also be configured to map identifiers to factory functions:
+			</p>
+			<pre>
+<code>Deft.Injector.configure({
     contactStore: {
         fn: function() {
             if ( useMocks ) {
@@ -180,16 +262,28 @@
     },
     ...
 });
-</code></pre>
-				<p>When the Injector is called to resolve dependencies for these identifiers, the factory function is called and the dependency is resolved with the return value.</p>
-				<p>As shown above, a lazily instantiated factory function can optionally accept a parameter, corresponding to the instance for which the Injector is currently injecting dependencies.</p>
-				<p>Factory function dependency providers can be configured as singletons or prototypes and can be eagerly or lazily instantiated.</p>
-				<p><em>NOTE:</em> Only singleton factory functions can be eagerly instantiated.</p>
-				
-				<p><strong>Values</strong></p>
-				
-				<p>The Injector can also be configured to map identifiers to values:</p>
-<pre><code>Deft.Injector.configure({
+</code>
+</pre>
+			<p>
+				When the Injector is called to resolve dependencies for these identifiers, the factory function is called and the dependency is resolved with the return value.
+			</p>
+			<p>
+				As shown above, a lazily instantiated factory function can optionally accept a parameter, corresponding to the instance for which the Injector is currently injecting dependencies.
+			</p>
+			<p>
+				Factory function dependency providers can be configured as singletons or prototypes and can be eagerly or lazily instantiated.
+			</p>
+			<p>
+				<em>NOTE:</em> Only singleton factory functions can be eagerly instantiated.
+			</p>
+			<p>
+				<strong>Values</strong>
+			</p>
+			<p>
+				The Injector can also be configured to map identifiers to values:
+			</p>
+			<pre>
+<code>Deft.Injector.configure({
     brandedApplicationName: {
         value: "Contact Manager"
     },
@@ -201,32 +295,52 @@
     },
     ...
 });
-</code></pre>
-				<p>A value can be any native JavaScript type, including Strings, Arrays, Numbers, Objects or class instances… even Functions!</p>
-				<p><em>NOTE:</em> Values can only be configured as singletons and cannot be eagerly instantiated.</p>
-				
-				<h2>Deft.mixin.Injectable</h2>
-				
-				<p>A class is marked as participating in dependency injection by including the Injectable mixin:</p>
-<pre><code>Ext.define( 'MyApp.manager.ContactManager', {
+</code>
+</pre>
+			<p>
+				A value can be any native JavaScript type, including Strings, Arrays, Numbers, Objects or class instances… even Functions!
+			</p>
+			<p>
+				<em>NOTE:</em> Values can only be configured as singletons and cannot be eagerly instantiated.
+			</p>
+			<h2>
+				Deft.mixin.Injectable
+			</h2>
+			<p>
+				A class is marked as participating in dependency injection by including the Injectable mixin:
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
     ...
 });
-</code></pre>
-				<p>Its dependencies are expressed using the <code>inject</code> annotation:</p>
-<pre><code>Ext.define( 'MyApp.manager.ContactManager', {
+</code>
+</pre>
+			<p>
+				Its dependencies are expressed using the <code>inject</code> annotation:
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
 
     inject: [ 'contactStore' ],
     ...
 });
-</code></pre>
-				<p>Any class that includes the Injectable mixin will have the dependencies described in its <code>inject</code> annotation resolved and injected by the Injector prior to the class constructor being called.</p>
-				<p>By default, each dependency will be injected into the config or property of the same name.</p>
-				<p>You also can override this behavior and indicate the specific property to inject into, by using slightly more verbose syntax:</p>
-<pre><code>Ext.define( 'MyApp.manager.ContactManager', {
+</code>
+</pre>
+			<p>
+				Any class that includes the Injectable mixin will have the dependencies described in its <code>inject</code> annotation resolved and injected by the Injector prior to the class constructor being called.
+			</p>
+			<p>
+				By default, each dependency will be injected into the config or property of the same name.
+			</p>
+			<p>
+				You can override this behavior and indicate the specific property to inject into, by using slightly more verbose syntax:
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
 
@@ -235,10 +349,16 @@
     },
     ...
 });
-</code></pre>
-				<p>In this case, the <code>contactStore</code> dependency will be resolved into a new <code>store</code> property.</p>
-				<p>A class does not need to explicitly define a config or property for the property to be injected. However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.</p>
-<pre><code>Ext.define( 'MyApp.manager.ContactManager', {
+</code>
+</pre>
+			<p>
+				In this case, the <code>contactStore</code> dependency will be resolved into a new <code>store</code> property.
+			</p>
+			<p>
+				A class does not need to explicitly define a config or property for the property to be injected. However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
 
@@ -259,57 +379,321 @@
     }
     ...
 });
-</code></pre>
-		
-				<h1>Version History</h1>
-				<ul>
-					<li>0.1.1 - Preview release, added Jasmine test suite.</li>
-					<li>0.1.0 - Preview release, introducing an IoC container for dependency injection.</li>
-				</ul>
-				
-				<h1>Roadmap</h1>
-				<ul>
-					<li>Logo (<em>in progress</em>)</li>
-					<li>Website (<em>in progress</em>)</li>
-					<li>Alternative MVC implementation - Model View ViewController (<em>in progress</em>)</li>
-					<li>Deferreds / Promises (<em>in progress</em>)</li>
-					<li>Forum (<em>in progress</em>)</li>
-					<li>FAQ</li>
-					<li>Example Ext JS and Sencha Touch applications</li>
-					<li>Routing</li>
-					<li>Navigation - support for hierarchical views, route-aware</li>
-					<li>AOP with an Ext JS-style API (i.e. JSON style configuration)</li>
-					<li>Occasionally-Connected Store (simplifing online / offline capabilities)</li>
-				</ul>
-				
-				<h1>Development Team</h1>
-				<ul>
-					<li><a href="http://twitter.com/johnyanarella">John Yanarella</a> (Creator)</li>
-					<li><a href="http://davidtucker.net/">David Tucker</a></li>
-					<li><a href="http://www.ryancampbell.com/">Ryan Campbell</a></li>
-				</ul>
-				
-				<h1>Acknowledgements</h1>
-				<ul>
-					<li>Inspiration drawn from other IoC frameworks:
-						<ul>
-							<li><a href="http://www.springsource.org/">Spring</a></li>
-							<li><a href="http://swizframework.org/">Swiz</a></li>
-							<li><a href="http://www.robotlegs.org/">Robotlegs</a></li>
-							<li><a href="https://github.com/tschneidereit/SwiftSuspenders">Swift Suspenders</a></li>
-							<li><a href="http://angularjs.org/">AngularJS</a></li>
-						</ul>
-					</li>
-					<li>Special thanks to:
-						<ul>
-							<li><a href="http://dribbble.com/artifactdesign">Jason Barry</a> for creating the Deft JS logo.</li>
-							<li><a href="http://www.davidtucker.net/">David Tucker</a> for reviewing several iterations of the proposed syntax.</li>
-							<li><a href="http://www.sencha.com/training">Claude Gauthier</a> for leading the 5-day ‘Fast Track to Ext JS’ training where this idea was born.</li>
-							<li><a href="http://twitter.com/timothymarshall">Tim Marshall</a> for parting with the twitter account and project name, which he’d previously used for a personal project.</li>
-						</ul>
-					</li>
-				</ul>
-			</div>
+</code>
+</pre>
+			<h2>
+				Deft.mvc.ViewController
+			</h2>
+			<p>
+				A lightweight controller for a view, responsible for managing the state of the view and its child components, listening for events dispatched by the view and its child components in response to user gestures, and delegating work to injected business services (such as Stores, Models, Managers, etc.).
+			</p>
+			<p>
+				The ViewController is an abstract base class which can be extended to create view-specific view controllers.
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController',
+    ...
+});
+</code>
+</pre>
+			<p>
+				References to view components can be established via the <code>control</code> annotation and view-relative component query selectors:
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController',  
+    ...
+    control: {
+        submitButton: 'panel &gt; button[text="Submit"]',
+        cancelButton: 'panel &gt; button[text="Cancel"]',
+        ...
+    }
+    ...
+    init: function() {
+        // getSubmitButton() accessor will be automatically created.
+        this.getSubmitButton().disable();
+
+        return this.callParent( arguments );
+    }
+    ...
+});
+</code>
+</pre>
+			<p>
+				<em>NOTE:</em> The specified component query selector is evaluated relative to the view, rather than globally as in <code>Ext.app.Controller</code>.
+			</p>
+			<p>
+				As seen above, a getter function will automatically created and added to the view controller for each referenced component.
+			</p>
+			<p>
+				Alternatively, the selector can be omitted if the component identifier being registered matches the view component’s <code>itemId</code>:
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController',  
+    ...
+    control: {
+        // indicates the Button in the view has an itemId of 'submitButton'
+        submitButton: true, 
+        ...
+    }
+});
+</code>
+</pre>
+			<p>
+				As before, this will create and add a <code>getSubmitButton()</code> accessor to the view controller.
+			</p>
+			<p>
+				The <code>control</code> annotation can also be used to register event listeners for events dispatched by referenced view components.
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController',  
+    ...
+    control: {
+        submitButton: 
+            'click': 'onSubmitButtonClick'
+    }
+    ...
+    onSubmitButtonClick: function() {
+        // executed in the view controller's scope
+        ...
+    }
+    ...
+});
+</code>
+</pre>
+			<p>
+				In this example, in addition to creating and adding a <code>getSubmitButton()</code> accessor, the view controller will add a <code>click</code> event listener to the Button with an itemId of <code>submitButton</code> in the corresponding view.
+			</p>
+			<p>
+				<em>NOTE:</em> The specified event listener will be called in the view controller’s scope.
+			</p>
+			<p>
+				As an alternative to relying on matching component <code>itemId</code>’s, the <code>control</code> annotation can be configured to both reference a component by a view-relative component query selector and add event listeners, using slightly more verbose syntax:
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController',  
+    ...
+    control: {
+        submitButton: 
+            selector: 'panel &gt; button[text="Submit"]'
+            listeners:
+                'click': 'onSubmitButtonClick'
+    }
+    ...
+});
+</code>
+</pre>
+			<p>
+				To listen to events dispatched by the view, use the <code>view</code> identifier:
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController',  
+    ...
+    control: {
+        view:
+            'show': 'onViewShow'
+            'hide': 'onViewHide'
+    }
+    ...
+    init: function() {
+        this.getView().show()
+
+        return this.callParent( arguments );
+    }
+});
+</code>
+</pre>
+			<p>
+				<em>NOTE:</em> The <code>getView()</code> accessor is always available, regardless of whether you explicitly create a reference and add event listeners to <code>view</code>.
+			</p>
+			<p>
+				After the view has been initialized or rendered for the first time, the view controller’s <code>init()</code> template method will be called.
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController',  
+    ...
+    control: {
+        ...
+    }
+    ...
+    init: function() {
+        // all accessors will have been created
+        // all event listeners will have been added
+
+        return this.callParent( arguments );
+    }
+});
+</code>
+</pre>
+			<p>
+				When the <code>destroy()</code> is called on the view, the view controller’s <code>destroy()</code> template method is called. If this method returns <code>false</code>, view destruction will be cancelled. If this method returns <code>true</code>, the view will be destroyed, and all references and event listeners created in the view controller using <code>control</code> will automatically be removed.
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController',  
+    ...
+    control: {
+        ...
+    }
+    ...
+    destroy: function() {
+        if (this.hasUnsavedChanges) {
+            // cancel destruction
+            return false
+        }
+
+        // burn baby burn
+        return this.callParent( arguments );
+    }
+});
+</code>
+</pre>
+			<p>
+				Recall that a view controller is expected to delegate work to injected business services. This can be accomplished by leveraging <code>Deft.ioc.Injector</code> and including the <code>Deft.mixin.Injectable</code> mixin.
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController', 
+    mixins: [ 'Deft.mixin.Injectable' ]
+    inject: [ 'contactStore' ]
+    ...
+    control: {
+        refreshButton:
+            'click': 'onRefreshButtonClick'
+    }
+    ...
+    onRefreshButtonClick: function() {
+        contactStore.load()
+    }
+});
+</code>
+</pre>
+			<p>
+				See the documentation for <code>Deft.ioc.Injector</code> and <code>Deft.mixin.Injectable</code> for more details.
+			</p>
+			<h2>
+				Deft.mixin.Controllable
+			</h2>
+			<p>
+				A view class can be configured to be controlled by a view controller by including the Controllable mixin:
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.view.ContactsView', {
+    extend: 'Ext.panel.Panel',
+    mixins: [ 'Deft.mixin.Controllable' ],
+    controller: 'MyApp.controller.ContactsViewController'
+    ...
+});
+</code>
+</pre>
+			<p>
+				The corresponding view controller class is specified using the <code>controller</code> annotation.
+			</p>
+			<p>
+				In this case, whenever an instance of ContactsView is created, an instance of the ContactsViewController will also be created and associated with that view instance.
+			</p>
+			<p>
+				Consequently, multiple independent instances of a given view class can be created, each with their own independent view controller instances. Views can communicate by interacting with shared injected business services. Nested views can also communicate via custom events.
+			</p>
+			<p>
+				Provided the specified <code>controller</code> extends <code>Deft.mvc.ViewController</code>, the controller will automatically be destroyed when the view is destroyed.
+			</p>
+			<h1>
+				Version History
+			</h1>
+			<ul>
+				<li>0.6.0 - Introducing View Controller and Controllable. Preview release of Deferred and Promise.
+				</li>
+				<li>0.1.1 - Preview release, added Jasmine test suite.
+				</li>
+				<li>0.1.0 - Preview release, introducing an IoC container for dependency injection.
+				</li>
+			</ul>
+			<h1>
+				Roadmap
+			</h1>
+			<ul>
+				<li>Promise unit tests (<em>in progress</em>)
+				</li>
+				<li>Promise and Deferred documentation (<em>in progress</em>)
+				</li>
+				<li>Forums (<em>in progress</em>)
+				</li>
+				<li>JSDuck-compliant comments and Sencha-style documentation browser.
+				</li>
+				<li>Website
+				</li>
+				<li>FAQ
+				</li>
+				<li>Example Ext JS and Sencha Touch applications
+				</li>
+				<li>Navigation - support for hierarchical views, route-aware
+				</li>
+				<li>AOP with an Ext JS-style API (i.e. JSON style configuration)
+				</li>
+				<li>Occasionally-Connected Store (simplifing online / offline capabilities)
+				</li>
+			</ul>
+			<h1>
+				Development Team
+			</h1>
+			<ul>
+				<li>
+					<a href="http://twitter.com/johnyanarella">John Yanarella</a> (Creator)
+				</li>
+				<li>
+					<a href="http://www.davidtucker.net/">David Tucker</a>
+				</li>
+				<li>
+					<a href="http://www.ryancampbell.com/">Ryan Campbell</a>
+				</li>
+			</ul>
+			<h1>
+				Acknowledgements
+			</h1>
+			<ul>
+				<li>Inspiration drawn from other IoC frameworks:
+					<ul>
+						<li>
+							<a href="http://www.springsource.org/">Spring</a>
+						</li>
+						<li>
+							<a href="http://swizframework.org/">Swiz</a>
+						</li>
+						<li>
+							<a href="http://www.robotlegs.org/">Robotlegs</a>
+						</li>
+						<li>
+							<a href="https://github.com/tschneidereit/SwiftSuspenders">Swift Suspenders</a>
+						</li>
+						<li>
+							<a href="http://angularjs.org/">AngularJS</a>
+						</li>
+					</ul>
+				</li>
+				<li>Special thanks to:
+					<ul>
+						<li>
+							<a href="http://www.davidtucker.net/">David Tucker</a> for reviewing several iterations of the proposed syntax.
+						</li>
+						<li>
+							<a href="http://twitter.com/thomasburleson">Thomas Burleson</a> for beta-testing and providing feedback on view controllers and promises.
+						</li>
+						<li>
+							<a href="http://www.sencha.com/training">Claude Gauthier</a> for leading the 5-day ‘Fast Track to Ext JS’ training where this idea was born.
+						</li>
+						<li>
+							<a href="http://twitter.com/timothymarshall">Tim Marshall</a> for parting with the twitter account and project name, which he’d previously used for a personal project.
+						</li>
+					</ul>
+				</li>
+			</ul>
 		</section>
 		
 		<script type="text/javascript">
