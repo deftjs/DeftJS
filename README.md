@@ -33,19 +33,19 @@ DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks t
 
 * **MVC with View Controllers**
 	* Provides class annotation driven association between a given view and its view controller.
-	* Simplifies MVC development: create an instance of the view, and its view controller is automatically created and associated with it.
 	* Clarifies the role of the controller - i.e. controlling a view and delegating work to injected business services (ex. Stores).
-	* Supports complex user interfaces containing multiple independent instances of a given view, each with their own view controller instance.
-	* Reduces memory usage by utilizing view controllers that are created and destroyed in tandem with their associated views.
-	* Supports flexible and concise configuration for referencing view components by itemId and selector, and registering event listeners with view controller methods.
+	* Supports multiple independent instances of a given view, each with their own view controller instance.
+	* Reduces memory usage by automatically creating and destroying view controllers in tandem with their associated views.
+	* Supports concise configuration for referencing view components and registering event listeners with view controller methods.
 	* Integrates with the view destruction lifecycle to allow the view controller to potentially cancel removal and destruction.
 	* Simplifies clean-up by automatically removing view and view component references and event listeners.
 
 * **Promises and Deferreds**
-	* Provides an elegant way to represent an asynchronous 'future value' and chain the transformation and processing of such values.
-	* Offers a consistent, readable API for registering success, failure, cancellation or progress callback handlers to the completion of that future value.
-	* Implements the CommonJS Promises/A spec.
-	* Simplifies the processing of a batch of future values through utility functions including all(), any(), map() and reduce().
+	* Provides an elegant way to represent an asynchronous 'future value'.
+	* Offers a consistent, readable API for registering success, failure, cancellation or progress callbacks.
+	* Allows chaining of transformation and processing of future values.
+	* Simplifies processing of a set of future values via utility functions including all(), any(), map() and reduce().
+	* Implements the CommonJS Promises/A specification.
 
 # API
 
