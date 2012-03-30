@@ -460,10 +460,11 @@ Provided the specified `controller` extends `Deft.mvc.ViewController`, the contr
 
 # Roadmap
 
+* Promise unit tests (*in progress*)
 * Promise and Deferred documentation (*in progress*)
-* Promise unit tests (*in prgress*)
-* Website (*in progress*)
 * Forums (*in progress*)
+* JSDuck-compliant comments and Sencha-style documentation browser.
+* Website
 * FAQ
 * Example Ext JS and Sencha Touch applications
 * Navigation - support for hierarchical views, route-aware
