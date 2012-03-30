@@ -13,6 +13,6 @@ Ext.define( 'Deft.util.Function',
 		spread: ( fn, scope ) ->
 			return ( array ) ->
 				if not Ext.isArray( array )
-					Ext.Error.raise( "Error spreading passed Array to target function arguments: passed a non-Array." )
+					Ext.Error.raise( "Error spreading passed Array over target function arguments: passed a non-Array." )
 				fn.apply( scope, array )
 )

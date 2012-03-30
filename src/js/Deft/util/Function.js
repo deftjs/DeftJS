@@ -11,7 +11,7 @@ Ext.define('Deft.util.Function', {
     spread: function(fn, scope) {
       return function(array) {
         if (!Ext.isArray(array)) {
-          Ext.Error.raise("Error spreading passed Array to target function arguments: passed a non-Array.");
+          Ext.Error.raise("Error spreading passed Array over target function arguments: passed a non-Array.");
         }
         return fn.apply(scope, array);
       };
