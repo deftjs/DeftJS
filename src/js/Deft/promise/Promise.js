@@ -7,26 +7,26 @@ Promise.when(), all(), any(), map() and reduce() methods adapted from:
 Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
-Ext.define('Deft.util.Promise', {
+Ext.define('Deft.promise.Promise', {
   alternateClassName: ['Deft.Promise'],
   statics: {
     /**
-    		Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called:
+    		Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called:
     		- immediately for the specified value, or
-    		- when the specified {@link Deft.util.Deferred} or {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
+    		- when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
     */
     when: function(promiseOrValue, callbacks) {
       var deferred;
-      if (promiseOrValue instanceof Ext.ClassManager.get('Deft.util.Promise') || promiseOrValue instanceof Ext.ClassManager.get('Deft.util.Deferred')) {
+      if (promiseOrValue instanceof Ext.ClassManager.get('Deft.promise.Promise') || promiseOrValue instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
         return promiseOrValue.then(callbacks);
       } else {
-        deferred = Ext.create('Deft.util.Deferred');
+        deferred = Ext.create('Deft.promise.Deferred');
         deferred.resolve(promiseOrValue);
         return deferred.then(callbacks);
       }
     },
     /**
-    		Returns a new {@link Deft.util.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
+    		Returns a new {@link Deft.promise.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
     		The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
     */
     all: function(promisesOrValues, callbacks) {
@@ -36,12 +36,12 @@ Ext.define('Deft.util.Promise', {
       return this.when(promise, callbacks);
     },
     /**
-    		Returns a new {@link Deft.util.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
+    		Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
     		The resolution value will be the resolution value of the triggering `promiseOrValue`.
     */
     any: function(promisesOrValues, callbacks) {
       var complete, deferred, index, progressFunction, promiseOrValue, rejectFunction, rejecter, resolveFunction, resolver, updater, _len;
-      deferred = Ext.create('Deft.util.Deferred');
+      deferred = Ext.create('Deft.promise.Deferred');
       updater = function(progress) {
         deferred.update(progress);
       };
@@ -107,7 +107,7 @@ Ext.define('Deft.util.Promise', {
       return this.when(this.reduceArray.apply(promisesOrValues, reduceArguments));
     },
     /**
-    		Internal reduce implementation - includes fallback when Array.reduce is not available.
+    		Fallback implementation when Array.reduce is not available.
     		@private
     */
     reduceArray: function(reduceFunction, initialValue) {
@@ -148,25 +148,25 @@ Ext.define('Deft.util.Promise', {
     return this;
   },
   /**
-  	Returns a new {@link Deft.util.Promise} with the specified callbacks registered to be called when this {@link Deft.util.Promise} is resolved, rejected, updated or cancelled.
+  	Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
   */
   then: function(callbacks) {
     return this.deferred.then.apply(this.deferred, arguments);
   },
   /**
-  	Returns a new {@link Deft.util.Promise} with the specified callback registered to be called when this {@link Deft.util.Promise} is resolved, rejected or cancelled.
+  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
   */
   always: function(callback) {
     return this.deferred.always(callback);
   },
   /**
-  	Cancel this {@link Deft.util.Promise} and notify relevant callbacks.
+  	Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.
   */
   cancel: function(reason) {
     return this.deferred.cancel(reason);
   },
   /**
-  	Get this {@link Deft.util.Promise}'s current state.
+  	Get this {@link Deft.promise.Promise}'s current state.
   */
   getState: function() {
     return this.deferred.getState();
