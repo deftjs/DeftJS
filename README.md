@@ -41,7 +41,7 @@ DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks t
 	* Simplifies clean-up by automatically removing view and view component references and event listeners.
 
 * **Promises and Deferreds**
-	* Provides an elegant way to represent an asynchronous 'future value'.
+	* Provides an elegant way to represent a 'future value' resulting from an asynchronous operation.
 	* Offers a consistent, readable API for registering success, failure, cancellation or progress callbacks.
 	* Allows chaining of transformation and processing of future values.
 	* Simplifies processing of a set of future values via utility functions including all(), any(), map() and reduce().
