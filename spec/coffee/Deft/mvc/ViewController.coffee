@@ -393,7 +393,7 @@ describe( 'Deft.mvc.ViewController', ->
 			Ext.DomHelper.append( Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>' )
 		)
 		
-		it( 'should be called to destroy when the associated view is destroyed', ->
+		it( 'should be called to destroy() when the associated view is destroyed', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
 			)
@@ -414,7 +414,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( isViewDestroyed ).toBe( true )
 		)
 		
-		it( 'should cancel destruction of the view if destroy() returns false', ->
+		it( 'should cancel view destruction if the view controller\'s destroy() returns false', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
 				

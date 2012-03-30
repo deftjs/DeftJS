@@ -337,7 +337,7 @@ describe('Deft.mvc.ViewController', function() {
       });
       return Ext.DomHelper.append(Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>');
     });
-    it('should be called to destroy when the associated view is destroyed', function() {
+    it('should be called to destroy() when the associated view is destroyed', function() {
       var isViewDestroyed, view, viewController;
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController'
@@ -355,7 +355,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.destroy).toHaveBeenCalled();
       return expect(isViewDestroyed).toBe(true);
     });
-    it('should cancel destruction of the view if destroy() returns false', function() {
+    it('should cancel view destruction if the view controller\'s destroy() returns false', function() {
       var isViewDestroyed, view, viewController;
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
