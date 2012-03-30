@@ -256,7 +256,7 @@ Ext.define( 'MyApp.manager.ContactManager', {
 
 ## Deft.mvc.ViewController ##
 
-A lightweight controller for a view, responsible for managing the state of a view and its components, listening for events dispatched by the view and its components in response to user gestures, and delegating work to injected business services (such as Stores, Models, Managers, etc.).
+A lightweight controller for a view, responsible for managing the state of the view and its child components, listening for events dispatched by the view and its child components in response to user gestures, and delegating work to injected business services (such as Stores, Models, Managers, etc.).
 
 The ViewController is an abstract base class which can be extended to create view-specific view controllers.
 
@@ -267,7 +267,7 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 });
 ```
 
-References to view components can be established via the `control` annotation via component query selectors:
+References to view components can be established via the `control` annotation and view-relative component query selectors:
 
 ```javascript
 Ext.define( 'MyApp.controller.ContactsViewController', {
@@ -300,7 +300,7 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 	extend: 'Deft.mvc.ViewController',	
 	...
 	control: {
-		submitButton: true, // indicates the Button in the controlled view has an itemId of 'submitButton'
+		submitButton: true, // indicates the Button in the view has an itemId of 'submitButton'
 		...
 	}
 });
@@ -327,11 +327,11 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 });
 ```
 
-In this example, in addition to creating and adding a `getSubmitButton()` accessor, the view controller will add a `click` event listener to the Button in the corresponding view with an itemId of `submitButton`.
+In this example, in addition to creating and adding a `getSubmitButton()` accessor, the view controller will add a `click` event listener to the Button with an itemId of `submitButton` in the corresponding view.
 
-*NOTE:* The specified event listener will be called in the view contoller's scope.
+*NOTE:* The specified event listener will be called in the view controller's scope.
 
-As an alternative to relying on corresponding component `itemId`'s, the `control` annotation can be configured to reference a component by a view relative component query selector and add event listeners using slightly more verbose syntax:
+As an alternative to relying on matching component `itemId`'s, the `control` annotation can be configured to both reference a component by a view-relative component query selector and add event listeners, using slightly more verbose syntax:
 
 ```javascript
 Ext.define( 'MyApp.controller.ContactsViewController', {
@@ -359,7 +359,7 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 			'hide': 'onViewHide'
 	}
 	...
-	init: function {
+	init: function() {
 		this.getView().show()
 	
 		return this.callParent( arguments );
@@ -367,7 +367,7 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 });
 ```
 
-*NOTE:* The `getView()` accessor is always available, regardless of whether you explicitly create a reference and add listeners.
+*NOTE:* The `getView()` accessor is always available, regardless of whether you explicitly create a reference and add event listeners to `view`.
 
 After the view has been initialized or rendered for the first time, the view controller's `init()` template method will be called.
 
@@ -379,15 +379,15 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 		...
 	}
 	...
-	init: function {
-		// all accessors will have been created and all event listeners will have be added
+	init: function() {
+		// all accessors will have been created and all event listeners will have been added
 	
 		return this.callParent( arguments );
 	}
 });
 ```
 
-When the corresponding view is destroyed, the view controller's `destroy()` template method is called. If this method returns `false`, view destruction will be cancelled. If this method returns `true`, the view will be destroyed, and all references and event listeners created in the view controller using `control` will automatically be removed.
+When the `destroy()` is called on the view, the view controller's `destroy()` template method is called. If this method returns `false`, view destruction will be cancelled. If this method returns `true`, the view will be destroyed, and all references and event listeners created in the view controller using `control` will automatically be removed.
 
 ```javascript
 Ext.define( 'MyApp.controller.ContactsViewController', {
@@ -397,8 +397,8 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 		...
 	}
 	...
-	destroy: function {
-		if (this.unsavedChanges) {
+	destroy: function() {
+		if (this.hasUnsavedChanges) {
 			// cancel destruction
 			return false
 		}
@@ -409,7 +409,7 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 });
 ```
 
-Recall that a view controller is expected to delegate work to injected business services. This can be accomplished by applying the `Deft.mixin.Injectable` mixin.
+Recall that a view controller is expected to delegate work to injected business services. This can be accomplished by leveraging `Deft.ioc.Injector` and including the `Deft.mixin.Injectable` mixin.
 
 
 ```javascript
@@ -423,7 +423,7 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 			'click': 'onRefreshButtonClick'
 	}
 	...
-	onRefreshButtonClick: function () {
+	onRefreshButtonClick: function() {
 		contactStore.load()
 	}
 });
@@ -446,11 +446,11 @@ Ext.define( 'MyApp.view.ContactsView', {
 
 The corresponding view controller class is specified using the `controller` annotation.
 
-In this case, whenever an instance of ContactsView is created, an instance of the ContactsViewController will also be created and associated with that view instance. 
+In this case, whenever an instance of ContactsView is created, an instance of the ContactsViewController will also be created and associated with that view instance.
 
 Consequently, multiple independent instances of a given view class can be created, each with their own independent view controller instances. Views can communicate by interacting with shared injected business services. Nested views can also communicate via custom events.
 
-Provided the specified `controller` extends `Deft.mvc.ViewController` the controller will automatically be destroyed when the view is destroyed.
+Provided the specified `controller` extends `Deft.mvc.ViewController`, the controller will automatically be destroyed when the view is destroyed.
 
 # Version History
 
