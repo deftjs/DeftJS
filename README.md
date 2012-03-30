@@ -95,13 +95,15 @@ You can also specify whether a class is instantiated as a singleton (the default
 
 ```javascript
 Deft.Injector.configure({
-	contactController: {
-		className: 'MyApp.controller.ContactViewController',
+	contactManager: {
+		className: 'MyApp.manager.ContactManager',
 		singleton: false
 	},
 	...
 });
 ```
+
+When configured as a prototype, each call to resolve an identifier will return a new instance of the specified class.
 
 Additionally, you can configure dependency providers to be eagerly or lazily (the default) instantiated:
 
@@ -226,7 +228,7 @@ Ext.define( 'MyApp.manager.ContactManager', {
 
 In this case, the `contactStore` dependency will be resolved into a new `store` property.
 
-A class does not need to explicitly define a config or property for the property to be injected.  However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.
+A class does not need to explicitly define a config or property for the property to be injected. However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.
 
 ```javascript
 Ext.define( 'MyApp.manager.ContactManager', {
@@ -252,14 +254,214 @@ Ext.define( 'MyApp.manager.ContactManager', {
 });
 ```
 
+## Deft.mvc.ViewController ##
+
+A lightweight controller for a view, responsible for managing the state of a view and its components, listening for events dispatched by the view and its components in response to user gestures, and delegating work to injected business services (such as Stores, Models, Managers, etc.).
+
+The ViewController is an abstract base class which can be extended to create view-specific view controllers.
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',
+	...
+});
+```
+
+References to view components can be established via the `control` annotation via component query selectors:
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',	
+	...
+	control: {
+		submitButton: 'panel > button[text="Submit"]',
+		cancelButton: 'panel > button[text="Cancel"]',
+		...
+	}
+	...
+	init: function() {
+		// getSubmitButton() accessor will be automatically created.
+		this.getSubmitButton().disable();
+		
+		return this.callParent( arguments );
+	}
+	...
+});
+```
+
+*NOTE:* The specified component query selector is evaluated relative to the view, rather than globally as in `Ext.app.Controller`.
+
+As seen above, a getter function will automatically created and added to the view controller for each referenced component.
+
+Alternatively, the selector can be omitted if the component identifier being registered matches the view component's `itemId`:
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',	
+	...
+	control: {
+		submitButton: true, // indicates the Button in the controlled view has an itemId of 'submitButton'
+		...
+	}
+});
+```
+
+As before, this will create and add a `getSubmitButton()` accessor to the view controller.
+
+The `control` annotation can also be used to register event listeners for events dispatched by referenced view components.
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',	
+	...
+	control: {
+		submitButton: 
+			'click': 'onSubmitButtonClick'
+	}
+	...
+	onSubmitButtonClick: function() {
+		// executed in the view controller's scope
+		...
+	}
+	...
+});
+```
+
+In this example, in addition to creating and adding a `getSubmitButton()` accessor, the view controller will add a `click` event listener to the Button in the corresponding view with an itemId of `submitButton`.
+
+*NOTE:* The specified event listener will be called in the view contoller's scope.
+
+As an alternative to relying on corresponding component `itemId`'s, the `control` annotation can be configured to reference a component by a view relative component query selector and add event listeners using slightly more verbose syntax:
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',	
+	...
+	control: {
+		submitButton: 
+			selector: 'panel > button[text="Submit"]'
+			listeners:
+				'click': 'onSubmitButtonClick'
+	}
+	...
+});
+```
+
+To listen to events dispatched by the view, use the `view` identifier:
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',	
+	...
+	control: {
+		view:
+			'show': 'onViewShow'
+			'hide': 'onViewHide'
+	}
+	...
+	init: function {
+		this.getView().show()
+	
+		return this.callParent( arguments );
+	}
+});
+```
+
+*NOTE:* The `getView()` accessor is always available, regardless of whether you explicitly create a reference and add listeners.
+
+After the view has been initialized or rendered for the first time, the view controller's `init()` template method will be called.
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',	
+	...
+	control: {
+		...
+	}
+	...
+	init: function {
+		// all accessors will have been created and all event listeners will have be added
+	
+		return this.callParent( arguments );
+	}
+});
+```
+
+When the corresponding view is destroyed, the view controller's `destroy()` template method is called. If this method returns `false`, view destruction will be cancelled. If this method returns `true`, the view will be destroyed, and all references and event listeners created in the view controller using `control` will automatically be removed.
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',	
+	...
+	control: {
+		...
+	}
+	...
+	destroy: function {
+		if (this.unsavedChanges) {
+			// cancel destruction
+			return false
+		}
+		
+		// burn baby burn
+		return this.callParent( arguments );
+	}
+});
+```
+
+Recall that a view controller is expected to delegate work to injected business services. This can be accomplished by applying the `Deft.mixin.Injectable` mixin.
+
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController', 
+	mixins: [ 'Deft.mixin.Injectable' ]
+	inject: [ 'contactStore' ]
+	...
+	control: {
+		refreshButton:
+			'click': 'onRefreshButtonClick'
+	}
+	...
+	onRefreshButtonClick: function () {
+		contactStore.load()
+	}
+});
+```
+
+See the documentation for `Deft.ioc.Injector` and `Deft.mixin.Injectable` for more details.
+
+## Deft.mixin.Controllable ##
+
+A view class can be configured to be controlled by a view controller by including the Controllable mixin:
+
+```javascript
+Ext.define( 'MyApp.view.ContactsView', {
+	extend: 'Ext.panel.Panel',
+	mixins: [ 'Deft.mixin.Controllable' ],
+	controller: 'MyApp.controller.ContactsViewController'
+	...
+});
+```
+
+The corresponding view controller class is specified using the `controller` annotation.
+
+In this case, whenever an instance of ContactsView is created, an instance of the ContactsViewController will also be created and associated with that view instance. 
+
+Consequently, multiple independent instances of a given view class can be created, each with their own independent view controller instances. Views can communicate by interacting with shared injected business services. Nested views can also communicate via custom events.
+
+Provided the specified `controller` extends `Deft.mvc.ViewController` the controller will automatically be destroyed when the view is destroyed.
+
 # Version History
 
-* 0.6.0 - Introducing View Controller, Controllable, Deferred and Promise.
+* 0.6.0 - Introducing View Controller and Controllable. Preview release of Deferred and Promise.
 * 0.1.1 - Preview release, added Jasmine test suite.
 * 0.1.0 - Preview release, introducing an IoC container for dependency injection.
 
 # Roadmap
 
+* Promise and Deferred documentation (*in progress*)
+* Promise unit tests (*in prgress*)
 * Website (*in progress*)
 * Forums (*in progress*)
 * FAQ
