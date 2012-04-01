@@ -9,7 +9,7 @@ describe('Deft.mvc.ViewController', function() {
   describe('Configuration', function() {
     it('should be configurable with a reference to the view it controls', function() {
       var view, viewController;
-      view = Ext.create('Ext.container.Container');
+      view = Ext.create('Ext.Container');
       viewController = Ext.create('Deft.mvc.ViewController', {
         view: view
       });
@@ -44,7 +44,7 @@ describe('Deft.mvc.ViewController', function() {
         }
       });
       Ext.define('ExampleView', {
-        extend: 'Ext.container.Container',
+        extend: 'Ext.Container',
         renderTo: 'componentTestArea',
         items: [
           {
@@ -52,6 +52,14 @@ describe('Deft.mvc.ViewController', function() {
             itemId: 'example'
           }
         ],
+        config: {
+          items: [
+            {
+              xtype: 'example',
+              itemId: 'example'
+            }
+          ]
+        },
         initComponent: function(config) {
           this.addEvents({
             exampleevent: true
@@ -65,7 +73,7 @@ describe('Deft.mvc.ViewController', function() {
       return Ext.DomHelper.append(Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>');
     });
     afterEach(function() {
-      return Ext.get('componentTestArea').remove();
+      return Ext.removeNode(Ext.get('componentTestArea').dom);
     });
     it('should attach view controller scoped event listeners to events for the view', function() {
       var view, viewController;
@@ -320,7 +328,7 @@ describe('Deft.mvc.ViewController', function() {
         }
       });
       Ext.define('ExampleView', {
-        extend: 'Ext.container.Container',
+        extend: 'Ext.Container',
         renderTo: 'componentTestArea',
         items: [
           {
@@ -328,6 +336,14 @@ describe('Deft.mvc.ViewController', function() {
             itemId: 'example'
           }
         ],
+        config: {
+          items: [
+            {
+              xtype: 'example',
+              itemId: 'example'
+            }
+          ]
+        },
         initComponent: function(config) {
           this.addEvents({
             exampleevent: true
@@ -336,6 +352,9 @@ describe('Deft.mvc.ViewController', function() {
         }
       });
       return Ext.DomHelper.append(Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>');
+    });
+    afterEach(function() {
+      return Ext.removeNode(Ext.get('componentTestArea').dom);
     });
     it('should be called to destroy() when the associated view is destroyed', function() {
       var isViewDestroyed, view, viewController;

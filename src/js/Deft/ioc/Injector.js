@@ -9,7 +9,7 @@ Used in conjunction with {@link Deft.mixin.Injectable}.
 */
 Ext.define('Deft.ioc.Injector', {
   alternateClassName: ['Deft.Injector'],
-  requires: ['Deft.ioc.DependencyProvider'],
+  requires: ['Deft.log.Logger', 'Deft.ioc.DependencyProvider'],
   singleton: true,
   constructor: function() {
     this.providers = {};
@@ -19,10 +19,10 @@ Ext.define('Deft.ioc.Injector', {
   	Configure the Injector.
   */
   configure: function(configuration) {
-    Ext.log('Configuring injector.');
+    Deft.Logger.log('Configuring injector.');
     Ext.Object.each(configuration, function(identifier, config) {
       var provider;
-      Ext.log("Configuring dependency provider for '" + identifier + "'.");
+      Deft.Logger.log("Configuring dependency provider for '" + identifier + "'.");
       if (Ext.isString(config)) {
         provider = Ext.create('Deft.ioc.DependencyProvider', {
           identifier: identifier,
@@ -37,7 +37,7 @@ Ext.define('Deft.ioc.Injector', {
     }, this);
     Ext.Object.each(this.providers, function(identifier, provider) {
       if (provider.getEager()) {
-        Ext.log("Eagerly creating '" + (provider.getIdentifier()) + "'.");
+        Deft.Logger.log("Eagerly creating '" + (provider.getIdentifier()) + "'.");
         provider.resolve();
       }
     }, this);
@@ -61,37 +61,47 @@ Ext.define('Deft.ioc.Injector', {
     if (provider != null) {
       return provider.resolve(targetInstance);
     } else {
-      Ext.Error.raise("Error while resolving value to inject: no dependency provider found for '" + identifier + "'.");
+      Ext.Error.raise({
+        msg: "Error while resolving value to inject: no dependency provider found for '" + identifier + "'."
+      });
     }
   },
   /**
   	Inject dependencies (by their identifiers) into the target object instance.
   */
   inject: function(identifiers, targetInstance) {
-    var config, name, setterFunctionName, value;
-    config = {};
+    var injectConfig, name, originalInitConfigFunction, setterFunctionName, value;
+    injectConfig = {};
     if (Ext.isString(identifiers)) identifiers = [identifiers];
     Ext.Object.each(identifiers, function(key, value) {
       var identifier, resolvedValue, targetProperty;
       targetProperty = Ext.isArray(identifiers) ? value : key;
       identifier = value;
       resolvedValue = this.resolve(identifier, targetInstance);
-      if (targetInstance.config.hasOwnProperty(targetProperty)) {
-        Ext.log("Injecting '" + identifier + "' into 'config." + targetProperty + "'.");
-        config[targetProperty] = resolvedValue;
+      if (targetProperty in targetInstance.config) {
+        Deft.Logger.log("Injecting '" + identifier + "' into '" + targetProperty + "' config.");
+        injectConfig[targetProperty] = resolvedValue;
       } else {
-        Ext.log("Injecting '" + identifier + "' into '" + targetProperty + "'.");
+        Deft.Logger.log("Injecting '" + identifier + "' into '" + targetProperty + "' property.");
         targetInstance[targetProperty] = resolvedValue;
       }
     }, this);
-    if (targetInstance.$configInited) {
-      for (name in config) {
-        value = config[name];
+    if (targetInstance.$configInited || targetInstance.wasInstantiated) {
+      for (name in injectConfig) {
+        value = injectConfig[name];
         setterFunctionName = 'set' + Ext.String.capitalize(name);
         targetInstance[setterFunctionName].call(targetInstance, value);
       }
     } else {
-      targetInstance.config = Ext.Object.merge({}, targetInstance.config || {}, config);
+      if (Ext.isFunction(targetInstance.initConfig)) {
+        originalInitConfigFunction = targetInstance.initConfig;
+        targetInstance.initConfig = function(config) {
+          var result;
+          result = originalInitConfigFunction.call(this, Ext.Object.merge({}, config || {}, injectConfig));
+          this.initConfig = originalInitConfigFunction;
+          return result;
+        };
+      }
     }
     return targetInstance;
   }

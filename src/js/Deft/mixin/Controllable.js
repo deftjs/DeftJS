@@ -16,7 +16,9 @@ Ext.define('Deft.mixin.Controllable', {
     targetClass.prototype.constructor = Ext.Function.createSequence(targetClass.prototype.constructor, function() {
       var controllerClass, controllers, _i, _len;
       if (!(this.controller != null)) {
-        Ext.Error.raise('Error initializing Controllable instance: \`controller\` was not specified.');
+        Ext.Error.raise({
+          msg: 'Error initializing Controllable instance: \`controller\` was not specified.'
+        });
       }
       controllers = Ext.isArray(this.controller) ? this.controller : [this.controller];
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
@@ -26,7 +28,9 @@ Ext.define('Deft.mixin.Controllable', {
             view: this
           });
         } catch (error) {
-          Ext.Error.raise("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+          Ext.Error.raise({
+            msg: "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + this.controller + "'."
+          });
         }
       }
     });

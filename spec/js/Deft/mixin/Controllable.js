@@ -11,7 +11,7 @@ describe('Deft.mixin.Controllable', function() {
     exampleViewInstance = null;
     exampleViewControllerInstance = null;
     Ext.define('ExampleView', {
-      extend: 'Ext.container.Container',
+      extend: 'Ext.Container',
       mixins: ['Deft.mixin.Controllable'],
       controller: 'ExampleViewController'
     });
@@ -29,7 +29,7 @@ describe('Deft.mixin.Controllable', function() {
   });
   it('should throw an error if the target view \`controller\` property is not populated', function() {
     Ext.define('ExampleView', {
-      extend: 'Ext.container.Container',
+      extend: 'Ext.Container',
       mixins: ['Deft.mixin.Controllable']
     });
     Ext.define('ExampleViewController', {
@@ -41,7 +41,7 @@ describe('Deft.mixin.Controllable', function() {
   });
   return it('should throw an error if the target view \`controller\` property specifies a non-existent class', function() {
     Ext.define('ExampleView', {
-      extend: 'Ext.container.Container',
+      extend: 'Ext.Container',
       mixins: ['Deft.mixin.Controllable'],
       controller: 'doesntexist'
     });

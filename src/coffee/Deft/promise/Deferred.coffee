@@ -31,7 +31,7 @@ Ext.define( 'Deft.promise.Deferred',
 		
 		for callback in [ successCallback, failureCallback, progressCallback, cancelCallback ]
 			if not ( Ext.isFunction( callback ) or callback is null or callback is undefined )
-				Ext.Error.raise( 'Error while configuring callback: a non-function specified.' )
+				Ext.Error.raise( msg: 'Error while configuring callback: a non-function specified.' )
 		
 		deferred = Ext.create( 'Deft.promise.Deferred' )
 		
@@ -91,7 +91,7 @@ Ext.define( 'Deft.promise.Deferred',
 			@progress = progress
 			@notify( @progressCallbacks, progress )
 		else
-			Ext.Error.raise( 'Error: this Deferred has already been completed and cannot be modified.')
+			Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
 		return
 	
 	###*
@@ -150,7 +150,7 @@ Ext.define( 'Deft.promise.Deferred',
 			@notify( callbacks, value )
 			@releaseCallbacks()
 		else
-			Ext.Error.raise( 'Error: this Deferred has already been completed and cannot be modified.')
+			Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
 		return
 	
 	###*

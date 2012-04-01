@@ -13,7 +13,7 @@ describe( 'Deft.mixin.Controllable', ->
 		exampleViewControllerInstance = null
 		
 		Ext.define( 'ExampleView',
-			extend: 'Ext.container.Container'
+			extend: 'Ext.Container'
 			mixins: [ 'Deft.mixin.Controllable' ]
 			controller: 'ExampleViewController'
 		)
@@ -37,7 +37,7 @@ describe( 'Deft.mixin.Controllable', ->
 	it( 'should throw an error if the target view \`controller\` property is not populated', ->
 		
 		Ext.define( 'ExampleView',
-			extend: 'Ext.container.Container'
+			extend: 'Ext.Container'
 			mixins: [ 'Deft.mixin.Controllable' ]
 		)
 		
@@ -53,7 +53,7 @@ describe( 'Deft.mixin.Controllable', ->
 	it( 'should throw an error if the target view \`controller\` property specifies a non-existent class', ->
 		
 		Ext.define( 'ExampleView',
-			extend: 'Ext.container.Container'
+			extend: 'Ext.Container'
 			mixins: [ 'Deft.mixin.Controllable' ]
 			controller: 'doesntexist'
 		)

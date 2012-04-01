@@ -29,7 +29,9 @@ Ext.define('Deft.promise.Deferred', {
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       callback = _ref[_i];
       if (!(Ext.isFunction(callback) || callback === null || callback === void 0)) {
-        Ext.Error.raise('Error while configuring callback: a non-function specified.');
+        Ext.Error.raise({
+          msg: 'Error while configuring callback: a non-function specified.'
+        });
       }
     }
     deferred = Ext.create('Deft.promise.Deferred');
@@ -93,7 +95,9 @@ Ext.define('Deft.promise.Deferred', {
       this.progress = progress;
       this.notify(this.progressCallbacks, progress);
     } else {
-      Ext.Error.raise('Error: this Deferred has already been completed and cannot be modified.');
+      Ext.Error.raise({
+        msg: 'Error: this Deferred has already been completed and cannot be modified.'
+      });
     }
   },
   /**
@@ -147,7 +151,9 @@ Ext.define('Deft.promise.Deferred', {
       this.notify(callbacks, value);
       this.releaseCallbacks();
     } else {
-      Ext.Error.raise('Error: this Deferred has already been completed and cannot be modified.');
+      Ext.Error.raise({
+        msg: 'Error: this Deferred has already been completed and cannot be modified.'
+      });
     }
   },
   /**

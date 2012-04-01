@@ -1,9 +1,43 @@
 /*
-DeftJS 0.6
+DeftJS 0.6.1
 
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
+Ext.define('Deft.log.Logger', {
+  alternateClassName: ['Deft.Logger'],
+  singleton: true,
+  log: function(message, priority) {},
+  error: function(message) {
+    this.log(message, 'error');
+  },
+  info: function(message) {
+    this.log(message, 'info');
+  },
+  verbose: function(message) {
+    this.log(message, 'verbose');
+  },
+  warn: function(message) {
+    this.log(message, 'warn');
+  },
+  deprecate: function(message) {
+    this.log(message, 'deprecate');
+  }
+}, function() {
+  var _ref;
+  if (Ext.isFunction((_ref = Ext.Logger) != null ? _ref.log : void 0)) {
+    this.log = Ext.Logger.log;
+  } else if (Ext.isFunction(Ext.log)) {
+    this.log = function(message, priority) {
+      if (priority == null) priority = 'info';
+      if (priority === 'deprecate') priority = 'warn';
+      Ext.log({
+        msg: message,
+        level: priority
+      });
+    };
+  }
+});
 
 /**
 @private
@@ -11,6 +45,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Used by {@link Deft.ioc.Injector}.
 */
 Ext.define('Deft.ioc.DependencyProvider', {
+  requires: ['Deft.log.Logger'],
   config: {
     identifier: null,
     /**
@@ -49,15 +84,21 @@ Ext.define('Deft.ioc.DependencyProvider', {
     }
     if (this.getEager()) {
       if (this.getValue() != null) {
-        Ext.Error.raise("Error while configuring '" + (this.getIdentifier()) + "': a 'value' cannot be created eagerly.");
+        Ext.Error.raise({
+          msg: "Error while configuring '" + (this.getIdentifier()) + "': a 'value' cannot be created eagerly."
+        });
       }
       if (!this.getSingleton()) {
-        Ext.Error.raise("Error while configuring '" + (this.getIdentifier()) + "': only singletons can be created eagerly.");
+        Ext.Error.raise({
+          msg: "Error while configuring '" + (this.getIdentifier()) + "': only singletons can be created eagerly."
+        });
       }
     }
     if (!this.getSingleton()) {
       if (this.getValue() != null) {
-        Ext.Error.raise("Error while configuring '" + (this.getIdentifier()) + "': a 'value' can only be configured as a singleton.");
+        Ext.Error.raise({
+          msg: "Error while configuring '" + (this.getIdentifier()) + "': a 'value' can only be configured as a singleton."
+        });
       }
     }
     return this;
@@ -67,18 +108,20 @@ Ext.define('Deft.ioc.DependencyProvider', {
   */
   resolve: function(targetInstance) {
     var instance, parameters;
-    Ext.log("Resolving '" + (this.getIdentifier()) + "'.");
+    Deft.Logger.log("Resolving '" + (this.getIdentifier()) + "'.");
     if (this.getValue() != null) return this.getValue();
     instance = null;
     if (this.getFn() != null) {
-      Ext.log("Executing factory function.");
-      instance = this.fn(targetInstance);
+      Deft.Logger.log("Executing factory function.");
+      instance = this.getFn().call(null, targetInstance);
     } else if (this.getClassName() != null) {
-      Ext.log("Creating instance of '" + (this.getClassName()) + "'.");
+      Deft.Logger.log("Creating instance of '" + (this.getClassName()) + "'.");
       parameters = this.getParameters() != null ? [this.getClassName()].concat(this.getParameters()) : [this.getClassName()];
       instance = Ext.create.apply(this, parameters);
     } else {
-      Ext.Error.raise("Error while configuring rule for '" + (this.getIdentifier()) + "': no 'value', 'fn', or 'className' was specified.");
+      Ext.Error.raise({
+        msg: "Error while configuring rule for '" + (this.getIdentifier()) + "': no 'value', 'fn', or 'className' was specified."
+      });
     }
     if (this.getSingleton()) this.setValue(instance);
     return instance;
@@ -92,7 +135,7 @@ Used in conjunction with {@link Deft.mixin.Injectable}.
 */
 Ext.define('Deft.ioc.Injector', {
   alternateClassName: ['Deft.Injector'],
-  requires: ['Deft.ioc.DependencyProvider'],
+  requires: ['Deft.log.Logger', 'Deft.ioc.DependencyProvider'],
   singleton: true,
   constructor: function() {
     this.providers = {};
@@ -102,10 +145,10 @@ Ext.define('Deft.ioc.Injector', {
   	Configure the Injector.
   */
   configure: function(configuration) {
-    Ext.log('Configuring injector.');
+    Deft.Logger.log('Configuring injector.');
     Ext.Object.each(configuration, function(identifier, config) {
       var provider;
-      Ext.log("Configuring dependency provider for '" + identifier + "'.");
+      Deft.Logger.log("Configuring dependency provider for '" + identifier + "'.");
       if (Ext.isString(config)) {
         provider = Ext.create('Deft.ioc.DependencyProvider', {
           identifier: identifier,
@@ -120,7 +163,7 @@ Ext.define('Deft.ioc.Injector', {
     }, this);
     Ext.Object.each(this.providers, function(identifier, provider) {
       if (provider.getEager()) {
-        Ext.log("Eagerly creating '" + (provider.getIdentifier()) + "'.");
+        Deft.Logger.log("Eagerly creating '" + (provider.getIdentifier()) + "'.");
         provider.resolve();
       }
     }, this);
@@ -144,37 +187,47 @@ Ext.define('Deft.ioc.Injector', {
     if (provider != null) {
       return provider.resolve(targetInstance);
     } else {
-      Ext.Error.raise("Error while resolving value to inject: no dependency provider found for '" + identifier + "'.");
+      Ext.Error.raise({
+        msg: "Error while resolving value to inject: no dependency provider found for '" + identifier + "'."
+      });
     }
   },
   /**
   	Inject dependencies (by their identifiers) into the target object instance.
   */
   inject: function(identifiers, targetInstance) {
-    var config, name, setterFunctionName, value;
-    config = {};
+    var injectConfig, name, originalInitConfigFunction, setterFunctionName, value;
+    injectConfig = {};
     if (Ext.isString(identifiers)) identifiers = [identifiers];
     Ext.Object.each(identifiers, function(key, value) {
       var identifier, resolvedValue, targetProperty;
       targetProperty = Ext.isArray(identifiers) ? value : key;
       identifier = value;
       resolvedValue = this.resolve(identifier, targetInstance);
-      if (targetInstance.config.hasOwnProperty(targetProperty)) {
-        Ext.log("Injecting '" + identifier + "' into 'config." + targetProperty + "'.");
-        config[targetProperty] = resolvedValue;
+      if (targetProperty in targetInstance.config) {
+        Deft.Logger.log("Injecting '" + identifier + "' into '" + targetProperty + "' config.");
+        injectConfig[targetProperty] = resolvedValue;
       } else {
-        Ext.log("Injecting '" + identifier + "' into '" + targetProperty + "'.");
+        Deft.Logger.log("Injecting '" + identifier + "' into '" + targetProperty + "' property.");
         targetInstance[targetProperty] = resolvedValue;
       }
     }, this);
-    if (targetInstance.$configInited) {
-      for (name in config) {
-        value = config[name];
+    if (targetInstance.$configInited || targetInstance.wasInstantiated) {
+      for (name in injectConfig) {
+        value = injectConfig[name];
         setterFunctionName = 'set' + Ext.String.capitalize(name);
         targetInstance[setterFunctionName].call(targetInstance, value);
       }
     } else {
-      targetInstance.config = Ext.Object.merge({}, targetInstance.config || {}, config);
+      if (Ext.isFunction(targetInstance.initConfig)) {
+        originalInitConfigFunction = targetInstance.initConfig;
+        targetInstance.initConfig = function(config) {
+          var result;
+          result = originalInitConfigFunction.call(this, Ext.Object.merge({}, config || {}, injectConfig));
+          this.initConfig = originalInitConfigFunction;
+          return result;
+        };
+      }
     }
     return targetInstance;
   }
@@ -204,6 +257,7 @@ Used in conjunction with {@link Deft.mixin.Controllable}.
 */
 Ext.define('Deft.mvc.ViewController', {
   alternateClassName: ['Deft.ViewController'],
+  requires: ['Deft.log.Logger'],
   config: {
     /**
     		View controlled by this ViewController.
@@ -214,11 +268,9 @@ Ext.define('Deft.mvc.ViewController', {
     this.initConfig(config);
     if (this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
       this.registeredComponents = {};
-      if (this.getView().events.initialize) {
-        this.getView().on('initialize', this.onViewInitialize, this, {
-          single: true
-        });
-      } else {
+      this.isExtJS = this.getView().events != null;
+      this.isSenchaTouch = !this.isExtJS;
+      if (this.isExtJS) {
         if (this.getView().rendered) {
           this.onViewInitialize();
         } else {
@@ -226,9 +278,19 @@ Ext.define('Deft.mvc.ViewController', {
             single: true
           });
         }
+      } else {
+        if (this.getView().initialized) {
+          this.onViewInitialize();
+        } else {
+          this.getView().on('initialize', this.onViewInitialize, this, {
+            single: true
+          });
+        }
       }
     } else {
-      Ext.Error.raise('Error constructing ViewController: the configured \'view\' is not an Ext.Component.');
+      Ext.Error.raise({
+        msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
+      });
     }
     return this;
   },
@@ -246,11 +308,22 @@ Ext.define('Deft.mvc.ViewController', {
   	@private
   */
   onViewInitialize: function() {
-    var component, config, id, listeners, _ref;
-    this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
-    this.getView().on('destroy', this.onViewDestroy, this, {
-      single: true
-    });
+    var component, config, id, listeners, originalViewDestroyFunction, self, _ref;
+    if (this.isExtJS) {
+      this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
+      this.getView().on('destroy', this.onViewDestroy, this, {
+        single: true
+      });
+    } else {
+      self = this;
+      originalViewDestroyFunction = this.getView().destroy;
+      this.getView().destroy = function() {
+        if (self.destroy()) {
+          originalViewDestroyFunction.call(this);
+          this.destroy = originalViewDestroyFunction;
+        }
+      };
+    }
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
@@ -291,10 +364,12 @@ Ext.define('Deft.mvc.ViewController', {
   */
   registerComponent: function(id, component, listeners) {
     var event, existingComponent, getterName, listener;
-    Ext.log("Registering '" + id + "' component.");
+    Deft.Logger.log("Registering '" + id + "' component.");
     existingComponent = this.getComponent(id);
     if (existingComponent != null) {
-      Ext.Error.raise("Error registering component: an existing component already registered as '" + id + "'.");
+      Ext.Error.raise({
+        msg: "Error registering component: an existing component already registered as '" + id + "'."
+      });
     }
     this.registeredComponents[id] = {
       component: component,
@@ -309,11 +384,13 @@ Ext.define('Deft.mvc.ViewController', {
     if (Ext.isObject(listeners)) {
       for (event in listeners) {
         listener = listeners[event];
-        Ext.log("Adding '" + event + "' listener to '" + id + "'.");
+        Deft.Logger.log("Adding '" + event + "' listener to '" + id + "'.");
         if (Ext.isFunction(this[listener])) {
           component.on(event, this[listener], this);
         } else {
-          Ext.Error.raise("Error adding '" + event + "' listener: the specified handler '" + listener + "' is not a Function or does not exist.");
+          Ext.Error.raise({
+            msg: "Error adding '" + event + "' listener: the specified handler '" + listener + "' is not a Function or does not exist."
+          });
         }
       }
     }
@@ -323,20 +400,24 @@ Ext.define('Deft.mvc.ViewController', {
   */
   unregisterComponent: function(id) {
     var component, event, existingComponent, getterName, listener, listeners, _ref;
-    Ext.log("Unregistering '" + id + "' component.");
+    Deft.Logger.log("Unregistering '" + id + "' component.");
     existingComponent = this.getComponent(id);
     if (!(existingComponent != null)) {
-      Ext.Error.raise("Error unregistering component: no component is registered as '" + id + "'.");
+      Ext.Error.raise({
+        msg: "Error unregistering component: no component is registered as '" + id + "'."
+      });
     }
     _ref = this.registeredComponents[id], component = _ref.component, listeners = _ref.listeners;
     if (Ext.isObject(listeners)) {
       for (event in listeners) {
         listener = listeners[event];
-        Ext.log("Removing '" + event + "' listener from '" + id + "'.");
+        Deft.Logger.log("Removing '" + event + "' listener from '" + id + "'.");
         if (Ext.isFunction(this[listener])) {
           component.un(event, this[listener], this);
         } else {
-          Ext.Error.raise("Error removing '" + event + "' listener: the specified handler '" + listener + "' is not a Function or does not exist.");
+          Ext.Error.raise({
+            msg: "Error removing '" + event + "' listener: the specified handler '" + listener + "' is not a Function or does not exist."
+          });
         }
       }
     }
@@ -356,28 +437,40 @@ Ext.define('Deft.mvc.ViewController', {
     if (Ext.isString(config)) {
       matches = view.query(config);
       if (matches.length === 0) {
-        Ext.Error.raise("Error locating component: no component found matching '" + config + "'.");
+        Ext.Error.raise({
+          msg: "Error locating component: no component found matching '" + config + "'."
+        });
       }
       if (matches.length > 1) {
-        Ext.Error.raise("Error locating component: multiple components found matching '" + config + "'.");
+        Ext.Error.raise({
+          msg: "Error locating component: multiple components found matching '" + config + "'."
+        });
       }
       return matches[0];
     } else if (Ext.isString(config.selector)) {
       matches = view.query(config.selector);
       if (matches.length === 0) {
-        Ext.Error.raise("Error locating component: no component found matching '" + config.selector + "'.");
+        Ext.Error.raise({
+          msg: "Error locating component: no component found matching '" + config.selector + "'."
+        });
       }
       if (matches.length > 1) {
-        Ext.Error.raise("Error locating component: multiple components found matching '" + config.selector + "'.");
+        Ext.Error.raise({
+          msg: "Error locating component: multiple components found matching '" + config.selector + "'."
+        });
       }
       return matches[0];
     } else {
       matches = view.query('#' + id);
       if (matches.length === 0) {
-        Ext.Error.raise("Error locating component: no component found with an itemId of '" + id + "'.");
+        Ext.Error.raise({
+          msg: "Error locating component: no component found with an itemId of '" + id + "'."
+        });
       }
       if (matches.length > 1) {
-        Ext.Error.raise("Error locating component: multiple components found with an itemId of '" + id + "'.");
+        Ext.Error.raise({
+          msg: "Error locating component: multiple components found with an itemId of '" + id + "'."
+        });
       }
       return matches[0];
     }
@@ -398,7 +491,9 @@ Ext.define('Deft.mixin.Controllable', {
     targetClass.prototype.constructor = Ext.Function.createSequence(targetClass.prototype.constructor, function() {
       var controllerClass, controllers, _i, _len;
       if (!(this.controller != null)) {
-        Ext.Error.raise('Error initializing Controllable instance: \`controller\` was not specified.');
+        Ext.Error.raise({
+          msg: 'Error initializing Controllable instance: \`controller\` was not specified.'
+        });
       }
       controllers = Ext.isArray(this.controller) ? this.controller : [this.controller];
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
@@ -408,7 +503,9 @@ Ext.define('Deft.mixin.Controllable', {
             view: this
           });
         } catch (error) {
-          Ext.Error.raise("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+          Ext.Error.raise({
+            msg: "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + this.controller + "'."
+          });
         }
       }
     });
@@ -442,7 +539,9 @@ Ext.define('Deft.promise.Deferred', {
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       callback = _ref[_i];
       if (!(Ext.isFunction(callback) || callback === null || callback === void 0)) {
-        Ext.Error.raise('Error while configuring callback: a non-function specified.');
+        Ext.Error.raise({
+          msg: 'Error while configuring callback: a non-function specified.'
+        });
       }
     }
     deferred = Ext.create('Deft.promise.Deferred');
@@ -506,7 +605,9 @@ Ext.define('Deft.promise.Deferred', {
       this.progress = progress;
       this.notify(this.progressCallbacks, progress);
     } else {
-      Ext.Error.raise('Error: this Deferred has already been completed and cannot be modified.');
+      Ext.Error.raise({
+        msg: 'Error: this Deferred has already been completed and cannot be modified.'
+      });
     }
   },
   /**
@@ -560,7 +661,9 @@ Ext.define('Deft.promise.Deferred', {
       this.notify(callbacks, value);
       this.releaseCallbacks();
     } else {
-      Ext.Error.raise('Error: this Deferred has already been completed and cannot be modified.');
+      Ext.Error.raise({
+        msg: 'Error: this Deferred has already been completed and cannot be modified.'
+      });
     }
   },
   /**
@@ -769,7 +872,9 @@ Ext.define('Deft.util.Function', {
     spread: function(fn, scope) {
       return function(array) {
         if (!Ext.isArray(array)) {
-          Ext.Error.raise("Error spreading passed Array over target function arguments: passed a non-Array.");
+          Ext.Error.raise({
+            msg: "Error spreading passed Array over target function arguments: passed a non-Array."
+          });
         }
         return fn.apply(scope, array);
       };

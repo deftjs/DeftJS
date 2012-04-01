@@ -10,6 +10,7 @@ Used in conjunction with {@link Deft.mixin.Controllable}.
 ###
 Ext.define( 'Deft.mvc.ViewController',
 	alternateClassName: [ 'Deft.ViewController' ]
+	requires: [ 'Deft.log.Logger' ]
 	
 	config:
 		###*
@@ -23,17 +24,25 @@ Ext.define( 'Deft.mvc.ViewController',
 		if @getView() instanceof Ext.ClassManager.get( 'Ext.Component' )
 			@registeredComponents = {}
 			
-			if @getView().events.initialize
-				# Sencha Touch
-				@getView().on( 'initialize', @onViewInitialize, @, single: true )
-			else
+			# TODO: Find a more reliable way to detect the difference between Ext JS and Sencha Touch.
+			# Extract to static utility class or singleton property or method.
+			@isExtJS = @getView().events?
+			@isSenchaTouch = not @isExtJS
+			
+			if @isExtJS
 				# Ext JS
 				if @getView().rendered
 					@onViewInitialize()
 				else
 					@getView().on( 'afterrender', @onViewInitialize, @, single: true )
+			else
+				# Sencha Touch
+				if @getView().initialized
+					@onViewInitialize()
+				else
+					@getView().on( 'initialize', @onViewInitialize, @, single: true )
 		else
-			Ext.Error.raise( 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
+			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
 		
 		return @
 	
@@ -53,8 +62,17 @@ Ext.define( 'Deft.mvc.ViewController',
 	@private
 	###
 	onViewInitialize: ->
-		@getView().on( 'beforedestroy', @onViewBeforeDestroy, @ )
-		@getView().on( 'destroy', @onViewDestroy, @, single: true )
+		if @isExtJS
+			@getView().on( 'beforedestroy', @onViewBeforeDestroy, @ )
+			@getView().on( 'destroy', @onViewDestroy, @, single: true )
+		else
+			self = this
+			originalViewDestroyFunction = @getView().destroy
+			@getView().destroy = ->
+				if self.destroy()
+					originalViewDestroyFunction.call( @ )
+					@destroy = originalViewDestroyFunction
+				return
 		
 		for id, config of @control
 			component = @locateComponent( id, config )
@@ -90,11 +108,11 @@ Ext.define( 'Deft.mvc.ViewController',
 	@private
 	###
 	registerComponent: ( id, component, listeners ) ->
-		Ext.log( "Registering '#{ id }' component." )
+		Deft.Logger.log( "Registering '#{ id }' component." )
 		
 		existingComponent = @getComponent( id )
 		if existingComponent?
-			Ext.Error.raise( "Error registering component: an existing component already registered as '#{ id }'." )
+			Ext.Error.raise( msg: "Error registering component: an existing component already registered as '#{ id }'." )
 		
 		@registeredComponents[ id ] =
 			component: component
@@ -106,11 +124,11 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		if Ext.isObject( listeners )
 			for event, listener of listeners
-				Ext.log( "Adding '#{ event }' listener to '#{ id }'." )
+				Deft.Logger.log( "Adding '#{ event }' listener to '#{ id }'." )
 				if Ext.isFunction( @[ listener ] )
 					component.on( event, @[ listener ], @ )
 				else
-					Ext.Error.raise( "Error adding '#{ event }' listener: the specified handler '#{ listener }' is not a Function or does not exist." )
+					Ext.Error.raise( msg: "Error adding '#{ event }' listener: the specified handler '#{ listener }' is not a Function or does not exist." )
 		
 		return
 	
@@ -118,21 +136,21 @@ Ext.define( 'Deft.mvc.ViewController',
 	@private
 	###
 	unregisterComponent: ( id ) ->
-		Ext.log( "Unregistering '#{ id }' component." )
+		Deft.Logger.log( "Unregistering '#{ id }' component." )
 		
 		existingComponent = @getComponent( id )
 		if not existingComponent?
-			Ext.Error.raise( "Error unregistering component: no component is registered as '#{ id }'." )
+			Ext.Error.raise( msg: "Error unregistering component: no component is registered as '#{ id }'." )
 		
 		{ component, listeners } = @registeredComponents[ id ]
 			
 		if Ext.isObject( listeners )
 			for event, listener of listeners
-				Ext.log( "Removing '#{ event }' listener from '#{ id }'." )
+				Deft.Logger.log( "Removing '#{ event }' listener from '#{ id }'." )
 				if Ext.isFunction( @[ listener ] )
 					component.un( event, @[ listener ], @ )
 				else
-					Ext.Error.raise( "Error removing '#{ event }' listener: the specified handler '#{ listener }' is not a Function or does not exist." )
+					Ext.Error.raise( msg: "Error removing '#{ event }' listener: the specified handler '#{ listener }' is not a Function or does not exist." )
 		
 		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
@@ -153,22 +171,22 @@ Ext.define( 'Deft.mvc.ViewController',
 		if Ext.isString( config )
 			matches = view.query( config )
 			if matches.length is 0
-				Ext.Error.raise( "Error locating component: no component found matching '#{ config }'." )
+				Ext.Error.raise( msg: "Error locating component: no component found matching '#{ config }'." )
 			if matches.length > 1
-				Ext.Error.raise( "Error locating component: multiple components found matching '#{ config }'." )
+				Ext.Error.raise( msg: "Error locating component: multiple components found matching '#{ config }'." )
 			return matches[ 0 ]
 		else if Ext.isString( config.selector )
 			matches = view.query( config.selector )
 			if matches.length is 0
-				Ext.Error.raise( "Error locating component: no component found matching '#{ config.selector }'." )
+				Ext.Error.raise( msg: "Error locating component: no component found matching '#{ config.selector }'." )
 			if matches.length > 1
-				Ext.Error.raise( "Error locating component: multiple components found matching '#{ config.selector }'." )
+				Ext.Error.raise( msg: "Error locating component: multiple components found matching '#{ config.selector }'." )
 			return matches[ 0 ]
 		else
 			matches = view.query( '#' + id )
 			if matches.length is 0
-				Ext.Error.raise( "Error locating component: no component found with an itemId of '#{ id }'." )
+				Ext.Error.raise( msg: "Error locating component: no component found with an itemId of '#{ id }'." )
 			if matches.length > 1
-				Ext.Error.raise( "Error locating component: multiple components found with an itemId of '#{ id }'." )
+				Ext.Error.raise( msg: "Error locating component: multiple components found with an itemId of '#{ id }'." )
 			return matches[ 0 ]
 )

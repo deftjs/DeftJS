@@ -11,7 +11,7 @@ describe( 'Deft.mvc.ViewController', ->
 	describe( 'Configuration', ->
 		
 		it( 'should be configurable with a reference to the view it controls', ->
-			view = Ext.create( 'Ext.container.Container' )
+			view = Ext.create( 'Ext.Container' )
 		
 			viewController = Ext.create( 'Deft.mvc.ViewController', 
 				view: view
@@ -54,15 +54,24 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			
 			Ext.define( 'ExampleView',
-				extend: 'Ext.container.Container'
+				extend: 'Ext.Container'
 				
 				renderTo: 'componentTestArea'
+				# Ext JS
 				items: [
 					{
 						xtype: 'example'
 						itemId: 'example'
 					}
 				]
+				config:
+					# Sencha Touch
+					items: [
+						{
+							xtype: 'example'
+							itemId: 'example'
+						}
+					]
 				
 				initComponent: ( config ) ->
 					@addEvents(
@@ -80,7 +89,7 @@ describe( 'Deft.mvc.ViewController', ->
 		)
 		
 		afterEach( ->
-			Ext.get( 'componentTestArea' ).remove()
+			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
 		)
 		
 		it( 'should attach view controller scoped event listeners to events for the view', ->
@@ -372,15 +381,24 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			
 			Ext.define( 'ExampleView',
-				extend: 'Ext.container.Container'
+				extend: 'Ext.Container'
 				
 				renderTo: 'componentTestArea'
+				# Ext JS
 				items: [
 					{
 						xtype: 'example'
 						itemId: 'example'
 					}
 				]
+				config:
+					# Sencha Touch
+					items: [
+						{
+							xtype: 'example'
+							itemId: 'example'
+						}
+					]
 				
 				initComponent: ( config ) ->
 					@addEvents(
@@ -391,6 +409,10 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			
 			Ext.DomHelper.append( Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>' )
+		)
+		
+		afterEach( ->
+			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
 		)
 		
 		it( 'should be called to destroy() when the associated view is destroyed', ->

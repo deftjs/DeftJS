@@ -10,7 +10,7 @@ Used in conjunction with {@link Deft.mixin.Injectable}.
 ###
 Ext.define( 'Deft.ioc.Injector',
 	alternateClassName: [ 'Deft.Injector' ]
-	requires: [ 'Deft.ioc.DependencyProvider' ]
+	requires: [ 'Deft.log.Logger', 'Deft.ioc.DependencyProvider' ]
 	singleton: true
 	
 	constructor: ->
@@ -21,11 +21,11 @@ Ext.define( 'Deft.ioc.Injector',
 	Configure the Injector.
 	###
 	configure: ( configuration ) ->
-		Ext.log( 'Configuring injector.' )
+		Deft.Logger.log( 'Configuring injector.' )
 		Ext.Object.each(
 			configuration,
 			( identifier, config ) ->
-				Ext.log( "Configuring dependency provider for '#{ identifier }'." )
+				Deft.Logger.log( "Configuring dependency provider for '#{ identifier }'." )
 				if Ext.isString( config )
 					provider = Ext.create( 'Deft.ioc.DependencyProvider',
 						identifier: identifier
@@ -46,7 +46,7 @@ Ext.define( 'Deft.ioc.Injector',
 			@providers
 			( identifier, provider ) ->
 				if provider.getEager()
-					Ext.log( "Eagerly creating '#{ provider.getIdentifier() }'." )
+					Deft.Logger.log( "Eagerly creating '#{ provider.getIdentifier() }'." )
 					provider.resolve()
 				return
 			@
@@ -70,14 +70,14 @@ Ext.define( 'Deft.ioc.Injector',
 		if provider?
 			return provider.resolve( targetInstance )
 		else
-			Ext.Error.raise( "Error while resolving value to inject: no dependency provider found for '#{ identifier }'." )
+			Ext.Error.raise( msg: "Error while resolving value to inject: no dependency provider found for '#{ identifier }'." )
 		return
 	
 	###*
 	Inject dependencies (by their identifiers) into the target object instance.
 	###
 	inject: ( identifiers, targetInstance ) ->
-		config = {}
+		injectConfig = {}
 		identifiers = [ identifiers ] if Ext.isString( identifiers )
 		Ext.Object.each( 
 			identifiers
@@ -85,22 +85,27 @@ Ext.define( 'Deft.ioc.Injector',
 				targetProperty = if Ext.isArray( identifiers ) then value else key
 				identifier = value
 				resolvedValue = @resolve( identifier, targetInstance )
-				if targetInstance.config.hasOwnProperty( targetProperty )
-					Ext.log( "Injecting '#{ identifier }' into 'config.#{ targetProperty }'." )
-					config[ targetProperty ] = resolvedValue
+				if targetProperty of targetInstance.config
+					Deft.Logger.log( "Injecting '#{ identifier }' into '#{ targetProperty }' config." )
+					injectConfig[ targetProperty ] = resolvedValue
 				else
-					Ext.log( "Injecting '#{ identifier }' into '#{ targetProperty }'." )
+					Deft.Logger.log( "Injecting '#{ identifier }' into '#{ targetProperty }' property." )
 					targetInstance[ targetProperty ] = resolvedValue
 				return
 			@
 		)
 		
-		if targetInstance.$configInited
-			for name, value of config
+		if targetInstance.$configInited or targetInstance.wasInstantiated
+			for name, value of injectConfig
 				setterFunctionName = 'set' + Ext.String.capitalize( name )
 				targetInstance[ setterFunctionName ].call( targetInstance, value )
 		else
-			targetInstance.config = Ext.Object.merge( {}, targetInstance.config or {}, config )
+			if Ext.isFunction( targetInstance.initConfig )
+				originalInitConfigFunction = targetInstance.initConfig
+				targetInstance.initConfig = ( config ) ->
+					result = originalInitConfigFunction.call( @, Ext.Object.merge( {}, config or {}, injectConfig ) )
+					@initConfig = originalInitConfigFunction
+					return result
 		
 		return targetInstance
 )
