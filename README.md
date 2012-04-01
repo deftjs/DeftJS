@@ -454,6 +454,7 @@ Provided the specified `controller` extends `Deft.mvc.ViewController`, the contr
 
 # Version History
 
+* 0.6.1 - Sencha Touch compatibility fixes.
 * 0.6.0 - Introducing View Controller and Controllable. Preview release of Deferred and Promise.
 * 0.1.1 - Preview release, added Jasmine test suite.
 * 0.1.0 - Preview release, introducing an IoC container for dependency injection.
