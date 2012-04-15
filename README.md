@@ -315,8 +315,9 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 	extend: 'Deft.mvc.ViewController',	
 	...
 	control: {
-		submitButton: 
-			'click': 'onSubmitButtonClick'
+		submitButton: {
+			click: 'onSubmitButtonClick'
+		}
 	}
 	...
 	onSubmitButtonClick: function() {
@@ -338,10 +339,32 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 	extend: 'Deft.mvc.ViewController',	
 	...
 	control: {
-		submitButton: 
-			selector: 'panel > button[text="Submit"]'
-			listeners:
-				'click': 'onSubmitButtonClick'
+		submitButton: {
+			selector: 'panel > button[text="Submit"]',
+			listeners: {
+				click: 'onSubmitButtonClick'
+			}
+		}
+	}
+	...
+});
+```
+
+Standard event listener options such as `buffer`, `delay`, `scope`, `single` and `element` can be specified for a given view component event using slightly more verbose syntax:
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',	
+	...
+	control: {
+		valueSlider: {
+			listeners: {
+				change: {
+					fn: 'onValueSliderChange'
+					buffer: 70
+				}
+			}
+		}
 	}
 	...
 });
@@ -354,9 +377,10 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 	extend: 'Deft.mvc.ViewController',	
 	...
 	control: {
-		view:
-			'show': 'onViewShow'
-			'hide': 'onViewHide'
+		view: {
+			show: 'onViewShow',
+			hide: 'onViewHide'
+		}
 	}
 	...
 	init: function() {
@@ -454,6 +478,7 @@ Provided the specified `controller` extends `Deft.mvc.ViewController`, the contr
 
 # Version History
 
+* 0.6.2 - Added support for View Controller event listener options. Ext JS 4.1rc3 compatibility fixes.
 * 0.6.1 - Sencha Touch compatibility fixes.
 * 0.6.0 - Introducing View Controller and Controllable. Preview release of Deferred and Promise.
 * 0.1.1 - Preview release, added Jasmine test suite.
