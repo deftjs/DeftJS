@@ -14,7 +14,7 @@ describe( 'Deft.mixin.Injectable', ->
 			inject: [ 'identifier' ]
 			
 			constructor: ->
-				expect( Deft.Injector.inject ).toHaveBeenCalledWith( @inject, @ )
+				expect( Deft.Injector.inject ).toHaveBeenCalledWith( @inject, @, false )
 				return @
 		)
 		

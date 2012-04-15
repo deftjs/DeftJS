@@ -14,7 +14,7 @@ Ext.define('Deft.mixin.Injectable', {
   */
   onClassMixedIn: function(targetClass) {
     targetClass.prototype.constructor = Ext.Function.createInterceptor(targetClass.prototype.constructor, function() {
-      return Deft.Injector.inject(this.inject, this);
+      return Deft.Injector.inject(this.inject, this, false);
     });
   }
 });

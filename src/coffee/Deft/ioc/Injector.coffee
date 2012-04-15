@@ -76,7 +76,7 @@ Ext.define( 'Deft.ioc.Injector',
 	###*
 	Inject dependencies (by their identifiers) into the target object instance.
 	###
-	inject: ( identifiers, targetInstance ) ->
+	inject: ( identifiers, targetInstance, targetInstanceIsInitialized = true ) ->
 		injectConfig = {}
 		identifiers = [ identifiers ] if Ext.isString( identifiers )
 		Ext.Object.each( 
@@ -95,7 +95,9 @@ Ext.define( 'Deft.ioc.Injector',
 			@
 		)
 		
-		if targetInstance.$configInited or targetInstance.wasInstantiated
+		# Ext JS and Sencha Touch do not provide a consistent mechanism (across the target framework versions) for detecting whether initConfig() has been executed.
+		# Consequently, we rely on an optional method parameter to determine this state instead.
+		if targetInstanceIsInitialized
 			for name, value of injectConfig
 				setterFunctionName = 'set' + Ext.String.capitalize( name )
 				targetInstance[ setterFunctionName ].call( targetInstance, value )

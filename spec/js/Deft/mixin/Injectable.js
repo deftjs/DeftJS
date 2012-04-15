@@ -12,7 +12,7 @@ describe('Deft.mixin.Injectable', function() {
       mixins: ['Deft.mixin.Injectable'],
       inject: ['identifier'],
       constructor: function() {
-        expect(Deft.Injector.inject).toHaveBeenCalledWith(this.inject, this);
+        expect(Deft.Injector.inject).toHaveBeenCalledWith(this.inject, this, false);
         return this;
       }
     });
