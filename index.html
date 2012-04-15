@@ -452,8 +452,9 @@
     extend: 'Deft.mvc.ViewController',  
     ...
     control: {
-        submitButton: 
-            'click': 'onSubmitButtonClick'
+        submitButton: {
+            click: 'onSubmitButtonClick'
+        }
     }
     ...
     onSubmitButtonClick: function() {
@@ -471,6 +472,25 @@
 				<em>NOTE:</em> The specified event listener will be called in the view controller’s scope.
 			</p>
 			<p>
+				Standard event listener options such as <code>buffer</code>, <code>delay</code>, <code>scope</code>, <code>single</code> and <code>element</code> can be specified for a given view component event using slightly more verbose syntax:
+			</p>
+			<pre>
+<code>Ext.define( 'MyApp.controller.ContactsViewController', {
+    extend: 'Deft.mvc.ViewController',  
+    ...
+    control: {
+        valueSlider: {
+            change: {
+                fn: 'onValueSliderChange',
+                buffer: 70
+            }
+        }
+    }
+    ...
+});
+</code>
+</pre>
+			<p>
 				As an alternative to relying on matching component <code>itemId</code>’s, the <code>control</code> annotation can be configured to both reference a component by a view-relative component query selector and add event listeners, using slightly more verbose syntax:
 			</p>
 			<pre>
@@ -478,10 +498,12 @@
     extend: 'Deft.mvc.ViewController',  
     ...
     control: {
-        submitButton: 
-            selector: 'panel &gt; button[text="Submit"]'
-            listeners:
-                'click': 'onSubmitButtonClick'
+        submitButton: {
+            selector: 'panel &gt; button[text="Submit"]',
+            listeners: {
+                click: 'onSubmitButtonClick'
+            }
+        }
     }
     ...
 });
@@ -495,9 +517,10 @@
     extend: 'Deft.mvc.ViewController',  
     ...
     control: {
-        view:
-            'show': 'onViewShow'
-            'hide': 'onViewHide'
+        view: {
+            show: 'onViewShow',
+            hide: 'onViewHide'
+        }
     }
     ...
     init: function() {
@@ -564,8 +587,9 @@
     inject: [ 'contactStore' ]
     ...
     control: {
-        refreshButton:
-            'click': 'onRefreshButtonClick'
+        refreshButton: {
+            click: 'onRefreshButtonClick'
+        }
     }
     ...
     onRefreshButtonClick: function() {
@@ -608,6 +632,8 @@
 				Version History
 			</h1>
 			<ul>
+				<li>0.6.2 - Added support for View Controller event listener options. Ext JS 4.1rc3 compatibility fixes.
+				</li>
 				<li>0.6.1 - Sencha Touch compatibility fixes.
 				</li>
 				<li>0.6.0 - Introducing View Controller and Controllable. Preview release of Deferred and Promise.
