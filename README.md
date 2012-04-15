@@ -444,7 +444,7 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 	...
 	control: {
 		refreshButton: {
-			'click': 'onRefreshButtonClick'
+			click: 'onRefreshButtonClick'
 		}
 	}
 	...
