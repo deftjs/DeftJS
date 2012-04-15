@@ -124,6 +124,75 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.onExampleViewExampleEvent.callCount ).toBe( 1 )
 		)
 		
+		it( 'should attach view controller scoped event listeners (with options) to events for the view', ->
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				
+				control:
+					view:
+						exampleevent:
+							fn: 'onExampleViewExampleEvent'
+							single: true
+				
+				onExampleViewExampleEvent: ( event ) ->
+					return
+			)
+			
+			spyOn( ExampleViewController.prototype, 'onExampleViewExampleEvent' ).andCallFake( ( value ) ->
+				expect( @ ).toBe( viewController )
+				expect( value ).toBe( 'expected value' )
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			expect( viewController.getView() ).toBe( view )
+			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
+			
+			view.fireExampleEvent( 'expected value' )
+			view.fireExampleEvent( 'expected value' )
+			
+			expect( viewController.onExampleViewExampleEvent ).toHaveBeenCalled()
+			expect( viewController.onExampleViewExampleEvent.callCount ).toBe( 1 )
+		)
+		
+		it( 'should attach event listeners (with options) to events for the view', ->
+			expectedScope = {}
+			eventListenerFunction = jasmine.createSpy( 'event listener' ).andCallFake( ( value ) ->
+				expect( @ ).toBe( expectedScope )
+				expect( value ).toBe( 'expected value' )
+			)
+			
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				
+				control:
+					view:
+						exampleevent:
+							fn: eventListenerFunction
+							scope: expectedScope
+							single: true
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			expect( viewController.getView() ).toBe( view )
+			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
+			
+			view.fireExampleEvent( 'expected value' )
+			view.fireExampleEvent( 'expected value' )
+			
+			expect( eventListenerFunction ).toHaveBeenCalled()
+			expect( eventListenerFunction.callCount ).toBe( 1 )
+		)
+		
 		it( 'should throw an error when attaching a non-existing view controller scoped event listener for the view', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
@@ -290,6 +359,81 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
 		)
 		
+		it( 'should create a view controller getter and attach view controller scoped event listeners (with options) to events for a view component referenced implicitly by itemId', ->
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				
+				control:
+					example:
+						exampleevent:
+							fn: 'onExampleComponentExampleEvent'
+							single: true
+				
+				onExampleComponentExampleEvent: ->
+					return
+			)
+			
+			spyOn( ExampleViewController.prototype, 'onExampleComponentExampleEvent' ).andCallFake( ( value ) ->
+				expect( @ ).toBe( viewController )
+				expect( value ).toBe( 'expected value' )
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			component = view.query( '#example' )[ 0 ]
+			
+			expect( viewController.getView() ).toBe( view )
+			expect( viewController.getExample() ).toBe( component )
+			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			
+			component.fireExampleEvent( 'expected value' )
+			component.fireExampleEvent( 'expected value' )
+			
+			expect( viewController.onExampleComponentExampleEvent ).toHaveBeenCalled()
+			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
+		)
+		
+		it( 'should create a view controller getter and attach event listeners (with options) to events for a view component referenced implicitly by itemId', ->
+			expectedScope = {}
+			eventListenerFunction = jasmine.createSpy( 'event listener' ).andCallFake( ( value ) ->
+				expect( @ ).toBe( expectedScope )
+				expect( value ).toBe( 'expected value' )
+			)
+			
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				
+				control:
+					example:
+						exampleevent:
+							fn: eventListenerFunction
+							scope: expectedScope
+							single: true
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			component = view.query( '#example' )[ 0 ]
+			
+			expect( viewController.getView() ).toBe( view )
+			expect( viewController.getExample() ).toBe( component )
+			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			
+			component.fireExampleEvent( 'expected value' )
+			component.fireExampleEvent( 'expected value' )
+			
+			expect( eventListenerFunction ).toHaveBeenCalled()
+			expect( eventListenerFunction.callCount ).toBe( 1 )
+		)
+		
 		it( 'should throw an error when attaching a non-existing view controller scoped event listener for a view component referenced implicitly by itemId', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
@@ -343,6 +487,85 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( viewController.onExampleComponentExampleEvent ).toHaveBeenCalled()
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
+		)
+		
+		it( 'should create a view controller getter and attach view controller scoped event listeners (with options) to events for a view component referenced by selector', ->
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				
+				control:
+					example:
+						selector: '#example'
+						listeners:
+							exampleevent: 
+								fn: 'onExampleComponentExampleEvent'
+								single: true
+				
+				onExampleComponentExampleEvent: ->
+					return
+			)
+			
+			spyOn( ExampleViewController.prototype, 'onExampleComponentExampleEvent' ).andCallFake( ( value ) ->
+				expect( @ ).toBe( viewController )
+				expect( value ).toBe( 'expected value' )
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			component = view.query( '#example' )[ 0 ]
+			
+			expect( viewController.getView() ).toBe( view )
+			expect( viewController.getExample() ).toBe( component )
+			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			
+			component.fireExampleEvent( 'expected value' )
+			component.fireExampleEvent( 'expected value' )
+			
+			expect( viewController.onExampleComponentExampleEvent ).toHaveBeenCalled()
+			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
+		)
+		
+		it( 'should create a view controller getter and attach event listeners (with options) to events for a view component referenced by selector', ->
+			expectedScope = {}
+			eventListenerFunction = jasmine.createSpy( 'event listener' ).andCallFake( ( value ) ->
+				expect( @ ).toBe( expectedScope )
+				expect( value ).toBe( 'expected value' )
+			)
+			
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				
+				control:
+					example:
+						selector: '#example'
+						listeners:
+							exampleevent:
+								fn: eventListenerFunction
+								scope: expectedScope
+								single: true
+			)
+			
+			view = Ext.create( 'ExampleView' )
+			
+			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			
+			component = view.query( '#example' )[ 0 ]
+			
+			expect( viewController.getView() ).toBe( view )
+			expect( viewController.getExample() ).toBe( component )
+			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			
+			component.fireExampleEvent( 'expected value' )
+			component.fireExampleEvent( 'expected value' )
+			
+			expect( eventListenerFunction ).toHaveBeenCalled()
+			expect( eventListenerFunction.callCount ).toBe( 1 )
 		)
 		
 		it( 'should throw an error when attaching a non-existing view controller scoped event listener for a view component referenced implicitly by selector', ->

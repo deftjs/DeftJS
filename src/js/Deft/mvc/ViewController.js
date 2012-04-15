@@ -115,7 +115,7 @@ Ext.define('Deft.mvc.ViewController', {
   	@private
   */
   registerComponent: function(id, component, listeners) {
-    var event, existingComponent, getterName, listener;
+    var event, existingComponent, fn, getterName, listener, options, scope;
     Deft.Logger.log("Registering '" + id + "' component.");
     existingComponent = this.getComponent(id);
     if (existingComponent != null) {
@@ -136,12 +136,28 @@ Ext.define('Deft.mvc.ViewController', {
     if (Ext.isObject(listeners)) {
       for (event in listeners) {
         listener = listeners[event];
+        fn = listener;
+        scope = this;
+        options = null;
+        if (Ext.isObject(listener)) {
+          options = Ext.apply({}, listener);
+          if (options.fn != null) {
+            fn = options.fn;
+            delete options.fn;
+          }
+          if (options.scope != null) {
+            scope = options.scope;
+            delete options.scope;
+          }
+        }
         Deft.Logger.log("Adding '" + event + "' listener to '" + id + "'.");
-        if (Ext.isFunction(this[listener])) {
-          component.on(event, this[listener], this);
+        if (Ext.isFunction(fn)) {
+          component.on(event, fn, scope, options);
+        } else if (Ext.isFunction(this[fn])) {
+          component.on(event, this[fn], scope, options);
         } else {
           Ext.Error.raise({
-            msg: "Error adding '" + event + "' listener: the specified handler '" + listener + "' is not a Function or does not exist."
+            msg: "Error adding '" + event + "' listener: the specified handler '" + fn + "' is not a Function or does not exist."
           });
         }
       }
@@ -151,7 +167,7 @@ Ext.define('Deft.mvc.ViewController', {
   	@private
   */
   unregisterComponent: function(id) {
-    var component, event, existingComponent, getterName, listener, listeners, _ref;
+    var component, event, existingComponent, fn, getterName, listener, listeners, options, scope, _ref;
     Deft.Logger.log("Unregistering '" + id + "' component.");
     existingComponent = this.getComponent(id);
     if (!(existingComponent != null)) {
@@ -163,12 +179,21 @@ Ext.define('Deft.mvc.ViewController', {
     if (Ext.isObject(listeners)) {
       for (event in listeners) {
         listener = listeners[event];
+        fn = listener;
+        scope = this;
+        if (Ext.isObject(listener)) {
+          options = listener;
+          if (options.fn != null) fn = options.fn;
+          if (options.scope != null) scope = options.scope;
+        }
         Deft.Logger.log("Removing '" + event + "' listener from '" + id + "'.");
-        if (Ext.isFunction(this[listener])) {
-          component.un(event, this[listener], this);
+        if (Ext.isFunction(fn)) {
+          component.un(event, fn, scope);
+        } else if (Ext.isFunction(this[fn])) {
+          component.un(event, this[fn], scope);
         } else {
           Ext.Error.raise({
-            msg: "Error removing '" + event + "' listener: the specified handler '" + listener + "' is not a Function or does not exist."
+            msg: "Error removing '" + event + "' listener: the specified handler '" + fn + "' is not a Function or does not exist."
           });
         }
       }

@@ -124,11 +124,24 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		if Ext.isObject( listeners )
 			for event, listener of listeners
+				fn = listener
+				scope = @
+				options = null
+				if Ext.isObject( listener )
+					options = Ext.apply( {}, listener )
+					if options.fn?
+						fn = options.fn 
+						delete options.fn
+					if options.scope?
+						scope = options.scope 
+						delete options.scope
 				Deft.Logger.log( "Adding '#{ event }' listener to '#{ id }'." )
-				if Ext.isFunction( @[ listener ] )
-					component.on( event, @[ listener ], @ )
+				if Ext.isFunction( fn )
+					component.on( event, fn, scope, options )
+				else if Ext.isFunction( @[ fn ] )
+					component.on( event, @[ fn ], scope, options )
 				else
-					Ext.Error.raise( msg: "Error adding '#{ event }' listener: the specified handler '#{ listener }' is not a Function or does not exist." )
+					Ext.Error.raise( msg: "Error adding '#{ event }' listener: the specified handler '#{ fn }' is not a Function or does not exist." )
 		
 		return
 	
@@ -146,11 +159,21 @@ Ext.define( 'Deft.mvc.ViewController',
 			
 		if Ext.isObject( listeners )
 			for event, listener of listeners
+				fn = listener
+				scope = @
+				if Ext.isObject( listener )
+					options = listener
+					if options.fn?
+						fn = options.fn
+					if options.scope?
+						scope = options.scope
 				Deft.Logger.log( "Removing '#{ event }' listener from '#{ id }'." )
-				if Ext.isFunction( @[ listener ] )
-					component.un( event, @[ listener ], @ )
+				if Ext.isFunction( fn )
+					component.un( event, fn, scope )
+				else if Ext.isFunction( @[ fn ] )
+					component.un( event, @[ fn ], scope )
 				else
-					Ext.Error.raise( msg: "Error removing '#{ event }' listener: the specified handler '#{ listener }' is not a Function or does not exist." )
+					Ext.Error.raise( msg: "Error removing '#{ event }' listener: the specified handler '#{ fn }' is not a Function or does not exist." )
 		
 		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
