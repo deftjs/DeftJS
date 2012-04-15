@@ -332,6 +332,26 @@ In this example, in addition to creating and adding a `getSubmitButton()` access
 
 *NOTE:* The specified event listener will be called in the view controller's scope.
 
+Standard event listener options such as `buffer`, `delay`, `scope`, `single` and `element` can be specified for a given view component event using slightly more verbose syntax:
+
+```javascript
+Ext.define( 'MyApp.controller.ContactsViewController', {
+	extend: 'Deft.mvc.ViewController',	
+	...
+	control: {
+		valueSlider: {
+			listeners: {
+				change: {
+					fn: 'onValueSliderChange',
+					buffer: 70
+				}
+			}
+		}
+	}
+	...
+});
+```
+
 As an alternative to relying on matching component `itemId`'s, the `control` annotation can be configured to both reference a component by a view-relative component query selector and add event listeners, using slightly more verbose syntax:
 
 ```javascript
@@ -343,26 +363,6 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 			selector: 'panel > button[text="Submit"]',
 			listeners: {
 				click: 'onSubmitButtonClick'
-			}
-		}
-	}
-	...
-});
-```
-
-Standard event listener options such as `buffer`, `delay`, `scope`, `single` and `element` can be specified for a given view component event using slightly more verbose syntax:
-
-```javascript
-Ext.define( 'MyApp.controller.ContactsViewController', {
-	extend: 'Deft.mvc.ViewController',	
-	...
-	control: {
-		valueSlider: {
-			listeners: {
-				change: {
-					fn: 'onValueSliderChange'
-					buffer: 70
-				}
 			}
 		}
 	}
@@ -443,8 +443,9 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 	inject: [ 'contactStore' ]
 	...
 	control: {
-		refreshButton:
+		refreshButton: {
 			'click': 'onRefreshButtonClick'
+		}
 	}
 	...
 	onRefreshButtonClick: function() {
