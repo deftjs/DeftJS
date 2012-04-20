@@ -15,4 +15,14 @@ Ext.define( 'Deft.util.Function',
 				if not Ext.isArray( array )
 					Ext.Error.raise( msg: "Error spreading passed Array over target function arguments: passed a non-Array." )
 				fn.apply( scope, array )
+				return
+		###*
+		Returns a new function that wraps the specified function that caches the results for previously processed inputs.
+		###
+		memoize: ( fn, hashFn ) ->
+			memo = {}
+			return ( value ) ->
+				key = if Ext.isFunction( hashFn ) then hashFn.apply( @, arguments ) else value
+				memo[ key ] = fn( value ) unless key of memo
+				return memo[ key ]
 )
