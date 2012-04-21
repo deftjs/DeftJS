@@ -68,6 +68,18 @@ Ext.define( 'Deft.promise.Promise',
 			return deferred.then( callbacks )
 		
 		###*
+		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
+		###
+		memoize: ( fn, hashFn, scope ) ->
+			return @all( Ext.Array.toArray( arguments ) ).then( 
+				Deft.util.Function.spread( 
+					-> Deft.util.memoize( arguments, hashFn, scope )
+					scope
+				)
+			)
+		
+		###*
 		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
 		The specified map function may return either a value or a promise.
 		###
@@ -100,18 +112,6 @@ Ext.define( 'Deft.promise.Promise',
 				reduceArguments.push( initialValue )
 			
 			return @when( @reduceArray.apply( promisesOrValues, reduceArguments ) )
-		
-		###*
-		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
-		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
-		###
-		memoize: ( fn, hashFn, scope ) ->
-			return @all( Ext.Array.toArray( arguments ) ).then( 
-				Deft.util.Function.spread( 
-					-> Deft.util.memoize( arguments, hashFn, scope )
-					scope
-				)
-			)
 		
 		###*
 		Fallback implementation when Array.reduce is not available.

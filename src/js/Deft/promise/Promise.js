@@ -74,6 +74,15 @@ Ext.define('Deft.promise.Promise', {
       return deferred.then(callbacks);
     },
     /**
+    		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+    		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
+    */
+    memoize: function(fn, hashFn, scope) {
+      return this.all(Ext.Array.toArray(arguments)).then(Deft.util.Function.spread(function() {
+        return Deft.util.memoize(arguments, hashFn, scope);
+      }, scope));
+    },
+    /**
     		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
     		The specified map function may return either a value or a promise.
     */
