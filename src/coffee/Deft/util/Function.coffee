@@ -14,8 +14,8 @@ Ext.define( 'Deft.util.Function',
 			return ( array ) ->
 				if not Ext.isArray( array )
 					Ext.Error.raise( msg: "Error spreading passed Array over target function arguments: passed a non-Array." )
-				fn.apply( scope, array )
-				return
+				return fn.apply( scope, array )
+		
 		###*
 		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
 		###

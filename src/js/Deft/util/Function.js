@@ -17,6 +17,19 @@ Ext.define('Deft.util.Function', {
         }
         return fn.apply(scope, array);
       };
+    },
+    /**
+    		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+    */
+    memoize: function(fn, hashFn, scope) {
+      var memo;
+      memo = {};
+      return function(value) {
+        var key;
+        key = Ext.isFunction(hashFn) ? hashFn.apply(scope, arguments) : value;
+        if (!(key in memo)) memo[key] = fn(value);
+        return memo[key];
+      };
     }
   }
 });
