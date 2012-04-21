@@ -102,6 +102,18 @@ Ext.define( 'Deft.promise.Promise',
 			return @when( @reduceArray.apply( promisesOrValues, reduceArguments ) )
 		
 		###*
+		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
+		###
+		memoize: ( fn, hashFn, scope ) ->
+			return @all( Ext.Array.toArray( arguments ) ).then( 
+				Deft.util.Function.spread( 
+					-> Deft.util.memoize( arguments, hashFn, scope )
+					scope
+				)
+			)
+		
+		###*
 		Fallback implementation when Array.reduce is not available.
 		@private
 		###
