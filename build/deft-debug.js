@@ -1,5 +1,5 @@
 /*
-DeftJS 0.6.2
+DeftJS 0.6.3
 
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
@@ -36,6 +36,38 @@ Ext.define('Deft.log.Logger', {
         level: priority
       });
     };
+  }
+});
+
+Ext.define('Deft.util.Function', {
+  alternateClassName: ['Deft.Function'],
+  statics: {
+    /**
+    		Creates a new wrapper function that spreads the passed Array over the target function arguments.
+    */
+    spread: function(fn, scope) {
+      return function(array) {
+        if (!Ext.isArray(array)) {
+          Ext.Error.raise({
+            msg: "Error spreading passed Array over target function arguments: passed a non-Array."
+          });
+        }
+        return fn.apply(scope, array);
+      };
+    },
+    /**
+    		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+    */
+    memoize: function(fn, hashFn, scope) {
+      var memo;
+      memo = {};
+      return function(value) {
+        var key;
+        key = Ext.isFunction(hashFn) ? hashFn.apply(scope, arguments) : value;
+        if (!(key in memo)) memo[key] = fn(value);
+        return memo[key];
+      };
+    }
   }
 });
 
@@ -788,6 +820,15 @@ Ext.define('Deft.promise.Promise', {
       return deferred.then(callbacks);
     },
     /**
+    		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+    		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
+    */
+    memoize: function(fn, hashFn, scope) {
+      return this.all(Ext.Array.toArray(arguments)).then(Deft.util.Function.spread(function() {
+        return Deft.util.memoize(arguments, hashFn, scope);
+      }, scope));
+    },
+    /**
     		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
     		The specified map function may return either a value or a promise.
     */
@@ -889,21 +930,3 @@ Ext.define('Deft.promise.Promise', {
   if (Array.prototype.reduce != null) this.reduceArray = Array.prototype.reduce;
 });
 
-Ext.define('Deft.util.Function', {
-  alternateClassName: ['Deft.Function'],
-  statics: {
-    /**
-    		Creates a new wrapper function that spreads the passed Array over the target function arguments.
-    */
-    spread: function(fn, scope) {
-      return function(array) {
-        if (!Ext.isArray(array)) {
-          Ext.Error.raise({
-            msg: "Error spreading passed Array over target function arguments: passed a non-Array."
-          });
-        }
-        return fn.apply(scope, array);
-      };
-    }
-  }
-});
