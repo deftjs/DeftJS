@@ -71,10 +71,10 @@ Ext.define( 'Deft.promise.Promise',
 		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
 		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
 		###
-		memoize: ( fn, hashFn, scope ) ->
+		memoize: ( fn, scope, hashFn ) ->
 			return @all( Ext.Array.toArray( arguments ) ).then( 
 				Deft.util.Function.spread( 
-					-> Deft.util.memoize( arguments, hashFn, scope )
+					-> Deft.util.memoize( arguments, scope, hashFn )
 					scope
 				)
 			)
