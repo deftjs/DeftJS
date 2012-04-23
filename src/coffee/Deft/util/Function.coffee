@@ -19,7 +19,7 @@ Ext.define( 'Deft.util.Function',
 		###*
 		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
 		###
-		memoize: ( fn, hashFn, scope ) ->
+		memoize: ( fn, scope, hashFn ) ->
 			memo = {}
 			return ( value ) ->
 				key = if Ext.isFunction( hashFn ) then hashFn.apply( scope, arguments ) else value

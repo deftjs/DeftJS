@@ -21,7 +21,7 @@ Ext.define('Deft.util.Function', {
     /**
     		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
     */
-    memoize: function(fn, hashFn, scope) {
+    memoize: function(fn, scope, hashFn) {
       var memo;
       memo = {};
       return function(value) {
