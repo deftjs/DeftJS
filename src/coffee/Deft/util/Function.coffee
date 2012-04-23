@@ -23,6 +23,6 @@ Ext.define( 'Deft.util.Function',
 			memo = {}
 			return ( value ) ->
 				key = if Ext.isFunction( hashFn ) then hashFn.apply( scope, arguments ) else value
-				memo[ key ] = fn( value ) unless key of memo
+				memo[ key ] = fn.apply( scope, arguments ) unless key of memo
 				return memo[ key ]
 )

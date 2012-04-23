@@ -29,7 +29,8 @@ describe('Deft.util.Function', function() {
     });
   });
   return describe('memoize()', function() {
-    return it('should return a new function that wraps the specified function and caches the results for previously processed inputs', function() {
+    var hashFunction, memoFunction, sum, targetFunction;
+    it('should return a new function that wraps the specified function and caches the results for previously processed inputs', function() {
       var fibonacci, memoFunction, targetFunction;
       fibonacci = function(n) {
         if (n < 2) {
@@ -40,10 +41,17 @@ describe('Deft.util.Function', function() {
       };
       targetFunction = jasmine.createSpy('target function').andCallFake(fibonacci);
       memoFunction = Deft.util.Function.memoize(targetFunction);
-      expect(memoFunction(12)).toBe(144);
+      expect(memoFunction(12)).toBe(fibonacci(12));
       expect(targetFunction).toHaveBeenCalled();
-      expect(memoFunction(12)).toBe(144);
+      expect(memoFunction(12)).toBe(fibonacci(12));
       return expect(targetFunction.callCount).toBe(1);
     });
+    return it('should support memoizing functions that take multiple parameters using a hash function (specified via an optional parameter) to produce a unique caching key for those parameters', sum = function() {
+      return Ext.Array.toArray(arguments).reduce(function(total, value) {
+        return total + value;
+      }, 0);
+    }, targetFunction = jasmine.createSpy('target function').andCallFake(sum), hashFunction = jasmine.createSpy('hash function').andCallFake(function(a, b, c) {
+      return "" + a + "|" + b + "|" + c;
+    }), memoFunction = Deft.util.Function.memoize(targetFunction, hashFunction), expect(memoFunction(1, 2, 3)).toBe(6), expect(targetFunction).toHaveBeenCalled(), expect(memoFunction(1, 2, 3)).toBe(6), expect(targetFunction.callCount).toBe(1));
   });
 });
