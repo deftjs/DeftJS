@@ -20,6 +20,10 @@ describe( 'Deft.promise.Promise', ->
 		# TODO
 	)
 	
+	describe( 'memoize()', ->
+		# TODO
+	)
+	
 	describe( 'map()', ->
 		# TODO
 	)

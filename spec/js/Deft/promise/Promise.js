@@ -9,6 +9,7 @@ describe('Deft.promise.Promise', function() {
   describe('when()', function() {});
   describe('all()', function() {});
   describe('any()', function() {});
+  describe('memoize()', function() {});
   describe('map()', function() {});
   describe('reduce()', function() {});
   describe('then()', function() {});
