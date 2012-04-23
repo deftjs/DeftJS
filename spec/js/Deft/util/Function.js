@@ -29,8 +29,8 @@ describe('Deft.util.Function', function() {
     });
   });
   return describe('memoize()', function() {
-    var hashFunction, memoFunction, sum, targetFunction;
-    it('should return a new function that wraps the specified function and caches the results for previously processed inputs', function() {
+    var expectedScope, hashFunction, memoFunction, sum, targetFunction;
+    it('should return a new function that wraps the specified function (omitting the optional scope and hash function parameters) and caches the results for previously processed inputs', function() {
       var fibonacci, memoFunction, targetFunction;
       fibonacci = function(n) {
         if (n < 2) {
@@ -39,8 +39,31 @@ describe('Deft.util.Function', function() {
           return fibonacci(n - 1) + fibonacci(n - 2);
         }
       };
-      targetFunction = jasmine.createSpy('target function').andCallFake(fibonacci);
+      targetFunction = jasmine.createSpy('target function').andCallFake(function() {
+        expect(this).toBe(window);
+        return fibonacci.apply(this, arguments);
+      });
       memoFunction = Deft.util.Function.memoize(targetFunction);
+      expect(memoFunction(12)).toBe(fibonacci(12));
+      expect(targetFunction).toHaveBeenCalled();
+      expect(memoFunction(12)).toBe(fibonacci(12));
+      return expect(targetFunction.callCount).toBe(1);
+    });
+    it('should return a new function that wraps the specified function (to be executed in the scope specified via the scope parameter) and caches the results for previously processed inputs', function() {
+      var expectedScope, fibonacci, memoFunction, targetFunction;
+      fibonacci = function(n) {
+        if (n < 2) {
+          return n;
+        } else {
+          return fibonacci(n - 1) + fibonacci(n - 2);
+        }
+      };
+      expectedScope = {};
+      targetFunction = jasmine.createSpy('target function').andCallFake(function() {
+        expect(this).toBe(expectedScope);
+        return fibonacci.apply(this, arguments);
+      });
+      memoFunction = Deft.util.Function.memoize(targetFunction, expectedScope);
       expect(memoFunction(12)).toBe(fibonacci(12));
       expect(targetFunction).toHaveBeenCalled();
       expect(memoFunction(12)).toBe(fibonacci(12));
@@ -50,8 +73,12 @@ describe('Deft.util.Function', function() {
       return Ext.Array.toArray(arguments).reduce(function(total, value) {
         return total + value;
       }, 0);
-    }, targetFunction = jasmine.createSpy('target function').andCallFake(sum), hashFunction = jasmine.createSpy('hash function').andCallFake(function(a, b, c) {
-      return "" + a + "|" + b + "|" + c;
-    }), memoFunction = Deft.util.Function.memoize(targetFunction, hashFunction), expect(memoFunction(1, 2, 3)).toBe(6), expect(targetFunction).toHaveBeenCalled(), expect(memoFunction(1, 2, 3)).toBe(6), expect(targetFunction.callCount).toBe(1));
+    }, expectedScope = {}, targetFunction = jasmine.createSpy('target function').andCallFake(function() {
+      expect(this).toBe(expectedScope);
+      return sum.apply(this, arguments);
+    }), hashFunction = jasmine.createSpy('hash function').andCallFake(function(a, b, c) {
+      expect(this).toBe(expectedScope);
+      return Ext.Array.toArray(arguments).join('|');
+    }), memoFunction = Deft.util.Function.memoize(targetFunction, expectedScope, hashFunction), expect(memoFunction(1, 2, 3)).toBe(sum(1, 2, 3)), expect(targetFunction).toHaveBeenCalled(), expect(memoFunction(1, 2, 3)).toBe(sum(1, 2, 3)), expect(targetFunction.callCount).toBe(1));
   });
 });

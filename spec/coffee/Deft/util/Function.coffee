@@ -36,13 +36,15 @@ describe( 'Deft.util.Function', ->
 	
 	describe( 'memoize()', ->
 	
-		# TODO: Test scope parameter
-		
-		it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs', ->
+		it( 'should return a new function that wraps the specified function (omitting the optional scope and hash function parameters) and caches the results for previously processed inputs', ->
 			fibonacci = ( n ) ->
 				( if n < 2 then n else fibonacci( n - 1 ) + fibonacci( n - 2 ) )
 			
-			targetFunction = jasmine.createSpy( 'target function' ).andCallFake( fibonacci )
+			targetFunction = jasmine.createSpy( 'target function' ).andCallFake(
+				->
+					expect( @ ).toBe( window )
+					return fibonacci.apply( @, arguments )
+			)
 			
 			memoFunction = Deft.util.Function.memoize( targetFunction )
 			
@@ -53,22 +55,51 @@ describe( 'Deft.util.Function', ->
 			expect( targetFunction.callCount ).toBe( 1 )
 		)
 		
+		it( 'should return a new function that wraps the specified function (to be executed in the scope specified via the scope parameter) and caches the results for previously processed inputs', ->
+			fibonacci = ( n ) ->
+				( if n < 2 then n else fibonacci( n - 1 ) + fibonacci( n - 2 ) )
+			
+			expectedScope = {}
+			targetFunction = jasmine.createSpy( 'target function' ).andCallFake(
+				->
+					expect( @ ).toBe( expectedScope )
+					return fibonacci.apply( @, arguments )
+			)
+			
+			memoFunction = Deft.util.Function.memoize( targetFunction, expectedScope )
+			
+			expect( memoFunction( 12 ) ).toBe( fibonacci( 12 ) )
+			expect( targetFunction ).toHaveBeenCalled()
+			
+			expect( memoFunction( 12 ) ).toBe( fibonacci( 12 ) )
+			expect( targetFunction.callCount ).toBe( 1 )
+		)
+		
 		it( 'should support memoizing functions that take multiple parameters using a hash function (specified via an optional parameter) to produce a unique caching key for those parameters',
 			sum = -> 
-				Ext.Array.toArray( arguments ).reduce( 
+				Ext.Array.toArray( arguments ).reduce(
 					( total, value ) -> total + value
 					0
 				)
 			
-			targetFunction = jasmine.createSpy( 'target function' ).andCallFake( sum )
-			hashFunction = jasmine.createSpy( 'hash function' ).andCallFake( ( a, b, c ) -> "#{a}|#{b}|#{c}" )
+			expectedScope = {}
+			targetFunction = jasmine.createSpy( 'target function' ).andCallFake(
+				->
+					expect( @ ).toBe( expectedScope )
+					return sum.apply( @, arguments )
+			)
+			hashFunction = jasmine.createSpy( 'hash function' ).andCallFake(
+				( a, b, c ) -> 
+					expect( @ ).toBe( expectedScope )
+					return Ext.Array.toArray( arguments ).join( '|' )
+			)
 			
-			memoFunction = Deft.util.Function.memoize( targetFunction, hashFunction )
+			memoFunction = Deft.util.Function.memoize( targetFunction, expectedScope, hashFunction )
 			
-			expect( memoFunction( 1, 2, 3 ) ).toBe( 6 )
+			expect( memoFunction( 1, 2, 3 ) ).toBe( sum( 1, 2, 3 ) )
 			expect( targetFunction ).toHaveBeenCalled()
 			
-			expect( memoFunction( 1, 2, 3 ) ).toBe( 6 )
+			expect( memoFunction( 1, 2, 3 ) ).toBe( sum( 1, 2, 3 ) )
 			expect( targetFunction.callCount ).toBe( 1 )
 		)
 	)
