@@ -823,9 +823,9 @@ Ext.define('Deft.promise.Promise', {
     		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
     		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
     */
-    memoize: function(fn, hashFn, scope) {
+    memoize: function(fn, scope, hashFn) {
       return this.all(Ext.Array.toArray(arguments)).then(Deft.util.Function.spread(function() {
-        return Deft.util.memoize(arguments, hashFn, scope);
+        return Deft.util.memoize(arguments, scope, hashFn);
       }, scope));
     },
     /**
