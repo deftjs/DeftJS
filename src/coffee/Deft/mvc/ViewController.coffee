@@ -71,7 +71,6 @@ Ext.define( 'Deft.mvc.ViewController',
 			@getView().destroy = ->
 				if self.destroy()
 					originalViewDestroyFunction.call( @ )
-					@destroy = originalViewDestroyFunction
 				return
 		
 		for id, config of @control

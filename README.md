@@ -479,6 +479,7 @@ Provided the specified `controller` extends `Deft.mvc.ViewController`, the contr
 
 # Version History
 
+* 0.6.3 - Added memoization feature. Fixed reported Sencha Touch issues.
 * 0.6.2 - Added support for View Controller event listener options. Ext JS 4.1rc3 compatibility fixes.
 * 0.6.1 - Sencha Touch compatibility fixes.
 * 0.6.0 - Introducing View Controller and Controllable. Preview release of Deferred and Promise.

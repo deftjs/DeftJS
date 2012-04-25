@@ -99,7 +99,6 @@ Ext.define('Deft.ioc.Injector', {
         targetInstance.initConfig = function(config) {
           var result;
           result = originalInitConfigFunction.call(this, Ext.Object.merge({}, config || {}, injectConfig));
-          this.initConfig = originalInitConfigFunction;
           return result;
         };
       }

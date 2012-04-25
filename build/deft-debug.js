@@ -257,7 +257,6 @@ Ext.define('Deft.ioc.Injector', {
         targetInstance.initConfig = function(config) {
           var result;
           result = originalInitConfigFunction.call(this, Ext.Object.merge({}, config || {}, injectConfig));
-          this.initConfig = originalInitConfigFunction;
           return result;
         };
       }
@@ -351,10 +350,7 @@ Ext.define('Deft.mvc.ViewController', {
       self = this;
       originalViewDestroyFunction = this.getView().destroy;
       this.getView().destroy = function() {
-        if (self.destroy()) {
-          originalViewDestroyFunction.call(this);
-          this.destroy = originalViewDestroyFunction;
-        }
+        if (self.destroy()) originalViewDestroyFunction.call(this);
       };
     }
     _ref = this.control;

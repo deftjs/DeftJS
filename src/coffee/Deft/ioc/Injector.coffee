@@ -106,7 +106,6 @@ Ext.define( 'Deft.ioc.Injector',
 				originalInitConfigFunction = targetInstance.initConfig
 				targetInstance.initConfig = ( config ) ->
 					result = originalInitConfigFunction.call( @, Ext.Object.merge( {}, config or {}, injectConfig ) )
-					@initConfig = originalInitConfigFunction
 					return result
 		
 		return targetInstance

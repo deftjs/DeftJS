@@ -70,10 +70,7 @@ Ext.define('Deft.mvc.ViewController', {
       self = this;
       originalViewDestroyFunction = this.getView().destroy;
       this.getView().destroy = function() {
-        if (self.destroy()) {
-          originalViewDestroyFunction.call(this);
-          this.destroy = originalViewDestroyFunction;
-        }
+        if (self.destroy()) originalViewDestroyFunction.call(this);
       };
     }
     _ref = this.control;
