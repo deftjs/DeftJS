@@ -74,13 +74,13 @@ Ext.define( 'Deft.mvc.ViewController',
 				return
 		
 		for id, config of @control
-			@registerControl( id, config )
+			@controlComponent( id, config )
 		@init()
 		return
 	###
 		Allow dynamic registering of components not available at the time of view initialization
 	###
-	registerComponent: ( id, config ) ->
+	controlComponent: ( id, config ) ->
 		component = @locateComponent( id, config )
 		listeners = if Ext.isObject( config.listeners ) then config.listeners else config if not config.selector?
 		@registerComponent( id, component, listeners )
