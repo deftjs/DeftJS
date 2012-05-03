@@ -17,7 +17,7 @@ Ext.define( 'Deft.util.Function',
 				return fn.apply( scope, array )
 		
 		###*
-		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+		Returns a new wrapper function that caches the return value for previously processed function argument(s).
 		###
 		memoize: ( fn, scope, hashFn ) ->
 			memo = {}
