@@ -26,7 +26,7 @@ Ext.define('Deft.log.Logger', {
 }, function() {
   var _ref;
   if (Ext.isFunction((_ref = Ext.Logger) != null ? _ref.log : void 0)) {
-    this.log = Ext.Logger.log;
+    this.log = Ext.bind(Ext.Logger.log, Ext.Logger);
   } else if (Ext.isFunction(Ext.log)) {
     this.log = function(message, priority) {
       if (priority == null) {

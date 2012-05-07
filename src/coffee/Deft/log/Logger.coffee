@@ -32,7 +32,7 @@ Ext.define( 'Deft.log.Logger',
 ,
 	->
 		if Ext.isFunction( Ext.Logger?.log )
-			@log = Ext.bind(Ext.Logger.log, Ext.Logger)
+			@log = Ext.bind( Ext.Logger.log, Ext.Logger )
 		else if Ext.isFunction( Ext.log )
 			@log = ( message, priority = 'info' ) ->
 				if priority is 'deprecate'
