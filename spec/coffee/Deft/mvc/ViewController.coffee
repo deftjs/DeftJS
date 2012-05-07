@@ -497,7 +497,7 @@ describe( 'Deft.mvc.ViewController', ->
 					example:
 						selector: '#example'
 						listeners:
-							exampleevent: 
+							exampleevent:
 								fn: 'onExampleComponentExampleEvent'
 								single: true
 				

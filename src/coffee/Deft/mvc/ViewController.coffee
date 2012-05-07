@@ -129,10 +129,10 @@ Ext.define( 'Deft.mvc.ViewController',
 				if Ext.isObject( listener )
 					options = Ext.apply( {}, listener )
 					if options.fn?
-						fn = options.fn 
+						fn = options.fn
 						delete options.fn
 					if options.scope?
-						scope = options.scope 
+						scope = options.scope
 						delete options.scope
 				Deft.Logger.log( "Adding '#{ event }' listener to '#{ id }'." )
 				if Ext.isFunction( fn )
