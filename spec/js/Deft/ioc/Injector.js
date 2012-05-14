@@ -18,6 +18,13 @@ describe('Deft.ioc.Injector', function() {
       return this;
     }
   });
+  Ext.define('ExampleSingletonClass', {
+    singleton: true,
+    constructor: function(config) {
+      this.initConfig(config);
+      return this;
+    }
+  });
   beforeEach(function() {
     this.addMatchers({
       toBeInstanceOf: function(className) {
@@ -422,6 +429,141 @@ describe('Deft.ioc.Injector', function() {
         });
       });
     });
+    describe('Configuration with a class name for a singleton class', function() {
+      it('should be configurable with a class name for a singleton class', function() {
+        Deft.Injector.configure({
+          classNameForSingletonClass: {
+            className: 'ExampleSingletonClass'
+          }
+        });
+        expect(Deft.Injector.canResolve('classNameForSingletonClass')).toBe(true);
+      });
+      it('should not be configurable with a class name for a singleton class and constructor parameters', function() {
+        expect(function() {
+          return Deft.Injector.configure({
+            classNameForSingletonClassWithParameters: {
+              className: 'ExampleSingletonClass',
+              parameters: [
+                {
+                  parameter: 'expected value'
+                }
+              ]
+            }
+          });
+        }).toThrow(new Error("Error while configuring rule for 'classNameForSingletonClassWithParameters': parameters cannot be applied to singleton classes. Consider removing 'singleton: true' from the class definition."));
+      });
+      it('should be configurable with a class name for a singleton class, eagerly', function() {
+        Deft.Injector.configure({
+          classNameForSingletonClassEagerly: {
+            className: 'ExampleSingletonClass',
+            eager: true
+          }
+        });
+        expect(Deft.Injector.canResolve('classNameForSingletonClassEagerly')).toBe(true);
+      });
+      it('should be configurable with a class name for a singleton class, (explicitly) lazily', function() {
+        Deft.Injector.configure({
+          classNameForSingletonClassLazily: {
+            className: 'ExampleSingletonClass',
+            eager: false
+          }
+        });
+        expect(Deft.Injector.canResolve('classNameForSingletonClassLazily')).toBe(true);
+      });
+      it('should be configurable with a class name for a singleton class, (explicitly) as a singleton', function() {
+        Deft.Injector.configure({
+          classNameForSingletonClassAsSingleton: {
+            className: 'ExampleSingletonClass',
+            singleton: true
+          }
+        });
+        expect(Deft.Injector.canResolve('classNameForSingletonClassAsSingleton')).toBe(true);
+      });
+      it('should be configurable with a class name for a singleton class, (explicitly) as a singleton, eagerly', function() {
+        Deft.Injector.configure({
+          classNameForSingletonClassAsSingletonEagerly: {
+            className: 'ExampleSingletonClass',
+            singleton: true,
+            eager: true
+          }
+        });
+        expect(Deft.Injector.canResolve('classNameForSingletonClassAsSingletonEagerly')).toBe(true);
+      });
+      it('should be configurable with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily', function() {
+        Deft.Injector.configure({
+          classNameForSingletonClassAsSingletonLazily: {
+            className: 'ExampleSingletonClass',
+            singleton: true,
+            eager: false
+          }
+        });
+        expect(Deft.Injector.canResolve('classNameForSingletonClassAsSingletonLazily')).toBe(true);
+      });
+      it('should not be configurable with a class name for a singleton class, as a prototype', function() {
+        expect(function() {
+          return Deft.Injector.configure({
+            classNameForSingletonClassAsPrototype: {
+              className: 'ExampleSingletonClass',
+              singleton: false
+            }
+          });
+        }).toThrow(new Error("Error while configuring rule for 'classNameForSingletonClassAsPrototype': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition."));
+      });
+      it('should not be configurable with a class name for a singleton class, as a prototype, eagerly', function() {
+        expect(function() {
+          return Deft.Injector.configure({
+            classNameForSingletonClassAsPrototypeEagerly: {
+              className: 'ExampleSingletonClass',
+              singleton: false,
+              eager: true
+            }
+          });
+        }).toThrow(new Error("Error while configuring 'classNameForSingletonClassAsPrototypeEagerly': only singletons can be created eagerly."));
+      });
+      it('should not be configurable with a class name for a singleton class, as a prototype, (explicitly) lazily', function() {
+        expect(function() {
+          return Deft.Injector.configure({
+            classNameForSingletonClassAsPrototypeLazily: {
+              className: 'ExampleSingletonClass',
+              singleton: false,
+              eager: false
+            }
+          });
+        }).toThrow(new Error("Error while configuring rule for 'classNameForSingletonClassAsPrototypeLazily': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition."));
+      });
+      describe('Resolution of a dependency configured with a class name for a singleton class', function() {
+        it('should resolve a dependency configured with a class name for a singleton class with the corresponding singleton class instance', function() {
+          var classNameForSingletonClassInstance;
+          expect(classNameForSingletonClassInstance = Deft.Injector.resolve('classNameForSingletonClass')).toBe(ExampleSingletonClass);
+          expect(Deft.Injector.resolve('classNameForSingletonClass')).toBe(classNameForSingletonClassInstance);
+        });
+        it('should resolve a dependency configured with a class name for a singleton class, eagerly, with the corresponding singleton class instance', function() {
+          var classNameForSingletonClassEagerlyInstance;
+          expect(classNameForSingletonClassEagerlyInstance = Deft.Injector.resolve('classNameForSingletonClassEagerly')).toBe(ExampleSingletonClass);
+          expect(Deft.Injector.resolve('classNameForSingletonClassEagerly')).toBe(classNameForSingletonClassEagerlyInstance);
+        });
+        it('should resolve a dependency configured with a class name for a singleton class, (explicitly) lazily, with the corresponding singleton class instance', function() {
+          var classNameForSingletonClassEagerlyInstance;
+          expect(classNameForSingletonClassEagerlyInstance = Deft.Injector.resolve('classNameForSingletonClassLazily')).toBe(ExampleSingletonClass);
+          expect(Deft.Injector.resolve('classNameForSingletonClassLazily')).toBe(classNameForSingletonClassEagerlyInstance);
+        });
+        it('should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, with the corresponding singleton class instance', function() {
+          var classNameForSingletonClassAsSingletonInstance;
+          expect(classNameForSingletonClassAsSingletonInstance = Deft.Injector.resolve('classNameForSingletonClassAsSingleton')).toBe(ExampleSingletonClass);
+          expect(Deft.Injector.resolve('classNameForSingletonClassAsSingleton')).toBe(classNameForSingletonClassAsSingletonInstance);
+        });
+        it('should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, eagerly, with the corresponding singleton class instance', function() {
+          var classNameForSingletonClassAsSingletonEagerlyInstance;
+          expect(classNameForSingletonClassAsSingletonEagerlyInstance = Deft.Injector.resolve('classNameForSingletonClassAsSingletonEagerly')).toBe(ExampleSingletonClass);
+          expect(Deft.Injector.resolve('classNameForSingletonClassAsSingletonEagerly')).toBe(classNameForSingletonClassAsSingletonEagerlyInstance);
+        });
+        return it('should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', function() {
+          var classNameForSingletonClassAsSingletonLazilyInstance;
+          expect(classNameForSingletonClassAsSingletonLazilyInstance = Deft.Injector.resolve('classNameForSingletonClassAsSingletonLazily')).toBe(ExampleSingletonClass);
+          expect(Deft.Injector.resolve('classNameForSingletonClassAsSingletonLazily')).toBe(classNameForSingletonClassAsSingletonLazilyInstance);
+        });
+      });
+    });
     describe('Configuration with a factory function', function() {
       var expectedFnAsSingletonEagerlyInstance, expectedFnEagerlyInstance, factoryFunction;
       factoryFunction = function() {
@@ -748,7 +890,7 @@ describe('Deft.ioc.Injector', function() {
       typeDescriptor = typeDescriptors[_i];
       describeConfigurationByValueOfType.call(this, typeDescriptor);
     }
-    configuredIdentifiers = ['classNameAsString', 'className', 'classNameEagerly', 'classNameLazily', 'classNameAsSingleton', 'classNameAsSingletonEagerly', 'classNameAsSingletonLazily', 'classNameAsPrototype', 'classNameAsPrototypeLazily', 'classNameWithParameters', 'classNameWithParametersEagerly', 'classNameWithParametersLazily', 'classNameWithParametersAsSingleton', 'classNameWithParametersAsSingletonEagerly', 'classNameWithParametersAsSingletonLazily', 'classNameWithParametersAsPrototype', 'classNameWithParametersAsPrototypeLazily', 'fn', 'fnEagerly', 'fnLazily', 'fnAsSingleton', 'fnAsSingletonEagerly', 'fnAsSingletonLazily', 'fnAsPrototype', 'fnAsPrototypeLazily', 'booleanValue', 'booleanValueLazily', 'booleanValueAsSingleton', 'booleanValueAsSingletonLazily', 'stringValue', 'stringValueLazily', 'stringValueAsSingleton', 'stringValueAsSingletonLazily', 'numberValue', 'numberValueLazily', 'numberValueAsSingleton', 'numberValueAsSingletonLazily', 'dateValue', 'dateValueLazily', 'dateValueAsSingleton', 'dateValueAsSingletonLazily', 'arrayValue', 'arrayValueLazily', 'arrayValueAsSingleton', 'arrayValueAsSingletonLazily', 'objectValue', 'objectValueLazily', 'objectValueAsSingleton', 'objectValueAsSingletonLazily', 'classValue', 'classValueLazily', 'classValueAsSingleton', 'classValueAsSingletonLazily', 'functionValue', 'functionValueLazily', 'functionValueAsSingleton', 'functionValueAsSingletonLazily'];
+    configuredIdentifiers = ['classNameAsString', 'className', 'classNameEagerly', 'classNameLazily', 'classNameAsSingleton', 'classNameAsSingletonEagerly', 'classNameAsSingletonLazily', 'classNameAsPrototype', 'classNameAsPrototypeLazily', 'classNameWithParameters', 'classNameWithParametersEagerly', 'classNameWithParametersLazily', 'classNameWithParametersAsSingleton', 'classNameWithParametersAsSingletonEagerly', 'classNameWithParametersAsSingletonLazily', 'classNameWithParametersAsPrototype', 'classNameWithParametersAsPrototypeLazily', 'classNameForSingletonClass', 'classNameForSingletonClassEagerly', 'classNameForSingletonClassLazily', 'classNameForSingletonClassAsSingleton', 'classNameForSingletonClassAsSingletonEagerly', 'classNameForSingletonClassAsSingletonLazily', 'fn', 'fnEagerly', 'fnLazily', 'fnAsSingleton', 'fnAsSingletonEagerly', 'fnAsSingletonLazily', 'fnAsPrototype', 'fnAsPrototypeLazily', 'booleanValue', 'booleanValueLazily', 'booleanValueAsSingleton', 'booleanValueAsSingletonLazily', 'stringValue', 'stringValueLazily', 'stringValueAsSingleton', 'stringValueAsSingletonLazily', 'numberValue', 'numberValueLazily', 'numberValueAsSingleton', 'numberValueAsSingletonLazily', 'dateValue', 'dateValueLazily', 'dateValueAsSingleton', 'dateValueAsSingletonLazily', 'arrayValue', 'arrayValueLazily', 'arrayValueAsSingleton', 'arrayValueAsSingletonLazily', 'objectValue', 'objectValueLazily', 'objectValueAsSingleton', 'objectValueAsSingletonLazily', 'classValue', 'classValueLazily', 'classValueAsSingleton', 'classValueAsSingletonLazily', 'functionValue', 'functionValueLazily', 'functionValueAsSingleton', 'functionValueAsSingletonLazily'];
     describe('Resolution', function() {
       it('should resolve a value for configured identifiers', function() {
         var configuredIdentifier, _j, _len1;
@@ -839,6 +981,12 @@ describe('Deft.ioc.Injector', function() {
           classNameWithParametersAsSingletonLazily: null,
           classNameWithParametersAsPrototype: null,
           classNameWithParametersAsPrototypeLazily: null,
+          classNameForSingletonClass: null,
+          classNameForSingletonClassEagerly: null,
+          classNameForSingletonClassLazily: null,
+          classNameForSingletonClassAsSingleton: null,
+          classNameForSingletonClassAsSingletonEagerly: null,
+          classNameForSingletonClassAsSingletonLazily: null,
           fn: null,
           fnEagerly: null,
           fnLazily: null,

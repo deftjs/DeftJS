@@ -67,10 +67,25 @@ Ext.define('Deft.ioc.DependencyProvider', {
       }
     }
     if (!this.getSingleton()) {
+      if (this.getClassName() != null) {
+        if (Ext.ClassManager.get(this.getClassName()).singleton) {
+          Ext.Error.raise({
+            msg: "Error while configuring rule for '" + (this.getIdentifier()) + "': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition."
+          });
+        }
+      }
       if (this.getValue() != null) {
         Ext.Error.raise({
           msg: "Error while configuring '" + (this.getIdentifier()) + "': a 'value' can only be configured as a singleton."
         });
+      }
+    } else {
+      if ((this.getClassName() != null) && (this.getParameters() != null)) {
+        if (Ext.ClassManager.get(this.getClassName()).singleton) {
+          Ext.Error.raise({
+            msg: "Error while configuring rule for '" + (this.getIdentifier()) + "': parameters cannot be applied to singleton classes. Consider removing 'singleton: true' from the class definition."
+          });
+        }
       }
     }
     return this;
@@ -80,7 +95,7 @@ Ext.define('Deft.ioc.DependencyProvider', {
   */
 
   resolve: function(targetInstance) {
-    var instance, parameters;
+    var classDefinition, instance, parameters;
     Deft.Logger.log("Resolving '" + (this.getIdentifier()) + "'.");
     if (this.getValue() != null) {
       return this.getValue();
@@ -90,9 +105,15 @@ Ext.define('Deft.ioc.DependencyProvider', {
       Deft.Logger.log("Executing factory function.");
       instance = this.getFn().call(null, targetInstance);
     } else if (this.getClassName() != null) {
-      Deft.Logger.log("Creating instance of '" + (this.getClassName()) + "'.");
-      parameters = this.getParameters() != null ? [this.getClassName()].concat(this.getParameters()) : [this.getClassName()];
-      instance = Ext.create.apply(this, parameters);
+      classDefinition = Ext.ClassManager.get(this.getClassName());
+      if (classDefinition.singleton) {
+        Deft.Logger.log("Using existing singleton instance of '" + (this.getClassName()) + "'.");
+        instance = classDefinition;
+      } else {
+        Deft.Logger.log("Creating instance of '" + (this.getClassName()) + "'.");
+        parameters = this.getParameters() != null ? [this.getClassName()].concat(this.getParameters()) : [this.getClassName()];
+        instance = Ext.create.apply(this, parameters);
+      }
     } else {
       Ext.Error.raise({
         msg: "Error while configuring rule for '" + (this.getIdentifier()) + "': no 'value', 'fn', or 'className' was specified."

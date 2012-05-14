@@ -479,6 +479,7 @@ Provided the specified `controller` extends `Deft.mvc.ViewController`, the contr
 
 # Version History
 
+* 0.6.5 - Enhanced IoC container to support classes defined as singletons using the Sencha class system.
 * 0.6.4 - Hotfix for Sencha Touch Logger issue.
 * 0.6.3 - Added memoization feature. Fixed reported Sencha Touch issues.
 * 0.6.2 - Added support for View Controller event listener options. Ext JS 4.1rc3 compatibility fixes.

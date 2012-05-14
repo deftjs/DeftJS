@@ -16,6 +16,14 @@ describe( 'Deft.ioc.Injector', ->
 			@initConfig( config )
 			return @
 	)
+
+	Ext.define( 'ExampleSingletonClass',
+		singleton: true
+
+		constructor: ( config ) ->
+			@initConfig( config )
+			return @
+	)
 	
 	beforeEach( ->
 		@addMatchers(
@@ -701,6 +709,221 @@ describe( 'Deft.ioc.Injector', ->
 			
 			return
 		)
+
+		describe( 'Configuration with a class name for a singleton class', ->
+
+			it( 'should be configurable with a class name for a singleton class', ->
+				Deft.Injector.configure(
+					classNameForSingletonClass:
+						className: 'ExampleSingletonClass'
+				)
+
+				expect(
+					Deft.Injector.canResolve( 'classNameForSingletonClass' )
+				).toBe( true )
+
+				return
+			)
+
+			it( 'should not be configurable with a class name for a singleton class and constructor parameters', ->
+				expect( ->
+					Deft.Injector.configure(
+						classNameForSingletonClassWithParameters:
+							className: 'ExampleSingletonClass'
+							parameters: [ { parameter: 'expected value' } ]
+					)
+				).toThrow( new Error( "Error while configuring rule for 'classNameForSingletonClassWithParameters': parameters cannot be applied to singleton classes. Consider removing 'singleton: true' from the class definition." ) )
+
+				return
+			)
+
+			it( 'should be configurable with a class name for a singleton class, eagerly', ->
+				Deft.Injector.configure(
+					classNameForSingletonClassEagerly:
+						className: 'ExampleSingletonClass'
+						eager: true
+				)
+
+				expect(
+					Deft.Injector.canResolve( 'classNameForSingletonClassEagerly' )
+				).toBe( true )
+
+				return
+			)
+
+			it( 'should be configurable with a class name for a singleton class, (explicitly) lazily', ->
+				Deft.Injector.configure(
+					classNameForSingletonClassLazily:
+						className: 'ExampleSingletonClass'
+						eager: false
+				)
+
+				expect(
+					Deft.Injector.canResolve( 'classNameForSingletonClassLazily' )
+				).toBe( true )
+
+				return
+			)
+
+			it( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton', ->
+				Deft.Injector.configure(
+					classNameForSingletonClassAsSingleton:
+						className: 'ExampleSingletonClass'
+						singleton: true
+				)
+
+				expect(
+					Deft.Injector.canResolve( 'classNameForSingletonClassAsSingleton' )
+				).toBe( true )
+
+				return
+			)
+
+			it( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton, eagerly', ->
+				Deft.Injector.configure(
+					classNameForSingletonClassAsSingletonEagerly:
+						className: 'ExampleSingletonClass'
+						singleton: true
+						eager: true
+				)
+
+				expect(
+					Deft.Injector.canResolve( 'classNameForSingletonClassAsSingletonEagerly' )
+				).toBe( true )
+
+				return
+			)
+
+			it( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily', ->
+				Deft.Injector.configure(
+					classNameForSingletonClassAsSingletonLazily:
+						className: 'ExampleSingletonClass'
+						singleton: true
+						eager: false
+				)
+
+				expect(
+					Deft.Injector.canResolve( 'classNameForSingletonClassAsSingletonLazily' )
+				).toBe( true )
+
+				return
+			)
+
+			it( 'should not be configurable with a class name for a singleton class, as a prototype', ->
+				expect( ->
+					Deft.Injector.configure(
+						classNameForSingletonClassAsPrototype:
+							className: 'ExampleSingletonClass'
+							singleton: false
+					)
+				).toThrow( new Error( "Error while configuring rule for 'classNameForSingletonClassAsPrototype': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition." ) )
+
+				return
+			)
+
+			it( 'should not be configurable with a class name for a singleton class, as a prototype, eagerly', ->
+				expect( ->
+					Deft.Injector.configure(
+						classNameForSingletonClassAsPrototypeEagerly:
+							className: 'ExampleSingletonClass'
+							singleton: false
+							eager: true
+					)
+				).toThrow( new Error( "Error while configuring 'classNameForSingletonClassAsPrototypeEagerly': only singletons can be created eagerly." ) )
+
+				return
+			)
+
+			it( 'should not be configurable with a class name for a singleton class, as a prototype, (explicitly) lazily', ->
+				expect( ->
+					Deft.Injector.configure(
+						classNameForSingletonClassAsPrototypeLazily:
+							className: 'ExampleSingletonClass'
+							singleton: false
+							eager: false
+					)
+				).toThrow( new Error( "Error while configuring rule for 'classNameForSingletonClassAsPrototypeLazily': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition." ) )
+
+				return
+			)
+
+			describe( 'Resolution of a dependency configured with a class name for a singleton class', ->
+
+				it( 'should resolve a dependency configured with a class name for a singleton class with the corresponding singleton class instance', ->
+					expect(
+						classNameForSingletonClassInstance = Deft.Injector.resolve( 'classNameForSingletonClass' )
+					).toBe( ExampleSingletonClass )
+
+					expect(
+						Deft.Injector.resolve( 'classNameForSingletonClass' )
+					).toBe( classNameForSingletonClassInstance )
+
+					return
+				)
+
+				it( 'should resolve a dependency configured with a class name for a singleton class, eagerly, with the corresponding singleton class instance', ->
+					expect(
+						classNameForSingletonClassEagerlyInstance = Deft.Injector.resolve( 'classNameForSingletonClassEagerly' )
+					).toBe( ExampleSingletonClass )
+
+					expect(
+						Deft.Injector.resolve( 'classNameForSingletonClassEagerly' )
+					).toBe( classNameForSingletonClassEagerlyInstance )
+
+					return
+				)
+
+				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) lazily, with the corresponding singleton class instance', ->
+					expect(
+						classNameForSingletonClassEagerlyInstance = Deft.Injector.resolve( 'classNameForSingletonClassLazily' )
+					).toBe( ExampleSingletonClass )
+
+					expect(
+						Deft.Injector.resolve( 'classNameForSingletonClassLazily' )
+					).toBe( classNameForSingletonClassEagerlyInstance )
+
+					return
+				)
+
+				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, with the corresponding singleton class instance', ->
+					expect(
+						classNameForSingletonClassAsSingletonInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingleton' )
+					).toBe( ExampleSingletonClass )
+
+					expect(
+						Deft.Injector.resolve( 'classNameForSingletonClassAsSingleton' )
+					).toBe( classNameForSingletonClassAsSingletonInstance )
+
+					return
+				)
+
+				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, eagerly, with the corresponding singleton class instance', ->
+					expect(
+						classNameForSingletonClassAsSingletonEagerlyInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonEagerly' )
+					).toBe( ExampleSingletonClass )
+
+					expect(
+						Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonEagerly' )
+					).toBe( classNameForSingletonClassAsSingletonEagerlyInstance )
+
+					return
+				)
+
+				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', ->
+					expect(
+						classNameForSingletonClassAsSingletonLazilyInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonLazily' )
+					).toBe( ExampleSingletonClass )
+
+					expect(
+						Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonLazily' )
+					).toBe( classNameForSingletonClassAsSingletonLazilyInstance )
+
+					return
+				)
+			)
+
+			return
+		)
 		
 		describe( 'Configuration with a factory function', ->
 			
@@ -1268,6 +1491,12 @@ describe( 'Deft.ioc.Injector', ->
 			'classNameWithParametersAsSingletonLazily'
 			'classNameWithParametersAsPrototype'
 			'classNameWithParametersAsPrototypeLazily'
+			'classNameForSingletonClass'
+			'classNameForSingletonClassEagerly'
+			'classNameForSingletonClassLazily'
+			'classNameForSingletonClassAsSingleton'
+			'classNameForSingletonClassAsSingletonEagerly'
+			'classNameForSingletonClassAsSingletonLazily'
 			'fn'
 			'fnEagerly'
 			'fnLazily'
@@ -1424,6 +1653,12 @@ describe( 'Deft.ioc.Injector', ->
 					classNameWithParametersAsSingletonLazily: null
 					classNameWithParametersAsPrototype: null
 					classNameWithParametersAsPrototypeLazily: null
+					classNameForSingletonClass: null
+					classNameForSingletonClassEagerly: null
+					classNameForSingletonClassLazily: null
+					classNameForSingletonClassAsSingleton: null
+					classNameForSingletonClassAsSingletonEagerly: null
+					classNameForSingletonClassAsSingletonLazily: null
 					fn: null
 					fnEagerly: null
 					fnLazily: null

@@ -62,9 +62,16 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 				Ext.Error.raise( msg: "Error while configuring '#{ @getIdentifier() }': only singletons can be created eagerly." )
 		
 		if not @getSingleton()
-			if @getValue()? 
+			if @getClassName()?
+				if Ext.ClassManager.get( @getClassName() ).singleton
+					Ext.Error.raise( msg: "Error while configuring rule for '#{ @getIdentifier() }': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition." )
+			if @getValue()?
 				Ext.Error.raise( msg: "Error while configuring '#{ @getIdentifier() }': a 'value' can only be configured as a singleton." )
-		
+		else
+			if @getClassName()? and @getParameters()?
+				if Ext.ClassManager.get( @getClassName() ).singleton
+					Ext.Error.raise( msg: "Error while configuring rule for '#{ @getIdentifier() }': parameters cannot be applied to singleton classes. Consider removing 'singleton: true' from the class definition." )
+
 		return @
 	
 	###*
@@ -80,9 +87,14 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 			Deft.Logger.log( "Executing factory function." )
 			instance = @getFn().call( null, targetInstance )
 		else if @getClassName()?
-			Deft.Logger.log( "Creating instance of '#{ @getClassName() }'." )
-			parameters = if @getParameters()? then [ @getClassName() ].concat( @getParameters() ) else [ @getClassName() ]
-			instance = Ext.create.apply( @, parameters )
+			classDefinition = Ext.ClassManager.get( @getClassName() )
+			if classDefinition.singleton
+				Deft.Logger.log( "Using existing singleton instance of '#{ @getClassName() }'." )
+				instance = classDefinition
+			else
+				Deft.Logger.log( "Creating instance of '#{ @getClassName() }'." )
+				parameters = if @getParameters()? then [ @getClassName() ].concat( @getParameters() ) else [ @getClassName() ]
+				instance = Ext.create.apply( @, parameters )
 		else
 			Ext.Error.raise( msg: "Error while configuring rule for '#{ @getIdentifier() }': no 'value', 'fn', or 'className' was specified." )
 		
