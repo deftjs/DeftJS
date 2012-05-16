@@ -10,10 +10,10 @@ Used in conjunction with {@link Deft.mvc.ViewController}.
 ###
 Ext.define( 'Deft.mixin.Controllable',
 	requires: [ 'Deft.mvc.ViewController' ]
-	
+
 	###*
 	@private
-	###  
+	###
 	onClassMixedIn: ( targetClass ) ->
 		targetClass::constructor = Ext.Function.createSequence( targetClass::constructor, ->
 			if not @controller?
@@ -25,7 +25,8 @@ Ext.define( 'Deft.mixin.Controllable',
 						view: @
 					)
 				catch error
-					Ext.Error.raise( msg: "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
+					Deft.Logger.log( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
+					throw error
 			return
 		)
 		return
