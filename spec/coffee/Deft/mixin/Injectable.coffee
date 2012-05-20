@@ -21,5 +21,7 @@ describe( 'Deft.mixin.Injectable', ->
 		spyOn( Deft.Injector, 'inject' ).andCallFake( -> return )
 		
 		exampleInstance = Ext.create( 'ExampleClass' )
+		
+		return
 	)
 )

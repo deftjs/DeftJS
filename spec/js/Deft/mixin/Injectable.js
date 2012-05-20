@@ -20,6 +20,6 @@ describe('Deft.mixin.Injectable', function() {
       }
     });
     spyOn(Deft.Injector, 'inject').andCallFake(function() {});
-    return exampleInstance = Ext.create('ExampleClass');
+    exampleInstance = Ext.create('ExampleClass');
   });
 });
