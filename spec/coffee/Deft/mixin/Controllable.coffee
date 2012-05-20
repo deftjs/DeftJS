@@ -7,8 +7,8 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Jasmine test suite for Deft.mixin.Controllable
 ###
 describe( 'Deft.mixin.Controllable', ->
-	
-	it( 'should create an instance of the associated view controller (configured with the target view instance) when an instance of the target view is created', ->
+
+	it( 'should create an instance of the view controller specified by the target view `controller` property and configure it with a reference to the target view instance when an instance of the target view is created', ->
 		exampleViewInstance = null
 		exampleViewControllerInstance = null
 		
@@ -60,6 +60,26 @@ describe( 'Deft.mixin.Controllable', ->
 		
 		expect( ->
 			Ext.create( 'ExampleView' )
-		).toThrow( 'Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: \'doesntexist\'.' )
+		).toThrow( 'Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: \'doesntexist\' does not exist.' )
+	)
+	
+	it( 'should re-throw any error thrown by the view controller during instantiation', ->
+		
+		Ext.define( 'ExampleView',
+			extend: 'Ext.Container'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'ExampleBrokenViewController'
+		)
+		
+		Ext.define( 'ExampleBrokenViewController',
+			extend: 'Deft.mvc.ViewController'
+			
+			constructor: ->
+				throw new Error( 'Error thrown by \`ExampleBrokenViewController\`.' )
+		)
+		
+		expect( ->
+			Ext.create( 'ExampleView' )
+		).toThrow( 'Error thrown by \`ExampleBrokenViewController\`.' )
 	)
 )

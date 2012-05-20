@@ -2,24 +2,22 @@
 <html>
 	<head>
 		<title>Jasmine Spec Runner</title>
-		
-		<link rel="shortcut icon" type="image/png" href="lib/jasmine-1.1.0/jasmine_favicon.png">
-		<link rel="stylesheet" type="text/css" href="lib/jasmine-1.1.0/jasmine.css">
-		
+
 		<!-- Jasmine -->
-		<script type="text/javascript" src="lib/jasmine-1.1.0/jasmine.js"></script>
-		<script type="text/javascript" src="lib/jasmine-1.1.0/jasmine-html.js"></script>
-		
+		<link rel="stylesheet" type="text/css" href="lib/jasmine-1.2.0/jasmine.css">
+		<script type="text/javascript" src="lib/jasmine-1.2.0/jasmine.js"></script>
+		<script type="text/javascript" src="lib/jasmine-1.2.0/jasmine-html.js"></script>
+
 		<!-- Ext JS -->
 		<!-- <script type="text/javascript" src="http://cdn.sencha.io/ext-4.0.7-gpl/ext-all.js"></script> -->
 		<script type="text/javascript" src="http://cdn.sencha.io/ext-4.1.0-gpl/ext-all.js"></script>
-		
+
 		<!-- Sencha Touch -->
 		<!-- <script type="text/javascript" src="../lib/sencha-touch-2.0.1-rc/sencha-touch-all.js"></script> -->
-		
+
 		<!-- DeftJS -->
 		<script type="text/javascript" src="../build/deft-debug.js"></script>
-				
+
 		<!-- DeftJS specs -->
 		<script type="text/javascript" src="js/Deft/ioc/Injector.js"></script>
 		<script type="text/javascript" src="js/Deft/mixin/Injectable.js"></script>
@@ -27,20 +25,17 @@
 		<script type="text/javascript" src="js/Deft/mixin/Controllable.js"></script>
 		<script type="text/javascript" src="js/Deft/promise/Deferred.js"></script>
 		<script type="text/javascript" src="js/Deft/util/Function.js"></script>
-		
 	</head>
-	
 	<body>
 		<script type="text/javascript">
 			Ext.Loader.setConfig({
 				enabled: true
 			});
-			
+
 			Ext.onReady( function () {
-				jasmine.getEnv().addReporter( new jasmine.TrivialReporter() );
+      	jasmine.getEnv().addReporter(new jasmine.HtmlReporter());
 				jasmine.getEnv().execute();
 			});
 		</script>
 	</body>
-	
 </html>

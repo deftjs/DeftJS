@@ -10,10 +10,10 @@ Used in conjunction with {@link Deft.mvc.ViewController}.
 ###
 Ext.define( 'Deft.mixin.Controllable',
 	requires: [ 'Deft.mvc.ViewController' ]
-	
+
 	###*
 	@private
-	###  
+	###
 	onClassMixedIn: ( targetClass ) ->
 		if @controller?
 			controllers = if Ext.isArray( @controller ) then @controller else [ @controller ]
@@ -25,12 +25,16 @@ Ext.define( 'Deft.mixin.Controllable',
 				Ext.Error.raise( msg: 'Error initializing Controllable instance: \`controller\` was not specified.' )
 			controllers = if Ext.isArray( @controller ) then @controller else [ @controller ]
 			for controllerClass in controllers
-				try
-					Ext.create( controllerClass,
-						view: @
-					)
-				catch error
-					Ext.Error.raise( msg: "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
+				if Ext.ClassManager.isCreated( controllerClass )
+					try
+						Ext.create( controllerClass,
+							view: @
+						)
+					catch error
+						Deft.Logger.log( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
+						throw error
+				else
+					Ext.Error.raise( msg: "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ @controller }' does not exist." )
 			return
 		)
 		return

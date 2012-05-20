@@ -9,7 +9,7 @@ Jasmine test suite for Deft.mixin.Controllable
 */
 
 describe('Deft.mixin.Controllable', function() {
-  it('should create an instance of the associated view controller (configured with the target view instance) when an instance of the target view is created', function() {
+  it('should create an instance of the view controller specified by the target view `controller` property and configure it with a reference to the target view instance when an instance of the target view is created', function() {
     var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
     exampleViewInstance = null;
     exampleViewControllerInstance = null;
@@ -42,7 +42,7 @@ describe('Deft.mixin.Controllable', function() {
       return Ext.create('ExampleView');
     }).toThrow('Error initializing Controllable instance: `controller` was not specified.');
   });
-  return it('should throw an error if the target view \`controller\` property specifies a non-existent class', function() {
+  it('should throw an error if the target view \`controller\` property specifies a non-existent class', function() {
     Ext.define('ExampleView', {
       extend: 'Ext.Container',
       mixins: ['Deft.mixin.Controllable'],
@@ -50,6 +50,22 @@ describe('Deft.mixin.Controllable', function() {
     });
     return expect(function() {
       return Ext.create('ExampleView');
-    }).toThrow('Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: \'doesntexist\'.');
+    }).toThrow('Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: \'doesntexist\' does not exist.');
+  });
+  return it('should re-throw any error thrown by the view controller during instantiation', function() {
+    Ext.define('ExampleView', {
+      extend: 'Ext.Container',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'ExampleBrokenViewController'
+    });
+    Ext.define('ExampleBrokenViewController', {
+      extend: 'Deft.mvc.ViewController',
+      constructor: function() {
+        throw new Error('Error thrown by \`ExampleBrokenViewController\`.');
+      }
+    });
+    return expect(function() {
+      return Ext.create('ExampleView');
+    }).toThrow('Error thrown by \`ExampleBrokenViewController\`.');
   });
 });
