@@ -12,14 +12,14 @@ describe( 'Deft.mixin.Controllable', ->
 		exampleViewInstance = null
 		exampleViewControllerInstance = null
 		
+		Ext.define( 'ExampleViewController',
+			extend: 'Deft.mvc.ViewController'
+		)
+		
 		Ext.define( 'ExampleView',
 			extend: 'Ext.Container'
 			mixins: [ 'Deft.mixin.Controllable' ]
 			controller: 'ExampleViewController'
-		)
-		
-		Ext.define( 'ExampleViewController',
-			extend: 'Deft.mvc.ViewController'
 		)
 		
 		constructorSpy = spyOn( ExampleViewController.prototype, 'constructor' ).andCallFake( ->
@@ -32,54 +32,30 @@ describe( 'Deft.mixin.Controllable', ->
 		expect( ExampleViewController::constructor ).toHaveBeenCalled()
 		expect( ExampleViewController::constructor.callCount ).toBe( 1 )
 		expect( exampleViewControllerInstance.getView() ).toBe( exampleViewInstance )
-	)
-	
-	it( 'should throw an error if the target view \`controller\` property is not populated', ->
 		
-		Ext.define( 'ExampleView',
-			extend: 'Ext.Container'
-			mixins: [ 'Deft.mixin.Controllable' ]
-		)
-		
-		Ext.define( 'ExampleViewController',
-			extend: 'Deft.mvc.ViewController'
-		)
-		
-		expect( ->
-			Ext.create( 'ExampleView' )
-		).toThrow( 'Error initializing Controllable instance: `controller` was not specified.' )
-	)
-	
-	it( 'should throw an error if the target view \`controller\` property specifies a non-existent class', ->
-		
-		Ext.define( 'ExampleView',
-			extend: 'Ext.Container'
-			mixins: [ 'Deft.mixin.Controllable' ]
-			controller: 'doesntexist'
-		)
-		
-		expect( ->
-			Ext.create( 'ExampleView' )
-		).toThrow( 'Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: \'doesntexist\' does not exist.' )
+		return
 	)
 	
 	it( 'should re-throw any error thrown by the view controller during instantiation', ->
 		
-		Ext.define( 'ExampleView',
-			extend: 'Ext.Container'
-			mixins: [ 'Deft.mixin.Controllable' ]
-			controller: 'ExampleBrokenViewController'
-		)
-		
-		Ext.define( 'ExampleBrokenViewController',
+		Ext.define( 'ExampleErrorThrowingViewController',
 			extend: 'Deft.mvc.ViewController'
 			
 			constructor: ->
-				throw new Error( 'Error thrown by \`ExampleBrokenViewController\`.' )
+				throw new Error( 'Error thrown by \`ExampleErrorThrowingViewController\`.' )
+		)
+		
+		Ext.define( 'ExampleView',
+			extend: 'Ext.Container'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'ExampleErrorThrowingViewController'
 		)
 		
 		expect( ->
 			Ext.create( 'ExampleView' )
-		).toThrow( 'Error thrown by \`ExampleBrokenViewController\`.' )
+			return
+		).toThrow( 'Error thrown by \`ExampleErrorThrowingViewController\`.' )
+		
+		return
 	)
 )

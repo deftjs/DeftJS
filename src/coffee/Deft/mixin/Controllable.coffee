@@ -8,34 +8,43 @@ A mixin that creates and attaches the specified view controller(s) to the target
 
 Used in conjunction with {@link Deft.mvc.ViewController}.
 ###
-Ext.define( 'Deft.mixin.Controllable',
-	requires: [ 'Deft.mvc.ViewController' ]
+Ext.define( 'Deft.mixin.Controllable', {} )
 
-	###*
-	@private
-	###
-	onClassMixedIn: ( targetClass ) ->
-		if @controller?
-			controllers = if Ext.isArray( @controller ) then @controller else [ @controller ]
-			for controllerClass in controllers
-				Ext.require( controllerClass )
+Ext.Class.registerPreprocessor( 'controller', ( Class, data, hooks, callback ) ->
+	# Workaround: Ext JS 4.0 passes the callback as the third parameter, Sencha Touch 2.0.1 and Ext JS 4.1 passes it as the fourth parameter
+	if arguments.length is 3
+		hooks = arguments[ 1 ]
+		callback = arguments[ 2 ]
+	
+	if data.mixins? and Ext.Array.contains( data.mixins, Ext.ClassManager.get( 'Deft.mixin.Controllable' ) )
+		controller = data.controller
+		delete data.controller
 		
-		targetClass::constructor = Ext.Function.createSequence( targetClass::constructor, ->
-			if not @controller?
-				Ext.Error.raise( msg: 'Error initializing Controllable instance: \`controller\` was not specified.' )
-			controllers = if Ext.isArray( @controller ) then @controller else [ @controller ]
+		controllers = []
+		if controller?
+			controllers = if Ext.isArray( controller ) then controller else [ controller ]
+		
+		Class::constructor = Ext.Function.createSequence( Class::constructor, ->
 			for controllerClass in controllers
-				if Ext.ClassManager.isCreated( controllerClass )
-					try
-						Ext.create( controllerClass,
-							view: @
-						)
-					catch error
-						Deft.Logger.log( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
-						throw error
-				else
-					Ext.Error.raise( msg: "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ @controller }' does not exist." )
+				try
+					Ext.create( controllerClass,
+						view: @
+					)
+				catch error
+					Deft.Logger.log( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ controllerClass }'." )
+					throw error
 			return
 		)
-		return
+		
+		if controllers.length > 0
+			self = @
+			Ext.require( controllers, ->
+				if callback?
+					callback.call( self, Class, data, hooks )
+				return
+			)
+			return false
+	return
 )
+
+Ext.Class.setDefaultPreprocessorPosition( 'controller', 'before', 'mixins' )

@@ -608,49 +608,48 @@ A mixin that creates and attaches the specified view controller(s) to the target
 Used in conjunction with {@link Deft.mvc.ViewController}.
 */
 
-Ext.define('Deft.mixin.Controllable', {
-  requires: ['Deft.mvc.ViewController'],
-  /**
-  	@private
-  */
+Ext.define('Deft.mixin.Controllable', {});
 
-  onClassMixedIn: function(targetClass) {
-    var controllerClass, controllers, _i, _len;
-    if (this.controller != null) {
-      controllers = Ext.isArray(this.controller) ? this.controller : [this.controller];
+Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
+  var controller, controllers, self;
+  if (arguments.length === 3) {
+    hooks = arguments[1];
+    callback = arguments[2];
+  }
+  if ((data.mixins != null) && Ext.Array.contains(data.mixins, Ext.ClassManager.get('Deft.mixin.Controllable'))) {
+    controller = data.controller;
+    delete data.controller;
+    controllers = [];
+    if (controller != null) {
+      controllers = Ext.isArray(controller) ? controller : [controller];
+    }
+    Class.prototype.constructor = Ext.Function.createSequence(Class.prototype.constructor, function() {
+      var controllerClass, _i, _len;
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
         controllerClass = controllers[_i];
-        Ext.require(controllerClass);
-      }
-    }
-    targetClass.prototype.constructor = Ext.Function.createSequence(targetClass.prototype.constructor, function() {
-      var _j, _len1;
-      if (!(this.controller != null)) {
-        Ext.Error.raise({
-          msg: 'Error initializing Controllable instance: \`controller\` was not specified.'
-        });
-      }
-      controllers = Ext.isArray(this.controller) ? this.controller : [this.controller];
-      for (_j = 0, _len1 = controllers.length; _j < _len1; _j++) {
-        controllerClass = controllers[_j];
-        if (Ext.ClassManager.isCreated(controllerClass)) {
-          try {
-            Ext.create(controllerClass, {
-              view: this
-            });
-          } catch (error) {
-            Deft.Logger.log("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
-            throw error;
-          }
-        } else {
-          Ext.Error.raise({
-            msg: "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + this.controller + "' does not exist."
+        try {
+          Ext.create(controllerClass, {
+            view: this
           });
+        } catch (error) {
+          Deft.Logger.log("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
+          throw error;
         }
       }
     });
+    if (controllers.length > 0) {
+      self = this;
+      Ext.require(controllers, function() {
+        if (callback != null) {
+          callback.call(self, Class, data, hooks);
+        }
+      });
+      return false;
+    }
   }
 });
+
+Ext.Class.setDefaultPreprocessorPosition('controller', 'before', 'mixins');
 
 Ext.define('Deft.promise.Deferred', {
   alternateClassName: ['Deft.Deferred'],

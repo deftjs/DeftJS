@@ -13,13 +13,13 @@ describe('Deft.mixin.Controllable', function() {
     var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
     exampleViewInstance = null;
     exampleViewControllerInstance = null;
+    Ext.define('ExampleViewController', {
+      extend: 'Deft.mvc.ViewController'
+    });
     Ext.define('ExampleView', {
       extend: 'Ext.Container',
       mixins: ['Deft.mixin.Controllable'],
       controller: 'ExampleViewController'
-    });
-    Ext.define('ExampleViewController', {
-      extend: 'Deft.mvc.ViewController'
     });
     constructorSpy = spyOn(ExampleViewController.prototype, 'constructor').andCallFake(function() {
       exampleViewControllerInstance = this;
@@ -28,44 +28,22 @@ describe('Deft.mixin.Controllable', function() {
     exampleViewInstance = Ext.create('ExampleView');
     expect(ExampleViewController.prototype.constructor).toHaveBeenCalled();
     expect(ExampleViewController.prototype.constructor.callCount).toBe(1);
-    return expect(exampleViewControllerInstance.getView()).toBe(exampleViewInstance);
-  });
-  it('should throw an error if the target view \`controller\` property is not populated', function() {
-    Ext.define('ExampleView', {
-      extend: 'Ext.Container',
-      mixins: ['Deft.mixin.Controllable']
-    });
-    Ext.define('ExampleViewController', {
-      extend: 'Deft.mvc.ViewController'
-    });
-    return expect(function() {
-      return Ext.create('ExampleView');
-    }).toThrow('Error initializing Controllable instance: `controller` was not specified.');
-  });
-  it('should throw an error if the target view \`controller\` property specifies a non-existent class', function() {
-    Ext.define('ExampleView', {
-      extend: 'Ext.Container',
-      mixins: ['Deft.mixin.Controllable'],
-      controller: 'doesntexist'
-    });
-    return expect(function() {
-      return Ext.create('ExampleView');
-    }).toThrow('Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: \'doesntexist\' does not exist.');
+    expect(exampleViewControllerInstance.getView()).toBe(exampleViewInstance);
   });
   return it('should re-throw any error thrown by the view controller during instantiation', function() {
+    Ext.define('ExampleErrorThrowingViewController', {
+      extend: 'Deft.mvc.ViewController',
+      constructor: function() {
+        throw new Error('Error thrown by \`ExampleErrorThrowingViewController\`.');
+      }
+    });
     Ext.define('ExampleView', {
       extend: 'Ext.Container',
       mixins: ['Deft.mixin.Controllable'],
-      controller: 'ExampleBrokenViewController'
+      controller: 'ExampleErrorThrowingViewController'
     });
-    Ext.define('ExampleBrokenViewController', {
-      extend: 'Deft.mvc.ViewController',
-      constructor: function() {
-        throw new Error('Error thrown by \`ExampleBrokenViewController\`.');
-      }
-    });
-    return expect(function() {
-      return Ext.create('ExampleView');
-    }).toThrow('Error thrown by \`ExampleBrokenViewController\`.');
+    expect(function() {
+      Ext.create('ExampleView');
+    }).toThrow('Error thrown by \`ExampleErrorThrowingViewController\`.');
   });
 });
