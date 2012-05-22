@@ -31,7 +31,8 @@ Ext.Class.registerPreprocessor( 'controller', ( Class, data, hooks, callback ) -
 						view: @
 					)
 				catch error
-					Deft.Logger.log( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ controllerClass }'." )
+					# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
+					Deft.Logger.warn( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ controllerClass }'." )
 					throw error
 			return
 		)

@@ -34,7 +34,7 @@ Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callba
             view: this
           });
         } catch (error) {
-          Deft.Logger.log("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
+          Deft.Logger.warn("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
           throw error;
         }
       }
