@@ -13,8 +13,10 @@ Ext.define( 'Deft.mixin.Controllable', {} )
 Ext.Class.registerPreprocessor( 'controller', ( Class, data, hooks, callback ) ->
 	# Workaround: Ext JS 4.0 passes the callback as the third parameter, Sencha Touch 2.0.1 and Ext JS 4.1 passes it as the fourth parameter
 	if arguments.length is 3
-		hooks = arguments[ 1 ]
-		callback = arguments[ 2 ]
+		# NOTE: Altering a parameter also modifies arguments, so clone it to a true Array first.
+		parameters = Ext.toArray( arguments )
+		hooks = parameters[ 1 ]
+		callback = parameters[ 2 ]
 	
 	if data.mixins? and Ext.Array.contains( data.mixins, Ext.ClassManager.get( 'Deft.mixin.Controllable' ) )
 		controller = data.controller

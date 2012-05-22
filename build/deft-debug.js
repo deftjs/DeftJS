@@ -624,10 +624,11 @@ Used in conjunction with {@link Deft.mvc.ViewController}.
 Ext.define('Deft.mixin.Controllable', {});
 
 Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
-  var controller, controllers, self;
+  var controller, controllers, parameters, self;
   if (arguments.length === 3) {
-    hooks = arguments[1];
-    callback = arguments[2];
+    parameters = Ext.toArray(arguments);
+    hooks = parameters[1];
+    callback = parameters[2];
   }
   if ((data.mixins != null) && Ext.Array.contains(data.mixins, Ext.ClassManager.get('Deft.mixin.Controllable'))) {
     controller = data.controller;
