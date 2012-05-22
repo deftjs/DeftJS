@@ -61,6 +61,17 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 			if not @getSingleton()
 				Ext.Error.raise( msg: "Error while configuring '#{ @getIdentifier() }': only singletons can be created eagerly." )
 		
+		if @getClassName()?
+			classDefinition = Ext.ClassManager.get( @getClassName() )
+			
+			if not classDefinition?
+				Deft.Logger.warn( "Synchronously loading '#{ @getClassName() }'; consider adding Ext.require('#{ @getClassName() }') above Ext.onReady." )
+				Ext.syncRequire( @getClassName() )
+				classDefinition = Ext.ClassManager.get( @getClassName() )
+			
+			if not classDefinition?
+				Ext.Error.raise( msg: "Error while configuring rule for '#{ @getIdentifier() }': unrecognized class name or alias: '#{ @getClassName() }'" )
+		
 		if not @getSingleton()
 			if @getClassName()?
 				if Ext.ClassManager.get( @getClassName() ).singleton
@@ -87,10 +98,9 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 			Deft.Logger.log( "Executing factory function." )
 			instance = @getFn().call( null, targetInstance )
 		else if @getClassName()?
-			classDefinition = Ext.ClassManager.get( @getClassName() )
-			if classDefinition.singleton
+			if Ext.ClassManager.get( @getClassName() ).singleton
 				Deft.Logger.log( "Using existing singleton instance of '#{ @getClassName() }'." )
-				instance = classDefinition
+				instance = Ext.ClassManager.get( @getClassName() )
 			else
 				Deft.Logger.log( "Creating instance of '#{ @getClassName() }'." )
 				parameters = if @getParameters()? then [ @getClassName() ].concat( @getParameters() ) else [ @getClassName() ]

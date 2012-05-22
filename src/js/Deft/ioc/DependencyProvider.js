@@ -50,6 +50,7 @@ Ext.define('Deft.ioc.DependencyProvider', {
     eager: false
   },
   constructor: function(config) {
+    var classDefinition;
     this.initConfig(config);
     if ((config.value != null) && config.value.constructor === Object) {
       this.setValue(config.value);
@@ -63,6 +64,19 @@ Ext.define('Deft.ioc.DependencyProvider', {
       if (!this.getSingleton()) {
         Ext.Error.raise({
           msg: "Error while configuring '" + (this.getIdentifier()) + "': only singletons can be created eagerly."
+        });
+      }
+    }
+    if (this.getClassName() != null) {
+      classDefinition = Ext.ClassManager.get(this.getClassName());
+      if (!(classDefinition != null)) {
+        Deft.Logger.warn("Synchronously loading '" + (this.getClassName()) + "'; consider adding Ext.require('" + (this.getClassName()) + "') above Ext.onReady.");
+        Ext.syncRequire(this.getClassName());
+        classDefinition = Ext.ClassManager.get(this.getClassName());
+      }
+      if (!(classDefinition != null)) {
+        Ext.Error.raise({
+          msg: "Error while configuring rule for '" + (this.getIdentifier()) + "': unrecognized class name or alias: '" + (this.getClassName()) + "'"
         });
       }
     }
@@ -95,7 +109,7 @@ Ext.define('Deft.ioc.DependencyProvider', {
   */
 
   resolve: function(targetInstance) {
-    var classDefinition, instance, parameters;
+    var instance, parameters;
     Deft.Logger.log("Resolving '" + (this.getIdentifier()) + "'.");
     if (this.getValue() != null) {
       return this.getValue();
@@ -105,10 +119,9 @@ Ext.define('Deft.ioc.DependencyProvider', {
       Deft.Logger.log("Executing factory function.");
       instance = this.getFn().call(null, targetInstance);
     } else if (this.getClassName() != null) {
-      classDefinition = Ext.ClassManager.get(this.getClassName());
-      if (classDefinition.singleton) {
+      if (Ext.ClassManager.get(this.getClassName()).singleton) {
         Deft.Logger.log("Using existing singleton instance of '" + (this.getClassName()) + "'.");
-        instance = classDefinition;
+        instance = Ext.ClassManager.get(this.getClassName());
       } else {
         Deft.Logger.log("Creating instance of '" + (this.getClassName()) + "'.");
         parameters = this.getParameters() != null ? [this.getClassName()].concat(this.getParameters()) : [this.getClassName()];
