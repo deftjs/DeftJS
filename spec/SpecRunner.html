@@ -31,9 +31,9 @@
 			Ext.Loader.setConfig({
 				enabled: true
 			});
-
+			
 			Ext.onReady( function () {
-      	jasmine.getEnv().addReporter(new jasmine.HtmlReporter());
+				jasmine.getEnv().addReporter(new jasmine.HtmlReporter());
 				jasmine.getEnv().execute();
 			});
 		</script>
