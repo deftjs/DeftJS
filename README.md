@@ -479,6 +479,7 @@ Provided the specified `controller` extends `Deft.mvc.ViewController`, the contr
 
 # Version History
 
+* 0.6.7 - Controllable now automatically adds a `getController()` accessor to view. Fixes reported issue with Deferreds completed with 'undefined' values.
 * 0.6.6 - Fixes to improve error handling and reporting; especially those associated with nonexistent classes and classes that were not Ext.require()-ed.
 * 0.6.5 - Enhanced IoC container to support classes defined as singletons using the Sencha class system.
 * 0.6.4 - Hotfix for Sencha Touch Logger issue.

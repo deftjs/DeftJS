@@ -1,5 +1,5 @@
 /*
-DeftJS 0.6.6
+DeftJS 0.6.7
 
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
