@@ -13,36 +13,37 @@ Used in conjunction with {@link Deft.mvc.ViewController}.
 Ext.define('Deft.mixin.Controllable', {});
 
 Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
-  var controller, controllers, parameters, self;
+  var controllerClass, parameters, self;
   if (arguments.length === 3) {
     parameters = Ext.toArray(arguments);
     hooks = parameters[1];
     callback = parameters[2];
   }
   if ((data.mixins != null) && Ext.Array.contains(data.mixins, Ext.ClassManager.get('Deft.mixin.Controllable'))) {
-    controller = data.controller;
+    controllerClass = data.controller;
     delete data.controller;
-    controllers = [];
-    if (controller != null) {
-      controllers = Ext.isArray(controller) ? controller : [controller];
-    }
-    Class.prototype.constructor = Ext.Function.createSequence(Class.prototype.constructor, function() {
-      var controllerClass, _i, _len;
-      for (_i = 0, _len = controllers.length; _i < _len; _i++) {
-        controllerClass = controllers[_i];
+    if (controllerClass != null) {
+      Class.prototype.constructor = Ext.Function.createSequence(Class.prototype.constructor, function() {
+        var controller;
         try {
-          Ext.create(controllerClass, {
+          controller = Ext.create(controllerClass, {
             view: this
           });
         } catch (error) {
           Deft.Logger.warn("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
           throw error;
         }
-      }
-    });
-    if (controllers.length > 0) {
+        if (!(this.getController != null)) {
+          this.getController = function() {
+            return controller;
+          };
+          Class.prototype.destroy = Ext.Function.createSequence(Class.prototype.destroy, function() {
+            delete this.getController;
+          });
+        }
+      });
       self = this;
-      Ext.require(controllers, function() {
+      Ext.require([controllerClass], function() {
         if (callback != null) {
           callback.call(self, Class, data, hooks);
         }

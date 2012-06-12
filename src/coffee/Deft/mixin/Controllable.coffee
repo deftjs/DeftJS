@@ -19,29 +19,33 @@ Ext.Class.registerPreprocessor( 'controller', ( Class, data, hooks, callback ) -
 		callback = parameters[ 2 ]
 	
 	if data.mixins? and Ext.Array.contains( data.mixins, Ext.ClassManager.get( 'Deft.mixin.Controllable' ) )
-		controller = data.controller
+		controllerClass = data.controller
 		delete data.controller
 		
-		controllers = []
-		if controller?
-			controllers = if Ext.isArray( controller ) then controller else [ controller ]
-		
-		Class::constructor = Ext.Function.createSequence( Class::constructor, ->
-			for controllerClass in controllers
+		if controllerClass?
+			Class::constructor = Ext.Function.createSequence( Class::constructor, ->
 				try
-					Ext.create( controllerClass,
+					controller = Ext.create( controllerClass,
 						view: @
 					)
 				catch error
 					# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
 					Deft.Logger.warn( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ controllerClass }'." )
 					throw error
-			return
-		)
-		
-		if controllers.length > 0
+				
+				if not @getController?
+					@getController = ->
+						return controller
+					Class::destroy = Ext.Function.createSequence( Class::destroy, ->
+						delete @getController
+						return
+					)
+				
+				return
+			)
+			
 			self = @
-			Ext.require( controllers, ->
+			Ext.require( [ controllerClass ], ->
 				if callback?
 					callback.call( self, Class, data, hooks )
 				return
