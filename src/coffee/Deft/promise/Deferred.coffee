@@ -135,8 +135,11 @@ Ext.define( 'Deft.promise.Deferred',
 		if Ext.isFunction( callback )
 			if @state is 'pending'
 				callbacks.push( callback )
-			if @state is state and value isnt undefined
-				@notify( [ callback ], value )
+				if @state is state and value isnt undefined
+					@notify( [ callback ], value )
+			else 
+				if @state is state
+					@notify( [ callback ], value )
 		return
 	
 	###*

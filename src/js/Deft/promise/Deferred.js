@@ -149,9 +149,13 @@ Ext.define('Deft.promise.Deferred', {
     if (Ext.isFunction(callback)) {
       if (this.state === 'pending') {
         callbacks.push(callback);
-      }
-      if (this.state === state && value !== void 0) {
-        this.notify([callback], value);
+        if (this.state === state && value !== void 0) {
+          this.notify([callback], value);
+        }
+      } else {
+        if (this.state === state) {
+          this.notify([callback], value);
+        }
       }
     }
   },
