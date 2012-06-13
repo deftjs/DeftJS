@@ -178,6 +178,13 @@ Ext.define('Deft.promise.Promise', {
     return this.deferred.then.apply(this.deferred, arguments);
   },
   /**
+  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
+  */
+
+  otherwise: function(callback) {
+    return this.deferred.otherwise(callback);
+  },
+  /**
   	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
   */
 

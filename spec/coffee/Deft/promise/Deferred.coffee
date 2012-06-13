@@ -660,6 +660,154 @@ describe( 'Deft.promise.Deferred', ->
 		)
 	)
 	
+	describe( 'Callback registration via otherwise()', ->
+		
+		deferred = null
+		otherwiseCallback = null
+		
+		beforeEach( ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
+			
+			otherwiseCallback = jasmine.createSpy( 'otherwise callback' )
+			
+			return
+		)
+		
+		it( 'should not call otherwise callback when resolved', ->
+			deferred.otherwise( otherwiseCallback )
+			
+			deferred.resolve( 'expected value' )
+			
+			expect( otherwiseCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should call otherwise callback when rejected', ->
+			deferred.otherwise( otherwiseCallback )
+			
+			deferred.reject( 'error message' )
+			
+			expect( otherwiseCallback ).toHaveBeenCalledWith( 'error message' )
+			
+			return
+		)
+		
+		it( 'should not call otherwise callback when updated', ->
+			deferred.otherwise( otherwiseCallback )
+			
+			deferred.update( 'progress' )
+			
+			expect( otherwiseCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should not call otherwise callback when cancelled', ->
+			deferred.otherwise( otherwiseCallback )
+			
+			deferred.cancel( 'reason' )
+			
+			expect( otherwiseCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should not immediately call otherwise callback when already resolved', ->
+			deferred.resolve( 'expected value' )
+			
+			deferred.otherwise( otherwiseCallback )
+			
+			expect( otherwiseCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should immediately call otherwise callback when already rejected', ->
+			deferred.reject( 'error message' )
+			
+			deferred.otherwise( otherwiseCallback )
+			
+			expect( otherwiseCallback ).toHaveBeenCalledWith( 'error message' )
+			
+			return
+		)
+		
+		it( 'should not immediately call otherwise callback when already updated', ->
+			deferred.update( 'progress' )
+			
+			deferred.otherwise( otherwiseCallback )
+			
+			expect( otherwiseCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should not immediately call otherwise callback when already cancelled', ->
+			deferred.cancel( 'reason' )
+			
+			deferred.otherwise( otherwiseCallback )
+			
+			expect( otherwiseCallback ).not.toHaveBeenCalled()
+			
+			return
+		)
+		
+		it( 'should allow a null callback to be specified', ->
+			expect( ->
+				deferred.otherwise( null )
+				return
+			).not.toThrow()
+			
+			return
+		)
+		
+		it( 'should allow an undefined callback to be specified', ->
+			expect( ->
+				deferred.otherwise( undefined )
+				return
+			).not.toThrow()
+			
+			return
+		)
+		
+		it( 'should throw an error when a non-function callback is specified', ->
+			expect( ->
+				deferred.otherwise( 'value' )
+				return
+			).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+			
+			return
+		)
+		
+		it( 'should return a new Promise', ->
+			promise = deferred.otherwise( otherwiseCallback )
+			
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+			expect( promise ).not.toBe( deferred.promise )
+			
+			return
+		)
+		
+		it( 'should return a new Promise when a null callback is specified', ->
+			promise = deferred.otherwise( null )
+			
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+			expect( promise ).not.toBe( deferred.promise )
+			
+			return
+		)
+		
+		it( 'should return a new Promise when an undefined callback is specified', ->
+			promise = deferred.otherwise( undefined )
+			
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+			expect( promise ).not.toBe( deferred.promise )
+			
+			return
+		)
+	)
+	
 	describe( 'Callback registration via always()', ->
 		
 		deferred = null

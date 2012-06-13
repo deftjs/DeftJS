@@ -169,6 +169,12 @@ Ext.define( 'Deft.promise.Promise',
 		return @deferred.then.apply( @deferred, arguments )
 	
 	###*
+	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
+	###	
+	otherwise: ( callback ) ->
+		return @deferred.otherwise( callback )
+		
+	###*
 	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
 	###	
 	always: ( callback ) ->

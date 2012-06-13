@@ -74,13 +74,21 @@ Ext.define( 'Deft.promise.Deferred',
 		return deferred.getPromise()
 	
 	###*
-	Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
+	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
 	###
-	always: ( alwaysCallback ) ->
+	otherwise: ( callback ) ->
+		return @then(
+			failure: callback
+		)
+	
+	###*
+	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
+	###
+	always: ( callback ) ->
 		return @then( 
-			success: alwaysCallback
-			failure: alwaysCallback
-			cancel: alwaysCallback
+			success: callback
+			failure: callback
+			cancel: callback
 		)
 	
 	###*
