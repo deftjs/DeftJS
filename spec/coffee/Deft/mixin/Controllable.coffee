@@ -36,6 +36,50 @@ describe( 'Deft.mixin.Controllable', ->
 		return
 	)
 	
+	it( 'should automatically add a getController() accessor method to the target view that returns the associated the view controller instance', ->
+		exampleViewInstance = null
+		exampleViewControllerInstance = null
+		
+		Ext.define( 'ExampleViewController',
+			extend: 'Deft.mvc.ViewController'
+		)
+		
+		Ext.define( 'ExampleView',
+			extend: 'Ext.Container'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'ExampleViewController'
+		)
+		
+		constructorSpy = spyOn( ExampleViewController.prototype, 'constructor' ).andCallFake( ->
+			exampleViewControllerInstance = @
+			return constructorSpy.originalValue.apply( @, arguments )
+		)
+		
+		exampleViewInstance = Ext.create( 'ExampleView' )
+		
+		expect( exampleViewInstance.getController() ).toBe( exampleViewControllerInstance )
+	)
+	
+	it( 'should automatically remove that getController() accessor method from the target view when it is destroyed', ->
+		exampleViewInstance = null
+		exampleViewControllerInstance = null
+		
+		Ext.define( 'ExampleViewController',
+			extend: 'Deft.mvc.ViewController'
+		)
+		
+		Ext.define( 'ExampleView',
+			extend: 'Ext.Container'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'ExampleViewController'
+		)
+		
+		exampleViewInstance = Ext.create( 'ExampleView' )
+		exampleViewInstance.destroy()
+		
+		expect( exampleViewInstance.getController ).toBe( undefined )
+	)
+	
 	it( 'should re-throw any error thrown by the view controller during instantiation', ->
 		
 		Ext.define( 'ExampleErrorThrowingViewController',

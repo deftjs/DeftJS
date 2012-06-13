@@ -30,6 +30,41 @@ describe('Deft.mixin.Controllable', function() {
     expect(ExampleViewController.prototype.constructor.callCount).toBe(1);
     expect(exampleViewControllerInstance.getView()).toBe(exampleViewInstance);
   });
+  it('should automatically add a getController() accessor method to the target view that returns the associated the view controller instance', function() {
+    var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
+    exampleViewInstance = null;
+    exampleViewControllerInstance = null;
+    Ext.define('ExampleViewController', {
+      extend: 'Deft.mvc.ViewController'
+    });
+    Ext.define('ExampleView', {
+      extend: 'Ext.Container',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'ExampleViewController'
+    });
+    constructorSpy = spyOn(ExampleViewController.prototype, 'constructor').andCallFake(function() {
+      exampleViewControllerInstance = this;
+      return constructorSpy.originalValue.apply(this, arguments);
+    });
+    exampleViewInstance = Ext.create('ExampleView');
+    return expect(exampleViewInstance.getController()).toBe(exampleViewControllerInstance);
+  });
+  it('should automatically remove that getController() accessor method from the target view when it is destroyed', function() {
+    var exampleViewControllerInstance, exampleViewInstance;
+    exampleViewInstance = null;
+    exampleViewControllerInstance = null;
+    Ext.define('ExampleViewController', {
+      extend: 'Deft.mvc.ViewController'
+    });
+    Ext.define('ExampleView', {
+      extend: 'Ext.Container',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'ExampleViewController'
+    });
+    exampleViewInstance = Ext.create('ExampleView');
+    exampleViewInstance.destroy();
+    return expect(exampleViewInstance.getController).toBe(void 0);
+  });
   return it('should re-throw any error thrown by the view controller during instantiation', function() {
     Ext.define('ExampleErrorThrowingViewController', {
       extend: 'Deft.mvc.ViewController',
