@@ -13,33 +13,33 @@ Ext.define( 'Deft.promise.Promise',
 	
 	statics:
 		###*
-		Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called:
-		- immediately for the specified value, or
-		- when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
+		Returns a new {@link Deft.promise.Promise} that:
+		- resolves immediately for the specified value, or
+		- resolves, rejects, updates or cancels when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
 		###
-		when: ( promiseOrValue, callbacks ) ->
+		when: ( promiseOrValue ) ->
 			if promiseOrValue instanceof Ext.ClassManager.get( 'Deft.promise.Promise' ) or promiseOrValue instanceof Ext.ClassManager.get( 'Deft.promise.Deferred' )
-				return promiseOrValue.then( callbacks )
+				return promiseOrValue.then()
 			else
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				deferred.resolve( promiseOrValue )
-				return deferred.then( callbacks )
+				return deferred.then()
 		
 		###*
 		Returns a new {@link Deft.promise.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
 		The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
 		###
-		all: ( promisesOrValues, callbacks ) ->
+		all: ( promisesOrValues ) ->
 			results = new Array( promisesOrValues.length )
 			promise = @reduce( promisesOrValues, @reduceIntoArray, results )
 			
-			return @when( promise, callbacks )
+			return @when( promise )
 		
 		###*
 		Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
 		The resolution value will be the resolution value of the triggering `promiseOrValue`.
 		###
-		any: ( promisesOrValues, callbacks ) ->
+		any: ( promisesOrValues ) ->
 			deferred = Ext.create( 'Deft.promise.Deferred' )
 			
 			updater = ( progress ) ->
@@ -63,9 +63,9 @@ Ext.define( 'Deft.promise.Promise',
 			
 			for promiseOrValue, index in promisesOrValues
 				if index of promisesOrValues
-					@when( promiseOrValue, resolveFunction, rejectFunction, progressFunction )
+					@when( promiseOrValue ).then( resolveFunction, rejectFunction, progressFunction )
 			
-			return deferred.then( callbacks )
+			return @when( deferred )
 		
 		###*
 		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
