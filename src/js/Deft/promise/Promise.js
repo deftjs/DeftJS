@@ -107,7 +107,7 @@ Ext.define('Deft.promise.Promise', {
       for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
         promiseOrValue = promisesOrValues[index];
         if (index in promisesOrValues) {
-          results[index] = this.when(promiseOrValue, mapFunction);
+          results[index] = this.when(promiseOrValue).then(mapFunction);
         }
       }
       return this.reduce(results, this.reduceIntoArray, results);
@@ -121,8 +121,8 @@ Ext.define('Deft.promise.Promise', {
       whenResolved = this.when;
       reduceArguments = [
         function(previousValueOrPromise, currentValueOrPromise, currentIndex) {
-          return whenResolved(previousValueOrPromise, function(previousValue) {
-            return whenResolved(currentValueOrPromise, function(currentValue) {
+          return whenResolved(previousValueOrPromise).then(function(previousValue) {
+            return whenResolved(currentValueOrPromise).then(function(currentValue) {
               return reduceFunction(previousValue, currentValue, currentIndex, promisesOrValues);
             });
           });

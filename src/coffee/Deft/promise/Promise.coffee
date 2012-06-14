@@ -99,7 +99,7 @@ Ext.define( 'Deft.promise.Promise',
 			results = new Array( promisesOrValues.length )
 			for promiseOrValue, index in promisesOrValues
 				if index of promisesOrValues
-					results[ index ] = @when( promiseOrValue, mapFunction )
+					results[ index ] = @when( promiseOrValue ).then( mapFunction )
 				
 			# Then use reduce() to collect all the results.
 			return @reduce( results, @reduceIntoArray, results )
@@ -112,8 +112,8 @@ Ext.define( 'Deft.promise.Promise',
 			whenResolved = @when
 			reduceArguments = [
 				( previousValueOrPromise, currentValueOrPromise, currentIndex ) ->
-					return whenResolved( previousValueOrPromise, ( previousValue ) ->
-						return whenResolved( currentValueOrPromise, ( currentValue ) ->
+					return whenResolved( previousValueOrPromise ).then( ( previousValue ) ->
+						return whenResolved( currentValueOrPromise ).then( ( currentValue ) ->
 							return reduceFunction( previousValue, currentValue, currentIndex, promisesOrValues )
 						)
 					)

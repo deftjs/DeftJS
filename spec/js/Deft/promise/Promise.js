@@ -265,12 +265,109 @@ describe('Deft.promise.Promise', function() {
       return expect(cancelCallback).not.toHaveBeenCalled();
     });
   });
-  describe('all()', function() {});
-  describe('any()', function() {});
-  describe('memoize()', function() {});
-  describe('map()', function() {});
-  describe('reduce()', function() {});
-  describe('then()', function() {});
-  describe('always()', function() {});
-  return describe('cancel()', function() {});
+  describe('all()', function() {
+    var cancelCallback, failureCallback, progressCallback, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    beforeEach(function() {
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+    return it('should return an immediately resolved Promise when an Array with a single value is specified', function() {
+      var promise;
+      promise = Deft.promise.Promise.all(['expected result']).then({
+        success: successCallback,
+        failure: failureCallback,
+        progress: progressCallback,
+        cancel: cancelCallback
+      });
+      expect(promise).toBeInstanceOf('Deft.promise.Promise');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith(['expected result']);
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+  });
+  describe('any()', function() {
+    var cancelCallback, failureCallback, progressCallback, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    return beforeEach(function() {
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+  });
+  describe('memoize()', function() {
+    var cancelCallback, failureCallback, progressCallback, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    return beforeEach(function() {
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+  });
+  describe('map()', function() {
+    var cancelCallback, failureCallback, progressCallback, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    return beforeEach(function() {
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+  });
+  describe('reduce()', function() {
+    var cancelCallback, failureCallback, progressCallback, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    return beforeEach(function() {
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+  });
+  describe('then()', function() {
+    var cancelCallback, failureCallback, progressCallback, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    return beforeEach(function() {
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+  });
+  describe('otherwise()', function() {
+    var cancelCallback, failureCallback, progressCallback, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    return beforeEach(function() {
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+  });
+  describe('always()', function() {
+    var cancelCallback, failureCallback, progressCallback, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    return beforeEach(function() {
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+  });
+  return describe('cancel()', function() {
+    var cancelCallback, failureCallback, progressCallback, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    return beforeEach(function() {
+      successCallback = jasmine.createSpy('success callback');
+      failureCallback = jasmine.createSpy('failure callback');
+      progressCallback = jasmine.createSpy('progress callback');
+      cancelCallback = jasmine.createSpy('cancel callback');
+    });
+  });
 });

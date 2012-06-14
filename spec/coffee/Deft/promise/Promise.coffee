@@ -318,34 +318,165 @@ describe( 'Deft.promise.Promise', ->
 	)
 	
 	describe( 'all()', ->
+		
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
+		it( 'should return an immediately resolved Promise when an Array with a single value is specified', ->
+			promise = 
+				Deft.promise.Promise.all( [ 'expected result' ] )
+					.then( 
+						success: successCallback
+						failure: failureCallback
+						progress: progressCallback
+						cancel: cancelCallback
+					)
+			
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+			expect( promise.getState() ).toBe( 'resolved' )
+			
+			expect( successCallback ).toHaveBeenCalledWith( [ 'expected result' ] )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
 		# TODO
 	)
 	
 	describe( 'any()', ->
+		
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
 		# TODO
 	)
 	
 	describe( 'memoize()', ->
+		
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
 		# TODO
 	)
 	
 	describe( 'map()', ->
+		
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
 		# TODO
 	)
 	
 	describe( 'reduce()', ->
+		
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
 		# TODO
 	)
 	
 	describe( 'then()', ->
+		
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
+		# TODO
+	)
+	
+	describe( 'otherwise()', ->
+		
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
 		# TODO
 	)
 	
 	describe( 'always()', ->
+		
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
 		# TODO
 	)
 	
 	describe( 'cancel()', ->
+		
+		successCallback = failureCallback = progressCallback = cancelCallback = null
+		
+		beforeEach( ->
+			successCallback  = jasmine.createSpy( 'success callback' )
+			failureCallback  = jasmine.createSpy( 'failure callback' )
+			progressCallback = jasmine.createSpy( 'progress callback' )
+			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			
+			return
+		)
+		
 		# TODO
 	)
 )
