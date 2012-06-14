@@ -20,6 +20,17 @@ Ext.define( 'Deft.promise.Promise',
 		when: ( promiseOrValue ) ->
 			if promiseOrValue instanceof Ext.ClassManager.get( 'Deft.promise.Promise' ) or promiseOrValue instanceof Ext.ClassManager.get( 'Deft.promise.Deferred' )
 				return promiseOrValue.then()
+			else if Ext.isObject( promiseOrValue ) and Ext.isFunction( promiseOrValue.then )
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				promiseOrValue.then(
+					( value ) -> 
+						deferred.resolve( value )
+						return
+					( error ) -> 
+						deferred.reject( error )
+						return
+				)
+				return deferred.then()
 			else
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				deferred.resolve( promiseOrValue )

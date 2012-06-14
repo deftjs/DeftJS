@@ -22,6 +22,14 @@ Ext.define('Deft.promise.Promise', {
       var deferred;
       if (promiseOrValue instanceof Ext.ClassManager.get('Deft.promise.Promise') || promiseOrValue instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
         return promiseOrValue.then();
+      } else if (Ext.isObject(promiseOrValue) && Ext.isFunction(promiseOrValue.then)) {
+        deferred = Ext.create('Deft.promise.Deferred');
+        promiseOrValue.then(function(value) {
+          deferred.resolve(value);
+        }, function(error) {
+          deferred.reject(error);
+        });
+        return deferred.then();
       } else {
         deferred = Ext.create('Deft.promise.Deferred');
         deferred.resolve(promiseOrValue);
