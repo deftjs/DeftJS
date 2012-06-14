@@ -17,9 +17,29 @@ describe('Deft.promise.Promise', function() {
     });
   });
   describe('when()', function() {
-    var cancelCallback, deferred, failureCallback, progressCallback, successCallback;
+    var MockThirdPartyPromise, cancelCallback, deferred, failureCallback, progressCallback, successCallback;
     deferred = null;
     successCallback = failureCallback = progressCallback = cancelCallback = null;
+    MockThirdPartyPromise = (function() {
+
+      function MockThirdPartyPromise() {}
+
+      MockThirdPartyPromise.prototype.then = function(successCallback, failureCallback) {
+        this.successCallback = successCallback;
+        this.failureCallback = failureCallback;
+      };
+
+      MockThirdPartyPromise.prototype.resolve = function(value) {
+        return this.successCallback(value);
+      };
+
+      MockThirdPartyPromise.prototype.reject = function(value) {
+        return this.failureCallback(value);
+      };
+
+      return MockThirdPartyPromise;
+
+    })();
     beforeEach(function() {
       deferred = Ext.create('Deft.promise.Deferred');
       successCallback = jasmine.createSpy('success callback');
@@ -176,7 +196,7 @@ describe('Deft.promise.Promise', function() {
       expect(progressCallback).toHaveBeenCalledWith('progress');
       return expect(cancelCallback).not.toHaveBeenCalled();
     });
-    return it('should return a new pending Promise that cancels when the pending Promise specified is cancelled', function() {
+    it('should return a new pending Promise that cancels when the pending Promise specified is cancelled', function() {
       var promise;
       promise = Deft.promise.Promise.when(deferred.getPromise()).then({
         success: successCallback,
@@ -197,6 +217,52 @@ describe('Deft.promise.Promise', function() {
       expect(failureCallback).not.toHaveBeenCalled();
       expect(progressCallback).not.toHaveBeenCalled();
       return expect(cancelCallback).toHaveBeenCalledWith('reason');
+    });
+    it('should return a new Promise wrapper that resolves when the specified untrusted Promise is resolved', function() {
+      var fakePromise, promise;
+      fakePromise = new MockThirdPartyPromise();
+      promise = Deft.promise.Promise.when(fakePromise).then({
+        success: successCallback,
+        failure: failureCallback,
+        progress: progressCallback,
+        cancel: cancelCallback
+      });
+      expect(promise).toBeInstanceOf('Deft.promise.Promise');
+      expect(promise.getState()).toBe('pending');
+      expect(promise).not.toBe(fakePromise);
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+      fakePromise.resolve('expected value');
+      expect(promise.getState()).toBe('resolved');
+      expect(successCallback).toHaveBeenCalledWith('expected value');
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
+    });
+    return it('should return a new Promise wrapper that rejects when the specified untrusted Promise is rejected', function() {
+      var fakePromise, promise;
+      fakePromise = new MockThirdPartyPromise();
+      promise = Deft.promise.Promise.when(fakePromise).then({
+        success: successCallback,
+        failure: failureCallback,
+        progress: progressCallback,
+        cancel: cancelCallback
+      });
+      expect(promise).toBeInstanceOf('Deft.promise.Promise');
+      expect(promise.getState()).toBe('pending');
+      expect(promise).not.toBe(fakePromise);
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).not.toHaveBeenCalled();
+      expect(progressCallback).not.toHaveBeenCalled();
+      expect(cancelCallback).not.toHaveBeenCalled();
+      fakePromise.reject('error message');
+      expect(promise.getState()).toBe('rejected');
+      expect(successCallback).not.toHaveBeenCalled();
+      expect(failureCallback).toHaveBeenCalledWith('error message');
+      expect(progressCallback).not.toHaveBeenCalled();
+      return expect(cancelCallback).not.toHaveBeenCalled();
     });
   });
   describe('all()', function() {});

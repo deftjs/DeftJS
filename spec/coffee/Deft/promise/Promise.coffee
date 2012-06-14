@@ -22,6 +22,14 @@ describe( 'Deft.promise.Promise', ->
 		deferred = null
 		successCallback = failureCallback = progressCallback = cancelCallback = null
 		
+		class MockThirdPartyPromise
+			then: ( @successCallback, @failureCallback ) ->
+					return
+			resolve: ( value ) ->
+				@successCallback( value )
+			reject: ( value ) ->
+				@failureCallback( value )
+		
 		beforeEach( ->
 			deferred = Ext.create( 'Deft.promise.Deferred' )
 			
@@ -246,6 +254,66 @@ describe( 'Deft.promise.Promise', ->
 			expect( failureCallback ).not.toHaveBeenCalled()
 			expect( progressCallback ).not.toHaveBeenCalled()
 			expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
+		)
+		
+		it( 'should return a new Promise wrapper that resolves when the specified untrusted Promise is resolved', ->
+			fakePromise = new MockThirdPartyPromise()
+			
+			promise = 
+				Deft.promise.Promise.when( fakePromise )
+					.then(
+						success: successCallback
+						failure: failureCallback
+						progress: progressCallback
+						cancel: cancelCallback
+					)
+			
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+			expect( promise.getState() ).toBe( 'pending' )
+			expect( promise ).not.toBe( fakePromise )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			fakePromise.resolve( 'expected value' )
+			
+			expect( promise.getState() ).toBe( 'resolved' )
+			expect( successCallback ).toHaveBeenCalledWith( 'expected value' )
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+		)
+		
+		it( 'should return a new Promise wrapper that rejects when the specified untrusted Promise is rejected', ->
+			fakePromise = new MockThirdPartyPromise()
+			
+			promise = 
+				Deft.promise.Promise.when( fakePromise )
+					.then(
+						success: successCallback
+						failure: failureCallback
+						progress: progressCallback
+						cancel: cancelCallback
+					)
+			
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+			expect( promise.getState() ).toBe( 'pending' )
+			expect( promise ).not.toBe( fakePromise )
+			
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).not.toHaveBeenCalled()
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
+			
+			fakePromise.reject( 'error message' )
+			
+			expect( promise.getState() ).toBe( 'rejected' )
+			expect( successCallback ).not.toHaveBeenCalled()
+			expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
+			expect( progressCallback ).not.toHaveBeenCalled()
+			expect( cancelCallback ).not.toHaveBeenCalled()
 		)
 	)
 	
