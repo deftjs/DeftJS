@@ -41,10 +41,52 @@ Ext.define( 'Deft.promise.Promise',
 		The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
 		###
 		all: ( promisesOrValues ) ->
-			results = new Array( promisesOrValues.length )
-			promise = @reduce( promisesOrValues, @reduceIntoArray, results )
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			
-			return @when( promise )
+			total = promisesOrValues.length
+			resolvedValues = new Array( promisesOrValues )
+			resolvedCount = 0
+			
+			updater = ( progress ) ->
+				deferred.update( progress )
+				return
+			resolver = ( index, value ) ->
+				resolvedValues[ index ] = value
+				resolvedCount++
+				if resolvedCount is total
+					complete()
+					deferred.resolve( resolvedValues )
+				return
+			rejecter = ( error ) ->
+				complete()
+				deferred.reject( error )
+				return
+			canceller = ( reason ) ->
+				complete()
+				deferred.cancel( reason )
+				return
+			
+			complete = ->
+				updater = resolver = rejecter = canceller = Ext.emptyFn
+				
+			createSuccessFunction = ( index ) ->
+				return ( value ) -> resolver( index, value )
+			
+			failureFunction  = ( value ) -> rejecter( value )
+			progressFunction = ( value ) -> updater( value )
+			cancelFunction   = ( value ) -> canceller( value )
+			
+			for promiseOrValue, index in promisesOrValues
+				if index of promisesOrValues
+					@when( promiseOrValue )
+						.then( 
+							success: createSuccessFunction( index )
+							failure: failureFunction
+							progress: progressFunction
+							cancel: cancelFunction
+						)
+			
+			return deferred.getPromise()
 		
 		###*
 		Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
@@ -64,19 +106,29 @@ Ext.define( 'Deft.promise.Promise',
 				complete()
 				deferred.reject( error )
 				return
+			canceller = ( reason ) ->
+				complete()
+				deferred.cancel( reason )
 			
 			complete = ->
-				updater = resolver = rejecter = -> return
+				updater = resolver = rejecter = canceller = Ext.emptyFn
 				
-			resolveFunction  = ( value ) -> resolver( value )
-			rejectFunction   = ( value ) -> rejector( value )
+			successFunction  = ( value ) -> resolver( value )
+			failureFunction  = ( value ) -> rejecter( value )
 			progressFunction = ( value ) -> updater( value )
+			cancelFunction   = ( value ) -> canceller( value )
 			
 			for promiseOrValue, index in promisesOrValues
 				if index of promisesOrValues
-					@when( promiseOrValue ).then( resolveFunction, rejectFunction, progressFunction )
+					@when( promiseOrValue )
+						.then( 
+							success: successFunction
+							failure: failureFunction
+							progress: progressFunction
+							cancel: cancelFunction
+						)
 			
-			return @when( deferred )
+			return deferred.getPromise()
 		
 		###*
 		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
@@ -109,12 +161,12 @@ Ext.define( 'Deft.promise.Promise',
 		###
 		reduce: ( promisesOrValues, reduceFunction, initialValue ) ->
 			# Wrap the reduce function with one that handles promises and then delegates to it.
-			whenResolved = @when
+			whenFn = @when
 			reduceArguments = [
 				( previousValueOrPromise, currentValueOrPromise, currentIndex ) ->
-					return whenResolved( previousValueOrPromise ).then( ( previousValue ) ->
-						return whenResolved( currentValueOrPromise ).then( ( currentValue ) ->
-							return reduceFunction( previousValue, currentValue, currentIndex, promisesOrValues )
+					return whenFn( previousValueOrPromise ).then( ( previousValue ) ->
+						return whenFn( currentValueOrPromise ).then( ( currentValue ) ->
+								return reduceFunction( previousValue, currentValue, currentIndex, promisesOrValues )
 						)
 					)
 			]

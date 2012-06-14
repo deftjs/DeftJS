@@ -44,9 +44,7 @@ Ext.define('Deft.promise.Deferred', {
         if (Ext.isFunction(callback)) {
           try {
             result = callback(value);
-            if (result === void 0) {
-              deferred[action](value);
-            } else if (result instanceof Ext.ClassManager.get('Deft.promise.Promise') || result instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
+            if (result instanceof Ext.ClassManager.get('Deft.promise.Promise') || result instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
               result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
             } else {
               deferred.resolve(result);
@@ -67,11 +65,7 @@ Ext.define('Deft.promise.Deferred', {
         var result;
         if (Ext.isFunction(callback)) {
           result = callback(value);
-          if (result === void 0) {
-            deferred.update(value);
-          } else {
-            deferred.update(result);
-          }
+          deferred.update(result);
         } else {
           deferred.update(value);
         }

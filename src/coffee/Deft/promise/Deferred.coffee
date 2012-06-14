@@ -40,9 +40,7 @@ Ext.define( 'Deft.promise.Deferred',
 				if Ext.isFunction( callback )
 					try
 						result = callback( value )
-						if result is undefined
-							deferred[ action ]( value )
-						else if result instanceof Ext.ClassManager.get( 'Deft.promise.Promise' ) or result instanceof Ext.ClassManager.get( 'Deft.promise.Deferred' )
+						if result instanceof Ext.ClassManager.get( 'Deft.promise.Promise' ) or result instanceof Ext.ClassManager.get( 'Deft.promise.Deferred' )
 							result.then( Ext.bind( deferred.resolve, deferred ), Ext.bind( deferred.reject, deferred ), Ext.bind( deferred.update, deferred ), Ext.bind( deferred.cancel, deferred ) )
 						else
 							deferred.resolve( result )
@@ -52,19 +50,15 @@ Ext.define( 'Deft.promise.Deferred',
 					deferred[ action ]( value )
 				return
 		
-		
 		@register( wrapCallback( successCallback, 'resolve' ), @successCallbacks, 'resolved',  @value )
-		@register( wrapCallback( failureCallback, 'reject'  ), @failureCallbacks, 'rejected',  @value )
+		@register( wrapCallback( failureCallback, 'reject'  ), @failureCallbacks, 'rejected',  @value )	
 		@register( wrapCallback( cancelCallback,  'cancel'  ), @cancelCallbacks,  'cancelled', @value )
 		
 		wrapProgressCallback = ( callback ) ->
 			return ( value ) ->
 				if Ext.isFunction( callback )
 					result = callback( value )
-					if result is undefined
-						deferred.update( value )
-					else
-						deferred.update( result )
+					deferred.update( result )
 				else
 					deferred.update( value )
 				return

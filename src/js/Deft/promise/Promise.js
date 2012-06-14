@@ -42,10 +42,59 @@ Ext.define('Deft.promise.Promise', {
     */
 
     all: function(promisesOrValues) {
-      var promise, results;
-      results = new Array(promisesOrValues.length);
-      promise = this.reduce(promisesOrValues, this.reduceIntoArray, results);
-      return this.when(promise);
+      var cancelFunction, canceller, complete, createSuccessFunction, deferred, failureFunction, index, progressFunction, promiseOrValue, rejecter, resolvedCount, resolvedValues, resolver, total, updater, _i, _len;
+      deferred = Ext.create('Deft.promise.Deferred');
+      total = promisesOrValues.length;
+      resolvedValues = new Array(promisesOrValues);
+      resolvedCount = 0;
+      updater = function(progress) {
+        deferred.update(progress);
+      };
+      resolver = function(index, value) {
+        resolvedValues[index] = value;
+        resolvedCount++;
+        if (resolvedCount === total) {
+          complete();
+          deferred.resolve(resolvedValues);
+        }
+      };
+      rejecter = function(error) {
+        complete();
+        deferred.reject(error);
+      };
+      canceller = function(reason) {
+        complete();
+        deferred.cancel(reason);
+      };
+      complete = function() {
+        return updater = resolver = rejecter = canceller = Ext.emptyFn;
+      };
+      createSuccessFunction = function(index) {
+        return function(value) {
+          return resolver(index, value);
+        };
+      };
+      failureFunction = function(value) {
+        return rejecter(value);
+      };
+      progressFunction = function(value) {
+        return updater(value);
+      };
+      cancelFunction = function(value) {
+        return canceller(value);
+      };
+      for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
+        promiseOrValue = promisesOrValues[index];
+        if (index in promisesOrValues) {
+          this.when(promiseOrValue).then({
+            success: createSuccessFunction(index),
+            failure: failureFunction,
+            progress: progressFunction,
+            cancel: cancelFunction
+          });
+        }
+      }
+      return deferred.getPromise();
     },
     /**
     		Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
@@ -53,7 +102,7 @@ Ext.define('Deft.promise.Promise', {
     */
 
     any: function(promisesOrValues) {
-      var complete, deferred, index, progressFunction, promiseOrValue, rejectFunction, rejecter, resolveFunction, resolver, updater, _i, _len;
+      var cancelFunction, canceller, complete, deferred, failureFunction, index, progressFunction, promiseOrValue, rejecter, resolver, successFunction, updater, _i, _len;
       deferred = Ext.create('Deft.promise.Deferred');
       updater = function(progress) {
         deferred.update(progress);
@@ -66,25 +115,37 @@ Ext.define('Deft.promise.Promise', {
         complete();
         deferred.reject(error);
       };
-      complete = function() {
-        return updater = resolver = rejecter = function() {};
+      canceller = function(reason) {
+        complete();
+        return deferred.cancel(reason);
       };
-      resolveFunction = function(value) {
+      complete = function() {
+        return updater = resolver = rejecter = canceller = Ext.emptyFn;
+      };
+      successFunction = function(value) {
         return resolver(value);
       };
-      rejectFunction = function(value) {
-        return rejector(value);
+      failureFunction = function(value) {
+        return rejecter(value);
       };
       progressFunction = function(value) {
         return updater(value);
       };
+      cancelFunction = function(value) {
+        return canceller(value);
+      };
       for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
         promiseOrValue = promisesOrValues[index];
         if (index in promisesOrValues) {
-          this.when(promiseOrValue).then(resolveFunction, rejectFunction, progressFunction);
+          this.when(promiseOrValue).then({
+            success: successFunction,
+            failure: failureFunction,
+            progress: progressFunction,
+            cancel: cancelFunction
+          });
         }
       }
-      return this.when(deferred);
+      return deferred.getPromise();
     },
     /**
     		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
@@ -117,12 +178,12 @@ Ext.define('Deft.promise.Promise', {
     */
 
     reduce: function(promisesOrValues, reduceFunction, initialValue) {
-      var reduceArguments, whenResolved;
-      whenResolved = this.when;
+      var reduceArguments, whenFn;
+      whenFn = this.when;
       reduceArguments = [
         function(previousValueOrPromise, currentValueOrPromise, currentIndex) {
-          return whenResolved(previousValueOrPromise).then(function(previousValue) {
-            return whenResolved(currentValueOrPromise).then(function(currentValue) {
+          return whenFn(previousValueOrPromise).then(function(previousValue) {
+            return whenFn(currentValueOrPromise).then(function(currentValue) {
               return reduceFunction(previousValue, currentValue, currentIndex, promisesOrValues);
             });
           });
