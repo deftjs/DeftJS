@@ -711,20 +711,20 @@ describe( 'Deft.ioc.Injector', ->
 		)
 
 		describe( 'Configuration with a class name for a singleton class', ->
-
+			
 			it( 'should be configurable with a class name for a singleton class', ->
 				Deft.Injector.configure(
 					classNameForSingletonClass:
 						className: 'ExampleSingletonClass'
 				)
-
+				
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClass' )
 				).toBe( true )
-
+				
 				return
 			)
-
+			
 			it( 'should not be configurable with a class name for a singleton class and constructor parameters', ->
 				expect( ->
 					Deft.Injector.configure(
@@ -732,53 +732,54 @@ describe( 'Deft.ioc.Injector', ->
 							className: 'ExampleSingletonClass'
 							parameters: [ { parameter: 'expected value' } ]
 					)
+					return
 				).toThrow( new Error( "Error while configuring rule for 'classNameForSingletonClassWithParameters': parameters cannot be applied to singleton classes. Consider removing 'singleton: true' from the class definition." ) )
-
+					
 				return
 			)
-
+			
 			it( 'should be configurable with a class name for a singleton class, eagerly', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassEagerly:
 						className: 'ExampleSingletonClass'
 						eager: true
 				)
-
+				
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassEagerly' )
 				).toBe( true )
-
+				
 				return
 			)
-
+			
 			it( 'should be configurable with a class name for a singleton class, (explicitly) lazily', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassLazily:
 						className: 'ExampleSingletonClass'
 						eager: false
 				)
-
+				
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassLazily' )
 				).toBe( true )
-
+				
 				return
 			)
-
+			
 			it( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassAsSingleton:
 						className: 'ExampleSingletonClass'
 						singleton: true
 				)
-
+				
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassAsSingleton' )
 				).toBe( true )
-
+				
 				return
 			)
-
+			
 			it( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton, eagerly', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassAsSingletonEagerly:
@@ -786,14 +787,14 @@ describe( 'Deft.ioc.Injector', ->
 						singleton: true
 						eager: true
 				)
-
+				
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassAsSingletonEagerly' )
 				).toBe( true )
-
+				
 				return
 			)
-
+			
 			it( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassAsSingletonLazily:
@@ -801,14 +802,14 @@ describe( 'Deft.ioc.Injector', ->
 						singleton: true
 						eager: false
 				)
-
+				
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassAsSingletonLazily' )
 				).toBe( true )
-
+				
 				return
 			)
-
+			
 			it( 'should not be configurable with a class name for a singleton class, as a prototype', ->
 				expect( ->
 					Deft.Injector.configure(
@@ -816,11 +817,12 @@ describe( 'Deft.ioc.Injector', ->
 							className: 'ExampleSingletonClass'
 							singleton: false
 					)
+					return
 				).toThrow( new Error( "Error while configuring rule for 'classNameForSingletonClassAsPrototype': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition." ) )
-
+					
 				return
 			)
-
+			
 			it( 'should not be configurable with a class name for a singleton class, as a prototype, eagerly', ->
 				expect( ->
 					Deft.Injector.configure(
@@ -829,11 +831,12 @@ describe( 'Deft.ioc.Injector', ->
 							singleton: false
 							eager: true
 					)
+					return
 				).toThrow( new Error( "Error while configuring 'classNameForSingletonClassAsPrototypeEagerly': only singletons can be created eagerly." ) )
-
+					
 				return
 			)
-
+			
 			it( 'should not be configurable with a class name for a singleton class, as a prototype, (explicitly) lazily', ->
 				expect( ->
 					Deft.Injector.configure(
@@ -842,86 +845,87 @@ describe( 'Deft.ioc.Injector', ->
 							singleton: false
 							eager: false
 					)
+					return
 				).toThrow( new Error( "Error while configuring rule for 'classNameForSingletonClassAsPrototypeLazily': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition." ) )
-
+					
 				return
 			)
-
+			
 			describe( 'Resolution of a dependency configured with a class name for a singleton class', ->
-
+				
 				it( 'should resolve a dependency configured with a class name for a singleton class with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassInstance = Deft.Injector.resolve( 'classNameForSingletonClass' )
 					).toBe( ExampleSingletonClass )
-
+					
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClass' )
 					).toBe( classNameForSingletonClassInstance )
-
+						
 					return
 				)
-
+				
 				it( 'should resolve a dependency configured with a class name for a singleton class, eagerly, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassEagerlyInstance = Deft.Injector.resolve( 'classNameForSingletonClassEagerly' )
 					).toBe( ExampleSingletonClass )
-
+					
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassEagerly' )
 					).toBe( classNameForSingletonClassEagerlyInstance )
-
+						
 					return
 				)
-
+				
 				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) lazily, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassEagerlyInstance = Deft.Injector.resolve( 'classNameForSingletonClassLazily' )
 					).toBe( ExampleSingletonClass )
-
+					
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassLazily' )
 					).toBe( classNameForSingletonClassEagerlyInstance )
-
+						
 					return
 				)
-
+				
 				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassAsSingletonInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingleton' )
 					).toBe( ExampleSingletonClass )
-
+					
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassAsSingleton' )
 					).toBe( classNameForSingletonClassAsSingletonInstance )
-
+						
 					return
 				)
-
+				
 				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, eagerly, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassAsSingletonEagerlyInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonEagerly' )
 					).toBe( ExampleSingletonClass )
-
+					
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonEagerly' )
 					).toBe( classNameForSingletonClassAsSingletonEagerlyInstance )
-
+						
 					return
 				)
-
+				
 				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassAsSingletonLazilyInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonLazily' )
 					).toBe( ExampleSingletonClass )
-
+					
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonLazily' )
 					).toBe( classNameForSingletonClassAsSingletonLazilyInstance )
-
+						
 					return
 				)
 			)
-
+			
 			return
 		)
 		
@@ -1730,6 +1734,80 @@ describe( 'Deft.ioc.Injector', ->
 					return @callParent( arguments )
 			)
 			
+			Ext.define( 'InjectableComponentSubclass',
+				extend: 'Ext.Component'
+				mixins: [ 'Deft.mixin.Injectable' ]
+				inject: configuredIdentifiers
+				
+				config:
+					classNameAsString: null
+					className: null
+					classNameEagerly: null
+					classNameLazily: null
+					classNameAsSingleton: null
+					classNameAsSingletonEagerly: null
+					classNameAsSingletonLazily: null
+					classNameAsPrototype: null
+					classNameAsPrototypeLazily: null
+					classNameWithParameters: null
+					classNameWithParametersEagerly: null
+					classNameWithParametersLazily: null
+					classNameWithParametersAsSingleton: null
+					classNameWithParametersAsSingletonEagerly: null
+					classNameWithParametersAsSingletonLazily: null
+					classNameWithParametersAsPrototype: null
+					classNameWithParametersAsPrototypeLazily: null
+					classNameForSingletonClass: null
+					classNameForSingletonClassEagerly: null
+					classNameForSingletonClassLazily: null
+					classNameForSingletonClassAsSingleton: null
+					classNameForSingletonClassAsSingletonEagerly: null
+					classNameForSingletonClassAsSingletonLazily: null
+					fn: null
+					fnEagerly: null
+					fnLazily: null
+					fnAsSingleton: null
+					fnAsSingletonEagerly: null
+					fnAsSingletonLazily: null
+					fnAsPrototype: null
+					fnAsPrototypeLazily: null
+					booleanValue: null
+					booleanValueLazily: null
+					booleanValueAsSingleton: null
+					booleanValueAsSingletonLazily: null
+					stringValue: null
+					stringValueLazily: null
+					stringValueAsSingleton: null
+					stringValueAsSingletonLazily: null
+					numberValue: null
+					numberValueLazily: null
+					numberValueAsSingleton: null
+					numberValueAsSingletonLazily: null
+					dateValue: null
+					dateValueLazily: null
+					dateValueAsSingleton: null
+					dateValueAsSingletonLazily: null
+					arrayValue: null
+					arrayValueLazily: null
+					arrayValueAsSingleton: null
+					arrayValueAsSingletonLazily: null
+					objectValue: null
+					objectValueLazily: null
+					objectValueAsSingleton: null
+					objectValueAsSingletonLazily: null
+					classValue: null
+					classValueLazily: null
+					classValueAsSingleton: null
+					classValueAsSingletonLazily: null
+					functionValue: null
+					functionValueLazily: null
+					functionValueAsSingleton: null
+					functionValueAsSingletonLazily: null
+				
+				constructor: ( config ) ->
+					return @callParent( arguments )
+			)
+			
 			it( 'should inject configured dependencies into properties for a given class instance', ->
 				simpleClassInstance = Ext.create( 'SimpleClass' )
 				
@@ -1840,6 +1918,37 @@ describe( 'Deft.ioc.Injector', ->
 				return
 			)
 			
+			
+			it( 'should automatically inject configured dependencies into configs for a given Injectable \`Ext.Component\` subclass instance', ->
+				injectableComponentSubclassInstance = Ext.create( 'InjectableComponentSubclass' )
+				
+				for configuredIdentifier in configuredIdentifiers
+					getterFunctionName = 'get' + Ext.String.capitalize( configuredIdentifier )
+					
+					expect(
+						injectableComponentSubclassInstance[ getterFunctionName ]()
+					).not.toBeNull()
+					
+					resolvedValue = Deft.Injector.resolve( configuredIdentifier )
+					
+					if configuredIdentifier.indexOf( 'Prototype' ) is -1
+						if configuredIdentifier.indexOf( 'objectValue' ) is -1
+							expect(
+								injectableComponentSubclassInstance[ getterFunctionName ]()
+							).toBe( resolvedValue )
+						else
+							# NOTE: Object configs are cloned/merged and will not be the exact same instance.
+							expect(
+								injectableComponentSubclassInstance[ getterFunctionName ]()
+							).not.toBeNull()
+					else
+						expect(
+							injectableComponentSubclassInstance[ getterFunctionName ]()
+						).toBeInstanceOf( Ext.ClassManager.getClass( resolvedValue ).getName() )
+						
+				return
+			)
+			
 			it( 'should throw an error if asked to inject an unconfigured identifier', ->
 				simpleClassInstance = Ext.create( 'SimpleClass' )
 				
@@ -1918,11 +2027,58 @@ describe( 'Deft.ioc.Injector', ->
 		
 		describe( 'Runtime configuration changes', ->
 			
+			beforeEach( ->
+				Deft.Injector.reset()
+				
+				return
+			)
+			
+			it( 'should clear out configured identifiers when the reset method is called', ->
+				Deft.Injector.configure(
+					identifier:
+						value: 'expected value'
+				)
+				
+				expect(
+					Deft.Injector.resolve( 'identifier' )
+				).toEqual( 'expected value' )
+				
+				Deft.Injector.reset()
+				
+				expect( ->
+					Deft.Injector.resolve( 'identifier' )
+					return
+				).toThrow( new Error( "Error while resolving value to inject: no dependency provider found for 'identifier'." ) )
+				
+				return
+			)
+			
+			it( 'should aggregate providers across multiple calls to configure', ->
+				Deft.Injector.configure(
+					identifier1:
+						value: 'value #1'
+				)
+				
+				Deft.Injector.configure(
+					identifier2:
+						value: 'value #2'
+				)
+				
+				expect(
+					Deft.Injector.resolve( 'identifier1' )
+				).toEqual( 'value #1' )
+				
+				expect(
+					Deft.Injector.resolve( 'identifier2' )
+				).toEqual( 'value #2' )
+				
+				return
+			)
+			
 			it( 'should resolve using the last provider to be configured for a given identifier (i.e. configuration for the same identifier overwrites the previous configuration)', ->
 				Deft.Injector.configure(
-					existingIdentifier: {
+					existingIdentifier:
 						value: 'original value'
-					}
 				)
 				
 				expect(
@@ -1930,14 +2086,36 @@ describe( 'Deft.ioc.Injector', ->
 				).toEqual( 'original value' )
 				
 				Deft.Injector.configure(
-					existingIdentifier: {
+					existingIdentifier:
 						value: 'new value'
-					}
 				)
 				
 				expect(
 					Deft.Injector.resolve( 'existingIdentifier' )
 				).toEqual( 'new value' )
+				
+				return
+			)
+			
+			it( 'should instantiate eager providers when they are initially configured, and not reinstantiate them on subsequent calls to configure for other identifiers', ->
+				factoryFn = jasmine.createSpy( 'factory function' ).andCallFake( -> return 'expected value' )
+				
+				Deft.Injector.configure(
+					eagerIdentifier:
+						fn: factoryFn
+						eager: true
+				)
+				
+				expect( factoryFn ).toHaveBeenCalled()
+				
+				factoryFn.reset()
+				
+				Deft.Injector.configure(
+					anyOtherIdentifier: 
+						value: 'value'
+				)
+				
+				expect( factoryFn ).not.toHaveBeenCalled()
 				
 				return
 			)

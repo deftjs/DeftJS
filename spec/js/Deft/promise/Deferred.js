@@ -211,7 +211,7 @@ describe('Deft.promise.Deferred', function() {
       expect(progressCallback).not.toHaveBeenCalled();
       expect(cancelCallback).not.toHaveBeenCalled();
     });
-    it('should not allow resolution after cancellation', function() {
+    it('should silently ignore resolution after cancellation', function() {
       deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.cancel('reason');
       if (cancelCallback != null) {
@@ -219,14 +219,14 @@ describe('Deft.promise.Deferred', function() {
       }
       expect(function() {
         deferred.resolve('expected value');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      }).not.toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
       expect(deferred.getState()).toBe('cancelled');
       expect(successCallback).not.toHaveBeenCalled();
       expect(failureCallback).not.toHaveBeenCalled();
       expect(progressCallback).not.toHaveBeenCalled();
       expect(cancelCallback).not.toHaveBeenCalled();
     });
-    it('should not allow rejection after cancellation', function() {
+    it('should silently ignore rejection after cancellation', function() {
       deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.cancel('reason');
       if (cancelCallback != null) {
@@ -234,27 +234,27 @@ describe('Deft.promise.Deferred', function() {
       }
       expect(function() {
         deferred.reject('error message');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      }).not.toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
       expect(deferred.getState()).toBe('cancelled');
       expect(successCallback).not.toHaveBeenCalled();
       expect(failureCallback).not.toHaveBeenCalled();
       expect(progressCallback).not.toHaveBeenCalled();
       expect(cancelCallback).not.toHaveBeenCalled();
     });
-    it('should not allow update after cancellation', function() {
+    it('should silently ignore update after cancellation', function() {
       deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.cancel('reason');
       cancelCallback.reset();
       expect(function() {
         deferred.update('progress');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      }).not.toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
       expect(deferred.getState()).toBe('cancelled');
       expect(successCallback).not.toHaveBeenCalled();
       expect(failureCallback).not.toHaveBeenCalled();
       expect(progressCallback).not.toHaveBeenCalled();
       expect(cancelCallback).not.toHaveBeenCalled();
     });
-    it('should not allow cancellation after cancellation', function() {
+    it('should silently ignore cancellation after cancellation', function() {
       deferred.then(successCallback, failureCallback, progressCallback, cancelCallback);
       deferred.cancel('reason');
       if (cancelCallback != null) {
@@ -262,7 +262,7 @@ describe('Deft.promise.Deferred', function() {
       }
       expect(function() {
         deferred.cancel('reason');
-      }).toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
+      }).not.toThrow(new Error('Error: this Deferred has already been completed and cannot be modified.'));
       expect(deferred.getState()).toBe('cancelled');
       expect(successCallback).not.toHaveBeenCalled();
       expect(failureCallback).not.toHaveBeenCalled();
@@ -273,16 +273,16 @@ describe('Deft.promise.Deferred', function() {
   describe('Callback registration via then()', function() {
     var createSpecsForThen;
     createSpecsForThen = function(thenFunction, callbacksFactoryFunction) {
-      var cancelCallback, deferred, failureCallback, progressCallback, successCallback;
+      var cancelCallback, deferred, failureCallback, progressCallback, scope, successCallback;
       deferred = null;
-      successCallback = failureCallback = progressCallback = cancelCallback = null;
+      successCallback = failureCallback = progressCallback = cancelCallback = scope = null;
       beforeEach(function() {
         var _ref;
         deferred = Ext.create('Deft.promise.Deferred');
-        _ref = callbacksFactoryFunction(), successCallback = _ref.success, failureCallback = _ref.failure, progressCallback = _ref.progress, cancelCallback = _ref.cancel;
+        _ref = callbacksFactoryFunction(), successCallback = _ref.success, failureCallback = _ref.failure, progressCallback = _ref.progress, cancelCallback = _ref.cancel, scope = _ref.scope;
       });
       it('should call success callback (if specified) when resolved', function() {
-        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
+        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope);
         deferred.resolve('expected value');
         if (successCallback != null) {
           expect(successCallback).toHaveBeenCalledWith('expected value');
@@ -298,7 +298,7 @@ describe('Deft.promise.Deferred', function() {
         }
       });
       it('should call failure callback (if specified) when rejected', function() {
-        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
+        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope);
         deferred.reject('error message');
         if (successCallback != null) {
           expect(successCallback).not.toHaveBeenCalled();
@@ -314,7 +314,7 @@ describe('Deft.promise.Deferred', function() {
         }
       });
       it('should call progress callback (if specified) when updated', function() {
-        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
+        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope);
         deferred.update('progress');
         if (successCallback != null) {
           expect(successCallback).not.toHaveBeenCalled();
@@ -330,7 +330,7 @@ describe('Deft.promise.Deferred', function() {
         }
       });
       it('should call cancel callback (if specified) when cancelled', function() {
-        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
+        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope);
         deferred.cancel('reason');
         if (successCallback != null) {
           expect(successCallback).not.toHaveBeenCalled();
@@ -347,7 +347,7 @@ describe('Deft.promise.Deferred', function() {
       });
       it('should immediately call newly added success callback (if specified) when already resolved', function() {
         deferred.resolve('expected value');
-        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
+        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope);
         if (successCallback != null) {
           expect(successCallback).toHaveBeenCalledWith('expected value');
         }
@@ -363,7 +363,7 @@ describe('Deft.promise.Deferred', function() {
       });
       it('should immediately call newly added failure callback (if specified) when already rejected', function() {
         deferred.reject('error message');
-        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
+        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope);
         if (successCallback != null) {
           expect(successCallback).not.toHaveBeenCalled();
         }
@@ -379,7 +379,7 @@ describe('Deft.promise.Deferred', function() {
       });
       it('should immediately call newly added progress callback (if specified) when already updated', function() {
         deferred.update('progress');
-        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
+        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope);
         if (successCallback != null) {
           expect(successCallback).not.toHaveBeenCalled();
         }
@@ -395,7 +395,7 @@ describe('Deft.promise.Deferred', function() {
       });
       it('should immediately call newly added cancel callback (if specified) when already cancelled', function() {
         deferred.cancel('reason');
-        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
+        thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope);
         if (successCallback != null) {
           expect(successCallback).not.toHaveBeenCalled();
         }
@@ -412,13 +412,13 @@ describe('Deft.promise.Deferred', function() {
       it('should throw an error when non-function callback(s) are specified', function() {
         if (successCallback || failureCallback || progressCallback || cancelCallback) {
           return expect(function() {
-            thenFunction(deferred, successCallback ? 'value' : successCallback, failureCallback ? 'value' : failureCallback, progressCallback ? 'value' : progressCallback, cancelCallback ? 'value' : cancelCallback);
+            thenFunction(deferred, successCallback ? 'value' : successCallback, failureCallback ? 'value' : failureCallback, progressCallback ? 'value' : progressCallback, cancelCallback ? 'value' : cancelCallback, scope);
           }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
         }
       });
       it('should return a new Promise', function() {
         var result;
-        result = thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback);
+        result = thenFunction(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope);
         expect(result).toBeInstanceOf('Deft.promise.Promise');
         expect(result).not.toBe(deferred.promise);
       });
@@ -466,7 +466,70 @@ describe('Deft.promise.Deferred', function() {
         });
       }
     });
-    describe('with callbacks specified via configuration Object', function() {
+    describe('with callbacks and scope specified via method parameters', function() {
+      var callbacksFactoryFunction, expectedScope, thenFunction;
+      thenFunction = function(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope) {
+        return deferred.then(successCallback, failureCallback, progressCallback, cancelCallback, scope);
+      };
+      expectedScope = {};
+      callbacksFactoryFunction = function() {
+        return {
+          success: jasmine.createSpy('success callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          failure: jasmine.createSpy('failure callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          progress: jasmine.createSpy('progress callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          cancel: jasmine.createSpy('cancel callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          scope: expectedScope
+        };
+      };
+      createSpecsForThen(thenFunction, callbacksFactoryFunction);
+    });
+    describe('with callbacks and scope specified via method parameters,', function() {
+      var callbackNames, createCallbacksFactoryFunction, expectedScope, index, thenFunction, _i;
+      thenFunction = function(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope) {
+        return deferred.then(successCallback, failureCallback, progressCallback, cancelCallback, scope);
+      };
+      expectedScope = {};
+      createCallbacksFactoryFunction = function(index, valueWhenOmitted) {
+        var callbacksFactoryFunction;
+        callbacksFactoryFunction = function() {
+          var callbacks;
+          callbacks = {};
+          callbacks.success = index === 0 ? jasmine.createSpy('success callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }) : valueWhenOmitted;
+          callbacks.failure = index === 1 ? jasmine.createSpy('failure callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }) : valueWhenOmitted;
+          callbacks.progress = index === 2 ? jasmine.createSpy('progress callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }) : valueWhenOmitted;
+          callbacks.cancel = index === 3 ? jasmine.createSpy('cancel callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }) : valueWhenOmitted;
+          callbacks.scope = expectedScope;
+          return callbacks;
+        };
+        return callbacksFactoryFunction;
+      };
+      callbackNames = ['success', 'failure', 'progress', 'cancel'];
+      for (index = _i = 0; _i <= 3; index = ++_i) {
+        describe("omitting " + callbackNames[index] + " callback as null", function() {
+          createSpecsForThen(thenFunction, createCallbacksFactoryFunction(index, null));
+        });
+        describe("omitting " + callbackNames[index] + " callback as undefined", function() {
+          createSpecsForThen(thenFunction, createCallbacksFactoryFunction(index, void 0));
+        });
+      }
+    });
+    describe('with callbacks specified via a configuration Object', function() {
       var callbacksFactoryFunction, thenFunction;
       thenFunction = function(deferred, successCallback, failureCallback, progressCallback, cancelCallback) {
         return deferred.then({
@@ -486,7 +549,7 @@ describe('Deft.promise.Deferred', function() {
       };
       createSpecsForThen(thenFunction, callbacksFactoryFunction);
     });
-    return describe('with callbacks specified via configuration Object,', function() {
+    describe('with callbacks specified via a configuration Object,', function() {
       var callbackNames, createCallbacksFactoryFunction, index, thenFunction, _i;
       thenFunction = function(deferred, successCallback, failureCallback, progressCallback, cancelCallback) {
         return deferred.then({
@@ -519,169 +582,374 @@ describe('Deft.promise.Deferred', function() {
         });
       }
     });
+    describe('with callbacks and scope specified via a configuration Object', function() {
+      var callbacksFactoryFunction, expectedScope, thenFunction;
+      thenFunction = function(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope) {
+        return deferred.then({
+          success: successCallback,
+          failure: failureCallback,
+          progress: progressCallback,
+          cancel: cancelCallback,
+          scope: scope
+        });
+      };
+      expectedScope = {};
+      callbacksFactoryFunction = function() {
+        return {
+          success: jasmine.createSpy('success callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          failure: jasmine.createSpy('failure callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          progress: jasmine.createSpy('progress callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          cancel: jasmine.createSpy('cancel callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          scope: expectedScope
+        };
+      };
+      createSpecsForThen(thenFunction, callbacksFactoryFunction);
+    });
+    return describe('with callbacks and scope specified via a configuration Object,', function() {
+      var callbackNames, createCallbacksFactoryFunction, expectedScope, index, thenFunction, _i;
+      thenFunction = function(deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope) {
+        return deferred.then({
+          success: successCallback,
+          failure: failureCallback,
+          progress: progressCallback,
+          cancel: cancelCallback,
+          scope: scope
+        });
+      };
+      expectedScope = {};
+      createCallbacksFactoryFunction = function(index, valueWhenOmitted) {
+        var callbacksFactoryFunction;
+        callbacksFactoryFunction = function() {
+          var callbacks;
+          callbacks = {};
+          callbacks.success = index === 0 ? jasmine.createSpy('success callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }) : valueWhenOmitted;
+          callbacks.failure = index === 1 ? jasmine.createSpy('failure callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }) : valueWhenOmitted;
+          callbacks.progress = index === 2 ? jasmine.createSpy('progress callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }) : valueWhenOmitted;
+          callbacks.cancel = index === 3 ? jasmine.createSpy('cancel callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }) : valueWhenOmitted;
+          callbacks.scope = expectedScope;
+          return callbacks;
+        };
+        return callbacksFactoryFunction;
+      };
+      callbackNames = ['success', 'failure', 'progress', 'cancel'];
+      for (index = _i = 0; _i <= 3; index = ++_i) {
+        describe("omitting " + callbackNames[index] + " callback as null", function() {
+          createSpecsForThen(thenFunction, createCallbacksFactoryFunction(index, null));
+        });
+        describe("omitting " + callbackNames[index] + " callback as undefined", function() {
+          createSpecsForThen(thenFunction, createCallbacksFactoryFunction(index, void 0));
+        });
+      }
+    });
   });
   describe('Callback registration via otherwise()', function() {
-    var deferred, otherwiseCallback;
-    deferred = null;
-    otherwiseCallback = null;
-    beforeEach(function() {
-      deferred = Ext.create('Deft.promise.Deferred');
-      otherwiseCallback = jasmine.createSpy('otherwise callback');
+    var createSpecsForOtherwise;
+    createSpecsForOtherwise = function(otherwiseFunction, callbackFactoryFunction) {
+      var deferred, otherwiseCallback, scope;
+      deferred = null;
+      otherwiseCallback = scope = null;
+      beforeEach(function() {
+        var _ref;
+        deferred = Ext.create('Deft.promise.Deferred');
+        _ref = callbackFactoryFunction(), otherwiseCallback = _ref.otherwiseCallback, scope = _ref.scope;
+      });
+      it('should not call otherwise callback when resolved', function() {
+        otherwiseFunction(deferred, otherwiseCallback, scope);
+        deferred.resolve('expected value');
+        expect(otherwiseCallback).not.toHaveBeenCalled();
+      });
+      it('should call otherwise callback when rejected', function() {
+        otherwiseFunction(deferred, otherwiseCallback, scope);
+        deferred.reject('error message');
+        expect(otherwiseCallback).toHaveBeenCalledWith('error message');
+      });
+      it('should not call otherwise callback when updated', function() {
+        otherwiseFunction(deferred, otherwiseCallback, scope);
+        deferred.update('progress');
+        expect(otherwiseCallback).not.toHaveBeenCalled();
+      });
+      it('should not call otherwise callback when cancelled', function() {
+        otherwiseFunction(deferred, otherwiseCallback, scope);
+        deferred.cancel('reason');
+        expect(otherwiseCallback).not.toHaveBeenCalled();
+      });
+      it('should not immediately call otherwise callback when already resolved', function() {
+        deferred.resolve('expected value');
+        otherwiseFunction(deferred, otherwiseCallback, scope);
+        expect(otherwiseCallback).not.toHaveBeenCalled();
+      });
+      it('should immediately call otherwise callback when already rejected', function() {
+        deferred.reject('error message');
+        otherwiseFunction(deferred, otherwiseCallback, scope);
+        expect(otherwiseCallback).toHaveBeenCalledWith('error message');
+      });
+      it('should not immediately call otherwise callback when already updated', function() {
+        deferred.update('progress');
+        otherwiseFunction(deferred, otherwiseCallback, scope);
+        expect(otherwiseCallback).not.toHaveBeenCalled();
+      });
+      it('should not immediately call otherwise callback when already cancelled', function() {
+        deferred.cancel('reason');
+        otherwiseFunction(deferred, otherwiseCallback, scope);
+        expect(otherwiseCallback).not.toHaveBeenCalled();
+      });
+      it('should allow a null callback to be specified', function() {
+        expect(function() {
+          otherwiseFunction(deferred, null, scope);
+        }).not.toThrow();
+      });
+      it('should allow an undefined callback to be specified', function() {
+        expect(function() {
+          otherwiseFunction(deferred, void 0, scope);
+        }).not.toThrow();
+      });
+      it('should throw an error when a non-function callback is specified', function() {
+        expect(function() {
+          otherwiseFunction(deferred, 'value', scope);
+        }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
+      });
+      it('should return a new Promise', function() {
+        var promise;
+        promise = otherwiseFunction(deferred, otherwiseCallback, scope);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).not.toBe(deferred.promise);
+      });
+      it('should return a new Promise when a null callback is specified', function() {
+        var promise;
+        promise = otherwiseFunction(deferred, null, scope);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).not.toBe(deferred.promise);
+      });
+      it('should return a new Promise when an undefined callback is specified', function() {
+        var promise;
+        promise = otherwiseFunction(deferred, void 0, scope);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).not.toBe(deferred.promise);
+      });
+    };
+    describe('with the callback specified via a method parameter', function() {
+      var callbackFactoryFunction, otherwiseFunction;
+      otherwiseFunction = function(deferred, otherwiseCallback) {
+        return deferred.otherwise(otherwiseCallback);
+      };
+      callbackFactoryFunction = function() {
+        return {
+          otherwiseCallback: jasmine.createSpy('otherwise callback')
+        };
+      };
+      createSpecsForOtherwise(otherwiseFunction, callbackFactoryFunction);
     });
-    it('should not call otherwise callback when resolved', function() {
-      deferred.otherwise(otherwiseCallback);
-      deferred.resolve('expected value');
-      expect(otherwiseCallback).not.toHaveBeenCalled();
+    describe('with the callback and scope specified via method parameters', function() {
+      var callbackFactoryFunction, expectedScope, otherwiseFunction;
+      otherwiseFunction = function(deferred, otherwiseCallback, scope) {
+        return deferred.otherwise(otherwiseCallback, scope);
+      };
+      expectedScope = {};
+      callbackFactoryFunction = function() {
+        return {
+          otherwiseCallback: jasmine.createSpy('otherwise callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          scope: expectedScope
+        };
+      };
+      createSpecsForOtherwise(otherwiseFunction, callbackFactoryFunction);
     });
-    it('should call otherwise callback when rejected', function() {
-      deferred.otherwise(otherwiseCallback);
-      deferred.reject('error message');
-      expect(otherwiseCallback).toHaveBeenCalledWith('error message');
+    describe('with the callback specified via a configuration Object', function() {
+      var callbackFactoryFunction, otherwiseFunction;
+      otherwiseFunction = function(deferred, otherwiseCallback) {
+        return deferred.otherwise({
+          fn: otherwiseCallback
+        });
+      };
+      callbackFactoryFunction = function() {
+        return {
+          otherwiseCallback: jasmine.createSpy('otherwise callback')
+        };
+      };
+      createSpecsForOtherwise(otherwiseFunction, callbackFactoryFunction);
     });
-    it('should not call otherwise callback when updated', function() {
-      deferred.otherwise(otherwiseCallback);
-      deferred.update('progress');
-      expect(otherwiseCallback).not.toHaveBeenCalled();
-    });
-    it('should not call otherwise callback when cancelled', function() {
-      deferred.otherwise(otherwiseCallback);
-      deferred.cancel('reason');
-      expect(otherwiseCallback).not.toHaveBeenCalled();
-    });
-    it('should not immediately call otherwise callback when already resolved', function() {
-      deferred.resolve('expected value');
-      deferred.otherwise(otherwiseCallback);
-      expect(otherwiseCallback).not.toHaveBeenCalled();
-    });
-    it('should immediately call otherwise callback when already rejected', function() {
-      deferred.reject('error message');
-      deferred.otherwise(otherwiseCallback);
-      expect(otherwiseCallback).toHaveBeenCalledWith('error message');
-    });
-    it('should not immediately call otherwise callback when already updated', function() {
-      deferred.update('progress');
-      deferred.otherwise(otherwiseCallback);
-      expect(otherwiseCallback).not.toHaveBeenCalled();
-    });
-    it('should not immediately call otherwise callback when already cancelled', function() {
-      deferred.cancel('reason');
-      deferred.otherwise(otherwiseCallback);
-      expect(otherwiseCallback).not.toHaveBeenCalled();
-    });
-    it('should allow a null callback to be specified', function() {
-      expect(function() {
-        deferred.otherwise(null);
-      }).not.toThrow();
-    });
-    it('should allow an undefined callback to be specified', function() {
-      expect(function() {
-        deferred.otherwise(void 0);
-      }).not.toThrow();
-    });
-    it('should throw an error when a non-function callback is specified', function() {
-      expect(function() {
-        deferred.otherwise('value');
-      }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
-    });
-    it('should return a new Promise', function() {
-      var promise;
-      promise = deferred.otherwise(otherwiseCallback);
-      expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.promise);
-    });
-    it('should return a new Promise when a null callback is specified', function() {
-      var promise;
-      promise = deferred.otherwise(null);
-      expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.promise);
-    });
-    return it('should return a new Promise when an undefined callback is specified', function() {
-      var promise;
-      promise = deferred.otherwise(void 0);
-      expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.promise);
+    return describe('with callback and scope specified via a configuration Object', function() {
+      var callbackFactoryFunction, expectedScope, otherwiseFunction;
+      otherwiseFunction = function(deferred, otherwiseCallback, scope) {
+        return deferred.otherwise({
+          fn: otherwiseCallback,
+          scope: scope
+        });
+      };
+      expectedScope = {};
+      callbackFactoryFunction = function() {
+        return {
+          otherwiseCallback: jasmine.createSpy('otherwise callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          scope: expectedScope
+        };
+      };
+      createSpecsForOtherwise(otherwiseFunction, callbackFactoryFunction);
     });
   });
   describe('Callback registration via always()', function() {
-    var alwaysCallback, deferred;
-    deferred = null;
-    alwaysCallback = null;
-    beforeEach(function() {
-      deferred = Ext.create('Deft.promise.Deferred');
-      alwaysCallback = jasmine.createSpy('always callback');
+    var createSpecsForAlways;
+    createSpecsForAlways = function(alwaysFunction, callbackFactoryFunction) {
+      var alwaysCallback, deferred, scope;
+      deferred = null;
+      alwaysCallback = scope = null;
+      beforeEach(function() {
+        var _ref;
+        deferred = Ext.create('Deft.promise.Deferred');
+        _ref = callbackFactoryFunction(), alwaysCallback = _ref.alwaysCallback, scope = _ref.scope;
+      });
+      it('should call always callback when resolved', function() {
+        alwaysFunction(deferred, alwaysCallback, scope);
+        deferred.resolve('expected value');
+        expect(alwaysCallback).toHaveBeenCalled();
+      });
+      it('should call always callback when rejected', function() {
+        alwaysFunction(deferred, alwaysCallback, scope);
+        deferred.reject('error message');
+        expect(alwaysCallback).toHaveBeenCalled();
+      });
+      it('should not call always callback when updated', function() {
+        alwaysFunction(deferred, alwaysCallback, scope);
+        deferred.update('progress');
+        expect(alwaysCallback).not.toHaveBeenCalled();
+      });
+      it('should call always callback when cancelled', function() {
+        alwaysFunction(deferred, alwaysCallback, scope);
+        deferred.cancel('reason');
+        expect(alwaysCallback).toHaveBeenCalled();
+      });
+      it('should immediately call always callback when already resolved', function() {
+        deferred.resolve('expected value');
+        alwaysFunction(deferred, alwaysCallback, scope);
+        expect(alwaysCallback).toHaveBeenCalled();
+      });
+      it('should immediately call always callback when already rejected', function() {
+        deferred.reject('error message');
+        alwaysFunction(deferred, alwaysCallback, scope);
+        expect(alwaysCallback).toHaveBeenCalled();
+      });
+      it('should not immediately call always callback when already updated', function() {
+        deferred.update('progress');
+        alwaysFunction(deferred, alwaysCallback, scope);
+        expect(alwaysCallback).not.toHaveBeenCalled();
+      });
+      it('should immediately call always callback when already cancelled', function() {
+        deferred.cancel('reason');
+        alwaysFunction(deferred, alwaysCallback, scope);
+        expect(alwaysCallback).toHaveBeenCalled();
+      });
+      it('should allow a null callback to be specified', function() {
+        expect(function() {
+          alwaysFunction(deferred, null, scope);
+        }).not.toThrow();
+      });
+      it('should allow an undefined callback to be specified', function() {
+        expect(function() {
+          alwaysFunction(deferred, void 0, scope);
+        }).not.toThrow();
+      });
+      it('should throw an error when a non-function callback is specified', function() {
+        expect(function() {
+          alwaysFunction(deferred, 'value', scope);
+        }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
+      });
+      it('should return a new Promise', function() {
+        var promise;
+        promise = alwaysFunction(deferred, alwaysCallback, scope);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).not.toBe(deferred.promise);
+      });
+      it('should return a new Promise when a null callback is specified', function() {
+        var promise;
+        promise = alwaysFunction(deferred, null, scope);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).not.toBe(deferred.promise);
+      });
+      it('should return a new Promise when an undefined callback is specified', function() {
+        var promise;
+        promise = alwaysFunction(deferred, void 0, scope);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).not.toBe(deferred.promise);
+      });
+    };
+    describe('with the callback specified via a method parameter', function() {
+      var alwaysFunction, callbackFactoryFunction;
+      alwaysFunction = function(deferred, alwaysCallback) {
+        return deferred.always(alwaysCallback);
+      };
+      callbackFactoryFunction = function() {
+        return {
+          alwaysCallback: jasmine.createSpy('always callback')
+        };
+      };
+      createSpecsForAlways(alwaysFunction, callbackFactoryFunction);
     });
-    it('should call always callback when resolved', function() {
-      deferred.always(alwaysCallback);
-      deferred.resolve('expected value');
-      expect(alwaysCallback).toHaveBeenCalled();
+    describe('with the callback and scope specified via method parameters', function() {
+      var alwaysFunction, callbackFactoryFunction, expectedScope;
+      alwaysFunction = function(deferred, alwaysCallback, scope) {
+        return deferred.always(alwaysCallback, scope);
+      };
+      expectedScope = {};
+      callbackFactoryFunction = function() {
+        return {
+          alwaysCallback: jasmine.createSpy('always callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          scope: expectedScope
+        };
+      };
+      createSpecsForAlways(alwaysFunction, callbackFactoryFunction);
     });
-    it('should call always callback when rejected', function() {
-      deferred.always(alwaysCallback);
-      deferred.reject('error message');
-      expect(alwaysCallback).toHaveBeenCalled();
+    describe('with the callback specified via a configuration Object', function() {
+      var alwaysFunction, callbackFactoryFunction;
+      alwaysFunction = function(deferred, alwaysCallback) {
+        return deferred.always({
+          fn: alwaysCallback
+        });
+      };
+      callbackFactoryFunction = function() {
+        return {
+          alwaysCallback: jasmine.createSpy('always callback')
+        };
+      };
+      createSpecsForAlways(alwaysFunction, callbackFactoryFunction);
     });
-    it('should not call always callback when updated', function() {
-      deferred.always(alwaysCallback);
-      deferred.update('progress');
-      expect(alwaysCallback).not.toHaveBeenCalled();
-    });
-    it('should call always callback when cancelled', function() {
-      deferred.always(alwaysCallback);
-      deferred.cancel('reason');
-      expect(alwaysCallback).toHaveBeenCalled();
-    });
-    it('should immediately call always callback when already resolved', function() {
-      deferred.resolve('expected value');
-      deferred.always(alwaysCallback);
-      expect(alwaysCallback).toHaveBeenCalled();
-    });
-    it('should immediately call always callback when already rejected', function() {
-      deferred.reject('error message');
-      deferred.always(alwaysCallback);
-      expect(alwaysCallback).toHaveBeenCalled();
-    });
-    it('should not immediately call always callback when already updated', function() {
-      deferred.update('progress');
-      deferred.always(alwaysCallback);
-      expect(alwaysCallback).not.toHaveBeenCalled();
-    });
-    it('should immediately call always callback when already cancelled', function() {
-      deferred.cancel('reason');
-      deferred.always(alwaysCallback);
-      expect(alwaysCallback).toHaveBeenCalled();
-    });
-    it('should allow a null callback to be specified', function() {
-      expect(function() {
-        deferred.always(null);
-      }).not.toThrow();
-    });
-    it('should allow an undefined callback to be specified', function() {
-      expect(function() {
-        deferred.always(void 0);
-      }).not.toThrow();
-    });
-    it('should throw an error when a non-function callback is specified', function() {
-      expect(function() {
-        deferred.always('value');
-      }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
-    });
-    it('should return a new Promise', function() {
-      var promise;
-      promise = deferred.always(alwaysCallback);
-      expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.promise);
-    });
-    it('should return a new Promise when a null callback is specified', function() {
-      var promise;
-      promise = deferred.always(null);
-      expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.promise);
-    });
-    return it('should return a new Promise when an undefined callback is specified', function() {
-      var promise;
-      promise = deferred.always(void 0);
-      expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.promise);
+    return describe('with callback and scope specified via a configuration Object', function() {
+      var alwaysFunction, callbackFactoryFunction, expectedScope;
+      alwaysFunction = function(deferred, alwaysCallback, scope) {
+        return deferred.always({
+          fn: alwaysCallback,
+          scope: scope
+        });
+      };
+      expectedScope = {};
+      callbackFactoryFunction = function() {
+        return {
+          alwaysCallback: jasmine.createSpy('always callback').andCallFake(function() {
+            return expect(this).toBe(expectedScope);
+          }),
+          scope: expectedScope
+        };
+      };
+      createSpecsForAlways(alwaysFunction, callbackFactoryFunction);
     });
   });
   describe('Return value propagation for callback registered with the new Promise returned by then()', function() {

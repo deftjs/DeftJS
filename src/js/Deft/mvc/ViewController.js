@@ -12,7 +12,7 @@ Used in conjunction with {@link Deft.mixin.Controllable}.
 
 Ext.define('Deft.mvc.ViewController', {
   alternateClassName: ['Deft.ViewController'],
-  requires: ['Deft.log.Logger'],
+  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelector'],
   config: {
     /**
     		View controlled by this ViewController.
@@ -21,12 +21,24 @@ Ext.define('Deft.mvc.ViewController', {
     view: null
   },
   constructor: function(config) {
-    this.initConfig(config);
-    if (this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
-      this.registeredComponents = {};
-      this.isExtJS = this.getView().events != null;
-      this.isSenchaTouch = !this.isExtJS;
-      if (this.isExtJS) {
+    if (config == null) {
+      config = {};
+    }
+    if (config.view) {
+      this.controlView(config.view);
+    }
+    return this.initConfig(config);
+  },
+  /**
+  	@protected
+  */
+
+  controlView: function(view) {
+    if (view instanceof Ext.ClassManager.get('Ext.Container')) {
+      this.setView(view);
+      this.registeredComponentReferences = {};
+      this.registeredComponentSelectors = {};
+      if (Ext.getVersion('extjs') != null) {
         if (this.getView().rendered) {
           this.onViewInitialize();
         } else {
@@ -45,10 +57,9 @@ Ext.define('Deft.mvc.ViewController', {
       }
     } else {
       Ext.Error.raise({
-        msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
+        msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Container.'
       });
     }
-    return this;
   },
   /**
   	Initialize the ViewController
@@ -60,6 +71,13 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   destroy: function() {
+    var id, selector;
+    for (id in this.registeredComponentReferences) {
+      this.removeComponentReference(id);
+    }
+    for (selector in this.registeredComponentSelectors) {
+      this.removeComponentSelector(selector);
+    }
     return true;
   },
   /**
@@ -67,12 +85,9 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   onViewInitialize: function() {
-    var component, config, id, listeners, originalViewDestroyFunction, self, _ref;
-    if (this.isExtJS) {
+    var config, id, listeners, live, originalViewDestroyFunction, selector, self, _ref;
+    if (Ext.getVersion('extjs') != null) {
       this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
-      this.getView().on('destroy', this.onViewDestroy, this, {
-        single: true
-      });
     } else {
       self = this;
       originalViewDestroyFunction = this.getView().destroy;
@@ -85,9 +100,27 @@ Ext.define('Deft.mvc.ViewController', {
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
-      component = this.locateComponent(id, config);
-      listeners = Ext.isObject(config.listeners) ? config.listeners : !(config.selector != null) ? config : void 0;
-      this.registerComponent(id, component, listeners);
+      selector = null;
+      if (id !== 'view') {
+        if (Ext.isString(config)) {
+          selector = config;
+        } else if (config.selector != null) {
+          selector = config.selector;
+        } else {
+          selector = '#' + id;
+        }
+      }
+      listeners = null;
+      if (Ext.isObject(config.listeners)) {
+        listeners = config.listeners;
+      } else {
+        if (!((config.selector != null) || (config.live != null))) {
+          listeners = config;
+        }
+      }
+      live = (config.live != null) && config.live;
+      this.addComponentReference(id, selector, live);
+      this.addComponentSelector(selector, listeners, live);
     }
     this.init();
   },
@@ -103,171 +136,126 @@ Ext.define('Deft.mvc.ViewController', {
     return false;
   },
   /**
-  	@private
+  	Add a component accessor method the ViewController for the specified view-relative selector.
   */
 
-  onViewDestroy: function() {
-    var id;
-    for (id in this.registeredComponents) {
-      this.unregisterComponent(id);
+  addComponentReference: function(id, selector, live) {
+    var getterName, matches;
+    if (live == null) {
+      live = false;
     }
-  },
-  /**
-  	@private
-  */
-
-  getComponent: function(id) {
-    var _ref;
-    return (_ref = this.registeredComponents[id]) != null ? _ref.component : void 0;
-  },
-  /**
-  	@private
-  */
-
-  registerComponent: function(id, component, listeners) {
-    var event, existingComponent, fn, getterName, listener, options, scope;
-    Deft.Logger.log("Registering '" + id + "' component.");
-    existingComponent = this.getComponent(id);
-    if (existingComponent != null) {
+    Deft.Logger.log("Adding '" + id + "' component reference for selector: '" + selector + "'.");
+    if (this.registeredComponentReferences[id] != null) {
       Ext.Error.raise({
-        msg: "Error registering component: an existing component already registered as '" + id + "'."
+        msg: "Error adding component reference: an existing component reference was already registered as '" + id + "'."
       });
-    }
-    this.registeredComponents[id] = {
-      component: component,
-      listeners: listeners
-    };
-    if (id !== 'view') {
-      getterName = 'get' + Ext.String.capitalize(id);
-      if (!this[getterName]) {
-        this[getterName] = Ext.Function.pass(this.getComponent, [id], this);
-      }
-    }
-    if (Ext.isObject(listeners)) {
-      for (event in listeners) {
-        listener = listeners[event];
-        fn = listener;
-        scope = this;
-        options = null;
-        if (Ext.isObject(listener)) {
-          options = Ext.apply({}, listener);
-          if (options.fn != null) {
-            fn = options.fn;
-            delete options.fn;
-          }
-          if (options.scope != null) {
-            scope = options.scope;
-            delete options.scope;
-          }
-        }
-        Deft.Logger.log("Adding '" + event + "' listener to '" + id + "'.");
-        if (Ext.isFunction(fn)) {
-          component.on(event, fn, scope, options);
-        } else if (Ext.isFunction(this[fn])) {
-          component.on(event, this[fn], scope, options);
-        } else {
-          Ext.Error.raise({
-            msg: "Error adding '" + event + "' listener: the specified handler '" + fn + "' is not a Function or does not exist."
-          });
-        }
-      }
-    }
-  },
-  /**
-  	@private
-  */
-
-  unregisterComponent: function(id) {
-    var component, event, existingComponent, fn, getterName, listener, listeners, options, scope, _ref;
-    Deft.Logger.log("Unregistering '" + id + "' component.");
-    existingComponent = this.getComponent(id);
-    if (!(existingComponent != null)) {
-      Ext.Error.raise({
-        msg: "Error unregistering component: no component is registered as '" + id + "'."
-      });
-    }
-    _ref = this.registeredComponents[id], component = _ref.component, listeners = _ref.listeners;
-    if (Ext.isObject(listeners)) {
-      for (event in listeners) {
-        listener = listeners[event];
-        fn = listener;
-        scope = this;
-        if (Ext.isObject(listener)) {
-          options = listener;
-          if (options.fn != null) {
-            fn = options.fn;
-          }
-          if (options.scope != null) {
-            scope = options.scope;
-          }
-        }
-        Deft.Logger.log("Removing '" + event + "' listener from '" + id + "'.");
-        if (Ext.isFunction(fn)) {
-          component.un(event, fn, scope);
-        } else if (Ext.isFunction(this[fn])) {
-          component.un(event, this[fn], scope);
-        } else {
-          Ext.Error.raise({
-            msg: "Error removing '" + event + "' listener: the specified handler '" + fn + "' is not a Function or does not exist."
-          });
-        }
-      }
     }
     if (id !== 'view') {
       getterName = 'get' + Ext.String.capitalize(id);
-      this[getterName] = null;
+      if (this[getterName] == null) {
+        if (live) {
+          this[getterName] = Ext.Function.pass(this.getViewComponent, [selector], this);
+        } else {
+          matches = this.getViewComponent(selector);
+          if (matches == null) {
+            Ext.Error.raise({
+              msg: "Error locating component: no component(s) found matching '" + selector + "'."
+            });
+          }
+          this[getterName] = function() {
+            return matches;
+          };
+        }
+        this[getterName].generated = true;
+      }
     }
-    this.registeredComponents[id] = null;
+    this.registeredComponentReferences[id] = true;
   },
   /**
-  	@private
+  	Remove a component accessor method the ViewController for the specified view-relative selector.
   */
 
-  locateComponent: function(id, config) {
-    var matches, view;
-    view = this.getView();
-    if (id === 'view') {
-      return view;
+  removeComponentReference: function(id) {
+    var getterName;
+    Deft.Logger.log("Removing '" + id + "' component reference.");
+    if (this.registeredComponentReferences[id] == null) {
+      Ext.Error.raise({
+        msg: "Error removing component reference: no component reference is registered as '" + id + "'."
+      });
     }
-    if (Ext.isString(config)) {
-      matches = view.query(config);
+    if (id !== 'view') {
+      getterName = 'get' + Ext.String.capitalize(id);
+      if (this[getterName].generated) {
+        this[getterName] = null;
+      }
+    }
+    delete this.registeredComponentReferences[id];
+  },
+  /**
+  	Get the component(s) corresponding to the specified view-relative selector.
+  */
+
+  getViewComponent: function(selector) {
+    var matches;
+    if (selector != null) {
+      matches = Ext.ComponentQuery.query(selector, this.getView());
       if (matches.length === 0) {
-        Ext.Error.raise({
-          msg: "Error locating component: no component found matching '" + config + "'."
-        });
+        return null;
+      } else if (matches.length === 1) {
+        return matches[0];
+      } else {
+        return matches;
       }
-      if (matches.length > 1) {
-        Ext.Error.raise({
-          msg: "Error locating component: multiple components found matching '" + config + "'."
-        });
-      }
-      return matches[0];
-    } else if (Ext.isString(config.selector)) {
-      matches = view.query(config.selector);
-      if (matches.length === 0) {
-        Ext.Error.raise({
-          msg: "Error locating component: no component found matching '" + config.selector + "'."
-        });
-      }
-      if (matches.length > 1) {
-        Ext.Error.raise({
-          msg: "Error locating component: multiple components found matching '" + config.selector + "'."
-        });
-      }
-      return matches[0];
     } else {
-      matches = view.query('#' + id);
-      if (matches.length === 0) {
-        Ext.Error.raise({
-          msg: "Error locating component: no component found with an itemId of '" + id + "'."
-        });
-      }
-      if (matches.length > 1) {
-        Ext.Error.raise({
-          msg: "Error locating component: multiple components found with an itemId of '" + id + "'."
-        });
-      }
-      return matches[0];
+      return this.getView();
     }
+  },
+  /**
+  	Add a component selector with the specified listeners for the specified view-relative selector.
+  */
+
+  addComponentSelector: function(selector, listeners, live) {
+    var componentSelector, existingComponentSelector;
+    if (live == null) {
+      live = false;
+    }
+    Deft.Logger.log("Adding component selector for: '" + selector + "'.");
+    existingComponentSelector = this.getComponentSelector(selector);
+    if (existingComponentSelector != null) {
+      Ext.Error.raise({
+        msg: "Error adding component selector: an existing component selector was already registered for '" + selector + "'."
+      });
+    }
+    componentSelector = Ext.create('Deft.mvc.ComponentSelector', {
+      view: this.getView(),
+      selector: selector,
+      listeners: listeners,
+      scope: this,
+      live: live
+    });
+    this.registeredComponentSelectors[selector] = componentSelector;
+  },
+  /**
+  	Remove a component selector with the specified listeners for the specified view-relative selector.
+  */
+
+  removeComponentSelector: function(selector) {
+    var existingComponentSelector;
+    Deft.Logger.log("Removing component selector for '" + selector + "'.");
+    existingComponentSelector = this.getComponentSelector(selector);
+    if (existingComponentSelector == null) {
+      Ext.Error.raise({
+        msg: "Error removing component selector: no component selector registered for '" + selector + "'."
+      });
+    }
+    existingComponentSelector.destroy();
+    delete this.registeredComponentSelectors[selector];
+  },
+  /**
+  	Get the component selectorcorresponding to the specified view-relative selector.
+  */
+
+  getComponentSelector: function(selector) {
+    return this.registeredComponentSelectors[selector];
   }
 });

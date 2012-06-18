@@ -9,7 +9,9 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Used by {@link Deft.ioc.Injector}.
 ###
 Ext.define( 'Deft.ioc.DependencyProvider',
-	requires: [ 'Deft.log.Logger' ]
+	requires: [ 
+		'Deft.log.Logger'
+	]
 	
 	config:
 		identifier: null
@@ -33,7 +35,7 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 		###*
 		Value to use to resolve this dependency.
 		###
-		value: null
+		value: undefined
 		
 		###*
 		Indicates whether this dependency should be resolved as a singleton, or as a transient value for each resolution request.
@@ -90,7 +92,7 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 	###
 	resolve: ( targetInstance ) ->
 		Deft.Logger.log( "Resolving '#{ @getIdentifier() }'." )
-		if @getValue()?
+		if @getValue() isnt undefined
 			return @getValue()
 		
 		instance = null

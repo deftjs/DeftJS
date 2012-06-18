@@ -7,7 +7,7 @@ Ext.define( 'Deft.log.Logger',
 	alternateClassName: [ 'Deft.Logger' ]
 	singleton: true
 
-	log: ( message, priority ) ->
+	log: ( message, priority = 'info' ) ->
 		return
 
 	error: ( message ) ->
@@ -31,10 +31,11 @@ Ext.define( 'Deft.log.Logger',
 		return
 ,
 	->
-		if Ext.isFunction( Ext.Logger?.log )
-			@log = Ext.bind( Ext.Logger.log, Ext.Logger )
-		else if Ext.isFunction( Ext.log )
+		if Ext.getVersion( 'extjs' )?
+			# Ext JS
 			@log = ( message, priority = 'info' ) ->
+				if priority is 'verbose'
+					priority is 'info'
 				if priority is 'deprecate'
 					priority = 'warn'
 				Ext.log(
@@ -42,6 +43,9 @@ Ext.define( 'Deft.log.Logger',
 					level: priority
 				)
 				return
-
+		else
+			# Sencha Touch
+			if Ext.isFunction( Ext.Logger?.log )
+				@log = Ext.bind( Ext.Logger.log, Ext.Logger )
 		return
 )

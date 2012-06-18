@@ -440,7 +440,7 @@ describe('Deft.ioc.Injector', function() {
       });
       it('should not be configurable with a class name for a singleton class and constructor parameters', function() {
         expect(function() {
-          return Deft.Injector.configure({
+          Deft.Injector.configure({
             classNameForSingletonClassWithParameters: {
               className: 'ExampleSingletonClass',
               parameters: [
@@ -501,7 +501,7 @@ describe('Deft.ioc.Injector', function() {
       });
       it('should not be configurable with a class name for a singleton class, as a prototype', function() {
         expect(function() {
-          return Deft.Injector.configure({
+          Deft.Injector.configure({
             classNameForSingletonClassAsPrototype: {
               className: 'ExampleSingletonClass',
               singleton: false
@@ -511,7 +511,7 @@ describe('Deft.ioc.Injector', function() {
       });
       it('should not be configurable with a class name for a singleton class, as a prototype, eagerly', function() {
         expect(function() {
-          return Deft.Injector.configure({
+          Deft.Injector.configure({
             classNameForSingletonClassAsPrototypeEagerly: {
               className: 'ExampleSingletonClass',
               singleton: false,
@@ -522,7 +522,7 @@ describe('Deft.ioc.Injector', function() {
       });
       it('should not be configurable with a class name for a singleton class, as a prototype, (explicitly) lazily', function() {
         expect(function() {
-          return Deft.Injector.configure({
+          Deft.Injector.configure({
             classNameForSingletonClassAsPrototypeLazily: {
               className: 'ExampleSingletonClass',
               singleton: false,
@@ -1055,6 +1055,79 @@ describe('Deft.ioc.Injector', function() {
           return this.callParent(arguments);
         }
       });
+      Ext.define('InjectableComponentSubclass', {
+        extend: 'Ext.Component',
+        mixins: ['Deft.mixin.Injectable'],
+        inject: configuredIdentifiers,
+        config: {
+          classNameAsString: null,
+          className: null,
+          classNameEagerly: null,
+          classNameLazily: null,
+          classNameAsSingleton: null,
+          classNameAsSingletonEagerly: null,
+          classNameAsSingletonLazily: null,
+          classNameAsPrototype: null,
+          classNameAsPrototypeLazily: null,
+          classNameWithParameters: null,
+          classNameWithParametersEagerly: null,
+          classNameWithParametersLazily: null,
+          classNameWithParametersAsSingleton: null,
+          classNameWithParametersAsSingletonEagerly: null,
+          classNameWithParametersAsSingletonLazily: null,
+          classNameWithParametersAsPrototype: null,
+          classNameWithParametersAsPrototypeLazily: null,
+          classNameForSingletonClass: null,
+          classNameForSingletonClassEagerly: null,
+          classNameForSingletonClassLazily: null,
+          classNameForSingletonClassAsSingleton: null,
+          classNameForSingletonClassAsSingletonEagerly: null,
+          classNameForSingletonClassAsSingletonLazily: null,
+          fn: null,
+          fnEagerly: null,
+          fnLazily: null,
+          fnAsSingleton: null,
+          fnAsSingletonEagerly: null,
+          fnAsSingletonLazily: null,
+          fnAsPrototype: null,
+          fnAsPrototypeLazily: null,
+          booleanValue: null,
+          booleanValueLazily: null,
+          booleanValueAsSingleton: null,
+          booleanValueAsSingletonLazily: null,
+          stringValue: null,
+          stringValueLazily: null,
+          stringValueAsSingleton: null,
+          stringValueAsSingletonLazily: null,
+          numberValue: null,
+          numberValueLazily: null,
+          numberValueAsSingleton: null,
+          numberValueAsSingletonLazily: null,
+          dateValue: null,
+          dateValueLazily: null,
+          dateValueAsSingleton: null,
+          dateValueAsSingletonLazily: null,
+          arrayValue: null,
+          arrayValueLazily: null,
+          arrayValueAsSingleton: null,
+          arrayValueAsSingletonLazily: null,
+          objectValue: null,
+          objectValueLazily: null,
+          objectValueAsSingleton: null,
+          objectValueAsSingletonLazily: null,
+          classValue: null,
+          classValueLazily: null,
+          classValueAsSingleton: null,
+          classValueAsSingletonLazily: null,
+          functionValue: null,
+          functionValueLazily: null,
+          functionValueAsSingleton: null,
+          functionValueAsSingletonLazily: null
+        },
+        constructor: function(config) {
+          return this.callParent(arguments);
+        }
+      });
       it('should inject configured dependencies into properties for a given class instance', function() {
         var configuredIdentifier, resolvedValue, simpleClassInstance, _j, _len1;
         simpleClassInstance = Ext.create('SimpleClass');
@@ -1121,6 +1194,25 @@ describe('Deft.ioc.Injector', function() {
           }
         }
       });
+      it('should automatically inject configured dependencies into configs for a given Injectable \`Ext.Component\` subclass instance', function() {
+        var configuredIdentifier, getterFunctionName, injectableComponentSubclassInstance, resolvedValue, _j, _len1;
+        injectableComponentSubclassInstance = Ext.create('InjectableComponentSubclass');
+        for (_j = 0, _len1 = configuredIdentifiers.length; _j < _len1; _j++) {
+          configuredIdentifier = configuredIdentifiers[_j];
+          getterFunctionName = 'get' + Ext.String.capitalize(configuredIdentifier);
+          expect(injectableComponentSubclassInstance[getterFunctionName]()).not.toBeNull();
+          resolvedValue = Deft.Injector.resolve(configuredIdentifier);
+          if (configuredIdentifier.indexOf('Prototype') === -1) {
+            if (configuredIdentifier.indexOf('objectValue') === -1) {
+              expect(injectableComponentSubclassInstance[getterFunctionName]()).toBe(resolvedValue);
+            } else {
+              expect(injectableComponentSubclassInstance[getterFunctionName]()).not.toBeNull();
+            }
+          } else {
+            expect(injectableComponentSubclassInstance[getterFunctionName]()).toBeInstanceOf(Ext.ClassManager.getClass(resolvedValue).getName());
+          }
+        }
+      });
       it('should throw an error if asked to inject an unconfigured identifier', function() {
         var simpleClassInstance;
         simpleClassInstance = Ext.create('SimpleClass');
@@ -1178,6 +1270,35 @@ describe('Deft.ioc.Injector', function() {
       });
     });
     describe('Runtime configuration changes', function() {
+      beforeEach(function() {
+        Deft.Injector.reset();
+      });
+      it('should clear out configured identifiers when the reset method is called', function() {
+        Deft.Injector.configure({
+          identifier: {
+            value: 'expected value'
+          }
+        });
+        expect(Deft.Injector.resolve('identifier')).toEqual('expected value');
+        Deft.Injector.reset();
+        expect(function() {
+          Deft.Injector.resolve('identifier');
+        }).toThrow(new Error("Error while resolving value to inject: no dependency provider found for 'identifier'."));
+      });
+      it('should aggregate providers across multiple calls to configure', function() {
+        Deft.Injector.configure({
+          identifier1: {
+            value: 'value #1'
+          }
+        });
+        Deft.Injector.configure({
+          identifier2: {
+            value: 'value #2'
+          }
+        });
+        expect(Deft.Injector.resolve('identifier1')).toEqual('value #1');
+        expect(Deft.Injector.resolve('identifier2')).toEqual('value #2');
+      });
       it('should resolve using the last provider to be configured for a given identifier (i.e. configuration for the same identifier overwrites the previous configuration)', function() {
         Deft.Injector.configure({
           existingIdentifier: {
@@ -1191,6 +1312,26 @@ describe('Deft.ioc.Injector', function() {
           }
         });
         expect(Deft.Injector.resolve('existingIdentifier')).toEqual('new value');
+      });
+      it('should instantiate eager providers when they are initially configured, and not reinstantiate them on subsequent calls to configure for other identifiers', function() {
+        var factoryFn;
+        factoryFn = jasmine.createSpy('factory function').andCallFake(function() {
+          return 'expected value';
+        });
+        Deft.Injector.configure({
+          eagerIdentifier: {
+            fn: factoryFn,
+            eager: true
+          }
+        });
+        expect(factoryFn).toHaveBeenCalled();
+        factoryFn.reset();
+        Deft.Injector.configure({
+          anyOtherIdentifier: {
+            value: 'value'
+          }
+        });
+        expect(factoryFn).not.toHaveBeenCalled();
       });
     });
   });

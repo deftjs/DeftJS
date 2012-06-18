@@ -10,7 +10,10 @@ Used in conjunction with {@link Deft.mixin.Controllable}.
 ###
 Ext.define( 'Deft.mvc.ViewController',
 	alternateClassName: [ 'Deft.ViewController' ]
-	requires: [ 'Deft.log.Logger' ]
+	requires: [ 
+		'Deft.log.Logger'
+		'Deft.mvc.ComponentSelector'
+	]
 	
 	config:
 		###*
@@ -18,18 +21,21 @@ Ext.define( 'Deft.mvc.ViewController',
 		###
 		view: null
 	
-	constructor: ( config ) ->
-		@initConfig( config )
-		
-		if @getView() instanceof Ext.ClassManager.get( 'Ext.Component' )
-			@registeredComponents = {}
+	constructor: ( config = {} ) ->
+		if config.view
+			@controlView( config.view )
+		return @initConfig( config )
+	
+	###*
+	@protected
+	###
+	controlView: ( view ) ->
+		if view instanceof Ext.ClassManager.get( 'Ext.Container' )
+			@setView( view )
+			@registeredComponentReferences = {}
+			@registeredComponentSelectors = {}
 			
-			# TODO: Find a more reliable way to detect the difference between Ext JS and Sencha Touch.
-			# Extract to static utility class or singleton property or method.
-			@isExtJS = @getView().events?
-			@isSenchaTouch = not @isExtJS
-			
-			if @isExtJS
+			if Ext.getVersion( 'extjs' )?
 				# Ext JS
 				if @getView().rendered
 					@onViewInitialize()
@@ -42,9 +48,8 @@ Ext.define( 'Deft.mvc.ViewController',
 				else
 					@getView().on( 'initialize', @onViewInitialize, @, single: true )
 		else
-			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
-		
-		return @
+			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Container.' )
+		return
 	
 	###*
 	Initialize the ViewController
@@ -56,16 +61,21 @@ Ext.define( 'Deft.mvc.ViewController',
 	Destroy the ViewController
 	###
 	destroy: ->
+		for id of @registeredComponentReferences
+			@removeComponentReference( id )
+		for selector of @registeredComponentSelectors
+			@removeComponentSelector( selector )
 		return true
 	
 	###*
 	@private
 	###
 	onViewInitialize: ->
-		if @isExtJS
+		if Ext.getVersion( 'extjs' )?
+			# Ext JS
 			@getView().on( 'beforedestroy', @onViewBeforeDestroy, @ )
-			@getView().on( 'destroy', @onViewDestroy, @, single: true )
 		else
+			# Sencha Touch
 			self = this
 			originalViewDestroyFunction = @getView().destroy
 			@getView().destroy = ->
@@ -74,9 +84,23 @@ Ext.define( 'Deft.mvc.ViewController',
 				return
 		
 		for id, config of @control
-			component = @locateComponent( id, config )
-			listeners = if Ext.isObject( config.listeners ) then config.listeners else config if not config.selector?
-			@registerComponent( id, component, listeners )
+			selector = null
+			if id isnt 'view'
+				if Ext.isString( config )
+					selector = config
+				else if config.selector?
+					selector = config.selector
+				else
+					selector = '#' + id
+			listeners = null
+			if Ext.isObject( config.listeners )
+				listeners = config.listeners
+			else 
+				listeners = config unless config.selector? or config.live?
+			live = config.live? and config.live
+			@addComponentReference( id, selector, live )
+			@addComponentSelector( selector, listeners, live )
+		
 		@init()
 		return
 	
@@ -90,125 +114,103 @@ Ext.define( 'Deft.mvc.ViewController',
 		return false
 	
 	###*
-	@private
+	Add a component accessor method the ViewController for the specified view-relative selector.
 	###
-	onViewDestroy: ->
-		for id of @registeredComponents
-			@unregisterComponent( id )
-		return
-	
-	###*
-	@private
-	###
-	getComponent: ( id ) ->
-		return @registeredComponents[ id ]?.component
-	
-	###*
-	@private
-	###
-	registerComponent: ( id, component, listeners ) ->
-		Deft.Logger.log( "Registering '#{ id }' component." )
+	addComponentReference: ( id, selector, live = false ) ->
+		Deft.Logger.log( "Adding '#{ id }' component reference for selector: '#{ selector }'." )
 		
-		existingComponent = @getComponent( id )
-		if existingComponent?
-			Ext.Error.raise( msg: "Error registering component: an existing component already registered as '#{ id }'." )
+		if @registeredComponentReferences[ id ]?
+			Ext.Error.raise( msg: "Error adding component reference: an existing component reference was already registered as '#{ id }'." )
 		
-		@registeredComponents[ id ] =
-			component: component
-			listeners: listeners
-		
+		# Add generated getter function.
 		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
-			@[ getterName ] = Ext.Function.pass( @getComponent, [ id ], @ ) unless @[ getterName ]
-		
-		if Ext.isObject( listeners )
-			for event, listener of listeners
-				fn = listener
-				scope = @
-				options = null
-				if Ext.isObject( listener )
-					options = Ext.apply( {}, listener )
-					if options.fn?
-						fn = options.fn
-						delete options.fn
-					if options.scope?
-						scope = options.scope
-						delete options.scope
-				Deft.Logger.log( "Adding '#{ event }' listener to '#{ id }'." )
-				if Ext.isFunction( fn )
-					component.on( event, fn, scope, options )
-				else if Ext.isFunction( @[ fn ] )
-					component.on( event, @[ fn ], scope, options )
+			unless @[ getterName ]?
+				if live
+					@[ getterName ] = Ext.Function.pass( @getViewComponent, [ selector ], @ )
 				else
-					Ext.Error.raise( msg: "Error adding '#{ event }' listener: the specified handler '#{ fn }' is not a Function or does not exist." )
-		
+					matches = @getViewComponent( selector )
+					unless matches?
+						Ext.Error.raise( msg: "Error locating component: no component(s) found matching '#{ selector }'." )
+					@[ getterName ] = -> matches
+				@[ getterName ].generated = true
+				
+		@registeredComponentReferences[ id ] = true
 		return
 	
 	###*
-	@private
+	Remove a component accessor method the ViewController for the specified view-relative selector.
 	###
-	unregisterComponent: ( id ) ->
-		Deft.Logger.log( "Unregistering '#{ id }' component." )
+	removeComponentReference: ( id ) ->
+		Deft.Logger.log( "Removing '#{ id }' component reference." )
 		
-		existingComponent = @getComponent( id )
-		if not existingComponent?
-			Ext.Error.raise( msg: "Error unregistering component: no component is registered as '#{ id }'." )
+		unless @registeredComponentReferences[ id ]?
+			Ext.Error.raise( msg: "Error removing component reference: no component reference is registered as '#{ id }'." )
 		
-		{ component, listeners } = @registeredComponents[ id ]
-			
-		if Ext.isObject( listeners )
-			for event, listener of listeners
-				fn = listener
-				scope = @
-				if Ext.isObject( listener )
-					options = listener
-					if options.fn?
-						fn = options.fn
-					if options.scope?
-						scope = options.scope
-				Deft.Logger.log( "Removing '#{ event }' listener from '#{ id }'." )
-				if Ext.isFunction( fn )
-					component.un( event, fn, scope )
-				else if Ext.isFunction( @[ fn ] )
-					component.un( event, @[ fn ], scope )
-				else
-					Ext.Error.raise( msg: "Error removing '#{ event }' listener: the specified handler '#{ fn }' is not a Function or does not exist." )
-		
+		# Remove generated getter function.
 		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
-			@[ getterName ] = null
+			if @[ getterName ].generated
+				@[ getterName ] = null
 		
-		@registeredComponents[ id ] = null
+		delete @registeredComponentReferences[ id ]
 		
 		return
 	
 	###*
-	@private
+	Get the component(s) corresponding to the specified view-relative selector.
 	###
-	locateComponent: ( id, config ) ->
-		view = @getView()
-		if id is 'view'
-			return view
-			
-		if Ext.isString( config )
-			matches = view.query( config )
+	getViewComponent: ( selector ) ->
+		if selector?
+			matches = Ext.ComponentQuery.query( selector, @getView() )
 			if matches.length is 0
-				Ext.Error.raise( msg: "Error locating component: no component found matching '#{ config }'." )
-			if matches.length > 1
-				Ext.Error.raise( msg: "Error locating component: multiple components found matching '#{ config }'." )
-			return matches[ 0 ]
-		else if Ext.isString( config.selector )
-			matches = view.query( config.selector )
-			if matches.length is 0
-				Ext.Error.raise( msg: "Error locating component: no component found matching '#{ config.selector }'." )
-			if matches.length > 1
-				Ext.Error.raise( msg: "Error locating component: multiple components found matching '#{ config.selector }'." )
-			return matches[ 0 ]
+				return null
+			else if matches.length is 1
+				return matches[ 0 ]
+			else
+				return matches
 		else
-			matches = view.query( '#' + id )
-			if matches.length is 0
-				Ext.Error.raise( msg: "Error locating component: no component found with an itemId of '#{ id }'." )
-			if matches.length > 1
-				Ext.Error.raise( msg: "Error locating component: multiple components found with an itemId of '#{ id }'." )
-			return matches[ 0 ]
+			return @getView()
+	
+	###*
+	Add a component selector with the specified listeners for the specified view-relative selector.
+	###
+	addComponentSelector: ( selector, listeners, live = false ) ->
+		Deft.Logger.log( "Adding component selector for: '#{ selector }'." )
+		
+		existingComponentSelector = @getComponentSelector( selector )
+		if existingComponentSelector?
+			Ext.Error.raise( msg: "Error adding component selector: an existing component selector was already registered for '#{ selector }'." )
+		
+		componentSelector = Ext.create( 'Deft.mvc.ComponentSelector',
+			view: @getView()
+			selector: selector
+			listeners: listeners
+			scope: @
+			live: live
+		)
+		@registeredComponentSelectors[ selector ] = componentSelector
+		
+		return
+	
+	###*
+	Remove a component selector with the specified listeners for the specified view-relative selector.
+	###
+	removeComponentSelector: ( selector ) ->
+		Deft.Logger.log( "Removing component selector for '#{ selector }'." )
+		
+		existingComponentSelector = @getComponentSelector( selector )
+		unless existingComponentSelector?
+			Ext.Error.raise( msg: "Error removing component selector: no component selector registered for '#{ selector }'." )
+		
+		existingComponentSelector.destroy()
+		delete @registeredComponentSelectors[ selector ]
+		
+		return
+	
+	###*
+	Get the component selectorcorresponding to the specified view-relative selector.
+	###
+	getComponentSelector: ( selector ) ->
+		return @registeredComponentSelectors[ selector ]
 )

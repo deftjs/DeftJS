@@ -25,9 +25,9 @@ Ext.define( 'Deft.promise.Deferred',
 	###
 	then: ( callbacks ) ->
 		if Ext.isObject( callbacks )
-			{ success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback } = callbacks
+			{ success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback, scope: scope } = callbacks
 		else
-			[ successCallback, failureCallback, progressCallback, cancelCallback ] = arguments
+			[ successCallback, failureCallback, progressCallback, cancelCallback, scope ] = arguments
 		
 		for callback in [ successCallback, failureCallback, progressCallback, cancelCallback ]
 			if not ( Ext.isFunction( callback ) or callback is null or callback is undefined )
@@ -39,7 +39,7 @@ Ext.define( 'Deft.promise.Deferred',
 			return ( value ) ->
 				if Ext.isFunction( callback )
 					try
-						result = callback( value )
+						result = callback.call( scope, value )
 						if result instanceof Ext.ClassManager.get( 'Deft.promise.Promise' ) or result instanceof Ext.ClassManager.get( 'Deft.promise.Deferred' )
 							result.then( Ext.bind( deferred.resolve, deferred ), Ext.bind( deferred.reject, deferred ), Ext.bind( deferred.update, deferred ), Ext.bind( deferred.cancel, deferred ) )
 						else
@@ -57,7 +57,7 @@ Ext.define( 'Deft.promise.Deferred',
 		wrapProgressCallback = ( callback ) ->
 			return ( value ) ->
 				if Ext.isFunction( callback )
-					result = callback( value )
+					result = callback.call( scope, value )
 					deferred.update( result )
 				else
 					deferred.update( value )
@@ -70,19 +70,25 @@ Ext.define( 'Deft.promise.Deferred',
 	###*
 	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
 	###
-	otherwise: ( callback ) ->
+	otherwise: ( callback, scope ) ->
+		if Ext.isObject( callback )
+			{ fn: callback, scope: scope } = callback
 		return @then(
 			failure: callback
+			scope: scope
 		)
 	
 	###*
 	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
 	###
-	always: ( callback ) ->
+	always: ( callback, scope ) ->
+		if Ext.isObject( callback )
+			{ fn: callback, scope: scope } = callback
 		return @then( 
 			success: callback
 			failure: callback
 			cancel: callback
+			scope: scope
 		)
 	
 	###*
@@ -93,7 +99,8 @@ Ext.define( 'Deft.promise.Deferred',
 			@progress = progress
 			@notify( @progressCallbacks, progress )
 		else
-			Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
+			if @state isnt 'cancelled'
+				Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
 		return
 	
 	###*
@@ -155,7 +162,8 @@ Ext.define( 'Deft.promise.Deferred',
 			@notify( callbacks, value )
 			@releaseCallbacks()
 		else
-			Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
+			if @state isnt 'cancelled'
+				Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
 		return
 	
 	###*

@@ -35,7 +35,7 @@ describe( 'Deft.util.Function', ->
 	)
 	
 	describe( 'memoize()', ->
-	
+		
 		it( 'should return a new function that wraps the specified function (omitting the optional scope and hash function parameters) and caches the results for previously processed inputs', ->
 			fibonacci = ( n ) ->
 				( if n < 2 then n else fibonacci( n - 1 ) + fibonacci( n - 2 ) )

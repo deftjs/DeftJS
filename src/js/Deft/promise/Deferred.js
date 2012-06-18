@@ -22,11 +22,11 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   then: function(callbacks) {
-    var callback, cancelCallback, deferred, failureCallback, progressCallback, successCallback, wrapCallback, wrapProgressCallback, _i, _len, _ref;
+    var callback, cancelCallback, deferred, failureCallback, progressCallback, scope, successCallback, wrapCallback, wrapProgressCallback, _i, _len, _ref;
     if (Ext.isObject(callbacks)) {
-      successCallback = callbacks.success, failureCallback = callbacks.failure, progressCallback = callbacks.progress, cancelCallback = callbacks.cancel;
+      successCallback = callbacks.success, failureCallback = callbacks.failure, progressCallback = callbacks.progress, cancelCallback = callbacks.cancel, scope = callbacks.scope;
     } else {
-      successCallback = arguments[0], failureCallback = arguments[1], progressCallback = arguments[2], cancelCallback = arguments[3];
+      successCallback = arguments[0], failureCallback = arguments[1], progressCallback = arguments[2], cancelCallback = arguments[3], scope = arguments[4];
     }
     _ref = [successCallback, failureCallback, progressCallback, cancelCallback];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -43,7 +43,7 @@ Ext.define('Deft.promise.Deferred', {
         var result;
         if (Ext.isFunction(callback)) {
           try {
-            result = callback(value);
+            result = callback.call(scope, value);
             if (result instanceof Ext.ClassManager.get('Deft.promise.Promise') || result instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
               result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
             } else {
@@ -64,7 +64,7 @@ Ext.define('Deft.promise.Deferred', {
       return function(value) {
         var result;
         if (Ext.isFunction(callback)) {
-          result = callback(value);
+          result = callback.call(scope, value);
           deferred.update(result);
         } else {
           deferred.update(value);
@@ -78,20 +78,30 @@ Ext.define('Deft.promise.Deferred', {
   	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
   */
 
-  otherwise: function(callback) {
+  otherwise: function(callback, scope) {
+    var _ref;
+    if (Ext.isObject(callback)) {
+      _ref = callback, callback = _ref.fn, scope = _ref.scope;
+    }
     return this.then({
-      failure: callback
+      failure: callback,
+      scope: scope
     });
   },
   /**
   	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
   */
 
-  always: function(callback) {
+  always: function(callback, scope) {
+    var _ref;
+    if (Ext.isObject(callback)) {
+      _ref = callback, callback = _ref.fn, scope = _ref.scope;
+    }
     return this.then({
       success: callback,
       failure: callback,
-      cancel: callback
+      cancel: callback,
+      scope: scope
     });
   },
   /**
@@ -103,9 +113,11 @@ Ext.define('Deft.promise.Deferred', {
       this.progress = progress;
       this.notify(this.progressCallbacks, progress);
     } else {
-      Ext.Error.raise({
-        msg: 'Error: this Deferred has already been completed and cannot be modified.'
-      });
+      if (this.state !== 'cancelled') {
+        Ext.Error.raise({
+          msg: 'Error: this Deferred has already been completed and cannot be modified.'
+        });
+      }
     }
   },
   /**
@@ -174,9 +186,11 @@ Ext.define('Deft.promise.Deferred', {
       this.notify(callbacks, value);
       this.releaseCallbacks();
     } else {
-      Ext.Error.raise({
-        msg: 'Error: this Deferred has already been completed and cannot be modified.'
-      });
+      if (this.state !== 'cancelled') {
+        Ext.Error.raise({
+          msg: 'Error: this Deferred has already been completed and cannot be modified.'
+        });
+      }
     }
   },
   /**

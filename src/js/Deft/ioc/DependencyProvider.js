@@ -35,7 +35,7 @@ Ext.define('Deft.ioc.DependencyProvider', {
     		Value to use to resolve this dependency.
     */
 
-    value: null,
+    value: void 0,
     /**
     		Indicates whether this dependency should be resolved as a singleton, or as a transient value for each resolution request.
     */
@@ -111,7 +111,7 @@ Ext.define('Deft.ioc.DependencyProvider', {
   resolve: function(targetInstance) {
     var instance, parameters;
     Deft.Logger.log("Resolving '" + (this.getIdentifier()) + "'.");
-    if (this.getValue() != null) {
+    if (this.getValue() !== void 0) {
       return this.getValue();
     }
     instance = null;

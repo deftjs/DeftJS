@@ -7,7 +7,11 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.log.Logger', {
   alternateClassName: ['Deft.Logger'],
   singleton: true,
-  log: function(message, priority) {},
+  log: function(message, priority) {
+    if (priority == null) {
+      priority = 'info';
+    }
+  },
   error: function(message) {
     this.log(message, 'error');
   },
@@ -25,12 +29,13 @@ Ext.define('Deft.log.Logger', {
   }
 }, function() {
   var _ref;
-  if (Ext.isFunction((_ref = Ext.Logger) != null ? _ref.log : void 0)) {
-    this.log = Ext.bind(Ext.Logger.log, Ext.Logger);
-  } else if (Ext.isFunction(Ext.log)) {
+  if (Ext.getVersion('extjs') != null) {
     this.log = function(message, priority) {
       if (priority == null) {
         priority = 'info';
+      }
+      if (priority === 'verbose') {
+        priority === 'info';
       }
       if (priority === 'deprecate') {
         priority = 'warn';
@@ -40,5 +45,9 @@ Ext.define('Deft.log.Logger', {
         level: priority
       });
     };
+  } else {
+    if (Ext.isFunction((_ref = Ext.Logger) != null ? _ref.log : void 0)) {
+      this.log = Ext.bind(Ext.Logger.log, Ext.Logger);
+    }
   }
 });
