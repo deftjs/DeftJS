@@ -26,9 +26,9 @@ Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callba
       Class.prototype.constructor = Ext.Function.createSequence(Class.prototype.constructor, function() {
         var controller;
         try {
-          controller = Ext.create(controllerClass, {
+          controller = Ext.create(controllerClass, Ext.Object.merge({}, this.controllerConfig || {}, {
             view: this
-          });
+          }));
         } catch (error) {
           Deft.Logger.warn("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
           throw error;

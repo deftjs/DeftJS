@@ -25,9 +25,7 @@ Ext.Class.registerPreprocessor( 'controller', ( Class, data, hooks, callback ) -
 		if controllerClass?
 			Class::constructor = Ext.Function.createSequence( Class::constructor, ->
 				try
-					controller = Ext.create( controllerClass,
-						view: @
-					)
+					controller = Ext.create( controllerClass, Ext.Object.merge( {}, @controllerConfig || {}, { view: @ } ) )
 				catch error
 					# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
 					Deft.Logger.warn( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ controllerClass }'." )

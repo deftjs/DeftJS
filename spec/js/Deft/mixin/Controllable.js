@@ -30,6 +30,71 @@ describe('Deft.mixin.Controllable', function() {
     expect(ExampleViewController.prototype.constructor.callCount).toBe(1);
     expect(exampleViewControllerInstance.getView()).toBe(exampleViewInstance);
   });
+  it('should pass the configuration object defined in the target view\'s `controllerConfig` config to the view controller\'s constructor', function() {
+    var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
+    exampleViewInstance = null;
+    exampleViewControllerInstance = null;
+    Ext.define('ExampleViewController', {
+      extend: 'Deft.mvc.ViewController',
+      config: {
+        value: null
+      }
+    });
+    Ext.define('ExampleView', {
+      extend: 'Ext.Container',
+      alias: 'widget.ExampleView',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'ExampleViewController',
+      controllerConfig: {
+        value: 'expected value'
+      }
+    });
+    constructorSpy = spyOn(ExampleViewController.prototype, 'constructor').andCallFake(function() {
+      exampleViewControllerInstance = this;
+      return constructorSpy.originalValue.apply(this, arguments);
+    });
+    exampleViewInstance = Ext.create('ExampleView');
+    expect(ExampleViewController.prototype.constructor).toHaveBeenCalledWith({
+      view: exampleViewInstance,
+      value: 'expected value'
+    });
+    expect(ExampleViewController.prototype.constructor.callCount).toBe(1);
+    expect(exampleViewControllerInstance.getView()).toBe(exampleViewInstance);
+    expect(exampleViewControllerInstance.getValue()).toBe('expected value');
+  });
+  it('should pass the configuration object passed to the target view\'s `controllerConfig` config to the view controller\'s constructor', function() {
+    var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
+    exampleViewInstance = null;
+    exampleViewControllerInstance = null;
+    Ext.define('ExampleViewController', {
+      extend: 'Deft.mvc.ViewController',
+      config: {
+        value: null
+      }
+    });
+    Ext.define('ExampleView', {
+      extend: 'Ext.Container',
+      alias: 'widget.ExampleView',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'ExampleViewController'
+    });
+    constructorSpy = spyOn(ExampleViewController.prototype, 'constructor').andCallFake(function() {
+      exampleViewControllerInstance = this;
+      return constructorSpy.originalValue.apply(this, arguments);
+    });
+    exampleViewInstance = Ext.create('ExampleView', {
+      controllerConfig: {
+        value: 'expected value'
+      }
+    });
+    expect(ExampleViewController.prototype.constructor).toHaveBeenCalledWith({
+      view: exampleViewInstance,
+      value: 'expected value'
+    });
+    expect(ExampleViewController.prototype.constructor.callCount).toBe(1);
+    expect(exampleViewControllerInstance.getView()).toBe(exampleViewInstance);
+    expect(exampleViewControllerInstance.getValue()).toBe('expected value');
+  });
   it('should automatically add a getController() accessor method to the target view that returns the associated the view controller instance', function() {
     var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
     exampleViewInstance = null;

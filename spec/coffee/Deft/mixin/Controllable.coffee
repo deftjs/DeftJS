@@ -36,6 +36,77 @@ describe( 'Deft.mixin.Controllable', ->
 		return
 	)
 	
+	it( 'should pass the configuration object defined in the target view\'s `controllerConfig` config to the view controller\'s constructor', ->
+		exampleViewInstance = null
+		exampleViewControllerInstance = null
+		
+		Ext.define( 'ExampleViewController',
+			extend: 'Deft.mvc.ViewController'
+			
+			config:
+				value: null
+		)
+		
+		Ext.define( 'ExampleView',
+			extend: 'Ext.Container'
+			alias: 'widget.ExampleView'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'ExampleViewController'
+			controllerConfig:
+				value: 'expected value'
+		)
+		
+		constructorSpy = spyOn( ExampleViewController.prototype, 'constructor' ).andCallFake( ->
+			exampleViewControllerInstance = @
+			return constructorSpy.originalValue.apply( @, arguments )
+		)
+		
+		exampleViewInstance = Ext.create( 'ExampleView' )
+		
+		expect( ExampleViewController::constructor ).toHaveBeenCalledWith( { view: exampleViewInstance, value: 'expected value' } )
+		expect( ExampleViewController::constructor.callCount ).toBe( 1 )
+		expect( exampleViewControllerInstance.getView() ).toBe( exampleViewInstance )
+		expect( exampleViewControllerInstance.getValue() ).toBe( 'expected value' )
+		
+		return
+	)
+	
+	it( 'should pass the configuration object passed to the target view\'s `controllerConfig` config to the view controller\'s constructor', ->
+		exampleViewInstance = null
+		exampleViewControllerInstance = null
+		
+		Ext.define( 'ExampleViewController',
+			extend: 'Deft.mvc.ViewController'
+			
+			config:
+				value: null
+		)
+		
+		Ext.define( 'ExampleView',
+			extend: 'Ext.Container'
+			alias: 'widget.ExampleView'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'ExampleViewController'
+		)
+		
+		constructorSpy = spyOn( ExampleViewController.prototype, 'constructor' ).andCallFake( ->
+			exampleViewControllerInstance = @
+			return constructorSpy.originalValue.apply( @, arguments )
+		)
+		
+		exampleViewInstance = Ext.create( 'ExampleView',
+			controllerConfig:
+				value: 'expected value'
+		)
+		
+		expect( ExampleViewController::constructor ).toHaveBeenCalledWith( { view: exampleViewInstance, value: 'expected value' } )
+		expect( ExampleViewController::constructor.callCount ).toBe( 1 )
+		expect( exampleViewControllerInstance.getView() ).toBe( exampleViewInstance )
+		expect( exampleViewControllerInstance.getValue() ).toBe( 'expected value' )
+		
+		return
+	)
+	
 	it( 'should automatically add a getController() accessor method to the target view that returns the associated the view controller instance', ->
 		exampleViewInstance = null
 		exampleViewControllerInstance = null
