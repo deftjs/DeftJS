@@ -312,7 +312,7 @@ describe( 'Deft.promise.Deferred', ->
 			return
 		)
 		
-		it( 'should not allow resolution after cancellation', ->
+		it( 'should silently ignore resolution after cancellation', ->
 			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			
 			deferred.cancel( 'reason' )
@@ -322,7 +322,7 @@ describe( 'Deft.promise.Deferred', ->
 			expect( ->
 				deferred.resolve( 'expected value' )
 				return
-			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			).not.toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( deferred.getState() ).toBe( 'cancelled' )
 			
@@ -334,7 +334,7 @@ describe( 'Deft.promise.Deferred', ->
 			return
 		)
 		
-		it( 'should not allow rejection after cancellation', ->
+		it( 'should silently ignore rejection after cancellation', ->
 			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			
 			deferred.cancel( 'reason' )
@@ -344,7 +344,7 @@ describe( 'Deft.promise.Deferred', ->
 			expect( ->
 				deferred.reject( 'error message' )
 				return
-			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			).not.toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( deferred.getState() ).toBe( 'cancelled' )
 			
@@ -356,7 +356,7 @@ describe( 'Deft.promise.Deferred', ->
 			return
 		)
 		
-		it( 'should not allow update after cancellation', ->
+		it( 'should silently ignore update after cancellation', ->
 			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			
 			deferred.cancel( 'reason' )
@@ -366,7 +366,7 @@ describe( 'Deft.promise.Deferred', ->
 			expect( ->
 				deferred.update( 'progress' )
 				return
-			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			).not.toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( deferred.getState() ).toBe( 'cancelled' )
 			
@@ -378,7 +378,7 @@ describe( 'Deft.promise.Deferred', ->
 			return
 		)
 		
-		it( 'should not allow cancellation after cancellation', ->
+		it( 'should silently ignore cancellation after cancellation', ->
 			deferred.then( successCallback, failureCallback, progressCallback, cancelCallback )
 			
 			deferred.cancel( 'reason' )
@@ -388,7 +388,7 @@ describe( 'Deft.promise.Deferred', ->
 			expect( ->
 				deferred.cancel( 'reason' )
 				return
-			).toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
+			).not.toThrow( new Error( 'Error: this Deferred has already been completed and cannot be modified.' ) )
 			
 			expect( deferred.getState() ).toBe( 'cancelled' )
 			

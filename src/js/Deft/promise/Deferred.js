@@ -103,9 +103,11 @@ Ext.define('Deft.promise.Deferred', {
       this.progress = progress;
       this.notify(this.progressCallbacks, progress);
     } else {
-      Ext.Error.raise({
-        msg: 'Error: this Deferred has already been completed and cannot be modified.'
-      });
+      if (this.state !== 'cancelled') {
+        Ext.Error.raise({
+          msg: 'Error: this Deferred has already been completed and cannot be modified.'
+        });
+      }
     }
   },
   /**
@@ -174,9 +176,11 @@ Ext.define('Deft.promise.Deferred', {
       this.notify(callbacks, value);
       this.releaseCallbacks();
     } else {
-      Ext.Error.raise({
-        msg: 'Error: this Deferred has already been completed and cannot be modified.'
-      });
+      if (this.state !== 'cancelled') {
+        Ext.Error.raise({
+          msg: 'Error: this Deferred has already been completed and cannot be modified.'
+        });
+      }
     }
   },
   /**

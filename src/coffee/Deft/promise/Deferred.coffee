@@ -93,7 +93,8 @@ Ext.define( 'Deft.promise.Deferred',
 			@progress = progress
 			@notify( @progressCallbacks, progress )
 		else
-			Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
+			if @state isnt 'cancelled'
+				Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
 		return
 	
 	###*
@@ -155,7 +156,8 @@ Ext.define( 'Deft.promise.Deferred',
 			@notify( callbacks, value )
 			@releaseCallbacks()
 		else
-			Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
+			if @state isnt 'cancelled'
+				Ext.Error.raise( msg: 'Error: this Deferred has already been completed and cannot be modified.')
 		return
 	
 	###*
