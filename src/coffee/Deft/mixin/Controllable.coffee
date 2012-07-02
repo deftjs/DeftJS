@@ -18,7 +18,7 @@ Ext.Class.registerPreprocessor( 'controller', ( Class, data, hooks, callback ) -
 		hooks = parameters[ 1 ]
 		callback = parameters[ 2 ]
 	
-	if data.mixins? and Ext.Array.contains( data.mixins, Ext.ClassManager.get( 'Deft.mixin.Controllable' ) )
+	if data.mixins? and Ext.Array.contains( Ext.Object.getValues( data.mixins ), Ext.ClassManager.get( 'Deft.mixin.Controllable' ) )
 		controllerClass = data.controller
 		delete data.controller
 		

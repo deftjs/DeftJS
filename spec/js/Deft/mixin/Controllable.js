@@ -9,7 +9,7 @@ Jasmine test suite for Deft.mixin.Controllable
 */
 
 describe('Deft.mixin.Controllable', function() {
-  it('should create an instance of the view controller specified by the target view `controller` property and configure it with a reference to the target view instance when an instance of the target view is created', function() {
+  it('should (when specified within a mixins Array) create an instance of the view controller specified by the target view `controller` property and configure it with a reference to the target view instance when an instance of the target view is created', function() {
     var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
     exampleViewInstance = null;
     exampleViewControllerInstance = null;
@@ -19,6 +19,29 @@ describe('Deft.mixin.Controllable', function() {
     Ext.define('ExampleView', {
       extend: 'Ext.Container',
       mixins: ['Deft.mixin.Controllable'],
+      controller: 'ExampleViewController'
+    });
+    constructorSpy = spyOn(ExampleViewController.prototype, 'constructor').andCallFake(function() {
+      exampleViewControllerInstance = this;
+      return constructorSpy.originalValue.apply(this, arguments);
+    });
+    exampleViewInstance = Ext.create('ExampleView');
+    expect(ExampleViewController.prototype.constructor).toHaveBeenCalled();
+    expect(ExampleViewController.prototype.constructor.callCount).toBe(1);
+    expect(exampleViewControllerInstance.getView()).toBe(exampleViewInstance);
+  });
+  it('should (when specified within a mixins Object) create an instance of the view controller specified by the target view `controller` property and configure it with a reference to the target view instance when an instance of the target view is created', function() {
+    var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
+    exampleViewInstance = null;
+    exampleViewControllerInstance = null;
+    Ext.define('ExampleViewController', {
+      extend: 'Deft.mvc.ViewController'
+    });
+    Ext.define('ExampleView', {
+      extend: 'Ext.Container',
+      mixins: {
+        controllable: 'Deft.mixin.Controllable'
+      },
       controller: 'ExampleViewController'
     });
     constructorSpy = spyOn(ExampleViewController.prototype, 'constructor').andCallFake(function() {
