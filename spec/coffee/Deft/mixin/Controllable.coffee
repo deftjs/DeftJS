@@ -7,7 +7,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Jasmine test suite for Deft.mixin.Controllable
 ###
 describe( 'Deft.mixin.Controllable', ->
-
+	
 	it( 'should (when specified within a mixins Array) create an instance of the view controller specified by the target view `controller` property and configure it with a reference to the target view instance when an instance of the target view is created', ->
 		exampleViewInstance = null
 		exampleViewControllerInstance = null
@@ -49,6 +49,9 @@ describe( 'Deft.mixin.Controllable', ->
 			mixins:
 				controllable: 'Deft.mixin.Controllable'
 			controller: 'ExampleViewController'
+			
+			constructor: ( config ) ->
+				@callParent( arguments )
 		)
 		
 		constructorSpy = spyOn( ExampleViewController.prototype, 'constructor' ).andCallFake( ->
@@ -92,7 +95,7 @@ describe( 'Deft.mixin.Controllable', ->
 		
 		exampleViewInstance = Ext.create( 'ExampleView' )
 		
-		expect( ExampleViewController::constructor ).toHaveBeenCalledWith( { view: exampleViewInstance, value: 'expected value' } )
+		expect( ExampleViewController::constructor ).toHaveBeenCalledWith( { value: 'expected value' } )
 		expect( ExampleViewController::constructor.callCount ).toBe( 1 )
 		expect( exampleViewControllerInstance.getView() ).toBe( exampleViewInstance )
 		expect( exampleViewControllerInstance.getValue() ).toBe( 'expected value' )
@@ -128,7 +131,7 @@ describe( 'Deft.mixin.Controllable', ->
 				value: 'expected value'
 		)
 		
-		expect( ExampleViewController::constructor ).toHaveBeenCalledWith( { view: exampleViewInstance, value: 'expected value' } )
+		expect( ExampleViewController::constructor ).toHaveBeenCalledWith( { value: 'expected value' } )
 		expect( ExampleViewController::constructor.callCount ).toBe( 1 )
 		expect( exampleViewControllerInstance.getView() ).toBe( exampleViewInstance )
 		expect( exampleViewControllerInstance.getValue() ).toBe( 'expected value' )
@@ -202,4 +205,6 @@ describe( 'Deft.mixin.Controllable', ->
 		
 		return
 	)
+	
+	return
 )

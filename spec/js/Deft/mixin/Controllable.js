@@ -42,7 +42,10 @@ describe('Deft.mixin.Controllable', function() {
       mixins: {
         controllable: 'Deft.mixin.Controllable'
       },
-      controller: 'ExampleViewController'
+      controller: 'ExampleViewController',
+      constructor: function(config) {
+        return this.callParent(arguments);
+      }
     });
     constructorSpy = spyOn(ExampleViewController.prototype, 'constructor').andCallFake(function() {
       exampleViewControllerInstance = this;
@@ -78,7 +81,6 @@ describe('Deft.mixin.Controllable', function() {
     });
     exampleViewInstance = Ext.create('ExampleView');
     expect(ExampleViewController.prototype.constructor).toHaveBeenCalledWith({
-      view: exampleViewInstance,
       value: 'expected value'
     });
     expect(ExampleViewController.prototype.constructor.callCount).toBe(1);
@@ -111,7 +113,6 @@ describe('Deft.mixin.Controllable', function() {
       }
     });
     expect(ExampleViewController.prototype.constructor).toHaveBeenCalledWith({
-      view: exampleViewInstance,
       value: 'expected value'
     });
     expect(ExampleViewController.prototype.constructor.callCount).toBe(1);
@@ -153,7 +154,7 @@ describe('Deft.mixin.Controllable', function() {
     exampleViewInstance.destroy();
     return expect(exampleViewInstance.getController).toBe(void 0);
   });
-  return it('should re-throw any error thrown by the view controller during instantiation', function() {
+  it('should re-throw any error thrown by the view controller during instantiation', function() {
     Ext.define('ExampleErrorThrowingViewController', {
       extend: 'Deft.mvc.ViewController',
       constructor: function() {

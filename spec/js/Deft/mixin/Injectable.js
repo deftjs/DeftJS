@@ -9,7 +9,7 @@ Jasmine test suite for Deft.mixin.Injectable
 */
 
 describe('Deft.mixin.Injectable', function() {
-  return it('should trigger injection before the target class constructor is executed', function() {
+  it('should trigger injection before the target class constructor is executed', function() {
     var exampleInstance;
     Ext.define('ExampleClass', {
       mixins: ['Deft.mixin.Injectable'],

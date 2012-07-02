@@ -364,8 +364,21 @@ Ext.define('Deft.mvc.ViewController', {
     view: null
   },
   constructor: function(config) {
-    this.initConfig(config);
-    if (this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
+    if (config == null) {
+      config = {};
+    }
+    if (config.view) {
+      this.controlView(config.view);
+    }
+    return this.initConfig(config);
+  },
+  /**
+  	@protected
+  */
+
+  controlView: function(view) {
+    if (view instanceof Ext.ClassManager.get('Ext.Component')) {
+      this.setView(view);
       this.registeredComponents = {};
       this.isExtJS = this.getView().events != null;
       this.isSenchaTouch = !this.isExtJS;
@@ -391,7 +404,6 @@ Ext.define('Deft.mvc.ViewController', {
         msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
       });
     }
-    return this;
   },
   /**
   	Initialize the ViewController
@@ -624,7 +636,7 @@ Used in conjunction with {@link Deft.mvc.ViewController}.
 Ext.define('Deft.mixin.Controllable', {});
 
 Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
-  var controllerClass, parameters, self;
+  var controllerClass, originalConstructor, originalDestroy, parameters, self;
   if (arguments.length === 3) {
     parameters = Ext.toArray(arguments);
     hooks = parameters[1];
@@ -634,25 +646,40 @@ Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callba
     controllerClass = data.controller;
     delete data.controller;
     if (controllerClass != null) {
-      Class.prototype.constructor = Ext.Function.createSequence(Class.prototype.constructor, function() {
+      if (!data.hasOwnProperty('constructor')) {
+        data.constructor = function() {
+          return this.callParent(arguments);
+        };
+      }
+      originalConstructor = data.constructor;
+      data.constructor = function(config) {
         var controller;
+        if (config == null) {
+          config = {};
+        }
         try {
-          controller = Ext.create(controllerClass, Ext.Object.merge({}, this.controllerConfig || {}, {
-            view: this
-          }));
+          controller = Ext.create(controllerClass, config.controllerConfig || this.controllerConfig || {});
         } catch (error) {
           Deft.Logger.warn("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
           throw error;
         }
-        if (!(this.getController != null)) {
-          this.getController = function() {
-            return controller;
-          };
-          Class.prototype.destroy = Ext.Function.createSequence(Class.prototype.destroy, function() {
-            delete this.getController;
-          });
-        }
-      });
+        this.getController = function() {
+          return controller;
+        };
+        originalConstructor.apply(this, arguments);
+        controller.controlView(this);
+        return this;
+      };
+      if (!data.hasOwnProperty('destroy')) {
+        data.destroy = function() {
+          return this.callParent(arguments);
+        };
+      }
+      originalDestroy = data.destroy;
+      data.destroy = function() {
+        delete this.getController;
+        return originalDestroy.apply(this, arguments);
+      };
       self = this;
       Ext.require([controllerClass], function() {
         if (callback != null) {

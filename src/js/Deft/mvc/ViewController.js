@@ -21,8 +21,21 @@ Ext.define('Deft.mvc.ViewController', {
     view: null
   },
   constructor: function(config) {
-    this.initConfig(config);
-    if (this.getView() instanceof Ext.ClassManager.get('Ext.Component')) {
+    if (config == null) {
+      config = {};
+    }
+    if (config.view) {
+      this.controlView(config.view);
+    }
+    return this.initConfig(config);
+  },
+  /**
+  	@protected
+  */
+
+  controlView: function(view) {
+    if (view instanceof Ext.ClassManager.get('Ext.Component')) {
+      this.setView(view);
       this.registeredComponents = {};
       this.isExtJS = this.getView().events != null;
       this.isSenchaTouch = !this.isExtJS;
@@ -48,7 +61,6 @@ Ext.define('Deft.mvc.ViewController', {
         msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
       });
     }
-    return this;
   },
   /**
   	Initialize the ViewController

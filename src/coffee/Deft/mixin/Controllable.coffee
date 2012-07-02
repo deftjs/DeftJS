@@ -23,24 +23,33 @@ Ext.Class.registerPreprocessor( 'controller', ( Class, data, hooks, callback ) -
 		delete data.controller
 		
 		if controllerClass?
-			Class::constructor = Ext.Function.createSequence( Class::constructor, ->
+			# Intercept constructor method.
+			if not data.hasOwnProperty( 'constructor' )
+				data.constructor = -> @callParent( arguments )
+			originalConstructor = data.constructor
+			data.constructor = ( config = {} ) ->
 				try
-					controller = Ext.create( controllerClass, Ext.Object.merge( {}, @controllerConfig || {}, { view: @ } ) )
+					controller = Ext.create( controllerClass, config.controllerConfig || @controllerConfig || {} )
 				catch error
 					# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
 					Deft.Logger.warn( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ controllerClass }'." )
 					throw error
+					
+				@getController = ->
+					return controller
 				
-				if not @getController?
-					@getController = ->
-						return controller
-					Class::destroy = Ext.Function.createSequence( Class::destroy, ->
-						delete @getController
-						return
-					)
+				originalConstructor.apply( @, arguments )
+				controller.controlView( @ )
 				
-				return
-			)
+				return @
+			
+			# Intercept destroy method.
+			if not data.hasOwnProperty( 'destroy' )
+				data.destroy = -> @callParent( arguments )
+			originalDestroy = data.destroy
+			data.destroy = ->
+				delete @getController
+				return originalDestroy.apply( @, arguments )
 			
 			self = @
 			Ext.require( [ controllerClass ], ->

@@ -18,10 +18,17 @@ Ext.define( 'Deft.mvc.ViewController',
 		###
 		view: null
 	
-	constructor: ( config ) ->
-		@initConfig( config )
-		
-		if @getView() instanceof Ext.ClassManager.get( 'Ext.Component' )
+	constructor: ( config = {} ) ->
+		if config.view
+			@controlView( config.view )
+		return @initConfig( config )
+	
+	###*
+	@protected
+	###
+	controlView: ( view ) ->
+		if view instanceof Ext.ClassManager.get( 'Ext.Component' )
+			@setView( view )
 			@registeredComponents = {}
 			
 			# TODO: Find a more reliable way to detect the difference between Ext JS and Sencha Touch.
@@ -43,8 +50,7 @@ Ext.define( 'Deft.mvc.ViewController',
 					@getView().on( 'initialize', @onViewInitialize, @, single: true )
 		else
 			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
-		
-		return @
+		return
 	
 	###*
 	Initialize the ViewController

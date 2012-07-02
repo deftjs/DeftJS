@@ -20,10 +20,16 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.getView() ).toBe( view )
 		)
 		
-		it( 'should throw an error if created without being configured for a view', ->
-			expect( ->
-				Ext.create( 'Deft.mvc.ViewController' )
-			).toThrow( new Error( 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' ) )
+		it( 'should be configurable at runtime with a reference to the view it controls', ->
+			view = Ext.create( 'Ext.Container' )
+		
+			viewController = Ext.create( 'Deft.mvc.ViewController' )
+			
+			expect( viewController.getView() ).toBe( null )
+			
+			viewController.controlView( view )
+			
+			expect( viewController.getView() ).toBe( view )
 		)
 		
 		it( 'should throw an error if created and configured with a non-Ext.Component as the view', ->
@@ -751,4 +757,6 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( component.hasListener( 'exampleevent' ) ).toBe( false )
 		)
 	)
+	
+	return
 )

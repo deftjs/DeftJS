@@ -24,4 +24,6 @@ describe( 'Deft.mixin.Injectable', ->
 		
 		return
 	)
+	
+	return
 )
