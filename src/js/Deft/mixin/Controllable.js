@@ -34,18 +34,21 @@ Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callba
         if (config == null) {
           config = {};
         }
-        try {
-          controller = Ext.create(controllerClass, config.controllerConfig || this.controllerConfig || {});
-        } catch (error) {
-          Deft.Logger.warn("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
-          throw error;
+        if (this.getController === void 0) {
+          try {
+            controller = Ext.create(controllerClass, config.controllerConfig || this.controllerConfig || {});
+          } catch (error) {
+            Deft.Logger.warn("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
+            throw error;
+          }
+          this.getController = function() {
+            return controller;
+          };
+          originalConstructor.apply(this, arguments);
+          controller.controlView(this);
+          return this;
         }
-        this.getController = function() {
-          return controller;
-        };
-        originalConstructor.apply(this, arguments);
-        controller.controlView(this);
-        return this;
+        return originalConstructor.apply(this, arguments);
       };
       if (!data.hasOwnProperty('destroy')) {
         data.destroy = function() {
