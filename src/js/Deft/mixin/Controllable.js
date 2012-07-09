@@ -19,7 +19,7 @@ Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callba
     hooks = parameters[1];
     callback = parameters[2];
   }
-  if ((data.mixins != null) && Ext.Array.contains(data.mixins, Ext.ClassManager.get('Deft.mixin.Controllable'))) {
+  if ((data.mixins != null) && ((Ext.isArray(data.mixins) && Ext.Array.contains(data.mixins, Ext.ClassManager.get('Deft.mixin.Controllable'))) || (Ext.isObject(data.mixins) && Ext.Array.contains(Ext.Object.getValues(data.mixins), Ext.ClassManager.get('Deft.mixin.Controllable'))))) {
     controllerClass = data.controller;
     delete data.controller;
     if (controllerClass != null) {

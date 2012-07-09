@@ -173,4 +173,34 @@ describe( 'Deft.mixin.Controllable', ->
 		
 		return
 	)
+	
+	it( 'should allow mixins to be set using an object', ->
+		exampleViewInstance = null
+		exampleViewControllerInstance = null
+		
+		Ext.define( 'ExampleViewController',
+			extend: 'Deft.mvc.ViewController'
+		)
+		
+		Ext.define( 'ExampleView',
+			extend: 'Ext.Container'
+			mixins:
+			    controllable: 'Deft.mixin.Controllable'
+			controller: 'ExampleViewController'
+		)
+		
+		constructorSpy = spyOn( ExampleViewController.prototype, 'constructor' ).andCallFake( ->
+			exampleViewControllerInstance = @
+			return constructorSpy.originalValue.apply( @, arguments )
+		)
+		
+		exampleViewInstance = Ext.create( 'ExampleView' )
+		
+		expect( ExampleViewController::constructor ).toHaveBeenCalled()
+		expect( ExampleViewController::constructor.callCount ).toBe( 1 )
+		expect( exampleViewControllerInstance.getView() ).toBe( exampleViewInstance )
+		
+		return
+	)
+	
 )

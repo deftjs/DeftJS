@@ -130,7 +130,7 @@ describe('Deft.mixin.Controllable', function() {
     exampleViewInstance.destroy();
     return expect(exampleViewInstance.getController).toBe(void 0);
   });
-  return it('should re-throw any error thrown by the view controller during instantiation', function() {
+  it('should re-throw any error thrown by the view controller during instantiation', function() {
     Ext.define('ExampleErrorThrowingViewController', {
       extend: 'Deft.mvc.ViewController',
       constructor: function() {
@@ -146,4 +146,25 @@ describe('Deft.mixin.Controllable', function() {
       Ext.create('ExampleView');
     }).toThrow('Error thrown by \`ExampleErrorThrowingViewController\`.');
   });
+  it('should allow mixins to be set using an object', function() {
+        var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
+        exampleViewInstance = null;
+        exampleViewControllerInstance = null;
+        Ext.define('ExampleViewController', {
+          extend: 'Deft.mvc.ViewController'
+        });
+        Ext.define('ExampleView', {
+          extend: 'Ext.Container',
+          mixins: { controllable: 'Deft.mixin.Controllable' },
+          controller: 'ExampleViewController'
+        });
+        constructorSpy = spyOn(ExampleViewController.prototype, 'constructor').andCallFake(function() {
+          exampleViewControllerInstance = this;
+          return constructorSpy.originalValue.apply(this, arguments);
+        });
+        exampleViewInstance = Ext.create('ExampleView');
+        expect(ExampleViewController.prototype.constructor).toHaveBeenCalled();
+        expect(ExampleViewController.prototype.constructor.callCount).toBe(1);
+        expect(exampleViewControllerInstance.getView()).toBe(exampleViewInstance);
+      });
 });
