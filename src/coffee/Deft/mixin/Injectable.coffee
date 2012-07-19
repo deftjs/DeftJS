@@ -34,8 +34,26 @@ Ext.Class.registerPreprocessor( 'inject', ( Class, data, hooks, callback ) ->
     callback = parameters[ 2 ]
 
   if Class?.superclass and Class.superclass?.inject
-    data.inject = [] if not data?.inject
-    data.inject = Ext.Array.merge( data.inject, Class.superclass.inject )
+    data.inject = {} if not data?.inject
+
+    # Convert a string list or array of strings for data.inject into an object.
+    data.inject = data.inject.split( ',' ) if Ext.isString( data.inject )
+    if Ext.isArray( data.inject )
+      dataInjectObject = {}
+      for thisInjection in data.inject
+        dataInjectObject[ thisInjection ] = thisInjection
+      data.inject = dataInjectObject
+
+    # Convert a string list or array of strings for superclass.inject into an object.
+    Class.superclass.inject = Class.superclass.inject.split( ',' ) if Ext.isString( Class.superclass.inject )
+    if Ext.isArray( Class.superclass.inject )
+      superclassInjectObject = {}
+      for thisInjection in Class.superclass.inject
+        superclassInjectObject[ thisInjection ] = thisInjection
+      Class.superclass.inject = superclassInjectObject
+
+    # Merge injections, ensuring that injections in data overwrite injections in superclass.
+    Ext.applyIf( data.inject, Class.superclass.inject )
 
   return
 )
