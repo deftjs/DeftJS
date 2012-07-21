@@ -7,7 +7,105 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Jasmine test suite for Deft.mvc.ViewController
 ###
 describe( 'Deft.mvc.ViewController', ->
-	
+
+	describe( 'Message handling', ->
+
+		it( 'should merge child message configurations', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				messages:
+					parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				messages:
+					childMessage: "childMessageHandler"
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass' )
+			expect( exampleInstance.messages ).toEqual( { childMessage: "childMessageHandler", parentMessage: "parentMessageHandler" } )
+		)
+
+		it( 'should merge three levels of child message configurations', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				messages:
+					parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				messages:
+					childMessage: "childMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				messages:
+					child2Message: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", childMessage: "childMessageHandler", parentMessage: "parentMessageHandler" } )
+		)
+
+		it( 'should merge three levels of child message configurations when middle class has no messages', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				messages:
+					parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				messages:
+					child2Message: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", parentMessage: "parentMessageHandler" } )
+		)
+
+		it( 'should merge three levels of child message configurations when parent has no messages', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				messages:
+					childMessage: "childMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				messages:
+					child2Message: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", childMessage: "childMessageHandler" } )
+		)
+
+	)
+
 	describe( 'Configuration', ->
 		
 		it( 'should be configurable with a reference to the view it controls', ->
@@ -39,6 +137,7 @@ describe( 'Deft.mvc.ViewController', ->
 				)
 			).toThrow( new Error( "Error constructing ViewController: the configured 'view' is not an Ext.Component." ) )
 		)
+
 	)
 	
 	describe( 'Creation of getters and event listeners using the \'control\' property', ->

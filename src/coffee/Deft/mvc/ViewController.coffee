@@ -17,6 +17,11 @@ Ext.define( 'Deft.mvc.ViewController',
 		View controlled by this ViewController.
 		###
 		view: null
+
+	###*
+	Messages handled by this ViewController.
+	###
+	messages: null
 	
 	constructor: ( config = {} ) ->
 		if config.view
@@ -218,3 +223,22 @@ Ext.define( 'Deft.mvc.ViewController',
 				Ext.Error.raise( msg: "Error locating component: multiple components found with an itemId of '#{ id }'." )
 			return matches[ 0 ]
 )
+
+
+Ext.Class.registerPreprocessor( 'messages', ( Class, data, hooks, callback ) ->
+
+  # Workaround: Ext JS 4.0 passes the callback as the third parameter, Sencha Touch 2.0.1 and Ext JS 4.1 passes it as the fourth parameter
+  if arguments.length is 3
+    # NOTE: Altering a parameter also modifies arguments, so clone it to a true Array first.
+    parameters = Ext.toArray( arguments )
+    hooks = parameters[ 1 ]
+    callback = parameters[ 2 ]
+
+  if Class.superclass and Class.superclass?.messages
+    data.messages = {} if not data?.messages
+    Ext.applyIf( data.messages, Class.superclass.messages )
+
+  return
+)
+
+Ext.Class.setDefaultPreprocessorPosition( 'messages', 'before', 'extend' )
