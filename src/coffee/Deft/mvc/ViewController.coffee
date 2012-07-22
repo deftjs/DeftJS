@@ -17,12 +17,72 @@ Ext.define( 'Deft.mvc.ViewController',
 		View controlled by this ViewController.
 		###
 		view: null
+
+		###*
+		Global MessageBus used by all ViewControllers.
+		###
+		messageBus: null
+
+	###*
+	Messages handled by this ViewController.
+	###
+	messages: null
 	
 	constructor: ( config = {} ) ->
+		if Deft.ioc.Injector.canResolve( 'messageBus' )
+			@messageBus = Deft.ioc.Injector.resolve( 'messageBus' ) if not @messageBus
+		if @messages and @messageBus
+			@createMessageHandlers()
 		if config.view
 			@controlView( config.view )
 		return @initConfig( config )
-	
+
+	###*
+	@protected
+	###
+	createMessageHandlers: ->
+		if @messageBus and @messageBus instanceof Ext.ClassManager.get( 'Ext.util.Observable' )
+			for messageName, listener of @messages
+				Deft.Logger.log( "Creating listener for message '#{ messageName }'." )
+				if Ext.isFunction( listener )
+					@addMessage( messageName, listener, false )
+				else if Ext.isFunction( @[ listener ] )
+					@addMessage( messageName, @[ listener ], false )
+				else
+					Deft.Logger.warn( "Could not create listener for message '#{ messageName }'." )
+
+		return
+
+	###*
+	@protected
+	###
+	removeMessageHandlers: ->
+		if @messageBus and @messageBus instanceof Ext.ClassManager.get( 'Ext.util.Observable' )
+			for messageName, listener of @messages
+				Deft.Logger.log( "Removing listener for message '#{ messageName }'." )
+				if Ext.isFunction( listener )
+					@removeMessage( messageName, listener )
+				else if Ext.isFunction( @[ listener ] )
+					@removeMessage( messageName, @[ listener ] )
+
+		return
+
+	###*
+	@protected
+	###
+	addMessage: ( messageName, listener, addToMessagesObject=true ) ->
+		@getMessageBus().on( messageName, listener, @ )
+		if addToMessagesObject
+			@messages[ messageName ] = listener
+		return
+
+	###*
+	@protected
+	###
+	removeMessage: ( messageName, listener ) ->
+		@getMessageBus().un( messageName, listener, @ )
+		return
+
 	###*
 	@protected
 	###
@@ -101,6 +161,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	onViewDestroy: ->
 		for id of @registeredComponents
 			@unregisterComponent( id )
+		@removeMessageHandlers()
 		return
 	
 	###*
@@ -218,3 +279,22 @@ Ext.define( 'Deft.mvc.ViewController',
 				Ext.Error.raise( msg: "Error locating component: multiple components found with an itemId of '#{ id }'." )
 			return matches[ 0 ]
 )
+
+
+Ext.Class.registerPreprocessor( 'messages', ( Class, data, hooks, callback ) ->
+
+  # Workaround: Ext JS 4.0 passes the callback as the third parameter, Sencha Touch 2.0.1 and Ext JS 4.1 passes it as the fourth parameter
+  if arguments.length is 3
+    # NOTE: Altering a parameter also modifies arguments, so clone it to a true Array first.
+    parameters = Ext.toArray( arguments )
+    hooks = parameters[ 1 ]
+    callback = parameters[ 2 ]
+
+  if Class.superclass and Class.superclass?.messages
+    data.messages = {} if not data?.messages
+    Ext.applyIf( data.messages, Class.superclass.messages )
+
+  return
+)
+
+Ext.Class.setDefaultPreprocessorPosition( 'messages', 'before', 'extend' )

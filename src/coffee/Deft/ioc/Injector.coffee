@@ -15,6 +15,7 @@ Ext.define( 'Deft.ioc.Injector',
 	
 	constructor: ->
 		@providers = {}
+		@createDefaultProviders()
 		return @
 	
 	###*
@@ -109,4 +110,15 @@ Ext.define( 'Deft.ioc.Injector',
 					return result
 		
 		return targetInstance
+
+	###*
+	Sets up any providers created by default by DeftJS.
+	@private
+	###
+	createDefaultProviders: ->
+		@providers[ 'messageBus' ] = Ext.create( 'Deft.ioc.DependencyProvider',
+			identifier: 'messageBus'
+			className: 'Ext.util.Observable'
+		)
+		return
 )
