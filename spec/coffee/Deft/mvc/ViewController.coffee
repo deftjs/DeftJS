@@ -104,6 +104,53 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", childMessage: "childMessageHandler" } )
 		)
 
+		it( 'should attach message listeners to global message bus', ->
+			messageBus = Deft.ioc.Injector.resolve( 'messageBus' )
+
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				messages:
+					parentMessage: "parentMessageHandler"
+
+				parentMessageHandlerCalled: false
+
+				parentMessageHandler: ( eventData ) ->
+					@parentMessageHandlerCalled = eventData
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				messages:
+					childMessage: "childMessageHandler"
+
+				childMessageHandlerCalled: false
+
+				childMessageHandler: ( eventData ) ->
+					@childMessageHandlerCalled = eventData
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass' )
+
+			# Cannot just spy on the handler methods because messageBus listener will always reference the original method, not the spy.
+			waitsFor( ( -> exampleInstance.parentMessageHandlerCalled ), "Parent message handler was not called.", 1000 )
+			parentEventData =
+				value1: true
+				value2: false
+			messageBus.fireEvent( 'parentMessage', parentEventData )
+			runs( ->
+				expect( exampleInstance.parentMessageHandlerCalled ).toEqual( parentEventData )
+			)
+
+			waitsFor( ( -> exampleInstance.childMessageHandlerCalled ), "Child message handler was not called.", 1000 )
+			messageBus.fireEvent( 'childMessage', 'childMessageEventData' )
+			runs( ->
+				expect( exampleInstance.childMessageHandlerCalled ).toEqual( 'childMessageEventData' )
+			)
+		)
+
+
 	)
 
 	describe( 'Configuration', ->

@@ -18,16 +18,69 @@ Ext.define( 'Deft.mvc.ViewController',
 		###
 		view: null
 
+		###*
+		Glocal MessageBus used by all ViewControllers.
+		###
+		messageBus: null
+
 	###*
 	Messages handled by this ViewController.
 	###
 	messages: null
 	
 	constructor: ( config = {} ) ->
+		if Deft.ioc.Injector.canResolve( 'messageBus' )
+			@messageBus = Deft.ioc.Injector.resolve( 'messageBus' ) if not @messageBus
+		if @messages and @messageBus
+			@createMessageHandlers()
 		if config.view
 			@controlView( config.view )
 		return @initConfig( config )
-	
+
+	###*
+	@protected
+	###
+	createMessageHandlers: ->
+		for messageName, listener of @messages
+			Deft.Logger.log( "Creating listener for message '#{ messageName }'." )
+			if Ext.isFunction( listener )
+				@addMessage( messageName, listener, false )
+			else if Ext.isFunction( @[ listener ] )
+				@addMessage( messageName, @[ listener ], false )
+			else
+				Deft.Logger.warn( "Could not create listener for message '#{ messageName }'." )
+
+		return
+
+	###*
+	@protected
+	###
+	removeMessageHandlers: ->
+		for messageName, listener of @messages
+			Deft.Logger.log( "Removing listener for message '#{ messageName }'." )
+			if Ext.isFunction( listener )
+				@removeMessage( messageName, listener )
+			else if Ext.isFunction( @[ listener ] )
+				@removeMessage( messageName, @[ listener ] )
+
+		return
+
+	###*
+	@protected
+	###
+	addMessage: ( messageName, listener, addToMessagesObject=true ) ->
+		@getMessageBus().on( messageName, listener, @ )
+		if addToMessagesObject
+			@messages[ messageName ] = listener
+		return
+
+	###*
+	@protected
+	###
+	removeMessage: ( messageName, listener ) ->
+		@getMessageBus().un( messageName, listener, @ )
+		return
+
 	###*
 	@protected
 	###
@@ -106,6 +159,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	onViewDestroy: ->
 		for id of @registeredComponents
 			@unregisterComponent( id )
+		@removeMessageHandlers()
 		return
 	
 	###*

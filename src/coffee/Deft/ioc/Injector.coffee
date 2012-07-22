@@ -22,6 +22,8 @@ Ext.define( 'Deft.ioc.Injector',
 	###
 	configure: ( configuration ) ->
 		Deft.Logger.log( 'Configuring injector.' )
+		if not ( configuration?.messageBus )
+			configuration.messageBus = 'Ext.util.Observable'
 		Ext.Object.each(
 			configuration,
 			( identifier, config ) ->
