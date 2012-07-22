@@ -41,14 +41,15 @@ Ext.define( 'Deft.mvc.ViewController',
 	@protected
 	###
 	createMessageHandlers: ->
-		for messageName, listener of @messages
-			Deft.Logger.log( "Creating listener for message '#{ messageName }'." )
-			if Ext.isFunction( listener )
-				@addMessage( messageName, listener, false )
-			else if Ext.isFunction( @[ listener ] )
-				@addMessage( messageName, @[ listener ], false )
-			else
-				Deft.Logger.warn( "Could not create listener for message '#{ messageName }'." )
+		if @messageBus and @messageBus instanceof Ext.ClassManager.get( 'Ext.util.Observable' )
+			for messageName, listener of @messages
+				Deft.Logger.log( "Creating listener for message '#{ messageName }'." )
+				if Ext.isFunction( listener )
+					@addMessage( messageName, listener, false )
+				else if Ext.isFunction( @[ listener ] )
+					@addMessage( messageName, @[ listener ], false )
+				else
+					Deft.Logger.warn( "Could not create listener for message '#{ messageName }'." )
 
 		return
 
@@ -56,12 +57,13 @@ Ext.define( 'Deft.mvc.ViewController',
 	@protected
 	###
 	removeMessageHandlers: ->
-		for messageName, listener of @messages
-			Deft.Logger.log( "Removing listener for message '#{ messageName }'." )
-			if Ext.isFunction( listener )
-				@removeMessage( messageName, listener )
-			else if Ext.isFunction( @[ listener ] )
-				@removeMessage( messageName, @[ listener ] )
+		if @messageBus and @messageBus instanceof Ext.ClassManager.get( 'Ext.util.Observable' )
+			for messageName, listener of @messages
+				Deft.Logger.log( "Removing listener for message '#{ messageName }'." )
+				if Ext.isFunction( listener )
+					@removeMessage( messageName, listener )
+				else if Ext.isFunction( @[ listener ] )
+					@removeMessage( messageName, @[ listener ] )
 
 		return
 

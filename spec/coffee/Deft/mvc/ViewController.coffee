@@ -8,151 +8,6 @@ Jasmine test suite for Deft.mvc.ViewController
 ###
 describe( 'Deft.mvc.ViewController', ->
 
-	describe( 'Message handling', ->
-
-		it( 'should merge child message configurations', ->
-			Ext.define( 'ExampleClass',
-				extend: 'Deft.mvc.ViewController'
-
-				messages:
-					parentMessage: "parentMessageHandler"
-			)
-
-			Ext.define( 'ExampleSubClass',
-				extend: 'ExampleClass'
-
-				messages:
-					childMessage: "childMessageHandler"
-			)
-
-			exampleInstance = Ext.create( 'ExampleSubClass' )
-			expect( exampleInstance.messages ).toEqual( { childMessage: "childMessageHandler", parentMessage: "parentMessageHandler" } )
-		)
-
-		it( 'should merge three levels of child message configurations', ->
-			Ext.define( 'ExampleClass',
-				extend: 'Deft.mvc.ViewController'
-
-				messages:
-					parentMessage: "parentMessageHandler"
-			)
-
-			Ext.define( 'ExampleSubClass',
-				extend: 'ExampleClass'
-
-				messages:
-					childMessage: "childMessageHandler"
-			)
-
-			Ext.define( 'ExampleSubClass2',
-				extend: 'ExampleSubClass'
-
-				messages:
-					child2Message: "child2MessageHandler"
-
-			)
-
-			exampleInstance = Ext.create( 'ExampleSubClass2' )
-			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", childMessage: "childMessageHandler", parentMessage: "parentMessageHandler" } )
-		)
-
-		it( 'should merge three levels of child message configurations when middle class has no messages', ->
-			Ext.define( 'ExampleClass',
-				extend: 'Deft.mvc.ViewController'
-
-				messages:
-					parentMessage: "parentMessageHandler"
-			)
-
-			Ext.define( 'ExampleSubClass',
-				extend: 'ExampleClass'
-			)
-
-			Ext.define( 'ExampleSubClass2',
-				extend: 'ExampleSubClass'
-
-				messages:
-					child2Message: "child2MessageHandler"
-
-			)
-
-			exampleInstance = Ext.create( 'ExampleSubClass2' )
-			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", parentMessage: "parentMessageHandler" } )
-		)
-
-		it( 'should merge three levels of child message configurations when parent has no messages', ->
-			Ext.define( 'ExampleClass',
-				extend: 'Deft.mvc.ViewController'
-			)
-
-			Ext.define( 'ExampleSubClass',
-				extend: 'ExampleClass'
-
-				messages:
-					childMessage: "childMessageHandler"
-			)
-
-			Ext.define( 'ExampleSubClass2',
-				extend: 'ExampleSubClass'
-
-				messages:
-					child2Message: "child2MessageHandler"
-
-			)
-
-			exampleInstance = Ext.create( 'ExampleSubClass2' )
-			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", childMessage: "childMessageHandler" } )
-		)
-
-		it( 'should attach message listeners to global message bus', ->
-			messageBus = Deft.ioc.Injector.resolve( 'messageBus' )
-
-			Ext.define( 'ExampleClass',
-				extend: 'Deft.mvc.ViewController'
-
-				messages:
-					parentMessage: "parentMessageHandler"
-
-				parentMessageHandlerCalled: false
-
-				parentMessageHandler: ( eventData ) ->
-					@parentMessageHandlerCalled = eventData
-			)
-
-			Ext.define( 'ExampleSubClass',
-				extend: 'ExampleClass'
-
-				messages:
-					childMessage: "childMessageHandler"
-
-				childMessageHandlerCalled: false
-
-				childMessageHandler: ( eventData ) ->
-					@childMessageHandlerCalled = eventData
-			)
-
-			exampleInstance = Ext.create( 'ExampleSubClass' )
-
-			# Cannot just spy on the handler methods because messageBus listener will always reference the original method, not the spy.
-			waitsFor( ( -> exampleInstance.parentMessageHandlerCalled ), "Parent message handler was not called.", 1000 )
-			parentEventData =
-				value1: true
-				value2: false
-			messageBus.fireEvent( 'parentMessage', parentEventData )
-			runs( ->
-				expect( exampleInstance.parentMessageHandlerCalled ).toEqual( parentEventData )
-			)
-
-			waitsFor( ( -> exampleInstance.childMessageHandlerCalled ), "Child message handler was not called.", 1000 )
-			messageBus.fireEvent( 'childMessage', 'childMessageEventData' )
-			runs( ->
-				expect( exampleInstance.childMessageHandlerCalled ).toEqual( 'childMessageEventData' )
-			)
-		)
-
-
-	)
-
 	describe( 'Configuration', ->
 		
 		it( 'should be configurable with a reference to the view it controls', ->
@@ -740,7 +595,159 @@ describe( 'Deft.mvc.ViewController', ->
 			).toThrow( 'Error adding \'exampleevent\' listener: the specified handler \'onExampleComponentExampleEvent\' is not a Function or does not exist.' )
 		)
 	)
-	
+
+	describe( 'Message handling via global message bus', ->
+
+		it( 'should merge child message configurations', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				messages:
+					parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				messages:
+					childMessage: "childMessageHandler"
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass' )
+			expect( exampleInstance.messages ).toEqual( { childMessage: "childMessageHandler", parentMessage: "parentMessageHandler" } )
+		)
+
+		it( 'should merge three levels of child message configurations', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				messages:
+					parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				messages:
+					childMessage: "childMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				messages:
+					child2Message: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", childMessage: "childMessageHandler", parentMessage: "parentMessageHandler" } )
+		)
+
+		it( 'should merge three levels of child message configurations when middle class has no messages', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				messages:
+					parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				messages:
+					child2Message: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", parentMessage: "parentMessageHandler" } )
+		)
+
+		it( 'should merge three levels of child message configurations when parent has no messages', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				messages:
+					childMessage: "childMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				messages:
+					child2Message: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+			expect( exampleInstance.messages ).toEqual( { child2Message: "child2MessageHandler", childMessage: "childMessageHandler" } )
+		)
+
+		it( 'should attach message listeners to global message bus', ->
+			messageBus = Deft.ioc.Injector.resolve( 'messageBus' )
+			messageBus.clearListeners()
+
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				messages:
+					parentMessage: "parentMessageHandler"
+
+				parentMessageHandlerCalled: false
+
+				parentMessageHandler: ( eventData ) ->
+					@parentMessageHandlerCalled = eventData
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				messages:
+					childMessage: "childMessageHandler"
+
+				childMessageHandlerCalled: false
+
+				childMessageHandler: ( eventData ) ->
+					@childMessageHandlerCalled = eventData
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass' )
+			expect( messageBus.hasListener( 'parentMessage' ) ).toBeTruthy()
+			expect( messageBus.hasListener( 'childMessage' ) ).toBeTruthy()
+
+			# Cannot just spy on the handler methods because messageBus listener will always reference the original method, not the spy.
+			waitsFor( ( -> exampleInstance.parentMessageHandlerCalled ), "Parent message handler was not called.", 1000 )
+
+			parentEventData =
+				value1: true
+				value2: false
+			messageBus.fireEvent( 'parentMessage', parentEventData )
+
+			runs( ->
+				expect( exampleInstance.parentMessageHandlerCalled ).toEqual( parentEventData )
+			)
+
+			waitsFor( ( -> exampleInstance.childMessageHandlerCalled ), "Child message handler was not called.", 1000 )
+
+			messageBus.fireEvent( 'childMessage', 'childMessageEventData' )
+
+			runs( ->
+				expect( exampleInstance.childMessageHandlerCalled ).toEqual( 'childMessageEventData' )
+				messageBus.clearListeners()
+			)
+		)
+
+	)
+
 	describe( 'Destruction and clean-up', ->
 		
 		beforeEach( ->
@@ -902,6 +909,60 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( component.hasListener( 'exampleevent' ) ).toBe( false )
 		)
+
+		it( 'should remove message listeners from the global message bus when the view controller is destroyed', ->
+			messageBus = Deft.ioc.Injector.resolve( 'messageBus' )
+			messageBus.clearListeners()
+
+			# For some reason, clearListeners() DOES remove all listeners, but does NOT appear to make
+			# hasListener( 'listenerName' ) return false? Bug in Observable?
+			# So we dig into the listeners array for the event and check its length.
+			getMessageBusListenerLength = ( listenerName ) ->
+				messageBus.events?[ listenerName ].listeners.length
+
+			expect( getMessageBusListenerLength( 'childmessage' ) ).toBe( 0 )
+			expect( getMessageBusListenerLength( 'parentmessage' ) ).toBe( 0 )
+
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				messages:
+					parentMessage: "parentMessageHandler"
+
+				parentMessageHandler: ->
+					return
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				messages:
+					childMessage: "childMessageHandler"
+
+				childMessageHandler: ->
+					return
+			)
+
+			view = Ext.create( 'ExampleView' )
+			viewController = Ext.create( 'ExampleSubClass',
+				view: view
+			)
+
+			expect( getMessageBusListenerLength( 'childmessage' ) ).toBe( 1 )
+			expect( getMessageBusListenerLength( 'parentmessage' ) ).toBe( 1 )
+
+			spyOn( viewController, 'removeMessageHandlers' ).andCallThrough()
+			waitsFor( ( -> viewController.removeMessageHandlers.wasCalled ), "Messages were not removed by view controller.", 1000 )
+
+			view.destroy()
+
+			runs( ->
+				expect( getMessageBusListenerLength( 'childmessage' ) ).toBe( 0 )
+				expect( getMessageBusListenerLength( 'parentmessage' ) ).toBe( 0 )
+			)
+
+		)
+
 	)
 	
 	return
