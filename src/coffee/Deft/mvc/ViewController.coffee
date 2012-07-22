@@ -19,7 +19,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		view: null
 
 		###*
-		Glocal MessageBus used by all ViewControllers.
+		Global MessageBus used by all ViewControllers.
 		###
 		messageBus: null
 
