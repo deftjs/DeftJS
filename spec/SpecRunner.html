@@ -29,6 +29,10 @@
 	</head>
 	<body>
 		<script type="text/javascript">
+			// Temporary workaround.
+			// TODO: Need to tweak Jasmine to 'pretty print' Sencha class instances without traversing 40 levels and locking the browser.
+			jasmine.MAX_PRETTY_PRINT_DEPTH = 1
+			
 			Ext.Loader.setConfig({
 				enabled: true
 			});

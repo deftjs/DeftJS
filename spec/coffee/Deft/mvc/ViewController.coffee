@@ -8,6 +8,44 @@ Jasmine test suite for Deft.mvc.ViewController
 ###
 describe( 'Deft.mvc.ViewController', ->
 	
+	beforeEach( ->
+		@addMatchers(
+			# NOTE: This differs from toHaveBeenCalledWith() by comparing against the MOST RECENT call rather than any of the recorded calls.
+			# NOTE: Sencha Touch passes an extra argument when firing an event, use this matcher to ensure that at least the parameters specified were passed (ignoring any extras).
+			toHaveMostRecentlyBeenCalledWithAtLeast: ->
+				expectedArgs = jasmine.util.argsToArray( arguments )
+				if not jasmine.isSpy( @actual )
+					throw new Error( 'Expected a spy, but got ' + jasmine.pp( @actual ) + '.' )
+				
+				@message = ->
+					if @actual.callCount is 0
+						return [
+							"Expected spy #{ @actual.identity } to have been called with #{ jasmine.pp( expectedArgs ) } but it was never called."
+							"Expected spy #{ @actual.identity } not to have been called with #{ jasmine.pp( expectedArgs ) } but it was."
+						]
+					else
+						return [
+							"Expected spy #{ @actual.identity } to have been called with #{ jasmine.pp( expectedArgs ) } but was called with #{ jasmine.pp( @actual.argsForCall ) }"
+							"Expected spy #{ @actual.identity } not to have been called with #{ jasmine.pp( expectedArgs ) } but was called with #{ jasmine.pp( @actual.argsForCall ) }" 
+						]
+					
+				mostRecentArgs =  @actual.mostRecentCall.args
+				
+				if not mostRecentArgs? or expectedArgs.length > mostRecentArgs.length
+					return false 
+				
+				index = 0
+				while index < expectedArgs.length
+					if not @env.equals_( mostRecentArgs[ index ], expectedArgs[ index ] )
+						return false
+					index++
+				
+				return true
+		)
+	
+		return
+	)
+	
 	describe( 'Configuration', ->
 		
 		it( 'should be configurable with a reference to the view it controls', ->
@@ -123,7 +161,7 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
 			view.fireExampleEvent( 'expected value' )
-			expect( viewController.onExampleViewExampleEvent ).toHaveBeenCalledWith( view, 'expected value', {} )
+			expect( viewController.onExampleViewExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( view, 'expected value', {} )
 			expect( viewController.onExampleViewExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -155,7 +193,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
 			view.fireExampleEvent( 'expected value' )
 			view.fireExampleEvent( 'unexpected value' )
-			expect( viewController.onExampleViewExampleEvent ).toHaveBeenCalledWith( view, 'expected value', { single: true } )
+			expect( viewController.onExampleViewExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( view, 'expected value', { single: true } )
 			expect( viewController.onExampleViewExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -186,7 +224,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
 			view.fireExampleEvent( 'expected value' )
 			view.fireExampleEvent( 'unexpected value' )
-			expect( eventListenerFunction ).toHaveBeenCalledWith( view, 'expected value', { single: true } )
+			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( view, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
 		)
 		
@@ -378,7 +416,7 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
-			expect( viewController.onExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', {} )
+			expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -413,7 +451,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
-			expect( viewController.onExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+			expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -447,7 +485,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
-			expect( eventListenerFunction ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
 		)
 		
@@ -499,7 +537,7 @@ describe( 'Deft.mvc.ViewController', ->
 
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
-			expect( viewController.onExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', {} )
+			expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -536,7 +574,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
-			expect( viewController.onExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+			expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -572,7 +610,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
-			expect( eventListenerFunction ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
 		)
 		
@@ -639,7 +677,7 @@ describe( 'Deft.mvc.ViewController', ->
 			for component in components
 				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
-				expect( viewController.onExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', {} )
+				expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 3 )
 		)
@@ -689,7 +727,7 @@ describe( 'Deft.mvc.ViewController', ->
 			for component in components
 				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
-				expect( viewController.onExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+				expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 3 )
 			
@@ -747,7 +785,7 @@ describe( 'Deft.mvc.ViewController', ->
 			for component in components
 				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
-				expect( eventListenerFunction ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+				expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			
 			expect( eventListenerFunction.callCount ).toBe( 3 )
 			
@@ -855,7 +893,7 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
-			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', {} )
+			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -899,7 +937,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
-			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -942,7 +980,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
-			expect( eventListenerFunction ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
 		)
 		
@@ -984,7 +1022,7 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
-			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', {} )
+			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -1029,7 +1067,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
-			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 1 )
 		)
 		
@@ -1074,7 +1112,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
-			expect( eventListenerFunction ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
 		)
 		
@@ -1110,15 +1148,17 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			# Add a few more.
 			view.add(
-				{
-					xtype: 'example'
-				}
-				{
-					xtype: 'example'
-				}
-				{
-					xtype: 'example'
-				}
+				[
+					{
+						xtype: 'example'
+					}
+					{
+						xtype: 'example'
+					}
+					{
+						xtype: 'example'
+					}
+				]
 			)
 			components = view.query( 'example' )
 			expect( viewController.getDynamicExample() ).toEqual( components )
@@ -1133,7 +1173,7 @@ describe( 'Deft.mvc.ViewController', ->
 			for component in components
 				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
-				expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', {} )
+				expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 3 )
 		)
 		
@@ -1171,15 +1211,17 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			# Add a few more.
 			view.add(
-				{
-					xtype: 'example'
-				}
-				{
-					xtype: 'example'
-				}
-				{
-					xtype: 'example'
-				}
+				[
+					{
+						xtype: 'example'
+					}
+					{
+						xtype: 'example'
+					}
+					{
+						xtype: 'example'
+					}
+				]
 			)
 			components = view.query( 'example' )
 			expect( viewController.getDynamicExample() ).toEqual( components )
@@ -1194,7 +1236,7 @@ describe( 'Deft.mvc.ViewController', ->
 			for component in components
 				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
-				expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+				expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 3 )
 			
 			viewController.onDynamicExampleComponentExampleEvent.reset()
@@ -1239,15 +1281,17 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			# Add a few more.
 			view.add(
-				{
-					xtype: 'example'
-				}
-				{
-					xtype: 'example'
-				}
-				{
-					xtype: 'example'
-				}
+				[
+					{
+						xtype: 'example'
+					}
+					{
+						xtype: 'example'
+					}
+					{
+						xtype: 'example'
+					}
+				]
 			)
 			components = view.query( 'example' )
 			expect( viewController.getDynamicExample() ).toEqual( components )
@@ -1262,7 +1306,7 @@ describe( 'Deft.mvc.ViewController', ->
 			for component in components
 				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
-				expect( eventListenerFunction ).toHaveBeenCalledWith( component, 'expected value', { single: true } )
+				expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 3 )
 			
 			eventListenerFunction.reset()
@@ -1552,15 +1596,17 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			# Add a few more.
 			view.add(
-				{
-					xtype: 'example'
-				}
-				{
-					xtype: 'example'
-				}
-				{
-					xtype: 'example'
-				}
+				[
+					{
+						xtype: 'example'
+					}
+					{
+						xtype: 'example'
+					}
+					{
+						xtype: 'example'
+					}
+				]
 			)
 			components = view.query( 'example' )
 			expect( viewController.getDynamicExample() ).toEqual( components )

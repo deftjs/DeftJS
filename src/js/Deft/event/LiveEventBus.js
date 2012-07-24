@@ -82,6 +82,36 @@ Ext.define('Deft.event.LiveEventBus', {
     }
   }
 }, function() {
+  if (Ext.getVersion('touch') != null) {
+    Ext.define('Deft.Component', {
+      override: 'Ext.Component',
+      setParent: function(newParent) {
+        var oldParent, result;
+        oldParent = this.getParent();
+        result = this.callParent(arguments);
+        if (oldParent === null && newParent !== null) {
+          this.fireEvent('added', this, newParent);
+        } else if (oldParent !== null && newParent !== null) {
+          this.fireEvent('removed', this, oldParent);
+          this.fireEvent('added', this, newParent);
+        } else if (oldParent !== null && newParent === null) {
+          this.fireEvent('removed', this, oldParent);
+        }
+        return result;
+      },
+      isDescendantOf: function(container) {
+        var ancestor;
+        ancestor = this.getParent();
+        while (ancestor != null) {
+          if (ancestor === container) {
+            return true;
+          }
+          ancestor = ancestor.getParent();
+        }
+        return false;
+      }
+    });
+  }
   Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
     Deft.event.LiveEventBus.register(component);
   });

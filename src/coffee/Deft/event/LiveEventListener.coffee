@@ -49,19 +49,4 @@ Ext.define( 'Deft.event.LiveEventListener',
 		if component.isDescendantOf( @container ) and Ext.Array.contains( @container.query( @selector ), component )
 			return true
 		return false
-,
-	->
-		if Ext.getVersion( 'touch' )?
-			Ext.define( 'Deft.Component',
-				override: 'Ext.Component'
-			
-				isDescendantOf: ( container ) ->
-					ancestor = @getParent()
-					while ancestor isnt null
-						if ancestor is container
-							return true
-						ancestor = ancestor.getParent()
-					return false
-			)
-		return
 )

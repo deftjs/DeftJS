@@ -52,21 +52,4 @@ Ext.define('Deft.event.LiveEventListener', {
     }
     return false;
   }
-}, function() {
-  if (Ext.getVersion('touch') != null) {
-    Ext.define('Deft.Component', {
-      override: 'Ext.Component',
-      isDescendantOf: function(container) {
-        var ancestor;
-        ancestor = this.getParent();
-        while (ancestor !== null) {
-          if (ancestor === container) {
-            return true;
-          }
-          ancestor = ancestor.getParent();
-        }
-        return false;
-      }
-    });
-  }
 });
