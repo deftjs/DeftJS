@@ -1,9 +1,15 @@
-/*
+/*!
 DeftJS 0.6.8pre
 
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
+
+/**
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
 Ext.define('Deft.log.Logger', {
   alternateClassName: ['Deft.Logger'],
   singleton: true,
@@ -42,6 +48,10 @@ Ext.define('Deft.log.Logger', {
     };
   }
 });
+/**
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 
 Ext.define('Deft.util.Function', {
   alternateClassName: ['Deft.Function'],
@@ -78,6 +88,171 @@ Ext.define('Deft.util.Function', {
     }
   }
 });
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+Ext.define('Deft.event.LiveEventListener', {
+  requires: ['Ext.ComponentQuery'],
+  constructor: function(config) {
+    var component, components, _i, _len;
+    Ext.apply(this, config);
+    this.components = [];
+    components = Ext.ComponentQuery.query(this.selector, this.container);
+    for (_i = 0, _len = components.length; _i < _len; _i++) {
+      component = components[_i];
+      this.components.push(component);
+      component.on(this.eventName, this.fn, this.scope, this.options);
+    }
+  },
+  destroy: function() {
+    var component, _i, _len, _ref;
+    _ref = this.components;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      component = _ref[_i];
+      component.un(this.eventName, this.fn, this.scope);
+    }
+    this.components = null;
+  },
+  register: function(component) {
+    if (this.matches(component)) {
+      this.components.push(component);
+      component.on(this.eventName, this.fn, this.scope, this.options);
+    }
+  },
+  unregister: function(component) {
+    var index;
+    index = Ext.Array.indexOf(this.components, component);
+    if (index !== -1) {
+      component.un(this.eventName, this.fn, this.scope);
+      Ext.Array.erase(this.components, index, 1);
+    }
+  },
+  matches: function(component) {
+    if (this.selector === null && this.container === component) {
+      return true;
+    }
+    if (this.container === null && Ext.Array.contains(Ext.ComponentQuery.query(this.selector), component)) {
+      return true;
+    }
+    if (component.isDescendantOf(this.container) && Ext.Array.contains(this.container.query(this.selector), component)) {
+      return true;
+    }
+    return false;
+  }
+}, function() {
+  if (Ext.getVersion('touch') != null) {
+    Ext.define('Deft.Component', {
+      override: 'Ext.Component',
+      isDescendantOf: function(container) {
+        var ancestor;
+        ancestor = this.getParent();
+        while (ancestor !== null) {
+          if (ancestor === container) {
+            return true;
+          }
+          ancestor = ancestor.getParent();
+        }
+        return false;
+      }
+    });
+  }
+});
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+Ext.define('Deft.event.LiveEventBus', {
+  alternateClassName: ['Deft.LiveEventBus'],
+  requires: ['Ext.ComponentManager', 'Deft.event.LiveEventListener'],
+  singleton: true,
+  constructor: function() {
+    this.listeners = [];
+  },
+  destroy: function() {
+    var listener, _i, _len, _ref;
+    _ref = this.listeners;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      listener = _ref[_i];
+      listener.destroy();
+    }
+    this.listeners = null;
+  },
+  addListener: function(container, selector, eventName, fn, scope, options) {
+    var listener;
+    listener = Ext.create('Deft.event.LiveEventListener', {
+      container: container,
+      selector: selector,
+      eventName: eventName,
+      fn: fn,
+      scope: scope,
+      options: options
+    });
+    this.listeners.push(listener);
+  },
+  removeListener: function(container, selector, eventName, fn, scope) {
+    var listener;
+    listener = this.findListener(container, selector, eventName, fn, scope);
+    if (listener != null) {
+      Ext.Array.remove(this.listeners, listener);
+      listener.destroy();
+    }
+  },
+  on: function(container, selector, eventName, fn, scope, options) {
+    return this.addListener(container, selector, eventName, fn, scope, options);
+  },
+  un: function(container, selector, eventName, fn, scope) {
+    return this.removeListener(container, selector, eventName, fn, scope);
+  },
+  findListener: function(container, selector, eventName, fn, scope) {
+    var listener, _i, _len, _ref;
+    _ref = this.listeners;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      listener = _ref[_i];
+      if (listener.container === container && listener.selector === selector && listener.eventName === eventName && listener.fn === fn && listener.scope === scope) {
+        return listener;
+      }
+    }
+    return null;
+  },
+  register: function(component) {
+    component.on('added', this.onComponentAdded, this);
+    component.on('removed', this.onComponentRemoved, this);
+  },
+  unregister: function(component) {
+    component.un('added', this.onComponentAdded, this);
+    component.un('removed', this.onComponentRemoved, this);
+  },
+  onComponentAdded: function(component, container, eOpts) {
+    var listener, _i, _len, _ref;
+    _ref = this.listeners;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      listener = _ref[_i];
+      listener.register(component);
+    }
+  },
+  onComponentRemoved: function(component, container, eOpts) {
+    var listener, _i, _len, _ref;
+    _ref = this.listeners;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      listener = _ref[_i];
+      listener.unregister(component);
+    }
+  }
+}, function() {
+  Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
+    Deft.event.LiveEventBus.register(component);
+  });
+  Ext.Function.interceptAfter(Ext.ComponentManager, 'unregister', function(component) {
+    Deft.event.LiveEventBus.unregister(component);
+  });
+});
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 
 /**
 @private
@@ -213,6 +388,10 @@ Ext.define('Deft.ioc.DependencyProvider', {
     return instance;
   }
 });
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 
 /**
 A lightweight IoC container for dependency injection.
@@ -327,6 +506,10 @@ Ext.define('Deft.ioc.Injector', {
     return targetInstance;
   }
 });
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 
 /**
 A mixin that marks a class as participating in dependency injection.
@@ -346,6 +529,151 @@ Ext.define('Deft.mixin.Injectable', {
     });
   }
 });
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+Ext.define('Deft.mvc.ComponentSelectorListener', {
+  requires: ['Deft.event.LiveEventBus'],
+  constructor: function(config) {
+    var component, _i, _len, _ref;
+    Ext.apply(this, config);
+    if (this.componentSelector.live) {
+      Deft.LiveEventBus.addListener(this.componentSelector.view, this.componentSelector.selector, this.eventName, this.fn, this.scope, this.options);
+    } else {
+      _ref = this.componentSelector.components;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        component = _ref[_i];
+        component.on(this.eventName, this.fn, this.scope, this.options);
+      }
+    }
+    return this;
+  },
+  destroy: function() {
+    var component, _i, _len, _ref;
+    if (this.componentSelector.live) {
+      Deft.LiveEventBus.removeListener(this.componentSelector.view, this.componentSelector.selector, this.eventName, this.fn, this.scope);
+    } else {
+      _ref = this.componentSelector.components;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        component = _ref[_i];
+        component.un(this.eventName, this.fn, this.scope);
+      }
+    }
+  }
+});
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+Ext.define('Deft.mvc.ComponentSelector', {
+  requires: ['Ext.ComponentQuery', 'Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
+  constructor: function(config) {
+    var eventName, fn, listener, options, scope, _ref;
+    Ext.apply(this, config);
+    if (!this.live) {
+      this.components = this.selector != null ? Ext.ComponentQuery.query(this.selector, this.view) : [this.view];
+    }
+    this.selectorListeners = [];
+    if (Ext.isObject(this.listeners)) {
+      _ref = this.listeners;
+      for (eventName in _ref) {
+        listener = _ref[eventName];
+        fn = listener;
+        scope = this.scope;
+        options = null;
+        if (Ext.isObject(listener)) {
+          options = Ext.apply({}, listener);
+          if (options.fn != null) {
+            fn = options.fn;
+            delete options.fn;
+          }
+          if (options.scope != null) {
+            scope = options.scope;
+            delete options.scope;
+          }
+        }
+        if (Ext.isString(fn) && Ext.isFunction(scope[fn])) {
+          fn = scope[fn];
+        }
+        if (!Ext.isFunction(fn)) {
+          Ext.Error.raise({
+            msg: "Error adding '" + eventName + "' listener: the specified handler '" + fn + "' is not a Function or does not exist."
+          });
+        }
+        this.addListener(eventName, fn, scope, options);
+      }
+    }
+    return this;
+  },
+  destroy: function() {
+    var selectorListener, _i, _len, _ref;
+    _ref = this.selectorListeners;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      selectorListener = _ref[_i];
+      selectorListener.destroy();
+    }
+    this.selectorListeners = [];
+  },
+  addListener: function(eventName, fn, scope, options) {
+    var selectorListener;
+    if (this.findListener(eventName, fn, scope) != null) {
+      Ext.Error.raise({
+        msg: "Error adding '" + eventName + "' listener: an existing listener was already registered for '" + this.id + "."
+      });
+    }
+    Deft.Logger.log("Adding '" + eventName + "' listener to '" + this.id + "'.");
+    selectorListener = Ext.create('Deft.mvc.ComponentSelectorListener', {
+      componentSelector: this,
+      eventName: eventName,
+      fn: fn,
+      scope: scope,
+      options: options
+    });
+    this.selectorListeners.push(selectorListener);
+  },
+  removeListener: function(eventName, fn, scope) {
+    var selectorListener;
+    selectorListener = this.findListener(eventName, fn, scope);
+    if (selectorListener != null) {
+      Deft.Logger.log("Removing '" + eventName + "' listener from '" + this.id + "'.");
+      selectorListener.destroy();
+      Ext.Array.remove(this.selectorListeners, selectorListener);
+    }
+  },
+  findListener: function(eventName, fn, scope) {
+    var selectorListener, _i, _len, _ref;
+    _ref = this.selectorListeners;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      selectorListener = _ref[_i];
+      if (selectorListener.eventName === eventName && selectorListener.fn === fn && selectorListener.scope === scope) {
+        return selectorListener;
+      }
+    }
+    return null;
+  },
+  locate: function() {
+    var matches;
+    if (this.selector != null) {
+      matches = Ext.ComponentQuery.query(this.selector, this.view);
+      if (matches.length === 0) {
+        return null;
+      } else if (matches.length === 1) {
+        return matches[0];
+      } else {
+        return matches;
+      }
+    } else {
+      return this.view;
+    }
+  }
+});
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 
 /**
 A lightweight MVC view controller.
@@ -355,7 +683,7 @@ Used in conjunction with {@link Deft.mixin.Controllable}.
 
 Ext.define('Deft.mvc.ViewController', {
   alternateClassName: ['Deft.ViewController'],
-  requires: ['Deft.log.Logger'],
+  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelector'],
   config: {
     /**
     		View controlled by this ViewController.
@@ -377,12 +705,10 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   controlView: function(view) {
-    if (view instanceof Ext.ClassManager.get('Ext.Component')) {
+    if (view instanceof Ext.ClassManager.get('Ext.Container')) {
       this.setView(view);
-      this.registeredComponents = {};
-      this.isExtJS = this.getView().events != null;
-      this.isSenchaTouch = !this.isExtJS;
-      if (this.isExtJS) {
+      this.registeredComponentSelectors = {};
+      if (Ext.getVersion('extjs') != null) {
         if (this.getView().rendered) {
           this.onViewInitialize();
         } else {
@@ -401,7 +727,7 @@ Ext.define('Deft.mvc.ViewController', {
       }
     } else {
       Ext.Error.raise({
-        msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
+        msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Container.'
       });
     }
   },
@@ -422,8 +748,8 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   onViewInitialize: function() {
-    var component, config, id, listeners, originalViewDestroyFunction, self, _ref;
-    if (this.isExtJS) {
+    var config, id, listeners, live, originalViewDestroyFunction, selector, self, _ref;
+    if (Ext.getVersion('extjs') != null) {
       this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
       this.getView().on('destroy', this.onViewDestroy, this, {
         single: true
@@ -440,9 +766,26 @@ Ext.define('Deft.mvc.ViewController', {
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
-      component = this.locateComponent(id, config);
-      listeners = Ext.isObject(config.listeners) ? config.listeners : !(config.selector != null) ? config : void 0;
-      this.registerComponent(id, component, listeners);
+      selector = null;
+      if (id !== 'view') {
+        if (Ext.isString(config)) {
+          selector = config;
+        } else if (config.selector != null) {
+          selector = config.selector;
+        } else {
+          selector = '#' + id;
+        }
+      }
+      listeners = null;
+      if (Ext.isObject(config.listeners)) {
+        listeners = config.listeners;
+      } else {
+        if (!((config.selector != null) || (config.live != null))) {
+          listeners = config;
+        }
+      }
+      live = (config.live != null) && config.live;
+      this.registerComponent(id, selector, listeners, live);
     }
     this.init();
   },
@@ -463,169 +806,75 @@ Ext.define('Deft.mvc.ViewController', {
 
   onViewDestroy: function() {
     var id;
-    for (id in this.registeredComponents) {
+    for (id in this.registeredComponentSelectors) {
       this.unregisterComponent(id);
     }
   },
-  /**
-  	@private
-  */
-
-  getComponent: function(id) {
-    var _ref;
-    return (_ref = this.registeredComponents[id]) != null ? _ref.component : void 0;
-  },
-  /**
-  	@private
-  */
-
-  registerComponent: function(id, component, listeners) {
-    var event, existingComponent, fn, getterName, listener, options, scope;
+  registerComponent: function(id, selector, listeners, live) {
+    var componentSelector, getterName, matches;
+    if (live == null) {
+      live = false;
+    }
     Deft.Logger.log("Registering '" + id + "' component.");
-    existingComponent = this.getComponent(id);
-    if (existingComponent != null) {
+    if (this.registeredComponentSelectors[id] != null) {
       Ext.Error.raise({
         msg: "Error registering component: an existing component already registered as '" + id + "'."
       });
     }
-    this.registeredComponents[id] = {
-      component: component,
-      listeners: listeners
-    };
+    componentSelector = Ext.create('Deft.mvc.ComponentSelector', {
+      id: id,
+      view: this.getView(),
+      selector: selector,
+      listeners: listeners,
+      scope: this,
+      live: live
+    });
     if (id !== 'view') {
       getterName = 'get' + Ext.String.capitalize(id);
-      if (!this[getterName]) {
-        this[getterName] = Ext.Function.pass(this.getComponent, [id], this);
-      }
-    }
-    if (Ext.isObject(listeners)) {
-      for (event in listeners) {
-        listener = listeners[event];
-        fn = listener;
-        scope = this;
-        options = null;
-        if (Ext.isObject(listener)) {
-          options = Ext.apply({}, listener);
-          if (options.fn != null) {
-            fn = options.fn;
-            delete options.fn;
-          }
-          if (options.scope != null) {
-            scope = options.scope;
-            delete options.scope;
-          }
-        }
-        Deft.Logger.log("Adding '" + event + "' listener to '" + id + "'.");
-        if (Ext.isFunction(fn)) {
-          component.on(event, fn, scope, options);
-        } else if (Ext.isFunction(this[fn])) {
-          component.on(event, this[fn], scope, options);
+      if (this[getterName] == null) {
+        if (live) {
+          this[getterName] = function() {
+            return componentSelector.locate();
+          };
         } else {
-          Ext.Error.raise({
-            msg: "Error adding '" + event + "' listener: the specified handler '" + fn + "' is not a Function or does not exist."
-          });
+          matches = componentSelector.locate();
+          if (matches == null) {
+            Ext.Error.raise({
+              msg: "Error locating component: no component(s) found matching '" + selector + "'."
+            });
+          }
+          this[getterName] = function() {
+            return matches;
+          };
         }
+        this[getterName].generated = true;
       }
     }
+    this.registeredComponentSelectors[id] = componentSelector;
   },
-  /**
-  	@private
-  */
-
   unregisterComponent: function(id) {
-    var component, event, existingComponent, fn, getterName, listener, listeners, options, scope, _ref;
+    var componentSelector, getterName;
     Deft.Logger.log("Unregistering '" + id + "' component.");
-    existingComponent = this.getComponent(id);
-    if (!(existingComponent != null)) {
+    if (this.registeredComponentSelectors[id] == null) {
       Ext.Error.raise({
         msg: "Error unregistering component: no component is registered as '" + id + "'."
       });
     }
-    _ref = this.registeredComponents[id], component = _ref.component, listeners = _ref.listeners;
-    if (Ext.isObject(listeners)) {
-      for (event in listeners) {
-        listener = listeners[event];
-        fn = listener;
-        scope = this;
-        if (Ext.isObject(listener)) {
-          options = listener;
-          if (options.fn != null) {
-            fn = options.fn;
-          }
-          if (options.scope != null) {
-            scope = options.scope;
-          }
-        }
-        Deft.Logger.log("Removing '" + event + "' listener from '" + id + "'.");
-        if (Ext.isFunction(fn)) {
-          component.un(event, fn, scope);
-        } else if (Ext.isFunction(this[fn])) {
-          component.un(event, this[fn], scope);
-        } else {
-          Ext.Error.raise({
-            msg: "Error removing '" + event + "' listener: the specified handler '" + fn + "' is not a Function or does not exist."
-          });
-        }
-      }
-    }
+    componentSelector = this.registeredComponentSelectors[id];
+    componentSelector.destroy();
     if (id !== 'view') {
       getterName = 'get' + Ext.String.capitalize(id);
-      this[getterName] = null;
+      if (this[getterName].generated) {
+        this[getterName] = null;
+      }
     }
-    this.registeredComponents[id] = null;
-  },
-  /**
-  	@private
-  */
-
-  locateComponent: function(id, config) {
-    var matches, view;
-    view = this.getView();
-    if (id === 'view') {
-      return view;
-    }
-    if (Ext.isString(config)) {
-      matches = view.query(config);
-      if (matches.length === 0) {
-        Ext.Error.raise({
-          msg: "Error locating component: no component found matching '" + config + "'."
-        });
-      }
-      if (matches.length > 1) {
-        Ext.Error.raise({
-          msg: "Error locating component: multiple components found matching '" + config + "'."
-        });
-      }
-      return matches[0];
-    } else if (Ext.isString(config.selector)) {
-      matches = view.query(config.selector);
-      if (matches.length === 0) {
-        Ext.Error.raise({
-          msg: "Error locating component: no component found matching '" + config.selector + "'."
-        });
-      }
-      if (matches.length > 1) {
-        Ext.Error.raise({
-          msg: "Error locating component: multiple components found matching '" + config.selector + "'."
-        });
-      }
-      return matches[0];
-    } else {
-      matches = view.query('#' + id);
-      if (matches.length === 0) {
-        Ext.Error.raise({
-          msg: "Error locating component: no component found with an itemId of '" + id + "'."
-        });
-      }
-      if (matches.length > 1) {
-        Ext.Error.raise({
-          msg: "Error locating component: multiple components found with an itemId of '" + id + "'."
-        });
-      }
-      return matches[0];
-    }
+    this.registeredComponentSelectors[id] = null;
   }
 });
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 
 /**
 A mixin that creates and attaches the specified view controller(s) to the target view.
@@ -695,6 +944,10 @@ Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callba
 });
 
 Ext.Class.setDefaultPreprocessorPosition('controller', 'before', 'mixins');
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
 
 Ext.define('Deft.promise.Deferred', {
   alternateClassName: ['Deft.Deferred'],
@@ -899,8 +1152,10 @@ Ext.define('Deft.promise.Deferred', {
     this.cancelCallbacks = null;
   }
 });
-
 /*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+
 Promise.when(), all(), any(), map() and reduce() methods adapted from:
 [when.js](https://github.com/cujojs/when)
 Copyright (c) B Cavalier & J Hann
@@ -1177,4 +1432,3 @@ Ext.define('Deft.promise.Promise', {
     this.reduceArray = Array.prototype.reduce;
   }
 });
-

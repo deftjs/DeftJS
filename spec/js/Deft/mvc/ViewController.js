@@ -26,12 +26,12 @@ describe('Deft.mvc.ViewController', function() {
       viewController.controlView(view);
       return expect(viewController.getView()).toBe(view);
     });
-    return it('should throw an error if created and configured with a non-Ext.Component as the view', function() {
+    return it('should throw an error if created and configured with a non-Ext.Container as the view', function() {
       return expect(function() {
         return Ext.create('Deft.mvc.ViewController', {
           view: new Object()
         });
-      }).toThrow(new Error("Error constructing ViewController: the configured 'view' is not an Ext.Component."));
+      }).toThrow(new Error("Error constructing ViewController: the configured 'view' is not an Ext.Container."));
     });
   });
   describe('Creation of getters and event listeners using the \'control\' property', function() {
@@ -46,7 +46,7 @@ describe('Deft.mvc.ViewController', function() {
           return this.callParent(arguments);
         },
         fireExampleEvent: function(value) {
-          this.fireEvent('exampleevent', value);
+          this.fireEvent('exampleevent', this, value);
         }
       });
       Ext.define('ExampleView', {
@@ -73,7 +73,7 @@ describe('Deft.mvc.ViewController', function() {
           return this.callParent(arguments);
         },
         fireExampleEvent: function(value) {
-          this.fireEvent('exampleevent', value);
+          this.fireEvent('exampleevent', this, value);
         }
       });
       return Ext.DomHelper.append(Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>');
@@ -92,9 +92,8 @@ describe('Deft.mvc.ViewController', function() {
         },
         onExampleViewExampleEvent: function(event) {}
       });
-      spyOn(ExampleViewController.prototype, 'onExampleViewExampleEvent').andCallFake(function(value) {
-        expect(this).toBe(viewController);
-        return expect(value).toBe('expected value');
+      spyOn(ExampleViewController.prototype, 'onExampleViewExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
       });
       view = Ext.create('ExampleView');
       viewController = Ext.create('ExampleViewController', {
@@ -103,7 +102,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getView()).toBe(view);
       expect(view.hasListener('exampleevent')).toBe(true);
       view.fireExampleEvent('expected value');
-      expect(viewController.onExampleViewExampleEvent).toHaveBeenCalled();
+      expect(viewController.onExampleViewExampleEvent).toHaveBeenCalledWith(view, 'expected value', {});
       return expect(viewController.onExampleViewExampleEvent.callCount).toBe(1);
     });
     it('should attach view controller scoped event listeners (with options) to events for the view', function() {
@@ -120,9 +119,8 @@ describe('Deft.mvc.ViewController', function() {
         },
         onExampleViewExampleEvent: function(event) {}
       });
-      spyOn(ExampleViewController.prototype, 'onExampleViewExampleEvent').andCallFake(function(value) {
-        expect(this).toBe(viewController);
-        return expect(value).toBe('expected value');
+      spyOn(ExampleViewController.prototype, 'onExampleViewExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
       });
       view = Ext.create('ExampleView');
       viewController = Ext.create('ExampleViewController', {
@@ -131,16 +129,17 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getView()).toBe(view);
       expect(view.hasListener('exampleevent')).toBe(true);
       view.fireExampleEvent('expected value');
-      view.fireExampleEvent('expected value');
-      expect(viewController.onExampleViewExampleEvent).toHaveBeenCalled();
+      view.fireExampleEvent('unexpected value');
+      expect(viewController.onExampleViewExampleEvent).toHaveBeenCalledWith(view, 'expected value', {
+        single: true
+      });
       return expect(viewController.onExampleViewExampleEvent.callCount).toBe(1);
     });
     it('should attach event listeners (with options) to events for the view', function() {
       var eventListenerFunction, expectedScope, view, viewController;
       expectedScope = {};
-      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function(value) {
-        expect(this).toBe(expectedScope);
-        return expect(value).toBe('expected value');
+      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function() {
+        return expect(this).toBe(expectedScope);
       });
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
@@ -161,8 +160,10 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getView()).toBe(view);
       expect(view.hasListener('exampleevent')).toBe(true);
       view.fireExampleEvent('expected value');
-      view.fireExampleEvent('expected value');
-      expect(eventListenerFunction).toHaveBeenCalled();
+      view.fireExampleEvent('unexpected value');
+      expect(eventListenerFunction).toHaveBeenCalledWith(view, 'expected value', {
+        single: true
+      });
       return expect(eventListenerFunction.callCount).toBe(1);
     });
     it('should throw an error when attaching a non-existing view controller scoped event listener for the view', function() {
@@ -195,8 +196,8 @@ describe('Deft.mvc.ViewController', function() {
       viewController = Ext.create('ExampleViewController', {
         view: view
       });
-      component = view.query('#example')[0];
       expect(viewController.getView()).toBe(view);
+      component = view.query('#example')[0];
       return expect(viewController.getExample()).toBe(component);
     });
     it('should throw an error when referencing a non-existent component implicitly by itemId', function() {
@@ -213,22 +214,22 @@ describe('Deft.mvc.ViewController', function() {
         return viewController = Ext.create('ExampleViewController', {
           view: view
         });
-      }).toThrow('Error locating component: no component found with an itemId of \'doesntexist\'.');
+      }).toThrow('Error locating component: no component(s) found matching \'#doesntexist\'.');
     });
     it('should create a view controller getter for a view component referenced implicitly by selector', function() {
       var component, view, viewController;
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
         control: {
-          example: "#example"
+          example: '#example'
         }
       });
       view = Ext.create('ExampleView');
       viewController = Ext.create('ExampleViewController', {
         view: view
       });
-      component = view.query('#example')[0];
       expect(viewController.getView()).toBe(view);
+      component = view.query('#example')[0];
       return expect(viewController.getExample()).toBe(component);
     });
     it('should throw an error when referencing a non-existent component implicitly by selector', function() {
@@ -245,7 +246,7 @@ describe('Deft.mvc.ViewController', function() {
         return viewController = Ext.create('ExampleViewController', {
           view: view
         });
-      }).toThrow('Error locating component: no component found matching \'#doesntexist\'.');
+      }).toThrow('Error locating component: no component(s) found matching \'#doesntexist\'.');
     });
     it('should create a view controller getter for a view component referenced explicitly by selector', function() {
       var component, view, viewController;
@@ -253,7 +254,7 @@ describe('Deft.mvc.ViewController', function() {
         extend: 'Deft.mvc.ViewController',
         control: {
           example: {
-            selector: "#example"
+            selector: '#example'
           }
         }
       });
@@ -261,9 +262,37 @@ describe('Deft.mvc.ViewController', function() {
       viewController = Ext.create('ExampleViewController', {
         view: view
       });
-      component = view.query('#example')[0];
       expect(viewController.getView()).toBe(view);
+      component = view.query('#example')[0];
       return expect(viewController.getExample()).toBe(component);
+    });
+    it('should create a view controller getter for view components referenced explicitly by selector', function() {
+      var components, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          example: {
+            selector: 'example'
+          }
+        }
+      });
+      view = Ext.create('ExampleView', {
+        items: [
+          {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }
+        ]
+      });
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      components = view.query('example');
+      return expect(viewController.getExample()).toEqual(components);
     });
     it('should throw an error when referencing a non-existent component explicitly by selector', function() {
       var view;
@@ -281,7 +310,7 @@ describe('Deft.mvc.ViewController', function() {
         return viewController = Ext.create('ExampleViewController', {
           view: view
         });
-      }).toThrow('Error locating component: no component found matching \'#doesntexist\'.');
+      }).toThrow('Error locating component: no component(s) found matching \'#doesntexist\'.');
     });
     it('should create a view controller getter and attach view controller scoped event listeners to events for a view component referenced implicitly by itemId', function() {
       var component, view, viewController;
@@ -294,20 +323,19 @@ describe('Deft.mvc.ViewController', function() {
         },
         onExampleComponentExampleEvent: function() {}
       });
-      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function(value) {
-        expect(this).toBe(viewController);
-        return expect(value).toBe('expected value');
+      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
       });
       view = Ext.create('ExampleView');
       viewController = Ext.create('ExampleViewController', {
         view: view
       });
-      component = view.query('#example')[0];
       expect(viewController.getView()).toBe(view);
+      component = view.query('#example')[0];
       expect(viewController.getExample()).toBe(component);
       expect(component.hasListener('exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalled();
+      expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {});
       return expect(viewController.onExampleComponentExampleEvent.callCount).toBe(1);
     });
     it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for a view component referenced implicitly by itemId', function() {
@@ -324,29 +352,29 @@ describe('Deft.mvc.ViewController', function() {
         },
         onExampleComponentExampleEvent: function() {}
       });
-      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function(value) {
-        expect(this).toBe(viewController);
-        return expect(value).toBe('expected value');
+      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
       });
       view = Ext.create('ExampleView');
       viewController = Ext.create('ExampleViewController', {
         view: view
       });
-      component = view.query('#example')[0];
       expect(viewController.getView()).toBe(view);
+      component = view.query('#example')[0];
       expect(viewController.getExample()).toBe(component);
       expect(component.hasListener('exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      component.fireExampleEvent('expected value');
-      expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalled();
+      component.fireExampleEvent('unexpected value');
+      expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {
+        single: true
+      });
       return expect(viewController.onExampleComponentExampleEvent.callCount).toBe(1);
     });
     it('should create a view controller getter and attach event listeners (with options) to events for a view component referenced implicitly by itemId', function() {
       var component, eventListenerFunction, expectedScope, view, viewController;
       expectedScope = {};
-      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function(value) {
-        expect(this).toBe(expectedScope);
-        return expect(value).toBe('expected value');
+      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function() {
+        return expect(this).toBe(expectedScope);
       });
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
@@ -364,13 +392,15 @@ describe('Deft.mvc.ViewController', function() {
       viewController = Ext.create('ExampleViewController', {
         view: view
       });
-      component = view.query('#example')[0];
       expect(viewController.getView()).toBe(view);
+      component = view.query('#example')[0];
       expect(viewController.getExample()).toBe(component);
       expect(component.hasListener('exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      component.fireExampleEvent('expected value');
-      expect(eventListenerFunction).toHaveBeenCalled();
+      component.fireExampleEvent('unexpected value');
+      expect(eventListenerFunction).toHaveBeenCalledWith(component, 'expected value', {
+        single: true
+      });
       return expect(eventListenerFunction.callCount).toBe(1);
     });
     it('should throw an error when attaching a non-existing view controller scoped event listener for a view component referenced implicitly by itemId', function() {
@@ -405,20 +435,19 @@ describe('Deft.mvc.ViewController', function() {
         },
         onExampleComponentExampleEvent: function() {}
       });
-      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function(value) {
-        expect(this).toBe(viewController);
-        return expect(value).toBe('expected value');
+      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
       });
       view = Ext.create('ExampleView');
       viewController = Ext.create('ExampleViewController', {
         view: view
       });
-      component = view.query('#example')[0];
       expect(viewController.getView()).toBe(view);
+      component = view.query('#example')[0];
       expect(viewController.getExample()).toBe(component);
       expect(component.hasListener('exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalled();
+      expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {});
       return expect(viewController.onExampleComponentExampleEvent.callCount).toBe(1);
     });
     it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for a view component referenced by selector', function() {
@@ -438,29 +467,29 @@ describe('Deft.mvc.ViewController', function() {
         },
         onExampleComponentExampleEvent: function() {}
       });
-      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function(value) {
-        expect(this).toBe(viewController);
-        return expect(value).toBe('expected value');
+      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
       });
       view = Ext.create('ExampleView');
       viewController = Ext.create('ExampleViewController', {
         view: view
       });
-      component = view.query('#example')[0];
       expect(viewController.getView()).toBe(view);
+      component = view.query('#example')[0];
       expect(viewController.getExample()).toBe(component);
       expect(component.hasListener('exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      component.fireExampleEvent('expected value');
-      expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalled();
+      component.fireExampleEvent('unexpected value');
+      expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {
+        single: true
+      });
       return expect(viewController.onExampleComponentExampleEvent.callCount).toBe(1);
     });
     it('should create a view controller getter and attach event listeners (with options) to events for a view component referenced by selector', function() {
       var component, eventListenerFunction, expectedScope, view, viewController;
       expectedScope = {};
-      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function(value) {
-        expect(this).toBe(expectedScope);
-        return expect(value).toBe('expected value');
+      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function() {
+        return expect(this).toBe(expectedScope);
       });
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
@@ -481,16 +510,18 @@ describe('Deft.mvc.ViewController', function() {
       viewController = Ext.create('ExampleViewController', {
         view: view
       });
-      component = view.query('#example')[0];
       expect(viewController.getView()).toBe(view);
+      component = view.query('#example')[0];
       expect(viewController.getExample()).toBe(component);
       expect(component.hasListener('exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      component.fireExampleEvent('expected value');
-      expect(eventListenerFunction).toHaveBeenCalled();
+      component.fireExampleEvent('unexpected value');
+      expect(eventListenerFunction).toHaveBeenCalledWith(component, 'expected value', {
+        single: true
+      });
       return expect(eventListenerFunction.callCount).toBe(1);
     });
-    return it('should throw an error when attaching a non-existing view controller scoped event listener for a view component referenced implicitly by selector', function() {
+    it('should throw an error when attaching a non-existing view controller scoped event listener for a view component referenced implicitly by selector', function() {
       var view;
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
@@ -510,6 +541,599 @@ describe('Deft.mvc.ViewController', function() {
           view: view
         });
       }).toThrow('Error adding \'exampleevent\' listener: the specified handler \'onExampleComponentExampleEvent\' is not a Function or does not exist.');
+    });
+    it('should create a view controller getter and attach view controller scoped event listeners to events for view components referenced by selector', function() {
+      var component, components, view, viewController, _i, _len;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          example: {
+            selector: 'example',
+            listeners: {
+              exampleevent: 'onExampleComponentExampleEvent'
+            }
+          }
+        },
+        onExampleComponentExampleEvent: function() {}
+      });
+      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
+      });
+      view = Ext.create('ExampleView', {
+        items: [
+          {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }
+        ]
+      });
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      components = view.query('example');
+      expect(viewController.getExample()).toEqual(components);
+      for (_i = 0, _len = components.length; _i < _len; _i++) {
+        component = components[_i];
+        expect(component.hasListener('exampleevent')).toBe(true);
+        component.fireExampleEvent('expected value');
+        expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {});
+      }
+      return expect(viewController.onExampleComponentExampleEvent.callCount).toBe(3);
+    });
+    it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for view components referenced by selector', function() {
+      var component, components, view, viewController, _i, _j, _len, _len1;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          example: {
+            selector: 'example',
+            listeners: {
+              exampleevent: {
+                fn: 'onExampleComponentExampleEvent',
+                single: true
+              }
+            }
+          }
+        },
+        onExampleComponentExampleEvent: function() {}
+      });
+      spyOn(ExampleViewController.prototype, 'onExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
+      });
+      view = Ext.create('ExampleView', {
+        items: [
+          {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }
+        ]
+      });
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      components = view.query('example');
+      expect(viewController.getExample()).toEqual(components);
+      for (_i = 0, _len = components.length; _i < _len; _i++) {
+        component = components[_i];
+        expect(component.hasListener('exampleevent')).toBe(true);
+        component.fireExampleEvent('expected value');
+        expect(viewController.onExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {
+          single: true
+        });
+      }
+      expect(viewController.onExampleComponentExampleEvent.callCount).toBe(3);
+      viewController.onExampleComponentExampleEvent.reset();
+      for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
+        component = components[_j];
+        expect(component.hasListener('exampleevent')).toBe(false);
+        component.fireExampleEvent('unexpected value');
+        expect(viewController.onExampleComponentExampleEvent).not.toHaveBeenCalled();
+      }
+      return expect(viewController.onExampleComponentExampleEvent.callCount).toBe(0);
+    });
+    it('should create a view controller getter and attach event listeners (with options) to events for view components referenced by selector', function() {
+      var component, components, eventListenerFunction, expectedScope, view, viewController, _i, _j, _len, _len1;
+      expectedScope = {};
+      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function() {
+        return expect(this).toBe(expectedScope);
+      });
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          example: {
+            selector: 'example',
+            listeners: {
+              exampleevent: {
+                fn: eventListenerFunction,
+                scope: expectedScope,
+                single: true
+              }
+            }
+          }
+        }
+      });
+      view = Ext.create('ExampleView', {
+        items: [
+          {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }
+        ]
+      });
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      components = view.query('example');
+      expect(viewController.getExample()).toEqual(components);
+      for (_i = 0, _len = components.length; _i < _len; _i++) {
+        component = components[_i];
+        expect(component.hasListener('exampleevent')).toBe(true);
+        component.fireExampleEvent('expected value');
+        expect(eventListenerFunction).toHaveBeenCalledWith(component, 'expected value', {
+          single: true
+        });
+      }
+      expect(eventListenerFunction.callCount).toBe(3);
+      eventListenerFunction.reset();
+      for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
+        component = components[_j];
+        expect(component.hasListener('exampleevent')).toBe(false);
+        component.fireExampleEvent('unexpected value');
+        expect(eventListenerFunction).not.toHaveBeenCalled();
+      }
+      return expect(eventListenerFunction.callCount).toBe(0);
+    });
+    it('should create a view controller getter for a dynamic view component referenced by a live selector implicitly by itemId', function() {
+      var component, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true
+          }
+        }
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      expect(viewController.getDynamicExample()).toBe(null);
+      component = view.add({
+        xtype: 'example',
+        itemId: 'dynamicExample'
+      });
+      return expect(viewController.getDynamicExample()).toBe(component);
+    });
+    it('should create a view controller getter for a dynamic view component referenced explicitly by a live selector', function() {
+      var component, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            selector: '#dynamicExample',
+            live: true
+          }
+        }
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      expect(viewController.getDynamicExample()).toBe(null);
+      component = view.add({
+        xtype: 'example',
+        itemId: 'dynamicExample'
+      });
+      return expect(viewController.getDynamicExample()).toBe(component);
+    });
+    it('should create a view controller getter and attach view controller scoped event listeners to events for a dynamic view component referenced by a live selector implicitly by itemId', function() {
+      var component, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            listeners: {
+              exampleevent: 'onDynamicExampleComponentExampleEvent'
+            }
+          }
+        },
+        onDynamicExampleComponentExampleEvent: function() {}
+      });
+      spyOn(ExampleViewController.prototype, 'onDynamicExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      expect(viewController.getDynamicExample()).toBe(null);
+      component = view.add({
+        xtype: 'example',
+        itemId: 'dynamicExample'
+      });
+      expect(viewController.getDynamicExample()).toBe(component);
+      expect(component.hasListener('exampleevent')).toBe(true);
+      component.fireExampleEvent('expected value');
+      expect(viewController.onDynamicExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {});
+      return expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(1);
+    });
+    it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for a dynamic view component referenced by a live selector implicitly by itemId', function() {
+      var component, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            listeners: {
+              exampleevent: {
+                fn: 'onDynamicExampleComponentExampleEvent',
+                single: true
+              }
+            }
+          }
+        },
+        onDynamicExampleComponentExampleEvent: function() {}
+      });
+      spyOn(ExampleViewController.prototype, 'onDynamicExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      expect(viewController.getDynamicExample()).toBe(null);
+      component = view.add({
+        xtype: 'example',
+        itemId: 'dynamicExample'
+      });
+      expect(viewController.getDynamicExample()).toBe(component);
+      expect(component.hasListener('exampleevent')).toBe(true);
+      component.fireExampleEvent('expected value');
+      component.fireExampleEvent('unexpected value');
+      expect(viewController.onDynamicExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {
+        single: true
+      });
+      return expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(1);
+    });
+    it('should create a view controller getter and attach event listeners (with options) to events for a dynamic view component referenced by a live selector implicitly by itemId', function() {
+      var component, eventListenerFunction, expectedScope, view, viewController;
+      expectedScope = {};
+      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function() {
+        return expect(this).toBe(expectedScope);
+      });
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            listeners: {
+              exampleevent: {
+                fn: eventListenerFunction,
+                scope: expectedScope,
+                single: true
+              }
+            }
+          }
+        }
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      expect(viewController.getDynamicExample()).toBe(null);
+      component = view.add({
+        xtype: 'example',
+        itemId: 'dynamicExample'
+      });
+      expect(viewController.getDynamicExample()).toBe(component);
+      expect(component.hasListener('exampleevent')).toBe(true);
+      component.fireExampleEvent('expected value');
+      component.fireExampleEvent('unexpected value');
+      expect(eventListenerFunction).toHaveBeenCalledWith(component, 'expected value', {
+        single: true
+      });
+      return expect(eventListenerFunction.callCount).toBe(1);
+    });
+    it('should create a view controller getter and attach view controller scoped event listeners to events for a dynamic view component referenced by a live selector', function() {
+      var component, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            selector: '#dynamicExample',
+            listeners: {
+              exampleevent: 'onDynamicExampleComponentExampleEvent'
+            }
+          }
+        },
+        onDynamicExampleComponentExampleEvent: function() {}
+      });
+      spyOn(ExampleViewController.prototype, 'onDynamicExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      expect(viewController.getDynamicExample()).toBe(null);
+      component = view.add({
+        xtype: 'example',
+        itemId: 'dynamicExample'
+      });
+      expect(viewController.getDynamicExample()).toBe(component);
+      expect(component.hasListener('exampleevent')).toBe(true);
+      component.fireExampleEvent('expected value');
+      expect(viewController.onDynamicExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {});
+      return expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(1);
+    });
+    it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for a dynamic view component referenced by a live selector', function() {
+      var component, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            selector: '#dynamicExample',
+            listeners: {
+              exampleevent: {
+                fn: 'onDynamicExampleComponentExampleEvent',
+                single: true
+              }
+            }
+          }
+        },
+        onDynamicExampleComponentExampleEvent: function() {}
+      });
+      spyOn(ExampleViewController.prototype, 'onDynamicExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      expect(viewController.getDynamicExample()).toBe(null);
+      component = view.add({
+        xtype: 'example',
+        itemId: 'dynamicExample'
+      });
+      expect(viewController.getDynamicExample()).toBe(component);
+      expect(component.hasListener('exampleevent')).toBe(true);
+      component.fireExampleEvent('expected value');
+      component.fireExampleEvent('unexpected value');
+      expect(viewController.onDynamicExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {
+        single: true
+      });
+      return expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(1);
+    });
+    it('should create a view controller getter and attach event listeners (with options) to events for a dynamic view component referenced by a live selector', function() {
+      var component, eventListenerFunction, expectedScope, view, viewController;
+      expectedScope = {};
+      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function() {
+        return expect(this).toBe(expectedScope);
+      });
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            selector: '#dynamicExample',
+            listeners: {
+              exampleevent: {
+                fn: eventListenerFunction,
+                scope: expectedScope,
+                single: true
+              }
+            }
+          }
+        }
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      expect(viewController.getDynamicExample()).toBe(null);
+      component = view.add({
+        xtype: 'example',
+        itemId: 'dynamicExample'
+      });
+      expect(viewController.getDynamicExample()).toBe(component);
+      expect(component.hasListener('exampleevent')).toBe(true);
+      component.fireExampleEvent('expected value');
+      component.fireExampleEvent('unexpected value');
+      expect(eventListenerFunction).toHaveBeenCalledWith(component, 'expected value', {
+        single: true
+      });
+      return expect(eventListenerFunction.callCount).toBe(1);
+    });
+    it('should create a view controller getter and attach view controller scoped event listeners to events for a dynamic view components referenced by a live selector', function() {
+      var component, components, existingComponent, view, viewController, _i, _len;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            selector: 'example',
+            listeners: {
+              exampleevent: 'onDynamicExampleComponentExampleEvent'
+            }
+          }
+        },
+        onDynamicExampleComponentExampleEvent: function() {}
+      });
+      spyOn(ExampleViewController.prototype, 'onDynamicExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      existingComponent = view.query('example')[0];
+      expect(viewController.getDynamicExample()).toBe(existingComponent);
+      view.add({
+        xtype: 'example'
+      }, {
+        xtype: 'example'
+      }, {
+        xtype: 'example'
+      });
+      components = view.query('example');
+      expect(viewController.getDynamicExample()).toEqual(components);
+      expect(viewController.getDynamicExample().length).toEqual(4);
+      view.remove(components[2]);
+      components = view.query('example');
+      expect(viewController.getDynamicExample()).toEqual(components);
+      expect(viewController.getDynamicExample().length).toEqual(3);
+      for (_i = 0, _len = components.length; _i < _len; _i++) {
+        component = components[_i];
+        expect(component.hasListener('exampleevent')).toBe(true);
+        component.fireExampleEvent('expected value');
+        expect(viewController.onDynamicExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {});
+      }
+      return expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(3);
+    });
+    it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for a dynamic view components referenced by a live selector', function() {
+      var component, components, existingComponent, view, viewController, _i, _j, _len, _len1;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            selector: 'example',
+            listeners: {
+              exampleevent: {
+                fn: 'onDynamicExampleComponentExampleEvent',
+                single: true
+              }
+            }
+          }
+        },
+        onDynamicExampleComponentExampleEvent: function() {}
+      });
+      spyOn(ExampleViewController.prototype, 'onDynamicExampleComponentExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      existingComponent = view.query('example')[0];
+      expect(viewController.getDynamicExample()).toBe(existingComponent);
+      view.add({
+        xtype: 'example'
+      }, {
+        xtype: 'example'
+      }, {
+        xtype: 'example'
+      });
+      components = view.query('example');
+      expect(viewController.getDynamicExample()).toEqual(components);
+      expect(viewController.getDynamicExample().length).toEqual(4);
+      view.remove(components[2]);
+      components = view.query('example');
+      expect(viewController.getDynamicExample()).toEqual(components);
+      expect(viewController.getDynamicExample().length).toEqual(3);
+      for (_i = 0, _len = components.length; _i < _len; _i++) {
+        component = components[_i];
+        expect(component.hasListener('exampleevent')).toBe(true);
+        component.fireExampleEvent('expected value');
+        expect(viewController.onDynamicExampleComponentExampleEvent).toHaveBeenCalledWith(component, 'expected value', {
+          single: true
+        });
+      }
+      expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(3);
+      viewController.onDynamicExampleComponentExampleEvent.reset();
+      for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
+        component = components[_j];
+        expect(component.hasListener('exampleevent')).toBe(false);
+        component.fireExampleEvent('expected value');
+        expect(viewController.onDynamicExampleComponentExampleEvent).not.toHaveBeenCalled();
+      }
+      return expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(0);
+    });
+    return it('should create a view controller getter and attach event listeners (with options) to events for a dynamic view components referenced by a live selector', function() {
+      var component, components, eventListenerFunction, existingComponent, expectedScope, view, viewController, _i, _j, _len, _len1;
+      expectedScope = {};
+      eventListenerFunction = jasmine.createSpy('event listener').andCallFake(function() {
+        return expect(this).toBe(expectedScope);
+      });
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            selector: 'example',
+            listeners: {
+              exampleevent: {
+                fn: eventListenerFunction,
+                scope: expectedScope,
+                single: true
+              }
+            }
+          }
+        }
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      existingComponent = view.query('example')[0];
+      expect(viewController.getDynamicExample()).toBe(existingComponent);
+      view.add({
+        xtype: 'example'
+      }, {
+        xtype: 'example'
+      }, {
+        xtype: 'example'
+      });
+      components = view.query('example');
+      expect(viewController.getDynamicExample()).toEqual(components);
+      expect(viewController.getDynamicExample().length).toEqual(4);
+      view.remove(components[2]);
+      components = view.query('example');
+      expect(viewController.getDynamicExample()).toEqual(components);
+      expect(viewController.getDynamicExample().length).toEqual(3);
+      for (_i = 0, _len = components.length; _i < _len; _i++) {
+        component = components[_i];
+        expect(component.hasListener('exampleevent')).toBe(true);
+        component.fireExampleEvent('expected value');
+        expect(eventListenerFunction).toHaveBeenCalledWith(component, 'expected value', {
+          single: true
+        });
+      }
+      expect(eventListenerFunction.callCount).toBe(3);
+      eventListenerFunction.reset();
+      for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
+        component = components[_j];
+        expect(component.hasListener('exampleevent')).toBe(false);
+        component.fireExampleEvent('expected value');
+        expect(eventListenerFunction).not.toHaveBeenCalled();
+      }
+      return expect(eventListenerFunction.callCount).toBe(0);
     });
   });
   describe('Destruction and clean-up', function() {
@@ -618,7 +1242,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(isViewDestroyed).toBe(true);
       return expect(view.hasListener('exampleevent')).toBe(false);
     });
-    return it('should remove event listeners it attached to view components when the associated view (and view controller) is destroyed', function() {
+    it('should remove event listeners it attached to a view component referenced implicitly by item id when the associated view (and view controller) is destroyed', function() {
       var component, isViewDestroyed, view, viewController;
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
@@ -647,6 +1271,136 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.destroy).toHaveBeenCalled();
       expect(isViewDestroyed).toBe(true);
       return expect(component.hasListener('exampleevent')).toBe(false);
+    });
+    it('should remove event listeners it attached to view components referenced explicitly by a selector when the associated view (and view controller) is destroyed', function() {
+      var component, components, isViewDestroyed, view, viewController, _i, _j, _len, _len1, _results;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          example: {
+            selector: 'example',
+            listeners: {
+              exampleevent: 'onExampleComponentExampleEvent'
+            }
+          }
+        },
+        onExampleComponentExampleEvent: function() {}
+      });
+      view = Ext.create('ExampleView', {
+        items: [
+          {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }, {
+            xtype: 'example'
+          }
+        ]
+      });
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      components = view.query('example');
+      for (_i = 0, _len = components.length; _i < _len; _i++) {
+        component = components[_i];
+        expect(component.hasListener('exampleevent')).toBe(true);
+      }
+      spyOn(viewController, 'destroy').andCallThrough();
+      isViewDestroyed = false;
+      view.on('destroy', function() {
+        return isViewDestroyed = true;
+      });
+      view.destroy();
+      expect(viewController.destroy).toHaveBeenCalled();
+      expect(isViewDestroyed).toBe(true);
+      _results = [];
+      for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
+        component = components[_j];
+        _results.push(expect(component.hasListener('exampleevent')).toBe(false));
+      }
+      return _results;
+    });
+    it('should remove event listeners it attached to a dynamic view component referenced by a live selector implicitly by item id when the associated view (and view controller) is destroyed', function() {
+      var component, isViewDestroyed, view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            selector: '#dynamicExample',
+            listeners: {
+              exampleevent: 'onDynamicExampleComponentExampleEvent'
+            }
+          }
+        },
+        onDynamicExampleComponentExampleEvent: function() {}
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      component = view.add({
+        xtype: 'example',
+        itemId: 'dynamicExample'
+      });
+      expect(component.hasListener('exampleevent')).toBe(true);
+      spyOn(viewController, 'destroy').andCallThrough();
+      isViewDestroyed = false;
+      view.on('destroy', function() {
+        return isViewDestroyed = true;
+      });
+      view.destroy();
+      expect(viewController.destroy).toHaveBeenCalled();
+      expect(isViewDestroyed).toBe(true);
+      return expect(component.hasListener('exampleevent')).toBe(false);
+    });
+    return it('should remove event listeners it attached to dynamic view components referenced explicitly by a live selector when the associated view (and view controller) is destroyed', function() {
+      var component, components, isViewDestroyed, view, viewController, _i, _j, _len, _len1, _results;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          dynamicExample: {
+            live: true,
+            selector: 'example',
+            listeners: {
+              exampleevent: 'onDynamicExampleComponentExampleEvent'
+            }
+          }
+        },
+        onDynamicExampleComponentExampleEvent: function() {}
+      });
+      view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      view.add({
+        xtype: 'example'
+      }, {
+        xtype: 'example'
+      }, {
+        xtype: 'example'
+      });
+      components = view.query('example');
+      expect(viewController.getDynamicExample()).toEqual(components);
+      expect(viewController.getDynamicExample().length).toEqual(4);
+      for (_i = 0, _len = components.length; _i < _len; _i++) {
+        component = components[_i];
+        expect(component.hasListener('exampleevent')).toBe(true);
+      }
+      spyOn(viewController, 'destroy').andCallThrough();
+      isViewDestroyed = false;
+      view.on('destroy', function() {
+        return isViewDestroyed = true;
+      });
+      view.destroy();
+      expect(viewController.destroy).toHaveBeenCalled();
+      expect(isViewDestroyed).toBe(true);
+      _results = [];
+      for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
+        component = components[_j];
+        _results.push(expect(component.hasListener('exampleevent')).toBe(false));
+      }
+      return _results;
     });
   });
 });

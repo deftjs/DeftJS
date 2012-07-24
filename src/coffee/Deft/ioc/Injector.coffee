@@ -10,7 +10,10 @@ Used in conjunction with {@link Deft.mixin.Injectable}.
 ###
 Ext.define( 'Deft.ioc.Injector',
 	alternateClassName: [ 'Deft.Injector' ]
-	requires: [ 'Deft.log.Logger', 'Deft.ioc.DependencyProvider' ]
+	requires: [ 
+		'Deft.log.Logger'
+		'Deft.ioc.DependencyProvider'
+	]
 	singleton: true
 	
 	constructor: ->

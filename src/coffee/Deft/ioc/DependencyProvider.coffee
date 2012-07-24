@@ -9,7 +9,9 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Used by {@link Deft.ioc.Injector}.
 ###
 Ext.define( 'Deft.ioc.DependencyProvider',
-	requires: [ 'Deft.log.Logger' ]
+	requires: [ 
+		'Deft.log.Logger'
+	]
 	
 	config:
 		identifier: null

@@ -9,7 +9,9 @@ A mixin that marks a class as participating in dependency injection.
 Used in conjunction with {@link Deft.ioc.Injector}.
 ###
 Ext.define( 'Deft.mixin.Injectable',
-	requires: [ 'Deft.ioc.Injector' ]
+	requires: [ 
+		'Deft.ioc.Injector'
+	]
 	
 	###*
 	@private
