@@ -1055,6 +1055,79 @@ describe('Deft.ioc.Injector', function() {
           return this.callParent(arguments);
         }
       });
+      Ext.define('InjectableComponentSubclass', {
+        extend: 'Ext.Component',
+        mixins: ['Deft.mixin.Injectable'],
+        inject: configuredIdentifiers,
+        config: {
+          classNameAsString: null,
+          className: null,
+          classNameEagerly: null,
+          classNameLazily: null,
+          classNameAsSingleton: null,
+          classNameAsSingletonEagerly: null,
+          classNameAsSingletonLazily: null,
+          classNameAsPrototype: null,
+          classNameAsPrototypeLazily: null,
+          classNameWithParameters: null,
+          classNameWithParametersEagerly: null,
+          classNameWithParametersLazily: null,
+          classNameWithParametersAsSingleton: null,
+          classNameWithParametersAsSingletonEagerly: null,
+          classNameWithParametersAsSingletonLazily: null,
+          classNameWithParametersAsPrototype: null,
+          classNameWithParametersAsPrototypeLazily: null,
+          classNameForSingletonClass: null,
+          classNameForSingletonClassEagerly: null,
+          classNameForSingletonClassLazily: null,
+          classNameForSingletonClassAsSingleton: null,
+          classNameForSingletonClassAsSingletonEagerly: null,
+          classNameForSingletonClassAsSingletonLazily: null,
+          fn: null,
+          fnEagerly: null,
+          fnLazily: null,
+          fnAsSingleton: null,
+          fnAsSingletonEagerly: null,
+          fnAsSingletonLazily: null,
+          fnAsPrototype: null,
+          fnAsPrototypeLazily: null,
+          booleanValue: null,
+          booleanValueLazily: null,
+          booleanValueAsSingleton: null,
+          booleanValueAsSingletonLazily: null,
+          stringValue: null,
+          stringValueLazily: null,
+          stringValueAsSingleton: null,
+          stringValueAsSingletonLazily: null,
+          numberValue: null,
+          numberValueLazily: null,
+          numberValueAsSingleton: null,
+          numberValueAsSingletonLazily: null,
+          dateValue: null,
+          dateValueLazily: null,
+          dateValueAsSingleton: null,
+          dateValueAsSingletonLazily: null,
+          arrayValue: null,
+          arrayValueLazily: null,
+          arrayValueAsSingleton: null,
+          arrayValueAsSingletonLazily: null,
+          objectValue: null,
+          objectValueLazily: null,
+          objectValueAsSingleton: null,
+          objectValueAsSingletonLazily: null,
+          classValue: null,
+          classValueLazily: null,
+          classValueAsSingleton: null,
+          classValueAsSingletonLazily: null,
+          functionValue: null,
+          functionValueLazily: null,
+          functionValueAsSingleton: null,
+          functionValueAsSingletonLazily: null
+        },
+        constructor: function(config) {
+          return this.callParent(arguments);
+        }
+      });
       it('should inject configured dependencies into properties for a given class instance', function() {
         var configuredIdentifier, resolvedValue, simpleClassInstance, _j, _len1;
         simpleClassInstance = Ext.create('SimpleClass');
@@ -1118,6 +1191,25 @@ describe('Deft.ioc.Injector', function() {
             }
           } else {
             expect(injectableComplexClassInstance[getterFunctionName]()).toBeInstanceOf(Ext.ClassManager.getClass(resolvedValue).getName());
+          }
+        }
+      });
+      it('should automatically inject configured dependencies into configs for a given Injectable \`Ext.Component\` subclass instance', function() {
+        var configuredIdentifier, getterFunctionName, injectableComponentSubclassInstance, resolvedValue, _j, _len1;
+        injectableComponentSubclassInstance = Ext.create('InjectableComponentSubclass');
+        for (_j = 0, _len1 = configuredIdentifiers.length; _j < _len1; _j++) {
+          configuredIdentifier = configuredIdentifiers[_j];
+          getterFunctionName = 'get' + Ext.String.capitalize(configuredIdentifier);
+          expect(injectableComponentSubclassInstance[getterFunctionName]()).not.toBeNull();
+          resolvedValue = Deft.Injector.resolve(configuredIdentifier);
+          if (configuredIdentifier.indexOf('Prototype') === -1) {
+            if (configuredIdentifier.indexOf('objectValue') === -1) {
+              expect(injectableComponentSubclassInstance[getterFunctionName]()).toBe(resolvedValue);
+            } else {
+              expect(injectableComponentSubclassInstance[getterFunctionName]()).not.toBeNull();
+            }
+          } else {
+            expect(injectableComponentSubclassInstance[getterFunctionName]()).toBeInstanceOf(Ext.ClassManager.getClass(resolvedValue).getName());
           }
         }
       });

@@ -507,7 +507,9 @@ Ext.define('Deft.ioc.Injector', {
         targetInstance[setterFunctionName].call(targetInstance, value);
       }
     } else {
-      if (Ext.isFunction(targetInstance.initConfig)) {
+      if ((Ext.getVersion('extjs') != null) && targetInstance instanceof Ext.ClassManager.get('Ext.Component')) {
+        targetInstance.injectConfig = injectConfig;
+      } else if (Ext.isFunction(targetInstance.initConfig)) {
         originalInitConfigFunction = targetInstance.initConfig;
         targetInstance.initConfig = function(config) {
           var result;
@@ -517,6 +519,29 @@ Ext.define('Deft.ioc.Injector', {
       }
     }
     return targetInstance;
+  }
+}, function() {
+  if (Ext.getVersion('extjs') != null) {
+    if (Ext.getVersion('core').isLessThan('4.1.0')) {
+      Ext.require('Ext.Component', function() {
+        Ext.Component.override({
+          constructor: function(config) {
+            config = Ext.Object.merge({}, config || {}, this.injectConfig || {});
+            delete this.injectConfig;
+            return this.callOverridden([config]);
+          }
+        });
+      });
+    } else {
+      Ext.define('Deft.InjectableComponent', {
+        override: 'Ext.Component',
+        constructor: function(config) {
+          config = Ext.Object.merge({}, config || {}, this.injectConfig || {});
+          delete this.injectConfig;
+          return this.callParent([config]);
+        }
+      });
+    }
   }
 });
 /*
