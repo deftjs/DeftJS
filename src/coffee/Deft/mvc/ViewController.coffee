@@ -14,18 +14,26 @@ Ext.define( 'Deft.mvc.ViewController',
 		'Deft.log.Logger'
 		'Deft.mvc.ComponentSelector'
 	]
-	
+
 	config:
 		###*
 		View controlled by this ViewController.
 		###
 		view: null
+
+	###*
+	Observers automatically created and removed by this ViewController.
+	###
+	observe: null
 	
 	constructor: ( config = {} ) ->
 		if config.view
 			@controlView( config.view )
-		return @initConfig( config )
-	
+		initializedConfig = @initConfig( config ) #Ensure any config values are set before creating observers.
+		if @observe
+			@createObservers()
+		return initializedConfig
+
 	###*
 	@protected
 	###
@@ -95,7 +103,7 @@ Ext.define( 'Deft.mvc.ViewController',
 				listeners = config unless config.selector? or config.live?
 			live = config.live? and config.live
 			@registerComponent( id, selector, listeners, live )
-		
+
 		@init()
 		return
 	
@@ -114,6 +122,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	onViewDestroy: ->
 		for id of @registeredComponentSelectors
 			@unregisterComponent( id )
+		@removeObservers()
 		return
 	
 	registerComponent: ( id, selector, listeners, live = false ) ->
@@ -161,7 +170,61 @@ Ext.define( 'Deft.mvc.ViewController',
 			getterName = 'get' + Ext.String.capitalize( id )
 			if @[ getterName ].generated
 				@[ getterName ] = null
-		
+
 		@registeredComponentSelectors[ id ] = null
 		return
+
+	###*
+	@protected
+	###
+	createObservers: ->
+		for target, events of @observe
+			if @[ target ] and @[ target ]?.isObservable
+				for eventName, listener of events
+					Deft.Logger.log( "Creating observer on '#{ target }' for event '#{ eventName }'." )
+					if Ext.isFunction( listener )
+						@[ target ].on( eventName, listener, @ )
+					else if Ext.isFunction( @[ listener ] )
+						@[ target ].on( eventName, @[ listener ], @)
+					else
+						Deft.Logger.warn( "Could not create observer on '#{ target }' for event '#{ eventName }'." )
+			else
+				Deft.Logger.warn( "Could not create observers on '#{ target }' because '#{ target }' is not an Ext.util.Observable" )
+
+		return
+
+	###*
+	@protected
+	###
+	removeObservers: ->
+		for target, events of @observe
+			if @[ target ] and @[ target ]?.isObservable
+				for eventName, listener of events
+					Deft.Logger.log( "Removing observer on '#{ target }' for event '#{ eventName }'." )
+					if Ext.isFunction( listener )
+						@[ target ].un( eventName, listener, false )
+					else if Ext.isFunction( @[ listener ] )
+						@[ target ].un( eventName, @[ listener ], @)
+
+		return
+
 )
+
+
+Ext.Class.registerPreprocessor( 'observe', ( Class, data, hooks, callback ) ->
+
+	# Workaround: Ext JS 4.0 passes the callback as the third parameter, Sencha Touch 2.0.1 and Ext JS 4.1 passes it as the fourth parameter
+	if arguments.length is 3
+		# NOTE: Altering a parameter also modifies arguments, so clone it to a true Array first.
+		parameters = Ext.toArray( arguments )
+		hooks = parameters[ 1 ]
+		callback = parameters[ 2 ]
+
+	if Class.superclass and Class.superclass?.observe
+		data.observe = {} if not data?.observe
+		data.observe = Ext.merge( {}, Class.superclass.observe, data.observe )
+
+	return
+)
+
+Ext.Class.setDefaultPreprocessorPosition( 'observe', 'before', 'extend' )

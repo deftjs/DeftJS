@@ -1318,6 +1318,244 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( eventListenerFunction.callCount ).toBe( 0 )
 		)
 	)
+
+	describe( 'Observer creation', ->
+
+		it( 'should merge child observe configurations', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				observe:
+					messageBus:
+						parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				observe:
+					messageBus:
+						childMessage: "childMessageHandler"
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass' )
+
+			expectedObserve =
+				messageBus:
+					childMessage: 'childMessageHandler'
+					parentMessage: 'parentMessageHandler'
+
+			expect( exampleInstance.observe ).toEqual( expectedObserve )
+		)
+
+		it( 'should merge three levels of child observe configurations', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				observe:
+					messageBus:
+						parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				observe:
+					messageBus:
+						childMessage: "childMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				observe:
+					messageBus:
+						child2Message: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+
+			expectedObserve =
+				messageBus:
+					child2Message: 'child2MessageHandler'
+					childMessage: 'childMessageHandler'
+					parentMessage: 'parentMessageHandler'
+
+			expect( exampleInstance.observe ).toEqual( expectedObserve )
+		)
+
+		it( 'should merge three levels of child observe configurations, with child observers taking precidence', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				observe:
+					messageBus:
+						parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				observe:
+					messageBus:
+						childMessage: "childMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				observe:
+					messageBus:
+						parentMessage: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+
+			expectedObserve =
+				messageBus:
+					parentMessage: 'child2MessageHandler'
+					childMessage: 'childMessageHandler'
+
+			expect( exampleInstance.observe ).toEqual( expectedObserve )
+		)
+
+		it( 'should merge three levels of child observe configurations when middle class has no messages', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				observe:
+					messageBus:
+						parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				observe:
+					messageBus:
+						child2Message: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+
+			expectedObserve =
+				messageBus:
+					child2Message: 'child2MessageHandler'
+					parentMessage: 'parentMessageHandler'
+
+			expect( exampleInstance.observe ).toEqual( expectedObserve )
+		)
+
+		it( 'should merge three levels of child observe configurations when parent has no messages', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				observe:
+					messageBus:
+						childMessage: "childMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass2',
+				extend: 'ExampleSubClass'
+
+				observe:
+					messageBus:
+						child2Message: "child2MessageHandler"
+
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass2' )
+
+			expectedObserve =
+				messageBus:
+					child2Message: 'child2MessageHandler'
+					childMessage: 'childMessageHandler'
+
+			expect( exampleInstance.observe ).toEqual( expectedObserve )
+		)
+
+		it( 'should attach listeners to observed objects', ->
+
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				config:
+					messageBus: null
+					store: null
+
+				observe:
+					messageBus:
+						parentMessage: "parentMessageHandler"
+					store:
+						beforesync: "storeHandler"
+
+				parentMessageHandlerCalled: false
+				storeHandlerCalled: false
+
+				parentMessageHandler: ( eventData ) -> @parentMessageHandlerCalled = eventData
+				storeHandler: ( eventData ) -> @storeHandlerCalled = eventData
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				observe:
+					messageBus:
+						childMessage: "childMessageHandler"
+
+				childMessageHandlerCalled: false
+
+				childMessageHandler: ( eventData ) ->
+					@childMessageHandlerCalled = eventData
+			)
+
+			messageBus = Ext.create( 'Ext.util.Observable' )
+			store = Ext.create( 'Ext.data.ArrayStore' )
+
+			exampleInstance = Ext.create( 'ExampleSubClass',
+				messageBus: messageBus
+				store: store
+			)
+
+			# Cannot just spy on the handler methods because messageBus listener will always reference the original method, not the spy.
+			waitsFor( ( -> exampleInstance.parentMessageHandlerCalled ), "Parent message handler was not called.", 1000 )
+
+			parentEventData = { value1: true, value2: false }
+			messageBus.fireEvent( 'parentMessage', parentEventData )
+
+			runs( ->
+				expect( exampleInstance.parentMessageHandlerCalled ).toEqual( parentEventData )
+			)
+
+			waitsFor( ( -> exampleInstance.childMessageHandlerCalled ), "Child message handler was not called.", 1000 )
+
+			messageBus.fireEvent( 'childMessage', 'childMessageEventData' )
+
+			runs( ->
+				expect( exampleInstance.childMessageHandlerCalled ).toEqual( 'childMessageEventData' )
+			)
+
+			waitsFor( ( -> exampleInstance.storeHandlerCalled ), "Store beforesync handler was not called.", 1000 )
+
+			store.fireEvent( 'beforesync', 'beforeSyncEventData' )
+
+			runs( ->
+				expect( exampleInstance.storeHandlerCalled ).toEqual( 'beforeSyncEventData' )
+			)
+		)
+
+	)
 	
 	describe( 'Destruction and clean-up', ->
 		
@@ -1626,6 +1864,52 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			for component in components
 				expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+		)
+
+		it( 'should remove listeners from observed objects when the view controller is destroyed', ->
+
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				config:
+					store: null
+					store2: null
+
+				observe:
+					store:
+						beforesync: "genericHandler"
+					store2:
+						beforeload: "genericHandler"
+
+				genericHandler: -> return
+			)
+
+			view = Ext.create( 'ExampleView' )
+			store = Ext.create( 'Ext.data.ArrayStore' )
+			store2 = Ext.create( 'Ext.data.ArrayStore' )
+
+			expect( store.hasListener( 'beforesync' ) ).toBeFalsy()
+			expect( store2.hasListener( 'beforeload' ) ).toBeFalsy()
+
+			viewController = Ext.create( 'ExampleClass',
+				view: view
+				store: store
+				store2: store2
+			)
+
+			expect( store.hasListener( 'beforesync' ) ).toBeTruthy()
+			expect( store2.hasListener( 'beforeload' ) ).toBeTruthy()
+
+			spyOn( viewController, 'removeObservers' ).andCallThrough()
+			waitsFor( ( -> viewController.removeObservers.wasCalled ), "Observe listeners were not removed by view controller.", 1000 )
+
+			view.destroy()
+
+			runs( ->
+				expect( store.hasListener( 'beforesync' ) ).toBeFalsy()
+				expect( store2.hasListener( 'beforeload' ) ).toBeFalsy()
+			)
+
 		)
 	)
 	
