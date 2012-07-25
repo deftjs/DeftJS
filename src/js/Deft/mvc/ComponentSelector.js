@@ -53,14 +53,18 @@ Ext.define('Deft.mvc.ComponentSelector', {
     }
     this.selectorListeners = [];
   },
+  /**
+  	Add an event listener to this component selector.
+  */
+
   addListener: function(eventName, fn, scope, options) {
     var selectorListener;
     if (this.findListener(eventName, fn, scope) != null) {
       Ext.Error.raise({
-        msg: "Error adding '" + eventName + "' listener: an existing listener was already registered for '" + this.id + "."
+        msg: "Error adding '" + eventName + "' listener: an existing listener for the specified function was already registered for '" + this.selector + "."
       });
     }
-    Deft.Logger.log("Adding '" + eventName + "' listener to '" + this.id + "'.");
+    Deft.Logger.log("Adding '" + eventName + "' listener to '" + this.selector + "'.");
     selectorListener = Ext.create('Deft.mvc.ComponentSelectorListener', {
       componentSelector: this,
       eventName: eventName,
@@ -70,11 +74,15 @@ Ext.define('Deft.mvc.ComponentSelector', {
     });
     this.selectorListeners.push(selectorListener);
   },
+  /**
+  	Remove an event listener from this component selector.
+  */
+
   removeListener: function(eventName, fn, scope) {
     var selectorListener;
     selectorListener = this.findListener(eventName, fn, scope);
     if (selectorListener != null) {
-      Deft.Logger.log("Removing '" + eventName + "' listener from '" + this.id + "'.");
+      Deft.Logger.log("Removing '" + eventName + "' listener from '" + this.selector + "'.");
       selectorListener.destroy();
       Ext.Array.remove(this.selectorListeners, selectorListener);
     }
@@ -89,20 +97,5 @@ Ext.define('Deft.mvc.ComponentSelector', {
       }
     }
     return null;
-  },
-  locate: function() {
-    var matches;
-    if (this.selector != null) {
-      matches = Ext.ComponentQuery.query(this.selector, this.view);
-      if (matches.length === 0) {
-        return null;
-      } else if (matches.length === 1) {
-        return matches[0];
-      } else {
-        return matches;
-      }
-    } else {
-      return this.view;
-    }
   }
 });

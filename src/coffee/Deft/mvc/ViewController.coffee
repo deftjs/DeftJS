@@ -32,6 +32,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	controlView: ( view ) ->
 		if view instanceof Ext.ClassManager.get( 'Ext.Container' )
 			@setView( view )
+			@registeredComponentReferences = {}
 			@registeredComponentSelectors = {}
 			
 			if Ext.getVersion( 'extjs' )?
@@ -94,7 +95,8 @@ Ext.define( 'Deft.mvc.ViewController',
 			else 
 				listeners = config unless config.selector? or config.live?
 			live = config.live? and config.live
-			@registerComponent( id, selector, listeners, live )
+			@addComponentReference( id, selector, live )
+			@addComponentSelector( selector, listeners, live )
 		
 		@init()
 		return
@@ -112,49 +114,45 @@ Ext.define( 'Deft.mvc.ViewController',
 	@private
 	###
 	onViewDestroy: ->
-		for id of @registeredComponentSelectors
-			@unregisterComponent( id )
+		for id of @registeredComponentReferences
+			@removeComponentReference( id )
+		for selector of @registeredComponentSelectors
+			@removeComponentSelector( selector )
 		return
 	
-	registerComponent: ( id, selector, listeners, live = false ) ->
-		Deft.Logger.log( "Registering '#{ id }' component." )
+	###*
+	Add a component accessor method the ViewController for the specified view-relative selector.
+	###
+	addComponentReference: ( id, selector, live = false ) ->
+		Deft.Logger.log( "Adding '#{ id }' component reference for selector: '#{ selector }'." )
 		
-		if @registeredComponentSelectors[ id ]?
-			Ext.Error.raise( msg: "Error registering component: an existing component already registered as '#{ id }'." )
-		
-		componentSelector = Ext.create( 'Deft.mvc.ComponentSelector',
-			id: id
-			view: @getView()
-			selector: selector
-			listeners: listeners
-			scope: @
-			live: live
-		)
+		if @registeredComponentReferences[ id ]?
+			Ext.Error.raise( msg: "Error adding component reference: an existing component reference was already registered as '#{ id }'." )
 		
 		# Add generated getter function.
 		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
 			unless @[ getterName ]?
 				if live
-					@[ getterName ] = -> componentSelector.locate()
+					@[ getterName ] = Ext.Function.pass( @getViewComponent, [ selector ], @ )
 				else
-					matches = componentSelector.locate()
+					matches = @getViewComponent( selector )
 					unless matches?
 						Ext.Error.raise( msg: "Error locating component: no component(s) found matching '#{ selector }'." )
 					@[ getterName ] = -> matches
 				@[ getterName ].generated = true
-		
-		@registeredComponentSelectors[ id ] = componentSelector
+				
+		@registeredComponentReferences[ id ] = true
 		return
 	
-	unregisterComponent: ( id ) ->
-		Deft.Logger.log( "Unregistering '#{ id }' component." )
+	###*
+	Remove a component accessor method the ViewController for the specified view-relative selector.
+	###
+	removeComponentReference: ( id ) ->
+		Deft.Logger.log( "Removing '#{ id }' component reference." )
 		
-		unless @registeredComponentSelectors[ id ]?
-			Ext.Error.raise( msg: "Error unregistering component: no component is registered as '#{ id }'." )
-			
-		componentSelector = @registeredComponentSelectors[ id ]
-		componentSelector.destroy()
+		unless @registeredComponentReferences[ id ]?
+			Ext.Error.raise( msg: "Error removing component reference: no component reference is registered as '#{ id }'." )
 		
 		# Remove generated getter function.
 		if id isnt 'view'
@@ -162,6 +160,64 @@ Ext.define( 'Deft.mvc.ViewController',
 			if @[ getterName ].generated
 				@[ getterName ] = null
 		
-		@registeredComponentSelectors[ id ] = null
+		delete @registeredComponentReferences[ id ]
+		
 		return
+	
+	###*
+	Get the component(s) corresponding to the specified view-relative selector.
+	###
+	getViewComponent: ( selector ) ->
+		if selector?
+			matches = Ext.ComponentQuery.query( selector, @getView() )
+			if matches.length is 0
+				return null
+			else if matches.length is 1
+				return matches[ 0 ]
+			else
+				return matches
+		else
+			return @getView()
+	
+	###*
+	Add a component selector with the specified listeners for the specified view-relative selector.
+	###
+	addComponentSelector: ( selector, listeners, live = false ) ->
+		Deft.Logger.log( "Adding component selector for: '#{ selector }'." )
+		
+		existingComponentSelector = @getComponentSelector( selector )
+		if existingComponentSelector?
+			Ext.Error.raise( msg: "Error adding component selector: an existing component selector was already registered for '#{ selector }'." )
+		
+		componentSelector = Ext.create( 'Deft.mvc.ComponentSelector',
+			view: @getView()
+			selector: selector
+			listeners: listeners
+			scope: @
+			live: live
+		)
+		@registeredComponentSelectors[ selector ] = componentSelector
+		
+		return
+	
+	###*
+	Remove a component selector with the specified listeners for the specified view-relative selector.
+	###
+	removeComponentSelector: ( selector ) ->
+		Deft.Logger.log( "Removing component selector for '#{ selector }'." )
+		
+		existingComponentSelector = @getComponentSelector( selector )
+		unless existingComponentSelector?
+			Ext.Error.raise( msg: "Error removing component selector: no component selector registered for '#{ selector }'." )
+		
+		existingComponentSelector.destroy()
+		delete @registeredComponentSelectors[ selector ]
+		
+		return
+	
+	###*
+	Get the component selectorcorresponding to the specified view-relative selector.
+	###
+	getComponentSelector: ( selector ) ->
+		return @registeredComponentSelectors[ selector ]
 )
