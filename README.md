@@ -506,9 +506,9 @@ Provided the specified `controller` extends `Deft.mvc.ViewController`, the contr
 # Development Team
 
 * [John Yanarella](http://twitter.com/johnyanarella) (Creator)
-* [David Tucker](http://www.davidtucker.net/)
-* [Brian Kotek](http://www.briankotek.com/)
 * [Ryan Campbell](http://www.ryancampbell.com/)
+* [Brian Kotek](http://www.briankotek.com/)
+* [David Tucker](http://www.davidtucker.net/)
 
 # Acknowledgements
 
