@@ -3,7 +3,6 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
-# @private
 Ext.define( 'Deft.mvc.ComponentSelector',
 	requires: [
 		'Ext.ComponentQuery'
@@ -51,11 +50,14 @@ Ext.define( 'Deft.mvc.ComponentSelector',
 		@selectorListeners = []
 		return
 	
+	###*
+	Add an event listener to this component selector.
+	###
 	addListener: ( eventName, fn, scope, options ) ->
 		if @findListener( eventName, fn, scope )?
-			Ext.Error.raise( msg: "Error adding '#{ eventName }' listener: an existing listener was already registered for '#{ @id }." )
+			Ext.Error.raise( msg: "Error adding '#{ eventName }' listener: an existing listener for the specified function was already registered for '#{ @selector }." )
 		
-		Deft.Logger.log( "Adding '#{ eventName }' listener to '#{ @id }'." )
+		Deft.Logger.log( "Adding '#{ eventName }' listener to '#{ @selector }'." )
 		selectorListener = Ext.create( 'Deft.mvc.ComponentSelectorListener',
 			componentSelector: @
 			eventName: eventName
@@ -66,10 +68,13 @@ Ext.define( 'Deft.mvc.ComponentSelector',
 		@selectorListeners.push( selectorListener )
 		return
 	
+	###*
+	Remove an event listener from this component selector.
+	###
 	removeListener: ( eventName, fn, scope ) ->
 		selectorListener = @findListener( eventName, fn, scope )
 		if selectorListener?
-			Deft.Logger.log( "Removing '#{ eventName }' listener from '#{ @id }'." )
+			Deft.Logger.log( "Removing '#{ eventName }' listener from '#{ @selector }'." )
 			selectorListener.destroy()
 			Ext.Array.remove( @selectorListeners, selectorListener )
 		return
@@ -80,16 +85,4 @@ Ext.define( 'Deft.mvc.ComponentSelector',
 			if selectorListener.eventName is eventName and selectorListener.fn is fn and selectorListener.scope is scope
 				return selectorListener
 		return null
-	
-	locate: ->
-		if @selector?
-			matches = Ext.ComponentQuery.query( @selector, @view )
-			if matches.length is 0
-				return null
-			else if matches.length is 1
-				return matches[ 0 ]
-			else
-				return matches
-		else
-			return @view
 )
