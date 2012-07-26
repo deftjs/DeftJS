@@ -13,6 +13,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	requires: [ 
 		'Deft.log.Logger'
 		'Deft.mvc.ComponentSelector'
+		'Deft.mvc.Observer'
 	]
 
 	config:
@@ -30,8 +31,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		if config.view
 			@controlView( config.view )
 		initializedConfig = @initConfig( config ) #Ensure any config values are set before creating observers.
-		if @observe
-			@createObservers()
+		@createObservers()
 		return initializedConfig
 
 	###*
@@ -234,33 +234,27 @@ Ext.define( 'Deft.mvc.ViewController',
 	@protected
 	###
 	createObservers: ->
+		@registeredObservers = {}
 		for target, events of @observe
-			if @[ target ] and @[ target ]?.isObservable
-				for eventName, listener of events
-					Deft.Logger.log( "Creating observer on '#{ target }' for event '#{ eventName }'." )
-					if Ext.isFunction( listener )
-						@[ target ].on( eventName, listener, @ )
-					else if Ext.isFunction( @[ listener ] )
-						@[ target ].on( eventName, @[ listener ], @)
-					else
-						Deft.Logger.warn( "Could not create observer on '#{ target }' for event '#{ eventName }'." )
-			else
-				Deft.Logger.warn( "Could not create observers on '#{ target }' because '#{ target }' is not an Ext.util.Observable" )
+			@addObserver( target, events )
 
 		return
+
+	addObserver: ( target, events ) ->
+		observer = Ext.create( 'Deft.mvc.Observer',
+			host: @
+			target: target
+			events: events
+		)
+		@registeredObservers[ target ] = observer
 
 	###*
 	@protected
 	###
 	removeObservers: ->
-		for target, events of @observe
-			if @[ target ] and @[ target ]?.isObservable
-				for eventName, listener of events
-					Deft.Logger.log( "Removing observer on '#{ target }' for event '#{ eventName }'." )
-					if Ext.isFunction( listener )
-						@[ target ].un( eventName, listener, false )
-					else if Ext.isFunction( @[ listener ] )
-						@[ target ].un( eventName, @[ listener ], @)
+		for target, observer of @registeredObservers
+			observer.destroy()
+			delete @registeredObservers[ target ]
 
 		return
 
@@ -276,7 +270,17 @@ Ext.Class.registerPreprocessor( 'observe', ( Class, data, hooks, callback ) ->
 		hooks = parameters[ 1 ]
 		callback = parameters[ 2 ]
 
-	if Class.superclass and Class.superclass?.observe
+	extendsClass = ( className, currentClass ) ->
+		try
+			return true if currentClass.getName() is className
+			if currentClass?.superclass
+				if currentClass.superclass.self.getName() is className then return true
+				else return extendsClass( className, currentClass.superclass.self )
+			else return false
+		catch error
+			return false
+
+	if Class.superclass and Class.superclass?.observe and extendsClass( 'Deft.mvc.ViewController', Class )
 		data.observe = {} if not data?.observe
 		data.observe = Ext.merge( {}, Class.superclass.observe, data.observe )
 

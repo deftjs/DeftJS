@@ -1522,6 +1522,7 @@ describe( 'Deft.mvc.ViewController', ->
 
 			messageBus = Ext.create( 'Ext.util.Observable' )
 			store = Ext.create( 'Ext.data.ArrayStore' )
+			#store.data - event: add
 
 			exampleInstance = Ext.create( 'ExampleSubClass',
 				messageBus: messageBus
@@ -1652,6 +1653,9 @@ describe( 'Deft.mvc.ViewController', ->
 		)
 		
 		it( 'should remove event listeners it attached to the view when the associated view (and view controller) is destroyed', ->
+			console.log( 'starting observer removal test' )
+
+
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
 				
