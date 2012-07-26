@@ -38,15 +38,23 @@ Ext.define( 'Deft.mvc.Observer',
 		Ext.apply( @, config )
 
 		if @host[ @target ] and @host[ @target ]?.isObservable
-			for eventName, listener of @events
+			for eventName, fn of @events
 				Deft.Logger.log( "Creating observer on '#{ @target }' for event '#{ eventName }'." )
 				console.log( "Creating observer on '#{ @target }' for event '#{ eventName }'." )
-				if Ext.isFunction( listener )
-					@host[ @target ].on( eventName, listener, @host )
-				else if Ext.isFunction( @host[ listener ] )
-					@host[ @target ].on( eventName, @host[ listener ], @host )
+
+				listenerData = null
+
+				if Ext.isFunction( fn )
+					listenerData = { target: @host[ @target ], event: eventName, fn: fn, scope: @host }
+				else if Ext.isFunction( @host[ fn ] )
+					listenerData = { target: @host[ @target ], event: eventName, fn: @host[ fn ], scope: @host }
+
+				if listenerData
+					listenerData.target.on( listenerData.event, listenerData.fn, listenerData.scope )
+					@listeners.push( listenerData )
 				else
 					Deft.Logger.warn( "Could not create observer on '#{ @target }' for event '#{ eventName }'." )
+
 		else
 			Deft.Logger.warn( "Could not create observers on '#{ @target }' because '#{ @target }' is not an Ext.util.Observable" )
 			console.log( "Could not create observers on '#{ @target }' because '#{ @target }' is not an Ext.util.Observable" )
@@ -54,15 +62,8 @@ Ext.define( 'Deft.mvc.Observer',
 		return @
 
 	destroy: ->
-		if @host[ @target ] and @host[ @target ]?.isObservable
-			for eventName, listener of @events
-				Deft.Logger.log( "Removing observer on '#{ @target }' for event '#{ eventName }'." )
-				console.log( "Removing observer on '#{ @target }' for event '#{ eventName }'." )
-				if Ext.isFunction( listener )
-					@host[ @target ].un( eventName, listener, @host )
-				else if Ext.isFunction( @host[ listener ] )
-					@host[ @target ].un( eventName, @host[ listener ], @host )
-
-		delete @host
+		for listenerData in @listeners
+			listenerData.target.un( listenerData.event, listenerData.fn, listenerData.scope )
+		@listeners = []
 		return
 )
