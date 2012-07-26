@@ -229,7 +229,6 @@ Ext.define( 'Deft.mvc.ViewController',
 	###
 	getComponentSelector: ( selector ) ->
 		return @registeredComponentSelectors[ selector ]
-)
 
 	###*
 	@protected
