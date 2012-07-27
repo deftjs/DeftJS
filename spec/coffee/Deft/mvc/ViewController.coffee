@@ -1487,6 +1487,8 @@ describe( 'Deft.mvc.ViewController', ->
 
 		it( 'should attach listeners to observed objects', ->
 
+			console.log( 'starting attach observer test' )
+
 			Ext.define( 'ExampleClass',
 				extend: 'Deft.mvc.ViewController'
 
@@ -1496,15 +1498,19 @@ describe( 'Deft.mvc.ViewController', ->
 
 				observe:
 					messageBus:
-						parentMessage: "parentMessageHandler"
+						parentMessage: "parentMessageHandler" #host: @, target: @messageBus, fn: host.parentMessageHandler
 					store:
-						beforesync: "storeHandler"
+						beforesync: "storeHandler" #host: @, target: @store, fn: host.storeHandler
+					'store.data':
+						add: "storeDataHandler" #host: @store, target: @store.data, fn: host.storeDataHandler
 
 				parentMessageHandlerCalled: false
 				storeHandlerCalled: false
+				storeDataHandlerCalled: false
 
 				parentMessageHandler: ( eventData ) -> @parentMessageHandlerCalled = eventData
 				storeHandler: ( eventData ) -> @storeHandlerCalled = eventData
+				storeDataHandler: ( eventData ) -> @storeDataHandlerCalled = eventData
 			)
 
 			Ext.define( 'ExampleSubClass',
@@ -1553,6 +1559,14 @@ describe( 'Deft.mvc.ViewController', ->
 
 			runs( ->
 				expect( exampleInstance.storeHandlerCalled ).toEqual( 'beforeSyncEventData' )
+			)
+
+			waitsFor( ( -> exampleInstance.storeDataHandlerCalled ), "Nested store.data handler was not called.", 1000 )
+
+			store.data.fireEvent( 'add', 'storeDataAddEventData' )
+
+			runs( ->
+				expect( exampleInstance.storeDataHandlerCalled ).toEqual( 'storeDataAddEventData' )
 			)
 		)
 
