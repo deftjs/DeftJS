@@ -41,6 +41,7 @@ Ext.define( 'Deft.mvc.Observer',
 
 		if @isPropertyChain( target )
 			propertyChain = @parsePropertyChain( host, target )
+			return null if not propertyChain
 			host = propertyChain.host
 			target = propertyChain.target
 
