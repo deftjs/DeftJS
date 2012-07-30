@@ -9,7 +9,6 @@ Jasmine test suite for Deft.mixin.Controllable
 */
 
 describe('Deft.mixin.Controllable', function() {
-  var baseViewControllerConstructorSpy, baseViewControllerInstance, baseViewInstance, extendedViewControllerConstructorSpy, extendedViewControllerInstance, extendedViewInstance;
   it('should (when specified within a mixins Array) create an instance of the view controller specified by the target view `controller` property and configure it with a reference to the target view instance when an instance of the target view is created', function() {
     var constructorSpy, exampleViewControllerInstance, exampleViewInstance;
     exampleViewInstance = null;
@@ -137,48 +136,191 @@ describe('Deft.mixin.Controllable', function() {
       return constructorSpy.originalValue.apply(this, arguments);
     });
     exampleViewInstance = Ext.create('ExampleView');
-    return expect(exampleViewInstance.getController()).toBe(exampleViewControllerInstance);
+    expect(exampleViewInstance.getController()).toBe(exampleViewControllerInstance);
   });
-  it('should only create and attach the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified', baseViewInstance = null, baseViewControllerInstance = null, extendedViewInstance = null, extendedViewControllerInstance = null, Ext.define('BaseViewController', {
-    extend: 'Deft.mvc.ViewController',
-    constructor: function() {
-      return this.callParent(arguments);
-    }
-  }), Ext.define('ExtendedViewController', {
-    extend: 'BaseViewController',
-    constructor: function() {
-      return this.callParent(arguments);
-    }
-  }), Ext.define('BaseView', {
-    extend: 'Ext.Container',
-    mixins: ['Deft.mixin.Controllable'],
-    controller: 'BaseViewController'
-  }), Ext.define('ExtendedView', {
-    extend: 'BaseView',
-    mixins: ['Deft.mixin.Controllable'],
-    controller: 'ExtendedViewController'
-  }), baseViewControllerConstructorSpy = spyOn(BaseViewController.prototype, 'constructor').andCallFake(function() {
-    baseViewControllerInstance = this;
-    return baseViewControllerConstructorSpy.originalValue.apply(this, arguments);
-  }), extendedViewControllerConstructorSpy = spyOn(ExtendedViewController.prototype, 'constructor').andCallFake(function() {
-    extendedViewControllerInstance = this;
-    return extendedViewControllerConstructorSpy.originalValue.apply(this, arguments);
-  }), baseViewInstance = Ext.create('BaseView'), expect(baseViewControllerConstructorSpy).toHaveBeenCalled(), expect(baseViewControllerConstructorSpy.callCount).toBe(1), expect(extendedViewControllerConstructorSpy).not.toHaveBeenCalled(), expect(baseViewControllerInstance).not.toBe(null), expect(extendedViewControllerInstance).toBe(null), expect(baseViewInstance.getController()).toBe(baseViewControllerInstance), baseViewControllerConstructorSpy.reset(), extendedViewControllerConstructorSpy.reset(), baseViewControllerInstance = null, extendedViewControllerInstance = null, extendedViewInstance = Ext.create('ExtendedView'), expect(baseViewControllerConstructorSpy).toHaveBeenCalled(), expect(baseViewControllerConstructorSpy.callCount).toBe(1), expect(extendedViewControllerConstructorSpy).toHaveBeenCalled(), expect(extendedViewControllerConstructorSpy.callCount).toBe(1), expect(baseViewControllerInstance).not.toBe(null), expect(extendedViewControllerInstance).not.toBe(null), expect(extendedViewControllerInstance).toBe(baseViewControllerInstance), expect(extendedViewInstance.getController()).toBe(extendedViewControllerInstance));
-  it('should automatically remove that getController() accessor method from the target view when it is destroyed', function() {
-    var exampleViewControllerInstance, exampleViewInstance;
-    exampleViewInstance = null;
-    exampleViewControllerInstance = null;
-    Ext.define('ExampleViewController', {
-      extend: 'Deft.mvc.ViewController'
+  it('should only create and attach the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified', function() {
+    var baseViewControllerConstructorSpy, baseViewControllerInstance, baseViewInstance, extendedViewControllerConstructorSpy, extendedViewControllerInstance, extendedViewInstance;
+    baseViewInstance = null;
+    baseViewControllerInstance = null;
+    extendedViewInstance = null;
+    extendedViewControllerInstance = null;
+    Ext.define('BaseViewController', {
+      extend: 'Deft.mvc.ViewController',
+      constructor: function() {
+        return this.callParent(arguments);
+      }
     });
-    Ext.define('ExampleView', {
+    Ext.define('ExtendedViewController', {
+      extend: 'BaseViewController',
+      constructor: function() {
+        return this.callParent(arguments);
+      }
+    });
+    Ext.define('BaseView', {
       extend: 'Ext.Container',
       mixins: ['Deft.mixin.Controllable'],
-      controller: 'ExampleViewController'
+      controller: 'BaseViewController',
+      constructor: function() {
+        return this.callParent(arguments);
+      }
     });
-    exampleViewInstance = Ext.create('ExampleView');
-    exampleViewInstance.destroy();
-    return expect(exampleViewInstance.getController).toBe(void 0);
+    Ext.define('ExtendedView', {
+      extend: 'BaseView',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'ExtendedViewController',
+      constructor: function() {
+        expect(this.getController()).toBe(extendedViewControllerInstance);
+        return this.callParent(arguments);
+      }
+    });
+    baseViewControllerConstructorSpy = spyOn(BaseViewController.prototype, 'constructor').andCallFake(function() {
+      baseViewControllerInstance = this;
+      return baseViewControllerConstructorSpy.originalValue.apply(this, arguments);
+    });
+    extendedViewControllerConstructorSpy = spyOn(ExtendedViewController.prototype, 'constructor').andCallFake(function() {
+      extendedViewControllerInstance = this;
+      return extendedViewControllerConstructorSpy.originalValue.apply(this, arguments);
+    });
+    baseViewInstance = Ext.create('BaseView');
+    expect(baseViewControllerConstructorSpy).toHaveBeenCalled();
+    expect(baseViewControllerConstructorSpy.callCount).toBe(1);
+    expect(extendedViewControllerConstructorSpy).not.toHaveBeenCalled();
+    expect(baseViewControllerInstance).not.toBe(null);
+    expect(extendedViewControllerInstance).toBe(null);
+    expect(baseViewInstance.getController()).toBe(baseViewControllerInstance);
+    baseViewControllerConstructorSpy.reset();
+    extendedViewControllerConstructorSpy.reset();
+    baseViewControllerInstance = null;
+    extendedViewControllerInstance = null;
+    extendedViewInstance = Ext.create('ExtendedView');
+    expect(baseViewControllerConstructorSpy).toHaveBeenCalled();
+    expect(baseViewControllerConstructorSpy.callCount).toBe(1);
+    expect(extendedViewControllerConstructorSpy).toHaveBeenCalled();
+    expect(extendedViewControllerConstructorSpy.callCount).toBe(1);
+    expect(baseViewControllerInstance).not.toBe(null);
+    expect(extendedViewControllerInstance).not.toBe(null);
+    expect(extendedViewControllerInstance).toBe(baseViewControllerInstance);
+    expect(extendedViewInstance.getController()).toBe(extendedViewControllerInstance);
+  });
+  it('should only create and attach the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified (and the leaf class does not define a constructor)', function() {
+    var baseViewControllerConstructorSpy, baseViewControllerInstance, baseViewInstance, extendedViewControllerConstructorSpy, extendedViewControllerInstance, extendedViewInstance;
+    baseViewInstance = null;
+    baseViewControllerInstance = null;
+    extendedViewInstance = null;
+    extendedViewControllerInstance = null;
+    Ext.define('BaseViewController', {
+      extend: 'Deft.mvc.ViewController',
+      constructor: function() {
+        return this.callParent(arguments);
+      }
+    });
+    Ext.define('ExtendedViewController', {
+      extend: 'BaseViewController',
+      constructor: function() {
+        return this.callParent(arguments);
+      }
+    });
+    Ext.define('BaseView', {
+      extend: 'Ext.Container',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'BaseViewController',
+      constructor: function() {
+        return this.callParent(arguments);
+      }
+    });
+    Ext.define('ExtendedView', {
+      extend: 'BaseView',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'ExtendedViewController'
+    });
+    baseViewControllerConstructorSpy = spyOn(BaseViewController.prototype, 'constructor').andCallFake(function() {
+      baseViewControllerInstance = this;
+      return baseViewControllerConstructorSpy.originalValue.apply(this, arguments);
+    });
+    extendedViewControllerConstructorSpy = spyOn(ExtendedViewController.prototype, 'constructor').andCallFake(function() {
+      extendedViewControllerInstance = this;
+      return extendedViewControllerConstructorSpy.originalValue.apply(this, arguments);
+    });
+    baseViewInstance = Ext.create('BaseView');
+    expect(baseViewControllerConstructorSpy).toHaveBeenCalled();
+    expect(baseViewControllerConstructorSpy.callCount).toBe(1);
+    expect(extendedViewControllerConstructorSpy).not.toHaveBeenCalled();
+    expect(baseViewControllerInstance).not.toBe(null);
+    expect(extendedViewControllerInstance).toBe(null);
+    expect(baseViewInstance.getController()).toBe(baseViewControllerInstance);
+    baseViewControllerConstructorSpy.reset();
+    extendedViewControllerConstructorSpy.reset();
+    baseViewControllerInstance = null;
+    extendedViewControllerInstance = null;
+    extendedViewInstance = Ext.create('ExtendedView');
+    expect(baseViewControllerConstructorSpy).toHaveBeenCalled();
+    expect(baseViewControllerConstructorSpy.callCount).toBe(1);
+    expect(extendedViewControllerConstructorSpy).toHaveBeenCalled();
+    expect(extendedViewControllerConstructorSpy.callCount).toBe(1);
+    expect(baseViewControllerInstance).not.toBe(null);
+    expect(extendedViewControllerInstance).not.toBe(null);
+    expect(extendedViewControllerInstance).toBe(baseViewControllerInstance);
+    expect(extendedViewInstance.getController()).toBe(extendedViewControllerInstance);
+  });
+  it('should only create and attach the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified (and the root class does not define a constructor)', function() {
+    var baseViewControllerConstructorSpy, baseViewControllerInstance, baseViewInstance, extendedViewControllerConstructorSpy, extendedViewControllerInstance, extendedViewInstance;
+    baseViewInstance = null;
+    baseViewControllerInstance = null;
+    extendedViewInstance = null;
+    extendedViewControllerInstance = null;
+    Ext.define('BaseViewController', {
+      extend: 'Deft.mvc.ViewController',
+      constructor: function() {
+        return this.callParent(arguments);
+      }
+    });
+    Ext.define('ExtendedViewController', {
+      extend: 'BaseViewController',
+      constructor: function() {
+        return this.callParent(arguments);
+      }
+    });
+    Ext.define('BaseView', {
+      extend: 'Ext.Container',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'BaseViewController'
+    });
+    Ext.define('ExtendedView', {
+      extend: 'BaseView',
+      mixins: ['Deft.mixin.Controllable'],
+      controller: 'ExtendedViewController',
+      constructor: function() {
+        return this.callParent(arguments);
+      }
+    });
+    baseViewControllerConstructorSpy = spyOn(BaseViewController.prototype, 'constructor').andCallFake(function() {
+      baseViewControllerInstance = this;
+      return baseViewControllerConstructorSpy.originalValue.apply(this, arguments);
+    });
+    extendedViewControllerConstructorSpy = spyOn(ExtendedViewController.prototype, 'constructor').andCallFake(function() {
+      extendedViewControllerInstance = this;
+      return extendedViewControllerConstructorSpy.originalValue.apply(this, arguments);
+    });
+    baseViewInstance = Ext.create('BaseView');
+    expect(baseViewControllerConstructorSpy).toHaveBeenCalled();
+    expect(baseViewControllerConstructorSpy.callCount).toBe(1);
+    expect(extendedViewControllerConstructorSpy).not.toHaveBeenCalled();
+    expect(baseViewControllerInstance).not.toBe(null);
+    expect(extendedViewControllerInstance).toBe(null);
+    expect(baseViewInstance.getController()).toBe(baseViewControllerInstance);
+    baseViewControllerConstructorSpy.reset();
+    extendedViewControllerConstructorSpy.reset();
+    baseViewControllerInstance = null;
+    extendedViewControllerInstance = null;
+    extendedViewInstance = Ext.create('ExtendedView');
+    expect(baseViewControllerConstructorSpy).toHaveBeenCalled();
+    expect(baseViewControllerConstructorSpy.callCount).toBe(1);
+    expect(extendedViewControllerConstructorSpy).toHaveBeenCalled();
+    expect(extendedViewControllerConstructorSpy.callCount).toBe(1);
+    expect(baseViewControllerInstance).not.toBe(null);
+    expect(extendedViewControllerInstance).not.toBe(null);
+    expect(extendedViewControllerInstance).toBe(baseViewControllerInstance);
+    expect(extendedViewInstance.getController()).toBe(extendedViewControllerInstance);
   });
   it('should re-throw any error thrown by the view controller during instantiation', function() {
     Ext.define('ExampleErrorThrowingViewController', {

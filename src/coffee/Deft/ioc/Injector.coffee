@@ -121,7 +121,7 @@ Ext.define( 'Deft.ioc.Injector',
 		# NOTE: Ext JS's Ext.Component doesn't "play by the rules" and never calls Ext.Base::initConfig().
 		# Apply the stored configs to be injected via a constructor override.
 		if Ext.getVersion( 'extjs' )?
-			if Ext.getVersion('core').isLessThan('4.1.0')
+			if Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
 				# Ext JS 4.0
 				Ext.require(
 					'Ext.Component',

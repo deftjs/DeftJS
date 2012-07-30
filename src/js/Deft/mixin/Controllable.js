@@ -10,65 +10,67 @@ A mixin that creates and attaches the specified view controller(s) to the target
 Used in conjunction with {@link Deft.mvc.ViewController}.
 */
 
-Ext.define('Deft.mixin.Controllable', {});
+Ext.define('Deft.mixin.Controllable', {
+  requires: ['Deft.core.Class', 'Deft.log.Logger'],
+  /**
+  	@private
+  */
 
-Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
-  var controllerClass, originalConstructor, originalDestroy, parameters, self;
-  if (arguments.length === 3) {
-    parameters = Ext.toArray(arguments);
-    hooks = parameters[1];
-    callback = parameters[2];
+  onClassMixedIn: function(targetClass) {
+    Deft.Logger.deprecate('Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.');
   }
-  if ((data.mixins != null) && Ext.Array.contains(Ext.Object.getValues(data.mixins), Ext.ClassManager.get('Deft.mixin.Controllable'))) {
-    controllerClass = data.controller;
-    delete data.controller;
-    if (controllerClass != null) {
-      if (!data.hasOwnProperty('constructor')) {
-        data.constructor = function() {
-          return this.callParent(arguments);
-        };
-      }
+}, function() {
+  var applyControllerInterceptor;
+  applyControllerInterceptor = function(data) {
+    var originalConstructor;
+    if (!data.constructor.$controllable) {
       originalConstructor = data.constructor;
       data.constructor = function(config) {
         var controller;
         if (config == null) {
           config = {};
         }
-        if (this.getController === void 0) {
+        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
           try {
-            controller = Ext.create(controllerClass, config.controllerConfig || this.controllerConfig || {});
+            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
           } catch (error) {
-            Deft.Logger.warn("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
+            Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
             throw error;
           }
-          this.getController = function() {
-            return controller;
-          };
+          if (this.getController === void 0) {
+            this.getController = function() {
+              return controller;
+            };
+          }
+          this.$controlled = true;
           originalConstructor.apply(this, arguments);
           controller.controlView(this);
           return this;
         }
         return originalConstructor.apply(this, arguments);
       };
-      if (!data.hasOwnProperty('destroy')) {
-        data.destroy = function() {
-          return this.callParent(arguments);
-        };
-      }
-      originalDestroy = data.destroy;
-      data.destroy = function() {
-        delete this.getController;
-        return originalDestroy.apply(this, arguments);
-      };
-      self = this;
-      Ext.require([controllerClass], function() {
-        if (callback != null) {
-          callback.call(self, Class, data, hooks);
-        }
-      });
-      return false;
+      data.constructor.$controllable = true;
     }
-  }
+  };
+  Deft.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
+    var self;
+    if (!data.hasOwnProperty('constructor')) {
+      data.constructor = function() {
+        return this.callParent(arguments);
+      };
+    }
+    applyControllerInterceptor(data);
+    data.onClassExtended = function(Class, data, hooks) {
+      if (!data.hasOwnProperty('controller') && data.hasOwnProperty('constructor')) {
+        applyControllerInterceptor(data);
+      }
+    };
+    self = this;
+    Ext.require([data.controller], function() {
+      if (callback != null) {
+        callback.call(self, Class, data, hooks);
+      }
+    });
+    return false;
+  }, 'before', 'extend');
 });
-
-Ext.Class.setDefaultPreprocessorPosition('controller', 'before', 'mixins');

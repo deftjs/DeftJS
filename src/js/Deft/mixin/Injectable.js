@@ -11,14 +11,57 @@ Used in conjunction with {@link Deft.ioc.Injector}.
 */
 
 Ext.define('Deft.mixin.Injectable', {
-  requires: ['Deft.ioc.Injector'],
+  requires: ['Deft.core.Class', 'Deft.ioc.Injector', 'Deft.log.Logger'],
   /**
   	@private
   */
 
   onClassMixedIn: function(targetClass) {
-    targetClass.prototype.constructor = Ext.Function.createInterceptor(targetClass.prototype.constructor, function() {
-      return Deft.Injector.inject(this.inject, this, false);
-    });
+    Deft.Logger.deprecate('Deft.mixin.Injectable has been deprecated and can now be omitted - simply use the \'inject\' class annotation on its own.');
   }
+}, function() {
+  var applyInjectionInterceptor, injectionInterceptor;
+  injectionInterceptor = function() {
+    if (!this.$injected) {
+      Deft.Injector.inject(this.inject, this, false);
+      this.$injected = true;
+    }
+  };
+  applyInjectionInterceptor = function(data) {
+    if (!data.constructor.$injectable) {
+      data.constructor = Ext.Function.createInterceptor(data.constructor, injectionInterceptor);
+      data.constructor.$injectable = true;
+    }
+  };
+  Deft.Class.registerPreprocessor('inject', function(Class, data, hooks, callback) {
+    var dataInjectObject, identifier, _i, _len, _ref;
+    if (Ext.isString(data.inject)) {
+      data.inject = [data.inject];
+    }
+    if (Ext.isArray(data.inject)) {
+      dataInjectObject = {};
+      _ref = data.inject;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        identifier = _ref[_i];
+        dataInjectObject[identifier] = identifier;
+      }
+      data.inject = dataInjectObject;
+    }
+    if (!data.hasOwnProperty('constructor')) {
+      data.constructor = function() {
+        return this.callParent(arguments);
+      };
+    }
+    applyInjectionInterceptor(data);
+    data.onClassExtended = function(Class, data, hooks) {
+      var _ref1;
+      if (!data.hasOwnProperty('inject') && data.hasOwnProperty('constructor')) {
+        applyInjectionInterceptor(data);
+      }
+      if ((_ref1 = data.inject) == null) {
+        data.inject = {};
+      }
+      Ext.applyIf(data.inject, Class.superclass.inject);
+    };
+  }, 'before', 'extend');
 });
