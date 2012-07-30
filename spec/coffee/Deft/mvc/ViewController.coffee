@@ -1342,8 +1342,8 @@ describe( 'Deft.mvc.ViewController', ->
 
 			expectedObserve =
 				messageBus:
-					childMessage: 'childMessageHandler'
-					parentMessage: 'parentMessageHandler'
+					childMessage: [ 'childMessageHandler' ]
+					parentMessage: [ 'parentMessageHandler' ]
 
 			expect( exampleInstance.observe ).toEqual( expectedObserve )
 		)
@@ -1378,9 +1378,9 @@ describe( 'Deft.mvc.ViewController', ->
 
 			expectedObserve =
 				messageBus:
-					child2Message: 'child2MessageHandler'
-					childMessage: 'childMessageHandler'
-					parentMessage: 'parentMessageHandler'
+					child2Message: [ 'child2MessageHandler' ]
+					childMessage: [ 'childMessageHandler' ]
+					parentMessage: [ 'parentMessageHandler' ]
 
 			expect( exampleInstance.observe ).toEqual( expectedObserve )
 		)
@@ -1415,8 +1415,8 @@ describe( 'Deft.mvc.ViewController', ->
 
 			expectedObserve =
 				messageBus:
-					parentMessage: 'child2MessageHandler'
-					childMessage: 'childMessageHandler'
+					parentMessage: [ 'child2MessageHandler', 'parentMessageHandler' ]
+					childMessage: [ 'childMessageHandler' ]
 
 			expect( exampleInstance.observe ).toEqual( expectedObserve )
 		)
@@ -1447,8 +1447,8 @@ describe( 'Deft.mvc.ViewController', ->
 
 			expectedObserve =
 				messageBus:
-					child2Message: 'child2MessageHandler'
-					parentMessage: 'parentMessageHandler'
+					child2Message: [ 'child2MessageHandler' ]
+					parentMessage: [ 'parentMessageHandler' ]
 
 			expect( exampleInstance.observe ).toEqual( expectedObserve )
 		)
@@ -1479,8 +1479,8 @@ describe( 'Deft.mvc.ViewController', ->
 
 			expectedObserve =
 				messageBus:
-					child2Message: 'child2MessageHandler'
-					childMessage: 'childMessageHandler'
+					child2Message: [ 'child2MessageHandler' ]
+					childMessage: [ 'childMessageHandler' ]
 
 			expect( exampleInstance.observe ).toEqual( expectedObserve )
 		)
@@ -1626,8 +1626,55 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 		)
 
+		it( 'should attach listeners in child and parent to the same observed object', ->
+
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				config:
+					messageBus: null
+					store: null
+
+				observe:
+					messageBus:
+						parentMessage: "parentMessageHandler"
+
+				parentMessageHandlerCalled: false
+				parentMessageHandler: ( eventData ) -> @parentMessageHandlerCalled = eventData
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				observe:
+					messageBus:
+						parentMessage: "childMessageHandler"
+
+				childMessageHandlerCalled: false
+
+				childMessageHandler: ( eventData ) ->
+					@childMessageHandlerCalled = eventData
+			)
+
+			messageBus = Ext.create( 'Ext.util.Observable' )
+
+			exampleInstance = Ext.create( 'ExampleSubClass',
+				messageBus: messageBus
+			)
+
+			# Cannot just spy on the handler methods because messageBus listener will always reference the original method, not the spy.
+			waitsFor( ( -> exampleInstance.parentMessageHandlerCalled and exampleInstance.childMessageHandlerCalled ), "Parent and child message handlers were not called.", 1000 )
+
+			eventData = { value1: true, value2: false }
+			messageBus.fireEvent( 'parentMessage', eventData )
+
+			runs( ->
+				expect( exampleInstance.parentMessageHandlerCalled ).toEqual( eventData )
+				expect( exampleInstance.childMessageHandlerCalled ).toEqual( eventData )
+			)
+		)
 	)
-	
+
 	describe( 'Destruction and clean-up', ->
 		
 		beforeEach( ->
@@ -1723,9 +1770,6 @@ describe( 'Deft.mvc.ViewController', ->
 		)
 		
 		it( 'should remove event listeners it attached to the view when the associated view (and view controller) is destroyed', ->
-			console.log( 'starting observer removal test' )
-
-
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
 				

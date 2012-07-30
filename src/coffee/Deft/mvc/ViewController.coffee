@@ -25,13 +25,13 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	Observers automatically created and removed by this ViewController.
 	###
-	observe: null
+	observe: {}
 	
 	constructor: ( config = {} ) ->
 		if config.view
 			@controlView( config.view )
 		initializedConfig = @initConfig( config ) #Ensure any config values are set before creating observers.
-		@createObservers()
+		if Ext.Object.getSize( @observe ) > 0 then @createObservers()
 		return initializedConfig
 
 	###*
@@ -260,7 +260,9 @@ Ext.define( 'Deft.mvc.ViewController',
 
 )
 
-
+###*
+Preprocessor to handle merging of 'observe' objects on parent and child classes.
+###
 Ext.Class.registerPreprocessor( 'observe', ( Class, data, hooks, callback ) ->
 
 	# Workaround: Ext JS 4.0 passes the callback as the third parameter, Sencha Touch 2.0.1 and Ext JS 4.1 passes it as the fourth parameter
@@ -270,6 +272,7 @@ Ext.Class.registerPreprocessor( 'observe', ( Class, data, hooks, callback ) ->
 		hooks = parameters[ 1 ]
 		callback = parameters[ 2 ]
 
+	# Might not matter if we move to onExtended() logic, but could be a candidate for a common DeftJS static utility method?
 	extendsClass = ( className, currentClass ) ->
 		try
 			return true if currentClass.getName() is className
@@ -281,8 +284,7 @@ Ext.Class.registerPreprocessor( 'observe', ( Class, data, hooks, callback ) ->
 			return false
 
 	if Class.superclass and Class.superclass?.observe and extendsClass( 'Deft.mvc.ViewController', Class )
-		data.observe = {} if not data?.observe
-		data.observe = Ext.merge( {}, Class.superclass.observe, data.observe )
+		data.observe = Deft.mvc.Observer.mergeObserve( Class.superclass.observe, data.observe )
 
 	return
 )

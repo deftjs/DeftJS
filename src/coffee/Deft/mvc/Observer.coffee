@@ -6,6 +6,54 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 # @private
 Ext.define( 'Deft.mvc.Observer',
 
+	statics:
+
+		###*
+		Merges child and parent observers into a single object. This differs from a normal object merge because
+		a given observer target and event can potentially have multiple handlers declared in different parent or
+		child classes. It transforms an event handler value into an array of values, and merges the arrays of handlers
+		from child to parent. This maintains the handlers even if both parent and child classes have handlers for the
+		same target and event.
+		###
+		mergeObserve: ( originalParentObserve, originalChildObserve ) ->
+
+			# Make sure we aren't modifying the original objects, particularly for the parent object, since it is a CLASS-LEVEL object.
+			if not Ext.isObject( originalParentObserve )
+				parentObserve = {}
+			else
+				parentObserve = Ext.clone( originalParentObserve )
+
+			if not Ext.isObject( originalChildObserve )
+				childObserve = {}
+			else
+				childObserve = Ext.clone( originalChildObserve )
+
+			# Ensure that all child handler nodes are arrays, then copy any targets not present in parent into parent and remove from child.
+			for childTarget, childEvents of childObserve
+				for childEvent, childHandler of childEvents
+					if Ext.isString( childHandler )
+						childObserve[ childTarget ][ childEvent ] = childHandler.split( ',' )
+					if not parentObserve?[ childTarget ]
+						parentObserve[ childTarget ] = {}
+					if not parentObserve?[ childTarget ]?[ childEvent ]
+						parentObserve[ childTarget ][ childEvent ] = childObserve[ childTarget ][ childEvent ]
+						delete childObserve[ childTarget ][ childEvent ]
+
+			# Ensure that all parent handler nodes are arrays, then prepend duplicate handler arrays from child into parent.
+			for parentTarget, parentEvents of parentObserve
+				for parentEvent, parentHandler of parentEvents
+					if Ext.isString( parentHandler )
+						parentObserve[ parentTarget ][ parentEvent ] = parentHandler.split( ',' )
+					if childObserve?[ parentTarget ]?[ parentEvent ]
+						childHandlerArray = childObserve[ parentTarget ][ parentEvent ]
+						parentHandlerArray = parentObserve[ parentTarget ][ parentEvent ]
+						parentObserve[ parentTarget ][ parentEvent ] = Ext.Array.insert( parentHandlerArray, 0, childHandlerArray )
+
+			return parentObserve
+
+	###*
+	Expects a config object with properties for host, target, and events.
+	###
 	constructor: ( config ) ->
 		@listeners = []
 
@@ -14,28 +62,30 @@ Ext.define( 'Deft.mvc.Observer',
 		events = config?.events
 
 		if host and target and ( @isPropertyChain( target ) or host?[ target ]?.isObservable )
-			for eventName, handler of events
-				references = @locateReferences( host, target, handler )
-				if references
-					references.target.on( eventName, references.handler, host )
-					@listeners.push( { targetName: target, target: references.target, event: eventName, handler: references.handler, scope: host } )
-					Deft.Logger.log( "Created observer on '#{ target }' for event '#{ eventName }'." )
-					console.log( "Created observer on '#{ target }' for event '#{ eventName }'." )
-				else
-					Deft.Logger.warn( "Could not create observer on '#{ target }' for event '#{ eventName }'." )
-					console.log( "Could not create observers on '#{ target }' because '#{ target }' is not an Ext.util.Observable" )
-
+			for eventName, handlerArray of events
+				for handler in handlerArray
+					references = @locateReferences( host, target, handler )
+					if references
+						references.target.on( eventName, references.handler, host )
+						@listeners.push( { targetName: target, target: references.target, event: eventName, handler: references.handler, scope: host } )
+						Deft.Logger.log( "Created observer on '#{ target }' for event '#{ eventName }'." )
+					else
+						Deft.Logger.warn( "Could not create observer on '#{ target }' for event '#{ eventName }'." )
 		else
 			Deft.Logger.warn( "Could not create observers on '#{ target }' because '#{ target }' is not an Ext.util.Observable" )
-			console.log( "Could not create observers on '#{ target }' because '#{ target }' is not an Ext.util.Observable" )
 
 		return @
 
-
+	###*
+	Returns true if the passed target is a string containing a '.', indicating that it is referencing a nested property.
+	###
 	isPropertyChain: ( target ) ->
 		return Ext.isString( target ) and target.indexOf( '.' ) > -1
 
-
+	###*
+	Given a host object, target property name, and handler, return object references for the final target and handler function.
+	If necessary, recurse down a property chain to locate the final target object for the event listener.
+	###
 	locateReferences: ( host, target, handler ) ->
 		handlerHost = host
 
@@ -52,7 +102,10 @@ Ext.define( 'Deft.mvc.Observer',
 		else
 			return null
 
-
+	###*
+	Given a target property chain and a property host object, recurse down the property chain and return
+	the final host object from the property chain, and the final object that will accept the event listener.
+	###
 	parsePropertyChain: ( host, target ) ->
 		if Ext.isString( target )
 			propertyChain = target.split( '.' )
@@ -62,13 +115,15 @@ Ext.define( 'Deft.mvc.Observer',
 			return null
 
 		if propertyChain.length > 1 and host?[ propertyChain[0] ]
-			@parsePropertyChain( host[ propertyChain[0] ], propertyChain[1..] )
+			return @parsePropertyChain( host[ propertyChain[0] ], propertyChain[1..] )
 		else if host?[ propertyChain[0] ] and host?[ propertyChain[0] ]?.isObservable
 			return { host: host, target: propertyChain[0] }
 		else
 			return null
 
-
+	###*
+	Iterate through the listeners array and remove each event listener.
+	###
 	destroy: ->
 		for listenerData in @listeners
 			Deft.Logger.log( "Removing observer on '#{ listenerData.targetName }' for event '#{ listenerData.event }'." )
