@@ -30,9 +30,13 @@
 	</head>
 	<body>
 		<script type="text/javascript">
-			// Temporary workaround.
-			// TODO: Need to tweak Jasmine to 'pretty print' Sencha class instances without traversing 40 levels and locking the browser.
-			jasmine.MAX_PRETTY_PRINT_DEPTH = 1
+			// Tweak Jasmine's "pretty print" logic to make it aware of Sencha classes.
+			jasmine.PrettyPrinter.prototype.format = Ext.Function.createInterceptor(jasmine.PrettyPrinter.prototype.format, function (value) {
+				if (value instanceof Ext.ClassManager.get('Ext.Base')) {
+					this.emitScalar(Ext.ClassManager.getName(value));
+					return false;
+				}
+			});
 			
 			Ext.Loader.setConfig({
 				enabled: true
