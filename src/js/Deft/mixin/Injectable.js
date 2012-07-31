@@ -20,19 +20,28 @@ Ext.define('Deft.mixin.Injectable', {
     Deft.Logger.deprecate('Deft.mixin.Injectable has been deprecated and can now be omitted - simply use the \'inject\' class annotation on its own.');
   }
 }, function() {
-  var applyInjectionInterceptor, injectionInterceptor;
-  injectionInterceptor = function() {
-    if (!this.$injected) {
-      Deft.Injector.inject(this.inject, this, false);
-      this.$injected = true;
-    }
-  };
-  applyInjectionInterceptor = function(data) {
-    if (!data.constructor.$injectable) {
-      data.constructor = Ext.Function.createInterceptor(data.constructor, injectionInterceptor);
-      data.constructor.$injectable = true;
-    }
-  };
+  var createInjectionInterceptor;
+  if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+    createInjectionInterceptor = function() {
+      return function() {
+        if (!this.$injected) {
+          Deft.Injector.inject(this.inject, this, false);
+          this.$injected = true;
+        }
+        return this.callOverridden(arguments);
+      };
+    };
+  } else {
+    createInjectionInterceptor = function() {
+      return function() {
+        if (!this.$injected) {
+          Deft.Injector.inject(this.inject, this, false);
+          this.$injected = true;
+        }
+        return this.callParent(arguments);
+      };
+    };
+  }
   Deft.Class.registerPreprocessor('inject', function(Class, data, hooks, callback) {
     var dataInjectObject, identifier, _i, _len, _ref;
     if (Ext.isString(data.inject)) {
@@ -47,21 +56,22 @@ Ext.define('Deft.mixin.Injectable', {
       }
       data.inject = dataInjectObject;
     }
-    if (!data.hasOwnProperty('constructor')) {
-      data.constructor = function() {
-        return this.callParent(arguments);
-      };
-    }
-    applyInjectionInterceptor(data);
-    data.onClassExtended = function(Class, data, hooks) {
+    Deft.Class.hookOnClassCreated(hooks, function(Class) {
+      Class.override({
+        constructor: createInjectionInterceptor()
+      });
+    });
+    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
       var _ref1;
-      if (!data.hasOwnProperty('inject') && data.hasOwnProperty('constructor')) {
-        applyInjectionInterceptor(data);
-      }
+      Deft.Class.hookOnClassCreated(hooks, function(Class) {
+        Class.override({
+          constructor: createInjectionInterceptor()
+        });
+      });
       if ((_ref1 = data.inject) == null) {
         data.inject = {};
       }
       Ext.applyIf(data.inject, Class.superclass.inject);
-    };
+    });
   }, 'before', 'extend');
 });

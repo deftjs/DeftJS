@@ -22,11 +22,10 @@ Ext.define( 'Deft.mixin.Controllable',
 		return
 ,
 	->
-		# Apply the controller interceptor to the specified target (if it hasn't already been applied).
-		applyControllerInterceptor = ( data ) ->
-			if not data.constructor.$controllable
-				originalConstructor = data.constructor
-				data.constructor = ( config = {} ) ->
+		if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
+			# Ext JS 4.0
+			createControllerInterceptor = ->
+				return ( config = {} ) ->
 					if @ instanceof Ext.ClassManager.get( 'Ext.Container' ) and not @$controlled
 						try
 							controller = Ext.create( @controller, config.controllerConfig || @controllerConfig || {} )
@@ -41,31 +40,62 @@ Ext.define( 'Deft.mixin.Controllable',
 						
 						@$controlled = true
 						
-						originalConstructor.apply( @, arguments )
+						@callOverridden( arguments )
 						
 						controller.controlView( @ )
 						
 						return @
 					
-					return originalConstructor.apply( @, arguments )
+					return @callOverridden( arguments )
+		else
+			# Sencha Touch 2.0+, Ext JS 4.1+
+			createControllerInterceptor = ->
+				return ( config = {} ) ->
+					if @ instanceof Ext.ClassManager.get( 'Ext.Container' ) and not @$controlled
+						try
+							controller = Ext.create( @controller, config.controllerConfig || @controllerConfig || {} )
+						catch error
+							# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
+							Deft.Logger.warn( "Error initializing view controller: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
+							throw error
+					
+						if @getController is undefined
+							@getController = ->
+								return controller
+					
+						@$controlled = true
+					
+						@callParent( arguments )
+					
+						controller.controlView( @ )
+					
+						return @
 				
-				data.constructor.$controllable = true
-			return
+					return @callParent( arguments )
+			
 		
 		Deft.Class.registerPreprocessor( 
 			'controller'
 			( Class, data, hooks, callback ) ->
-				# Intercept before the constructor for this class with the controller interceptor.
-				if not data.hasOwnProperty( 'constructor' )
-					data.constructor = -> @callParent( arguments )
-				applyControllerInterceptor( data )
+				# Override the constructor for this class with a controller interceptor.
+				Deft.Class.hookOnClassCreated( hooks, ( Class ) ->
+					Class.override(
+						constructor: createControllerInterceptor()
+					)
+					return
+				)
 				
 				# Process any classes that extend this class.
-				data.onClassExtended =  ( Class, data, hooks ) ->
-					# Intercept before the constructor for this class with the controller interceptor.
-					if not data.hasOwnProperty( 'controller' ) and data.hasOwnProperty( 'constructor' )
-						applyControllerInterceptor( data )
+				Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
+					# Override the constructor for this class with a controller interceptor.
+					Deft.Class.hookOnClassCreated( hooks, ( Class ) ->
+						Class.override(
+							constructor: createControllerInterceptor()
+						)
+						return
+					)
 					return
+				)
 				
 				# Automatically require the controller class.
 				self = @

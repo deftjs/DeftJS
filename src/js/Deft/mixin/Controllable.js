@@ -20,12 +20,10 @@ Ext.define('Deft.mixin.Controllable', {
     Deft.Logger.deprecate('Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.');
   }
 }, function() {
-  var applyControllerInterceptor;
-  applyControllerInterceptor = function(data) {
-    var originalConstructor;
-    if (!data.constructor.$controllable) {
-      originalConstructor = data.constructor;
-      data.constructor = function(config) {
+  var createControllerInterceptor;
+  if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+    createControllerInterceptor = function() {
+      return function(config) {
         var controller;
         if (config == null) {
           config = {};
@@ -43,28 +41,55 @@ Ext.define('Deft.mixin.Controllable', {
             };
           }
           this.$controlled = true;
-          originalConstructor.apply(this, arguments);
+          this.callOverridden(arguments);
           controller.controlView(this);
           return this;
         }
-        return originalConstructor.apply(this, arguments);
+        return this.callOverridden(arguments);
       };
-      data.constructor.$controllable = true;
-    }
-  };
-  Deft.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
-    var self;
-    if (!data.hasOwnProperty('constructor')) {
-      data.constructor = function() {
+    };
+  } else {
+    createControllerInterceptor = function() {
+      return function(config) {
+        var controller;
+        if (config == null) {
+          config = {};
+        }
+        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
+          try {
+            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
+          } catch (error) {
+            Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+            throw error;
+          }
+          if (this.getController === void 0) {
+            this.getController = function() {
+              return controller;
+            };
+          }
+          this.$controlled = true;
+          this.callParent(arguments);
+          controller.controlView(this);
+          return this;
+        }
         return this.callParent(arguments);
       };
-    }
-    applyControllerInterceptor(data);
-    data.onClassExtended = function(Class, data, hooks) {
-      if (!data.hasOwnProperty('controller') && data.hasOwnProperty('constructor')) {
-        applyControllerInterceptor(data);
-      }
     };
+  }
+  Deft.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
+    var self;
+    Deft.Class.hookOnClassCreated(hooks, function(Class) {
+      Class.override({
+        constructor: createControllerInterceptor()
+      });
+    });
+    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
+      Deft.Class.hookOnClassCreated(hooks, function(Class) {
+        Class.override({
+          constructor: createControllerInterceptor()
+        });
+      });
+    });
     self = this;
     Ext.require([data.controller], function() {
       if (callback != null) {

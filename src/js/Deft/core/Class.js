@@ -18,6 +18,22 @@ Ext.define('Deft.core.Class', {
           return fn.call(this, Class, data, hooks, callback);
         }, [name], position, relativeTo);
       }
+    },
+    hookOnClassCreated: function(hooks, fn) {
+      if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+        Ext.Function.interceptBefore(hooks, 'onClassCreated', fn);
+      } else {
+        Ext.Function.interceptBefore(hooks, 'onCreated', fn);
+      }
+    },
+    hookOnClassExtended: function(data, fn) {
+      if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+        data.onClassExtended = function(Class, data) {
+          return fn.call(this, Class, data, data);
+        };
+      } else {
+        data.onClassExtended = fn;
+      }
     }
   }
 });

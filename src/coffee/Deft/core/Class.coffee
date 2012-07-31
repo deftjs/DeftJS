@@ -27,4 +27,23 @@ Ext.define( 'Deft.core.Class',
 					relativeTo
 				)
 			return
+			
+		hookOnClassCreated: ( hooks, fn ) ->
+			if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
+				# Ext JS 4.0
+				Ext.Function.interceptBefore( hooks, 'onClassCreated', fn )
+			else
+				# Sencha Touch 2.0+, Ext JS 4.1+
+				Ext.Function.interceptBefore( hooks, 'onCreated', fn )
+			return
+		
+		hookOnClassExtended: ( data, fn ) ->
+			if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
+				# Ext JS 4.0
+				data.onClassExtended = ( Class, data ) ->
+					return fn.call( @, Class, data, data )
+			else
+				# Sencha Touch 2.0+, Ext JS 4.1+
+				data.onClassExtended = fn
+			return
 )

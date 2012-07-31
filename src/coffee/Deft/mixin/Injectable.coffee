@@ -23,19 +23,22 @@ Ext.define( 'Deft.mixin.Injectable',
 		return
 ,
 	->
-		# Create the injection interceptor.
-		injectionInterceptor = ->
-			if not @$injected
-				Deft.Injector.inject( @inject, @, false )
-				@$injected = true
-			return
-		
-		# Apply the injection interceptor to the specified target (if it hasn't already been applied).
-		applyInjectionInterceptor = ( data ) ->
-			if not data.constructor.$injectable
-				data.constructor = Ext.Function.createInterceptor( data.constructor, injectionInterceptor )
-				data.constructor.$injectable = true
-			return
+		if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
+			# Ext JS 4.0
+			createInjectionInterceptor = ->
+				return ->
+					if not @$injected
+						Deft.Injector.inject( @inject, @, false )
+						@$injected = true
+					return @callOverridden( arguments )
+		else
+			# Sencha Touch 2.0+, Ext JS 4.1+
+			createInjectionInterceptor = ->
+				return ->
+					if not @$injected
+						Deft.Injector.inject( @inject, @, false )
+						@$injected = true
+					return @callParent( arguments )
 		
 		Deft.Class.registerPreprocessor( 
 			'inject'
@@ -48,21 +51,29 @@ Ext.define( 'Deft.mixin.Injectable',
 						dataInjectObject[ identifier ] = identifier
 					data.inject = dataInjectObject
 				
-				# Intercept before the constructor for this class with the injection interceptor.
-				if not data.hasOwnProperty( 'constructor' )
-					data.constructor = -> @callParent( arguments )
-				applyInjectionInterceptor( data )
-			
+				# Override the constructor for this class with an injection interceptor.
+				Deft.Class.hookOnClassCreated( hooks, ( Class ) ->
+					Class.override(
+						constructor: createInjectionInterceptor()
+					)
+					return
+				)
+				
 				# Process any classes that extend this class.
-				data.onClassExtended =  ( Class, data, hooks ) ->
-					# Intercept before the constructor for this class with the injection interceptor.
-					if not data.hasOwnProperty( 'inject' ) and data.hasOwnProperty( 'constructor' )
-						applyInjectionInterceptor( data )
+				Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
+					# Override the constructor for this class with an injection interceptor.
+					Deft.Class.hookOnClassCreated( hooks, ( Class ) ->
+						Class.override(
+							constructor: createInjectionInterceptor()
+						)
+						return
+					)
 					
 					# Merge identifiers, ensuring that identifiers in data override identifiers in superclass.
 					data.inject ?= {}
 					Ext.applyIf( data.inject, Class.superclass.inject )
 					return
+				)
 				
 				return
 			'before'
