@@ -7,7 +7,11 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.log.Logger', {
   alternateClassName: ['Deft.Logger'],
   singleton: true,
-  log: function(message, priority) {},
+  log: function(message, priority) {
+    if (priority == null) {
+      priority = 'info';
+    }
+  },
   error: function(message) {
     this.log(message, 'error');
   },
@@ -29,6 +33,9 @@ Ext.define('Deft.log.Logger', {
     this.log = function(message, priority) {
       if (priority == null) {
         priority = 'info';
+      }
+      if (priority === 'verbose') {
+        priority === 'info';
       }
       if (priority === 'deprecate') {
         priority = 'warn';

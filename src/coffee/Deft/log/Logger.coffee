@@ -7,7 +7,7 @@ Ext.define( 'Deft.log.Logger',
 	alternateClassName: [ 'Deft.Logger' ]
 	singleton: true
 
-	log: ( message, priority ) ->
+	log: ( message, priority = 'info' ) ->
 		return
 
 	error: ( message ) ->
@@ -34,6 +34,8 @@ Ext.define( 'Deft.log.Logger',
 		if Ext.getVersion( 'extjs' )?
 			# Ext JS
 			@log = ( message, priority = 'info' ) ->
+				if priority is 'verbose'
+					priority is 'info'
 				if priority is 'deprecate'
 					priority = 'warn'
 				Ext.log(
