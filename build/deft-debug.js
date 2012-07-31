@@ -33,12 +33,18 @@ Ext.define('Deft.core.Class', {
       }
     },
     hookOnClassExtended: function(data, fn) {
+      var onClassExtended;
       if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
-        data.onClassExtended = function(Class, data) {
+        onClassExtended = function(Class, data) {
           return fn.call(this, Class, data, data);
         };
       } else {
-        data.onClassExtended = fn;
+        onClassExtended = fn;
+      }
+      if (data.onClassExtended != null) {
+        Ext.Function.interceptBefore(data, 'onClassExtended', onClassExtended);
+      } else {
+        data.onClassExtended = onClassExtended;
       }
     }
   }
@@ -51,7 +57,11 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.log.Logger', {
   alternateClassName: ['Deft.Logger'],
   singleton: true,
-  log: function(message, priority) {},
+  log: function(message, priority) {
+    if (priority == null) {
+      priority = 'info';
+    }
+  },
   error: function(message) {
     this.log(message, 'error');
   },
@@ -73,6 +83,9 @@ Ext.define('Deft.log.Logger', {
     this.log = function(message, priority) {
       if (priority == null) {
         priority = 'info';
+      }
+      if (priority === 'verbose') {
+        priority === 'info';
       }
       if (priority === 'deprecate') {
         priority = 'warn';

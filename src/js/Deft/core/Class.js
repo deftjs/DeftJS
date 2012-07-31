@@ -27,12 +27,18 @@ Ext.define('Deft.core.Class', {
       }
     },
     hookOnClassExtended: function(data, fn) {
+      var onClassExtended;
       if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
-        data.onClassExtended = function(Class, data) {
+        onClassExtended = function(Class, data) {
           return fn.call(this, Class, data, data);
         };
       } else {
-        data.onClassExtended = fn;
+        onClassExtended = fn;
+      }
+      if (data.onClassExtended != null) {
+        Ext.Function.interceptBefore(data, 'onClassExtended', onClassExtended);
+      } else {
+        data.onClassExtended = onClassExtended;
       }
     }
   }

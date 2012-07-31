@@ -40,10 +40,15 @@ Ext.define( 'Deft.core.Class',
 		hookOnClassExtended: ( data, fn ) ->
 			if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
 				# Ext JS 4.0
-				data.onClassExtended = ( Class, data ) ->
+				onClassExtended = ( Class, data ) ->
 					return fn.call( @, Class, data, data )
 			else
 				# Sencha Touch 2.0+, Ext JS 4.1+
-				data.onClassExtended = fn
+				onClassExtended = fn
+			
+			if data.onClassExtended?
+				Ext.Function.interceptBefore( data, 'onClassExtended', onClassExtended )
+			else
+				data.onClassExtended = onClassExtended
 			return
 )
