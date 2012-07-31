@@ -118,7 +118,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.event.LiveEventListener', {
-  requires: ['Ext.ComponentQuery'],
+  alternateClassName: ['Deft.LiveEventListener'],
   constructor: function(config) {
     var component, components, _i, _len;
     Ext.apply(this, config);
@@ -173,7 +173,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Ext.define('Deft.event.LiveEventBus', {
   alternateClassName: ['Deft.LiveEventBus'],
-  requires: ['Ext.ComponentManager', 'Deft.event.LiveEventListener'],
+  requires: ['Deft.event.LiveEventListener'],
   singleton: true,
   constructor: function() {
     this.listeners = [];
@@ -279,11 +279,13 @@ Ext.define('Deft.event.LiveEventBus', {
       }
     });
   }
-  Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
-    Deft.event.LiveEventBus.register(component);
-  });
-  Ext.Function.interceptAfter(Ext.ComponentManager, 'unregister', function(component) {
-    Deft.event.LiveEventBus.unregister(component);
+  Ext.require('Ext.ComponentManager', function() {
+    Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
+      Deft.event.LiveEventBus.register(component);
+    });
+    Ext.Function.interceptAfter(Ext.ComponentManager, 'unregister', function(component) {
+      Deft.event.LiveEventBus.unregister(component);
+    });
   });
 });
 /*
@@ -674,7 +676,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mvc.ComponentSelector', {
-  requires: ['Ext.ComponentQuery', 'Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
+  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
   constructor: function(config) {
     var eventName, fn, listener, options, scope, _ref;
     Ext.apply(this, config);
