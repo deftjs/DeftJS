@@ -28,18 +28,18 @@ Ext.define( 'Deft.mvc.Observer',
 			else
 				childObserve = Ext.clone( originalChildObserve )
 
-			# Ensure that all child handler nodes are arrays, then copy any targets not present in parent into parent and remove from child.
+			# Ensure that all child handler elements are arrays, then copy any targets not present in parent into parent and remove from child.
 			for childTarget, childEvents of childObserve
 				for childEvent, childHandler of childEvents
 					if Ext.isString( childHandler )
-						childObserve[ childTarget ][ childEvent ] = childHandler.split( ',' )
+						childObserve[ childTarget ][ childEvent ] = childHandler.replace( ' ', '' ).split( ',' )
 					if not parentObserve?[ childTarget ]
 						parentObserve[ childTarget ] = {}
 					if not parentObserve?[ childTarget ]?[ childEvent ]
 						parentObserve[ childTarget ][ childEvent ] = childObserve[ childTarget ][ childEvent ]
 						delete childObserve[ childTarget ][ childEvent ]
 
-			# Ensure that all parent handler nodes are arrays, then prepend duplicate handler arrays from child into parent.
+			# Ensure that all parent handler elements are arrays, then prepend duplicate handler arrays from child into parent.
 			for parentTarget, parentEvents of parentObserve
 				for parentEvent, parentHandler of parentEvents
 					if Ext.isString( parentHandler )
@@ -47,7 +47,7 @@ Ext.define( 'Deft.mvc.Observer',
 					if childObserve?[ parentTarget ]?[ parentEvent ]
 						childHandlerArray = childObserve[ parentTarget ][ parentEvent ]
 						parentHandlerArray = parentObserve[ parentTarget ][ parentEvent ]
-						parentObserve[ parentTarget ][ parentEvent ] = Ext.Array.insert( parentHandlerArray, 0, childHandlerArray )
+						parentObserve[ parentTarget ][ parentEvent ] = Ext.Array.unique( Ext.Array.insert( parentHandlerArray, 0, childHandlerArray ) )
 
 			return parentObserve
 
@@ -63,6 +63,8 @@ Ext.define( 'Deft.mvc.Observer',
 
 		if host and target and ( @isPropertyChain( target ) or host?[ target ]?.isObservable )
 			for eventName, handlerArray of events
+				# If a ViewController has no subclasses, the onExtended() preprocessor won't fire, so transform any string handlers into arrays.
+				handlerArray = handlerArray.replace( ' ', '' ).split( ',' ) if Ext.isString( handlerArray )
 				for handler in handlerArray
 					references = @locateReferences( host, target, handler )
 					if references

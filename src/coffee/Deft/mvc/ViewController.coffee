@@ -263,30 +263,20 @@ Ext.define( 'Deft.mvc.ViewController',
 ###*
 Preprocessor to handle merging of 'observe' objects on parent and child classes.
 ###
-Ext.Class.registerPreprocessor( 'observe', ( Class, data, hooks, callback ) ->
+Deft.Class.registerPreprocessor(
+	'observe'
+	( Class, data, hooks, callback ) ->
 
-	# Workaround: Ext JS 4.0 passes the callback as the third parameter, Sencha Touch 2.0.1 and Ext JS 4.1 passes it as the fourth parameter
-	if arguments.length is 3
-		# NOTE: Altering a parameter also modifies arguments, so clone it to a true Array first.
-		parameters = Ext.toArray( arguments )
-		hooks = parameters[ 1 ]
-		callback = parameters[ 2 ]
+		# Process any classes that extend this class.
+		Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
+			# If the Class extends ViewController at some point in its inheritance chain, merge the parent and child class observers.
+			if Class.superclass and Class.superclass?.observe and Deft.Class.extendsClass( 'Deft.mvc.ViewController', Class )
+				data.observe = Deft.mvc.Observer.mergeObserve( Class.superclass.observe, data.observe )
+			return
+		)
 
-	# Might not matter if we move to onExtended() logic, but could be a candidate for a common DeftJS static utility method?
-	extendsClass = ( className, currentClass ) ->
-		try
-			return true if currentClass.getName() is className
-			if currentClass?.superclass
-				if currentClass.superclass.self.getName() is className then return true
-				else return extendsClass( className, currentClass.superclass.self )
-			else return false
-		catch error
-			return false
-
-	if Class.superclass and Class.superclass?.observe and extendsClass( 'Deft.mvc.ViewController', Class )
-		data.observe = Deft.mvc.Observer.mergeObserve( Class.superclass.observe, data.observe )
-
-	return
+		return
+	'before'
+	'extend'
 )
 
-Ext.Class.setDefaultPreprocessorPosition( 'observe', 'before', 'extend' )

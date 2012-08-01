@@ -51,4 +51,19 @@ Ext.define( 'Deft.core.Class',
 			else
 				data.onClassExtended = onClassExtended
 			return
+
+		###*
+		Returns true if the passed class name is a superclass of the passed Class reference.
+		###
+		extendsClass: ( className, currentClass ) ->
+			try
+				return true if Ext.getClassName( currentClass ) is className
+				if currentClass?.superclass
+					if Ext.getClassName( currentClass.superclass ) is className
+						return true
+					else
+						return Deft.Class.extendsClass( className, Ext.getClass( currentClass.superclass ) )
+				else return false
+			catch error
+				return false
 )

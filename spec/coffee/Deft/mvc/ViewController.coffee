@@ -1431,6 +1431,33 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( exampleInstance.observe ).toEqual( expectedObserve )
 		)
 
+		it( 'should merge child observe configurations when handler is a list', ->
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				observe:
+					messageBus:
+						parentMessage: "parentMessageHandler"
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				observe:
+					messageBus:
+						childMessage: "childMessageHandler1, childMessageHandler2"
+			)
+
+			exampleInstance = Ext.create( 'ExampleSubClass' )
+
+			expectedObserve =
+				messageBus:
+					childMessage: [ 'childMessageHandler1', 'childMessageHandler2' ]
+					parentMessage: [ 'parentMessageHandler' ]
+
+			expect( exampleInstance.observe ).toEqual( expectedObserve )
+		)
+
 		it( 'should merge three levels of child observe configurations', ->
 			Ext.define( 'ExampleClass',
 				extend: 'Deft.mvc.ViewController'
@@ -1568,7 +1595,40 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( exampleInstance.observe ).toEqual( expectedObserve )
 		)
 
-		it( 'should attach listeners to observed objects', ->
+		it( 'should attach listeners to observed objects in a ViewController with no subclasses', ->
+			eventData = { value1: true, value2: false }
+
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				config:
+					messageBus: null
+
+				observe:
+					messageBus:
+						myMessage: "messageHandler"
+
+				messageHandler: ( data ) ->
+					expect( data ).toEqual( eventData )
+			)
+
+			spyOn( ExampleClass.prototype, 'messageHandler' ).andCallThrough()
+
+			messageBus = Ext.create( 'Ext.util.Observable' )
+
+			exampleInstance = Ext.create( 'ExampleClass',
+				messageBus: messageBus
+			)
+
+			waitsFor( ( -> exampleInstance.messageHandler.wasCalled ), "Message handler was not called.", 1000 )
+			messageBus.fireEvent( 'myMessage', eventData )
+		)
+
+		it( 'should attach listeners to observed objects in a ViewController where the child has an observe configuration', ->
+
+			parentEventData = { value1: true, value2: false }
+			childEventData = { value2: true, value3: false }
+			storeEventData = { value5: true, value6: false }
 
 			Ext.define( 'ExampleClass',
 				extend: 'Deft.mvc.ViewController'
@@ -1583,11 +1643,11 @@ describe( 'Deft.mvc.ViewController', ->
 					store:
 						beforesync: "storeHandler"
 
-				parentMessageHandlerCalled: false
-				storeHandlerCalled: false
+				parentMessageHandler: ( data ) ->
+					expect( data ).toEqual( parentEventData )
 
-				parentMessageHandler: ( eventData ) -> @parentMessageHandlerCalled = eventData
-				storeHandler: ( eventData ) -> @storeHandlerCalled = eventData
+				storeHandler: ( data ) ->
+					expect( data ).toEqual( storeEventData )
 			)
 
 			Ext.define( 'ExampleSubClass',
@@ -1597,11 +1657,13 @@ describe( 'Deft.mvc.ViewController', ->
 					messageBus:
 						childMessage: "childMessageHandler"
 
-				childMessageHandlerCalled: false
-
-				childMessageHandler: ( eventData ) ->
-					@childMessageHandlerCalled = eventData
+				childMessageHandler: ( data ) ->
+					expect( data ).toEqual( childEventData )
 			)
+
+			spyOn( ExampleClass.prototype, 'parentMessageHandler' ).andCallThrough()
+			spyOn( ExampleClass.prototype, 'storeHandler' ).andCallThrough()
+			spyOn( ExampleSubClass.prototype, 'childMessageHandler' ).andCallThrough()
 
 			messageBus = Ext.create( 'Ext.util.Observable' )
 			store = Ext.create( 'Ext.data.ArrayStore' )
@@ -1611,35 +1673,21 @@ describe( 'Deft.mvc.ViewController', ->
 				store: store
 			)
 
-			# Cannot just spy on the handler methods because messageBus listener will always reference the original method, not the spy.
-			waitsFor( ( -> exampleInstance.parentMessageHandlerCalled ), "Parent message handler was not called.", 1000 )
-
-			parentEventData = { value1: true, value2: false }
+			waitsFor( ( -> exampleInstance.parentMessageHandler.wasCalled ), "Parent message handler was not called.", 1000 )
 			messageBus.fireEvent( 'parentMessage', parentEventData )
 
-			runs( ->
-				expect( exampleInstance.parentMessageHandlerCalled ).toEqual( parentEventData )
-			)
+			waitsFor( ( -> exampleInstance.childMessageHandler.wasCalled ), "Child message handler was not called.", 1000 )
+			messageBus.fireEvent( 'childMessage', childEventData )
 
-			waitsFor( ( -> exampleInstance.childMessageHandlerCalled ), "Child message handler was not called.", 1000 )
-
-			messageBus.fireEvent( 'childMessage', 'childMessageEventData' )
-
-			runs( ->
-				expect( exampleInstance.childMessageHandlerCalled ).toEqual( 'childMessageEventData' )
-			)
-
-			waitsFor( ( -> exampleInstance.storeHandlerCalled ), "Store beforesync handler was not called.", 1000 )
-
-			store.fireEvent( 'beforesync', 'beforeSyncEventData' )
-
-			runs( ->
-				expect( exampleInstance.storeHandlerCalled ).toEqual( 'beforeSyncEventData' )
-			)
-
+			waitsFor( ( -> exampleInstance.storeHandler.wasCalled ), "Store beforesync handler was not called.", 1000 )
+			store.fireEvent( 'beforesync', storeEventData )
 		)
 
 		it( 'should attach listeners to observed objects using nested property declaration', ->
+
+			parentEventData = { value1: true, value2: false }
+			storeEventData = { value3: true, value4: false }
+			storeFilterEventData = { value5: true, value6: false }
 
 			Ext.define( 'ExampleClass',
 				extend: 'Deft.mvc.ViewController'
@@ -1654,11 +1702,11 @@ describe( 'Deft.mvc.ViewController', ->
 					'store.data':
 						add: "storeDataHandler"
 
-				parentMessageHandlerCalled: false
-				storeDataHandlerCalled: false
+				parentMessageHandler: ( data ) ->
+					expect( data ).toEqual( parentEventData )
 
-				parentMessageHandler: ( eventData ) -> @parentMessageHandlerCalled = eventData
-				storeDataHandler: ( eventData ) -> @storeDataHandlerCalled = eventData
+				storeDataHandler: ( data ) ->
+					expect( data ).toEqual( storeEventData )
 			)
 
 			Ext.define( 'ExampleSubClass',
@@ -1668,11 +1716,13 @@ describe( 'Deft.mvc.ViewController', ->
 					'store.filters':
 						replace: "storeFilterHandler"
 
-				storeFilterHandlerCalled: false
-
-				storeFilterHandler: ( eventData ) ->
-					@storeFilterHandlerCalled = eventData
+				storeFilterHandler: ( data ) ->
+					expect( data ).toEqual( storeFilterEventData )
 			)
+
+			spyOn( ExampleClass.prototype, 'parentMessageHandler' ).andCallThrough()
+			spyOn( ExampleClass.prototype, 'storeDataHandler' ).andCallThrough()
+			spyOn( ExampleSubClass.prototype, 'storeFilterHandler' ).andCallThrough()
 
 			messageBus = Ext.create( 'Ext.util.Observable' )
 			store = Ext.create( 'Ext.data.ArrayStore' )
@@ -1682,34 +1732,18 @@ describe( 'Deft.mvc.ViewController', ->
 				store: store
 			)
 
-			# Cannot just spy on the handler methods because messageBus listener will always reference the original method, not the spy.
-			waitsFor( ( -> exampleInstance.parentMessageHandlerCalled ), "Parent message handler was not called.", 1000 )
-
-			parentEventData = { value1: true, value2: false }
+			waitsFor( ( -> exampleInstance.parentMessageHandler.wasCalled ), "Parent message handler was not called.", 1000 )
 			messageBus.fireEvent( 'parentMessage', parentEventData )
 
-			runs( ->
-				expect( exampleInstance.parentMessageHandlerCalled ).toEqual( parentEventData )
-			)
+			waitsFor( ( -> exampleInstance.storeDataHandler.wasCalled ), "Nested store.data handler was not called.", 1000 )
+			store.data.fireEvent( 'add', storeEventData )
 
-			waitsFor( ( -> exampleInstance.storeDataHandlerCalled ), "Nested store.data handler was not called.", 1000 )
-
-			store.data.fireEvent( 'add', 'storeDataAddEventData' )
-
-			runs( ->
-				expect( exampleInstance.storeDataHandlerCalled ).toEqual( 'storeDataAddEventData' )
-			)
-
-			waitsFor( ( -> exampleInstance.storeFilterHandlerCalled ), "Nested store.filter handler was not called.", 1000 )
-
-			store.filters.fireEvent( 'replace', 'storeFilterReplaceEventData' )
-
-			runs( ->
-				expect( exampleInstance.storeFilterHandlerCalled ).toEqual( 'storeFilterReplaceEventData' )
-			)
+			waitsFor( ( -> exampleInstance.storeFilterHandler.wasCalled ), "Nested store.filters handler was not called.", 1000 )
+			store.filters.fireEvent( 'replace', storeFilterEventData )
 		)
 
 		it( 'should attach listeners in child and parent to the same observed object', ->
+			eventData = { value1: true, value2: false }
 
 			Ext.define( 'ExampleClass',
 				extend: 'Deft.mvc.ViewController'
@@ -1722,8 +1756,8 @@ describe( 'Deft.mvc.ViewController', ->
 					messageBus:
 						parentMessage: "parentMessageHandler"
 
-				parentMessageHandlerCalled: false
-				parentMessageHandler: ( eventData ) -> @parentMessageHandlerCalled = eventData
+				parentMessageHandler: ( data ) ->
+					expect( data ).toEqual( eventData )
 			)
 
 			Ext.define( 'ExampleSubClass',
@@ -1733,11 +1767,12 @@ describe( 'Deft.mvc.ViewController', ->
 					messageBus:
 						parentMessage: "childMessageHandler"
 
-				childMessageHandlerCalled: false
-
-				childMessageHandler: ( eventData ) ->
-					@childMessageHandlerCalled = eventData
+				childMessageHandler: ( data ) ->
+					expect( data ).toEqual( eventData )
 			)
+
+			spyOn( ExampleClass.prototype, 'parentMessageHandler' ).andCallThrough()
+			spyOn( ExampleSubClass.prototype, 'childMessageHandler' ).andCallThrough()
 
 			messageBus = Ext.create( 'Ext.util.Observable' )
 
@@ -1745,16 +1780,8 @@ describe( 'Deft.mvc.ViewController', ->
 				messageBus: messageBus
 			)
 
-			# Cannot just spy on the handler methods because messageBus listener will always reference the original method, not the spy.
-			waitsFor( ( -> exampleInstance.parentMessageHandlerCalled and exampleInstance.childMessageHandlerCalled ), "Parent and child message handlers were not called.", 1000 )
-
-			eventData = { value1: true, value2: false }
+			waitsFor( ( -> exampleInstance.parentMessageHandler.wasCalled and exampleInstance.childMessageHandler.wasCalled ), "Parent and child message handlers were not called.", 1000 )
 			messageBus.fireEvent( 'parentMessage', eventData )
-
-			runs( ->
-				expect( exampleInstance.parentMessageHandlerCalled ).toEqual( eventData )
-				expect( exampleInstance.childMessageHandlerCalled ).toEqual( eventData )
-			)
 		)
 	)
 
@@ -2086,7 +2113,6 @@ describe( 'Deft.mvc.ViewController', ->
 		)
 
 		it( 'should remove listeners from observed objects when the view controller is destroyed', ->
-
 			Ext.define( 'ExampleClass',
 				extend: 'Deft.mvc.ViewController'
 
@@ -2097,6 +2123,8 @@ describe( 'Deft.mvc.ViewController', ->
 				observe:
 					store:
 						beforesync: "genericHandler"
+					'store.data':
+						add: "genericHandler"
 					store2:
 						beforeload: "genericHandler"
 
@@ -2108,6 +2136,7 @@ describe( 'Deft.mvc.ViewController', ->
 			store2 = Ext.create( 'Ext.data.ArrayStore' )
 
 			expect( store.hasListener( 'beforesync' ) ).toBeFalsy()
+			expect( store.data.hasListener( 'add' ) ).toBeFalsy()
 			expect( store2.hasListener( 'beforeload' ) ).toBeFalsy()
 
 			viewController = Ext.create( 'ExampleClass',
@@ -2117,6 +2146,7 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 
 			expect( store.hasListener( 'beforesync' ) ).toBeTruthy()
+			expect( store.data.hasListener( 'add' ) ).toBeTruthy()
 			expect( store2.hasListener( 'beforeload' ) ).toBeTruthy()
 
 			spyOn( viewController, 'removeObservers' ).andCallThrough()
@@ -2126,6 +2156,7 @@ describe( 'Deft.mvc.ViewController', ->
 
 			runs( ->
 				expect( store.hasListener( 'beforesync' ) ).toBeFalsy()
+				expect( store.data.hasListener( 'add' ) ).toBeFalsy()
 				expect( store2.hasListener( 'beforeload' ) ).toBeFalsy()
 			)
 
