@@ -8,61 +8,107 @@ A mixin that creates and attaches the specified view controller(s) to the target
 
 Used in conjunction with {@link Deft.mvc.ViewController}.
 ###
-Ext.define( 'Deft.mixin.Controllable', {} )
-
-Ext.Class.registerPreprocessor( 'controller', ( Class, data, hooks, callback ) ->
-	# Workaround: Ext JS 4.0 passes the callback as the third parameter, Sencha Touch 2.0.1 and Ext JS 4.1 passes it as the fourth parameter
-	if arguments.length is 3
-		# NOTE: Altering a parameter also modifies arguments, so clone it to a true Array first.
-		parameters = Ext.toArray( arguments )
-		hooks = parameters[ 1 ]
-		callback = parameters[ 2 ]
+Ext.define( 'Deft.mixin.Controllable',
+	requires: [ 
+		'Deft.core.Class'
+		'Deft.log.Logger'
+	]
 	
-	if data.mixins? and Ext.Array.contains( Ext.Object.getValues( data.mixins ), Ext.ClassManager.get( 'Deft.mixin.Controllable' ) )
-		controllerClass = data.controller
-		delete data.controller
+	###*
+	@private
+	###
+	onClassMixedIn: ( targetClass ) ->
+		Deft.Logger.deprecate( 'Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.' )
+		return
+,
+	->
+		if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
+			# Ext JS 4.0
+			createControllerInterceptor = ->
+				return ( config = {} ) ->
+					if @ instanceof Ext.ClassManager.get( 'Ext.Container' ) and not @$controlled
+						try
+							controller = Ext.create( @controller, config.controllerConfig || @controllerConfig || {} )
+						catch error
+							# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
+							Deft.Logger.warn( "Error initializing view controller: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
+							throw error
+						
+						if @getController is undefined
+							@getController = ->
+								return controller
+						
+						@$controlled = true
+						
+						@callOverridden( arguments )
+						
+						controller.controlView( @ )
+						
+						return @
+					
+					return @callOverridden( arguments )
+		else
+			# Sencha Touch 2.0+, Ext JS 4.1+
+			createControllerInterceptor = ->
+				return ( config = {} ) ->
+					if @ instanceof Ext.ClassManager.get( 'Ext.Container' ) and not @$controlled
+						try
+							controller = Ext.create( @controller, config.controllerConfig || @controllerConfig || {} )
+						catch error
+							# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
+							Deft.Logger.warn( "Error initializing view controller: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
+							throw error
+					
+						if @getController is undefined
+							@getController = ->
+								return controller
+					
+						@$controlled = true
+					
+						@callParent( arguments )
+					
+						controller.controlView( @ )
+					
+						return @
+				
+					return @callParent( arguments )
+			
 		
-		if controllerClass?
-			# Intercept constructor method.
-			if not data.hasOwnProperty( 'constructor' )
-				data.constructor = -> @callParent( arguments )
-			originalConstructor = data.constructor
-			data.constructor = ( config = {} ) ->
-				if @getController is undefined
-					try
-						controller = Ext.create( controllerClass, config.controllerConfig || @controllerConfig || {} )
-					catch error
-						# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
-						Deft.Logger.warn( "Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '#{ controllerClass }'." )
-						throw error
-					
-					@getController = ->
-						return controller
-					
-					originalConstructor.apply( @, arguments )
-					controller.controlView( @ )
+		Deft.Class.registerPreprocessor( 
+			'controller'
+			( Class, data, hooks, callback ) ->
+				# Override the constructor for this class with a controller interceptor.
+				Deft.Class.hookOnClassCreated( hooks, ( Class ) ->
+					Class.override(
+						constructor: createControllerInterceptor()
+					)
+					return
+				)
 				
-					return @
+				# Process any classes that extend this class.
+				Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
+					# Override the constructor for this class with a controller interceptor.
+					Deft.Class.hookOnClassCreated( hooks, ( Class ) ->
+						Class.override(
+							constructor: createControllerInterceptor()
+						)
+						return
+					)
+					return
+				)
 				
-				return originalConstructor.apply( @, arguments )
-			
-			# Intercept destroy method.
-			if not data.hasOwnProperty( 'destroy' )
-				data.destroy = -> @callParent( arguments )
-			originalDestroy = data.destroy
-			data.destroy = ->
-				delete @getController
-				return originalDestroy.apply( @, arguments )
-			
-			# Automatically require the controller class.
-			self = @
-			Ext.require( [ controllerClass ], ->
-				if callback?
-					callback.call( self, Class, data, hooks )
-				return
-			)
-			return false
-	return
+				# Automatically require the controller class.
+				self = @
+				Ext.require( [ data.controller ], ->
+					if callback?
+						callback.call( self, Class, data, hooks )
+					return
+				)
+				return false
+			'before'
+			'extend'
+		)
+	
+		return
 )
 
-Ext.Class.setDefaultPreprocessorPosition( 'controller', 'before', 'mixins' )

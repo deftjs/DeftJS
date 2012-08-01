@@ -27,6 +27,7 @@
 			</filterchain>
 			<filelist dir="src/js">
 				<!-- NOTE: Order is important - driven by class dependencies. -->
+				<file name="Deft/core/Class.js" />
 				<file name="Deft/log/Logger.js" />
 				<file name="Deft/util/Function.js" />
 				<file name="Deft/event/LiveEventListener.js" />

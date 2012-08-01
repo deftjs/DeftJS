@@ -5,6 +5,50 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+
+Ext.define('Deft.core.Class', {
+  alternateClassName: ['Deft.Class'],
+  statics: {
+    /**
+    		Register a new pre-processor to be used during the class creation process.
+    		(Normalizes API differences between the various Sencha frameworks and versions.)
+    */
+
+    registerPreprocessor: function(name, fn, position, relativeTo) {
+      if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+        Ext.Class.registerPreprocessor(name, function(Class, data, callback) {
+          return fn.call(this, Class, data, data, callback);
+        }).setDefaultPreprocessorPosition(name, position, relativeTo);
+      } else {
+        Ext.Class.registerPreprocessor(name, function(Class, data, hooks, callback) {
+          return fn.call(this, Class, data, hooks, callback);
+        }, [name], position, relativeTo);
+      }
+    },
+    hookOnClassCreated: function(hooks, fn) {
+      if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+        Ext.Function.interceptBefore(hooks, 'onClassCreated', fn);
+      } else {
+        Ext.Function.interceptBefore(hooks, 'onCreated', fn);
+      }
+    },
+    hookOnClassExtended: function(data, fn) {
+      var onClassExtended;
+      if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+        onClassExtended = function(Class, data) {
+          return fn.call(this, Class, data, data);
+        };
+      } else {
+        onClassExtended = fn;
+      }
+      if (data.onClassExtended != null) {
+        Ext.Function.interceptBefore(data, 'onClassExtended', onClassExtended);
+      } else {
+        data.onClassExtended = onClassExtended;
+      }
+    }
+  }
+});
 /**
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
@@ -13,7 +57,11 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.log.Logger', {
   alternateClassName: ['Deft.Logger'],
   singleton: true,
-  log: function(message, priority) {},
+  log: function(message, priority) {
+    if (priority == null) {
+      priority = 'info';
+    }
+  },
   error: function(message) {
     this.log(message, 'error');
   },
@@ -31,12 +79,13 @@ Ext.define('Deft.log.Logger', {
   }
 }, function() {
   var _ref;
-  if (Ext.isFunction((_ref = Ext.Logger) != null ? _ref.log : void 0)) {
-    this.log = Ext.bind(Ext.Logger.log, Ext.Logger);
-  } else if (Ext.isFunction(Ext.log)) {
+  if (Ext.getVersion('extjs') != null) {
     this.log = function(message, priority) {
       if (priority == null) {
         priority = 'info';
+      }
+      if (priority === 'verbose') {
+        priority === 'info';
       }
       if (priority === 'deprecate') {
         priority = 'warn';
@@ -46,6 +95,10 @@ Ext.define('Deft.log.Logger', {
         level: priority
       });
     };
+  } else {
+    if (Ext.isFunction((_ref = Ext.Logger) != null ? _ref.log : void 0)) {
+      this.log = Ext.bind(Ext.Logger.log, Ext.Logger);
+    }
   }
 });
 /**
@@ -94,7 +147,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.event.LiveEventListener', {
-  requires: ['Ext.ComponentQuery'],
+  alternateClassName: ['Deft.LiveEventListener'],
   constructor: function(config) {
     var component, components, _i, _len;
     Ext.apply(this, config);
@@ -149,7 +202,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Ext.define('Deft.event.LiveEventBus', {
   alternateClassName: ['Deft.LiveEventBus'],
-  requires: ['Ext.ComponentManager', 'Deft.event.LiveEventListener'],
+  requires: ['Deft.event.LiveEventListener'],
   singleton: true,
   constructor: function() {
     this.listeners = [];
@@ -255,11 +308,13 @@ Ext.define('Deft.event.LiveEventBus', {
       }
     });
   }
-  Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
-    Deft.event.LiveEventBus.register(component);
-  });
-  Ext.Function.interceptAfter(Ext.ComponentManager, 'unregister', function(component) {
-    Deft.event.LiveEventBus.unregister(component);
+  Ext.require('Ext.ComponentManager', function() {
+    Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
+      Deft.event.LiveEventBus.register(component);
+    });
+    Ext.Function.interceptAfter(Ext.ComponentManager, 'unregister', function(component) {
+      Deft.event.LiveEventBus.unregister(component);
+    });
   });
 });
 /*
@@ -556,16 +611,69 @@ Used in conjunction with {@link Deft.ioc.Injector}.
 */
 
 Ext.define('Deft.mixin.Injectable', {
-  requires: ['Deft.ioc.Injector'],
+  requires: ['Deft.core.Class', 'Deft.ioc.Injector', 'Deft.log.Logger'],
   /**
   	@private
   */
 
   onClassMixedIn: function(targetClass) {
-    targetClass.prototype.constructor = Ext.Function.createInterceptor(targetClass.prototype.constructor, function() {
-      return Deft.Injector.inject(this.inject, this, false);
-    });
+    Deft.Logger.deprecate('Deft.mixin.Injectable has been deprecated and can now be omitted - simply use the \'inject\' class annotation on its own.');
   }
+}, function() {
+  var createInjectionInterceptor;
+  if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+    createInjectionInterceptor = function() {
+      return function() {
+        if (!this.$injected) {
+          Deft.Injector.inject(this.inject, this, false);
+          this.$injected = true;
+        }
+        return this.callOverridden(arguments);
+      };
+    };
+  } else {
+    createInjectionInterceptor = function() {
+      return function() {
+        if (!this.$injected) {
+          Deft.Injector.inject(this.inject, this, false);
+          this.$injected = true;
+        }
+        return this.callParent(arguments);
+      };
+    };
+  }
+  Deft.Class.registerPreprocessor('inject', function(Class, data, hooks, callback) {
+    var dataInjectObject, identifier, _i, _len, _ref;
+    if (Ext.isString(data.inject)) {
+      data.inject = [data.inject];
+    }
+    if (Ext.isArray(data.inject)) {
+      dataInjectObject = {};
+      _ref = data.inject;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        identifier = _ref[_i];
+        dataInjectObject[identifier] = identifier;
+      }
+      data.inject = dataInjectObject;
+    }
+    Deft.Class.hookOnClassCreated(hooks, function(Class) {
+      Class.override({
+        constructor: createInjectionInterceptor()
+      });
+    });
+    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
+      var _ref1;
+      Deft.Class.hookOnClassCreated(hooks, function(Class) {
+        Class.override({
+          constructor: createInjectionInterceptor()
+        });
+      });
+      if ((_ref1 = data.inject) == null) {
+        data.inject = {};
+      }
+      Ext.applyIf(data.inject, Class.superclass.inject);
+    });
+  }, 'before', 'extend');
 });
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
@@ -607,7 +715,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mvc.ComponentSelector', {
-  requires: ['Ext.ComponentQuery', 'Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
+  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
   constructor: function(config) {
     var eventName, fn, listener, options, scope, _ref;
     Ext.apply(this, config);
@@ -981,68 +1089,95 @@ A mixin that creates and attaches the specified view controller(s) to the target
 Used in conjunction with {@link Deft.mvc.ViewController}.
 */
 
-Ext.define('Deft.mixin.Controllable', {});
+Ext.define('Deft.mixin.Controllable', {
+  requires: ['Deft.core.Class', 'Deft.log.Logger'],
+  /**
+  	@private
+  */
 
-Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
-  var controllerClass, originalConstructor, originalDestroy, parameters, self;
-  if (arguments.length === 3) {
-    parameters = Ext.toArray(arguments);
-    hooks = parameters[1];
-    callback = parameters[2];
+  onClassMixedIn: function(targetClass) {
+    Deft.Logger.deprecate('Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.');
   }
-  if ((data.mixins != null) && Ext.Array.contains(Ext.Object.getValues(data.mixins), Ext.ClassManager.get('Deft.mixin.Controllable'))) {
-    controllerClass = data.controller;
-    delete data.controller;
-    if (controllerClass != null) {
-      if (!data.hasOwnProperty('constructor')) {
-        data.constructor = function() {
-          return this.callParent(arguments);
-        };
-      }
-      originalConstructor = data.constructor;
-      data.constructor = function(config) {
+}, function() {
+  var createControllerInterceptor;
+  if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+    createControllerInterceptor = function() {
+      return function(config) {
         var controller;
         if (config == null) {
           config = {};
         }
-        if (this.getController === void 0) {
+        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
           try {
-            controller = Ext.create(controllerClass, config.controllerConfig || this.controllerConfig || {});
+            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
           } catch (error) {
-            Deft.Logger.warn("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
+            Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
             throw error;
           }
-          this.getController = function() {
-            return controller;
-          };
-          originalConstructor.apply(this, arguments);
+          if (this.getController === void 0) {
+            this.getController = function() {
+              return controller;
+            };
+          }
+          this.$controlled = true;
+          this.callOverridden(arguments);
           controller.controlView(this);
           return this;
         }
-        return originalConstructor.apply(this, arguments);
+        return this.callOverridden(arguments);
       };
-      if (!data.hasOwnProperty('destroy')) {
-        data.destroy = function() {
-          return this.callParent(arguments);
-        };
-      }
-      originalDestroy = data.destroy;
-      data.destroy = function() {
-        delete this.getController;
-        return originalDestroy.apply(this, arguments);
-      };
-      self = this;
-      Ext.require([controllerClass], function() {
-        if (callback != null) {
-          callback.call(self, Class, data, hooks);
+    };
+  } else {
+    createControllerInterceptor = function() {
+      return function(config) {
+        var controller;
+        if (config == null) {
+          config = {};
         }
-      });
-      return false;
-    }
+        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
+          try {
+            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
+          } catch (error) {
+            Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+            throw error;
+          }
+          if (this.getController === void 0) {
+            this.getController = function() {
+              return controller;
+            };
+          }
+          this.$controlled = true;
+          this.callParent(arguments);
+          controller.controlView(this);
+          return this;
+        }
+        return this.callParent(arguments);
+      };
+    };
   }
+  Deft.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
+    var self;
+    Deft.Class.hookOnClassCreated(hooks, function(Class) {
+      Class.override({
+        constructor: createControllerInterceptor()
+      });
+    });
+    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
+      Deft.Class.hookOnClassCreated(hooks, function(Class) {
+        Class.override({
+          constructor: createControllerInterceptor()
+        });
+      });
+    });
+    self = this;
+    Ext.require([data.controller], function() {
+      if (callback != null) {
+        callback.call(self, Class, data, hooks);
+      }
+    });
+    return false;
+  }, 'before', 'extend');
 });
-
-Ext.Class.setDefaultPreprocessorPosition('controller', 'before', 'mixins');
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).

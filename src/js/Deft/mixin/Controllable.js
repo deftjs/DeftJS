@@ -10,65 +10,92 @@ A mixin that creates and attaches the specified view controller(s) to the target
 Used in conjunction with {@link Deft.mvc.ViewController}.
 */
 
-Ext.define('Deft.mixin.Controllable', {});
+Ext.define('Deft.mixin.Controllable', {
+  requires: ['Deft.core.Class', 'Deft.log.Logger'],
+  /**
+  	@private
+  */
 
-Ext.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
-  var controllerClass, originalConstructor, originalDestroy, parameters, self;
-  if (arguments.length === 3) {
-    parameters = Ext.toArray(arguments);
-    hooks = parameters[1];
-    callback = parameters[2];
+  onClassMixedIn: function(targetClass) {
+    Deft.Logger.deprecate('Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.');
   }
-  if ((data.mixins != null) && Ext.Array.contains(Ext.Object.getValues(data.mixins), Ext.ClassManager.get('Deft.mixin.Controllable'))) {
-    controllerClass = data.controller;
-    delete data.controller;
-    if (controllerClass != null) {
-      if (!data.hasOwnProperty('constructor')) {
-        data.constructor = function() {
-          return this.callParent(arguments);
-        };
-      }
-      originalConstructor = data.constructor;
-      data.constructor = function(config) {
+}, function() {
+  var createControllerInterceptor;
+  if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+    createControllerInterceptor = function() {
+      return function(config) {
         var controller;
         if (config == null) {
           config = {};
         }
-        if (this.getController === void 0) {
+        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
           try {
-            controller = Ext.create(controllerClass, config.controllerConfig || this.controllerConfig || {});
+            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
           } catch (error) {
-            Deft.Logger.warn("Error initializing Controllable instance: an error occurred while creating an instance of the specified controller: '" + controllerClass + "'.");
+            Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
             throw error;
           }
-          this.getController = function() {
-            return controller;
-          };
-          originalConstructor.apply(this, arguments);
+          if (this.getController === void 0) {
+            this.getController = function() {
+              return controller;
+            };
+          }
+          this.$controlled = true;
+          this.callOverridden(arguments);
           controller.controlView(this);
           return this;
         }
-        return originalConstructor.apply(this, arguments);
+        return this.callOverridden(arguments);
       };
-      if (!data.hasOwnProperty('destroy')) {
-        data.destroy = function() {
-          return this.callParent(arguments);
-        };
-      }
-      originalDestroy = data.destroy;
-      data.destroy = function() {
-        delete this.getController;
-        return originalDestroy.apply(this, arguments);
-      };
-      self = this;
-      Ext.require([controllerClass], function() {
-        if (callback != null) {
-          callback.call(self, Class, data, hooks);
+    };
+  } else {
+    createControllerInterceptor = function() {
+      return function(config) {
+        var controller;
+        if (config == null) {
+          config = {};
         }
-      });
-      return false;
-    }
+        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
+          try {
+            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
+          } catch (error) {
+            Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+            throw error;
+          }
+          if (this.getController === void 0) {
+            this.getController = function() {
+              return controller;
+            };
+          }
+          this.$controlled = true;
+          this.callParent(arguments);
+          controller.controlView(this);
+          return this;
+        }
+        return this.callParent(arguments);
+      };
+    };
   }
+  Deft.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
+    var self;
+    Deft.Class.hookOnClassCreated(hooks, function(Class) {
+      Class.override({
+        constructor: createControllerInterceptor()
+      });
+    });
+    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
+      Deft.Class.hookOnClassCreated(hooks, function(Class) {
+        Class.override({
+          constructor: createControllerInterceptor()
+        });
+      });
+    });
+    self = this;
+    Ext.require([data.controller], function() {
+      if (callback != null) {
+        callback.call(self, Class, data, hooks);
+      }
+    });
+    return false;
+  }, 'before', 'extend');
 });
-
-Ext.Class.setDefaultPreprocessorPosition('controller', 'before', 'mixins');

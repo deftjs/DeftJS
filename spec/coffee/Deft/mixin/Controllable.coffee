@@ -161,9 +161,11 @@ describe( 'Deft.mixin.Controllable', ->
 		exampleViewInstance = Ext.create( 'ExampleView' )
 		
 		expect( exampleViewInstance.getController() ).toBe( exampleViewControllerInstance )
+		
+		return
 	)
 	
-	it( 'should only create and attach the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified',
+	it( 'should only create and attach the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified', ->
 		baseViewInstance = null
 		baseViewControllerInstance = null
 		extendedViewInstance = null
@@ -187,6 +189,85 @@ describe( 'Deft.mixin.Controllable', ->
 			extend: 'Ext.Container'
 			mixins: [ 'Deft.mixin.Controllable' ]
 			controller: 'BaseViewController'
+			
+			constructor: ->
+				@callParent( arguments )
+		)
+		
+		Ext.define( 'ExtendedView',
+			extend: 'BaseView'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'ExtendedViewController'
+			
+			constructor: ->
+				expect( @getController() ).toBe( extendedViewControllerInstance )
+				@callParent( arguments )
+		)
+		
+		baseViewControllerConstructorSpy = spyOn( BaseViewController.prototype, 'constructor' ).andCallFake( ->
+			baseViewControllerInstance = @
+			return baseViewControllerConstructorSpy.originalValue.apply( @, arguments )
+		)
+		extendedViewControllerConstructorSpy = spyOn( ExtendedViewController.prototype, 'constructor' ).andCallFake( ->
+			extendedViewControllerInstance = @
+			return extendedViewControllerConstructorSpy.originalValue.apply( @, arguments )
+		)
+		
+		baseViewInstance = Ext.create( 'BaseView' )
+		
+		expect( baseViewControllerConstructorSpy ).toHaveBeenCalled()
+		expect( baseViewControllerConstructorSpy.callCount ).toBe( 1 )
+		expect( extendedViewControllerConstructorSpy ).not.toHaveBeenCalled()
+		expect( baseViewControllerInstance ).not.toBe( null )
+		expect( extendedViewControllerInstance ).toBe( null )
+		expect( baseViewInstance.getController() ).toBe( baseViewControllerInstance )
+		
+		baseViewControllerConstructorSpy.reset()
+		extendedViewControllerConstructorSpy.reset()
+		baseViewControllerInstance = null
+		extendedViewControllerInstance = null
+		
+		extendedViewInstance = Ext.create( 'ExtendedView' )
+		
+		expect( baseViewControllerConstructorSpy ).toHaveBeenCalled() # by @callParent()
+		expect( baseViewControllerConstructorSpy.callCount ).toBe( 1 )
+		expect( extendedViewControllerConstructorSpy ).toHaveBeenCalled()
+		expect( extendedViewControllerConstructorSpy.callCount ).toBe( 1 )
+		expect( baseViewControllerInstance ).not.toBe( null )
+		expect( extendedViewControllerInstance ).not.toBe( null )
+		expect( extendedViewControllerInstance ).toBe( baseViewControllerInstance )
+		expect( extendedViewInstance.getController() ).toBe( extendedViewControllerInstance )
+		
+		return
+	)
+	
+	it( 'should only create and attach the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified (and the leaf class does not define a constructor)', ->
+		baseViewInstance = null
+		baseViewControllerInstance = null
+		extendedViewInstance = null
+		extendedViewControllerInstance = null
+		
+		Ext.define( 'BaseViewController',
+			extend: 'Deft.mvc.ViewController'
+			
+			constructor: ->
+				@callParent( arguments )
+		)
+		
+		Ext.define( 'ExtendedViewController',
+			extend: 'BaseViewController'
+			
+			constructor: ->
+				@callParent( arguments )
+		)
+		
+		Ext.define( 'BaseView',
+			extend: 'Ext.Container'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'BaseViewController'
+			
+			constructor: ->
+				@callParent( arguments )
 		)
 		
 		Ext.define( 'ExtendedView',
@@ -228,26 +309,80 @@ describe( 'Deft.mixin.Controllable', ->
 		expect( extendedViewControllerInstance ).not.toBe( null )
 		expect( extendedViewControllerInstance ).toBe( baseViewControllerInstance )
 		expect( extendedViewInstance.getController() ).toBe( extendedViewControllerInstance )
+		
+		return
 	)
 	
-	it( 'should automatically remove that getController() accessor method from the target view when it is destroyed', ->
-		exampleViewInstance = null
-		exampleViewControllerInstance = null
+	it( 'should only create and attach the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified (and the root class does not define a constructor)', ->
+		baseViewInstance = null
+		baseViewControllerInstance = null
+		extendedViewInstance = null
+		extendedViewControllerInstance = null
 		
-		Ext.define( 'ExampleViewController',
+		Ext.define( 'BaseViewController',
 			extend: 'Deft.mvc.ViewController'
+			
+			constructor: ->
+				@callParent( arguments )
 		)
 		
-		Ext.define( 'ExampleView',
+		Ext.define( 'ExtendedViewController',
+			extend: 'BaseViewController'
+			
+			constructor: ->
+				@callParent( arguments )
+		)
+		
+		Ext.define( 'BaseView',
 			extend: 'Ext.Container'
 			mixins: [ 'Deft.mixin.Controllable' ]
-			controller: 'ExampleViewController'
+			controller: 'BaseViewController'
 		)
 		
-		exampleViewInstance = Ext.create( 'ExampleView' )
-		exampleViewInstance.destroy()
+		Ext.define( 'ExtendedView',
+			extend: 'BaseView'
+			mixins: [ 'Deft.mixin.Controllable' ]
+			controller: 'ExtendedViewController'
+			
+			constructor: ->
+				@callParent( arguments )
+		)
 		
-		expect( exampleViewInstance.getController ).toBe( undefined )
+		baseViewControllerConstructorSpy = spyOn( BaseViewController.prototype, 'constructor' ).andCallFake( ->
+			baseViewControllerInstance = @
+			return baseViewControllerConstructorSpy.originalValue.apply( @, arguments )
+		)
+		extendedViewControllerConstructorSpy = spyOn( ExtendedViewController.prototype, 'constructor' ).andCallFake( ->
+			extendedViewControllerInstance = @
+			return extendedViewControllerConstructorSpy.originalValue.apply( @, arguments )
+		)
+		
+		baseViewInstance = Ext.create( 'BaseView' )
+		
+		expect( baseViewControllerConstructorSpy ).toHaveBeenCalled()
+		expect( baseViewControllerConstructorSpy.callCount ).toBe( 1 )
+		expect( extendedViewControllerConstructorSpy ).not.toHaveBeenCalled()
+		expect( baseViewControllerInstance ).not.toBe( null )
+		expect( extendedViewControllerInstance ).toBe( null )
+		expect( baseViewInstance.getController() ).toBe( baseViewControllerInstance )
+		
+		baseViewControllerConstructorSpy.reset()
+		extendedViewControllerConstructorSpy.reset()
+		baseViewControllerInstance = null
+		extendedViewControllerInstance = null
+		
+		extendedViewInstance = Ext.create( 'ExtendedView' )
+		
+		expect( baseViewControllerConstructorSpy ).toHaveBeenCalled() # by @callParent()
+		expect( baseViewControllerConstructorSpy.callCount ).toBe( 1 )
+		expect( extendedViewControllerConstructorSpy ).toHaveBeenCalled()
+		expect( extendedViewControllerConstructorSpy.callCount ).toBe( 1 )
+		expect( baseViewControllerInstance ).not.toBe( null )
+		expect( extendedViewControllerInstance ).not.toBe( null )
+		expect( extendedViewControllerInstance ).toBe( baseViewControllerInstance )
+		expect( extendedViewInstance.getController() ).toBe( extendedViewControllerInstance )
+		
+		return
 	)
 	
 	it( 'should re-throw any error thrown by the view controller during instantiation', ->

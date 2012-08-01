@@ -8,6 +8,13 @@ Jasmine test suite for Deft.mvc.ViewController
 ###
 describe( 'Deft.mvc.ViewController', ->
 	
+	hasListener = ( observable, eventName ) ->
+		if Ext.getVersion( 'extjs' )?
+			# Ext JS's implementation of `Ext.util.Observable::hasListener()` returns inaccurate information after `Ext.util.Observable::clearListeners()` is called.
+			return observable.events[ eventName ].listeners.length isnt 0
+		else
+			return observable.hasListener( eventName )
+	
 	beforeEach( ->
 		@addMatchers(
 			# NOTE: This differs from toHaveBeenCalledWith() by comparing against the MOST RECENT call rather than any of the recorded calls.
@@ -56,6 +63,8 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 		
 			expect( viewController.getView() ).toBe( view )
+			
+			return
 		)
 		
 		it( 'should be configurable at runtime with a reference to the view it controls', ->
@@ -68,6 +77,8 @@ describe( 'Deft.mvc.ViewController', ->
 			viewController.controlView( view )
 			
 			expect( viewController.getView() ).toBe( view )
+			
+			return
 		)
 		
 		it( 'should throw an error if created and configured with a non-Ext.Container as the view', ->
@@ -76,6 +87,8 @@ describe( 'Deft.mvc.ViewController', ->
 					view: new Object()
 				)
 			).toThrow( new Error( "Error constructing ViewController: the configured 'view' is not an Ext.Container." ) )
+			
+			return
 		)
 	)
 	
@@ -130,10 +143,14 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			
 			Ext.DomHelper.append( Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>' )
+			
+			return
 		)
 		
 		afterEach( ->
 			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
+			
+			return
 		)
 		
 		it( 'should attach view controller scoped event listeners to events for the view', ->
@@ -159,10 +176,12 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			expect( viewController.getView() ).toBe( view )
 			
-			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( view, 'exampleevent' ) ).toBe( true )
 			view.fireExampleEvent( 'expected value' )
 			expect( viewController.onExampleViewExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( view, 'expected value', {} )
 			expect( viewController.onExampleViewExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should attach view controller scoped event listeners (with options) to events for the view', ->
@@ -190,11 +209,13 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			expect( viewController.getView() ).toBe( view )
 			
-			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( view, 'exampleevent' ) ).toBe( true )
 			view.fireExampleEvent( 'expected value' )
 			view.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onExampleViewExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( view, 'expected value', { single: true } )
 			expect( viewController.onExampleViewExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should attach event listeners (with options) to events for the view', ->
@@ -221,11 +242,13 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			expect( viewController.getView() ).toBe( view )
 			
-			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( view, 'exampleevent' ) ).toBe( true )
 			view.fireExampleEvent( 'expected value' )
 			view.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( view, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should throw an error when attaching a non-existing view controller scoped event listener for the view', ->
@@ -244,6 +267,8 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).toThrow( 'Error adding \'exampleevent\' listener: the specified handler \'onExampleViewExampleEvent\' is not a Function or does not exist.' )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter for a view component referenced implicitly by itemId', ->
@@ -263,6 +288,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).toBe( component )
+			
+			return
 		)
 		
 		it( 'should throw an error when referencing a non-existent component implicitly by itemId', ->
@@ -280,6 +307,8 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).toThrow( 'Error locating component: no component(s) found matching \'#doesntexist\'.' )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter for a view component referenced implicitly by selector', ->
@@ -299,6 +328,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).toBe( component )
+			
+			return
 		)
 		
 		it( 'should throw an error when referencing a non-existent component implicitly by selector', ->
@@ -316,6 +347,8 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).toThrow( 'Error locating component: no component(s) found matching \'#doesntexist\'.' )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter for a view component referenced explicitly by selector', ->
@@ -336,6 +369,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).toBe( component )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter for view components referenced explicitly by selector', ->
@@ -368,6 +403,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			components = view.query( 'example' )
 			expect( viewController.getExample() ).toEqual( components )
+			
+			return
 		)
 		
 		it( 'should throw an error when referencing a non-existent component explicitly by selector', ->
@@ -386,6 +423,8 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).toThrow( 'Error locating component: no component(s) found matching \'#doesntexist\'.' )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners to events for a view component referenced implicitly by itemId', ->
@@ -414,10 +453,12 @@ describe( 'Deft.mvc.ViewController', ->
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners (with options) to events for a view component referenced implicitly by itemId', ->
@@ -448,11 +489,13 @@ describe( 'Deft.mvc.ViewController', ->
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).toBe( component )
 
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach event listeners (with options) to events for a view component referenced implicitly by itemId', ->
@@ -482,11 +525,13 @@ describe( 'Deft.mvc.ViewController', ->
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should throw an error when attaching a non-existing view controller scoped event listener for a view component referenced implicitly by itemId', ->
@@ -505,6 +550,8 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).toThrow( 'Error adding \'exampleevent\' listener: the specified handler \'onExampleComponentExampleEvent\' is not a Function or does not exist.' )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners to events for a view component referenced by selector', ->
@@ -535,10 +582,12 @@ describe( 'Deft.mvc.ViewController', ->
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).toBe( component )
 
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners (with options) to events for a view component referenced by selector', ->
@@ -571,11 +620,13 @@ describe( 'Deft.mvc.ViewController', ->
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach event listeners (with options) to events for a view component referenced by selector', ->
@@ -607,11 +658,13 @@ describe( 'Deft.mvc.ViewController', ->
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should throw an error when attaching a non-existing view controller scoped event listener for a view component referenced implicitly by selector', ->
@@ -632,6 +685,8 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).toThrow( 'Error adding \'exampleevent\' listener: the specified handler \'onExampleComponentExampleEvent\' is not a Function or does not exist.' )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners to events for view components referenced by selector', ->
@@ -675,11 +730,13 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.getExample() ).toEqual( components )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
 				expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 3 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners (with options) to events for view components referenced by selector', ->
@@ -725,7 +782,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.getExample() ).toEqual( components )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
 				expect( viewController.onExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			
@@ -734,11 +791,13 @@ describe( 'Deft.mvc.ViewController', ->
 			viewController.onExampleComponentExampleEvent.reset()
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( false )
 				component.fireExampleEvent( 'unexpected value' )
 				expect( viewController.onExampleComponentExampleEvent ).not.toHaveBeenCalled()
 			
 			expect( viewController.onExampleComponentExampleEvent.callCount ).toBe( 0 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach event listeners (with options) to events for view components referenced by selector', ->
@@ -783,7 +842,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.getExample() ).toEqual( components )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
 				expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			
@@ -792,11 +851,13 @@ describe( 'Deft.mvc.ViewController', ->
 			eventListenerFunction.reset()
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( false )
 				component.fireExampleEvent( 'unexpected value' )
 				expect( eventListenerFunction ).not.toHaveBeenCalled()
 			
 			expect( eventListenerFunction.callCount ).toBe( 0 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter for a dynamic view component referenced by a live selector implicitly by itemId', ->
@@ -825,6 +886,8 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			
 			expect( viewController.getDynamicExample() ).toBe( component )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter for a dynamic view component referenced explicitly by a live selector', ->
@@ -854,6 +917,8 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			
 			expect( viewController.getDynamicExample() ).toBe( component )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners to events for a dynamic view component referenced by a live selector implicitly by itemId', ->
@@ -891,10 +956,12 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			expect( viewController.getDynamicExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component,'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners (with options) to events for a dynamic view component referenced by a live selector implicitly by itemId', ->
@@ -934,11 +1001,13 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			expect( viewController.getDynamicExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach event listeners (with options) to events for a dynamic view component referenced by a live selector implicitly by itemId', ->
@@ -977,11 +1046,13 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			expect( viewController.getDynamicExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners to events for a dynamic view component referenced by a live selector', ->
@@ -1020,10 +1091,12 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			expect( viewController.getDynamicExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners (with options) to events for a dynamic view component referenced by a live selector', ->
@@ -1064,11 +1137,13 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			expect( viewController.getDynamicExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach event listeners (with options) to events for a dynamic view component referenced by a live selector', ->
@@ -1109,11 +1184,13 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( viewController.getDynamicExample() ).toBe( component )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 1 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners to events for a dynamic view components referenced by a live selector', ->
@@ -1171,10 +1248,12 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.getDynamicExample().length ).toEqual( 3 )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
 				expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', {} )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 3 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach view controller scoped event listeners (with options) to events for a dynamic view components referenced by a live selector', ->
@@ -1234,7 +1313,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.getDynamicExample().length ).toEqual( 3 )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
 				expect( viewController.onDynamicExampleComponentExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 3 )
@@ -1242,10 +1321,12 @@ describe( 'Deft.mvc.ViewController', ->
 			viewController.onDynamicExampleComponentExampleEvent.reset()
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( false )
 				component.fireExampleEvent( 'expected value' )
 				expect( viewController.onDynamicExampleComponentExampleEvent ).not.toHaveBeenCalled()
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).toBe( 0 )
+			
+			return
 		)
 		
 		it( 'should create a view controller getter and attach event listeners (with options) to events for a dynamic view components referenced by a live selector', ->
@@ -1304,7 +1385,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.getDynamicExample().length ).toEqual( 3 )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 				component.fireExampleEvent( 'expected value' )
 				expect( eventListenerFunction ).toHaveMostRecentlyBeenCalledWithAtLeast( component, 'expected value', { single: true } )
 			expect( eventListenerFunction.callCount ).toBe( 3 )
@@ -1312,10 +1393,12 @@ describe( 'Deft.mvc.ViewController', ->
 			eventListenerFunction.reset()
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( false )
 				component.fireExampleEvent( 'expected value' )
 				expect( eventListenerFunction ).not.toHaveBeenCalled()
 			expect( eventListenerFunction.callCount ).toBe( 0 )
+			
+			return
 		)
 	)
 
@@ -1718,10 +1801,14 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			
 			Ext.DomHelper.append( Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>' )
+			
+			return
 		)
 		
 		afterEach( ->
 			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
+			
+			return
 		)
 		
 		it( 'should be called to destroy() when the associated view is destroyed', ->
@@ -1743,6 +1830,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( viewController.destroy ).toHaveBeenCalled()
 			expect( isViewDestroyed ).toBe( true )
+			
+			return
 		)
 		
 		it( 'should cancel view destruction if the view controller\'s destroy() returns false', ->
@@ -1767,6 +1856,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( viewController.destroy ).toHaveBeenCalled()
 			expect( isViewDestroyed ).toBe( false )
+			
+			return
 		)
 		
 		it( 'should remove event listeners it attached to the view when the associated view (and view controller) is destroyed', ->
@@ -1787,7 +1878,7 @@ describe( 'Deft.mvc.ViewController', ->
 				view: view
 			)
 			
-			expect( view.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( view, 'exampleevent' ) ).toBe( true )
 			
 			spyOn( viewController, 'destroy' ).andCallThrough()
 			
@@ -1798,7 +1889,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.destroy ).toHaveBeenCalled()
 			expect( isViewDestroyed ).toBe( true )
 			
-			expect( view.hasListener( 'exampleevent' ) ).toBe( false )
+			expect( hasListener( view, 'exampleevent' ) ).toBe( false )
+			
+			return
 		)
 		
 		it( 'should remove event listeners it attached to a view component referenced implicitly by item id when the associated view (and view controller) is destroyed', ->
@@ -1823,7 +1916,7 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			component = view.query( '#example' )[ 0 ]
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			
 			spyOn( viewController, 'destroy' ).andCallThrough()
 			
@@ -1834,7 +1927,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.destroy ).toHaveBeenCalled()
 			expect( isViewDestroyed ).toBe( true )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( false )
+			
+			return
 		)
 		
 		it( 'should remove event listeners it attached to view components referenced explicitly by a selector when the associated view (and view controller) is destroyed', ->
@@ -1872,7 +1967,7 @@ describe( 'Deft.mvc.ViewController', ->
 			components = view.query( 'example' )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			
 			spyOn( viewController, 'destroy' ).andCallThrough()
 			
@@ -1884,7 +1979,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( isViewDestroyed ).toBe( true )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( false )
+			
+			return
 		)
 		
 		it( 'should remove event listeners it attached to a dynamic view component referenced by a live selector implicitly by item id when the associated view (and view controller) is destroyed', ->
@@ -1915,7 +2012,7 @@ describe( 'Deft.mvc.ViewController', ->
 				}
 			)
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			
 			spyOn( viewController, 'destroy' ).andCallThrough()
 			
@@ -1926,7 +2023,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.destroy ).toHaveBeenCalled()
 			expect( isViewDestroyed ).toBe( true )
 			
-			expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+			expect( hasListener( component, 'exampleevent' ) ).toBe( false )
+			
+			return
 		)
 		
 		it( 'should remove event listeners it attached to dynamic view components referenced explicitly by a live selector when the associated view (and view controller) is destroyed', ->
@@ -1969,7 +2068,7 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.getDynamicExample().length ).toEqual( 4 )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( true )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			
 			spyOn( viewController, 'destroy' ).andCallThrough()
 			
@@ -1981,7 +2080,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( isViewDestroyed ).toBe( true )
 			
 			for component in components
-				expect( component.hasListener( 'exampleevent' ) ).toBe( false )
+				expect( hasListener( component, 'exampleevent' ) ).toBe( false )
+			
+			return
 		)
 
 		it( 'should remove listeners from observed objects when the view controller is destroyed', ->
