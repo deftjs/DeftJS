@@ -1560,9 +1560,13 @@ Ext.define('Deft.promise.Promise', {
     */
 
     memoize: function(fn, scope, hashFn) {
-      return this.all(Ext.Array.toArray(arguments)).then(Deft.util.Function.spread(function() {
-        return Deft.util.memoize(arguments, scope, hashFn);
-      }, scope));
+      var memoizedFn;
+      memoizedFn = Deft.util.Function.memoize(fn, scope, hashFn);
+      return Ext.bind(function() {
+        return this.all(Ext.Array.toArray(arguments)).then(function(values) {
+          return memoizedFn.apply(scope, values);
+        });
+      }, this);
     },
     /**
     		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.

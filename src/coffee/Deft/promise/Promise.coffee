@@ -144,11 +144,13 @@ Ext.define( 'Deft.promise.Promise',
 		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
 		###
 		memoize: ( fn, scope, hashFn ) ->
-			return @all( Ext.Array.toArray( arguments ) ).then( 
-				Deft.util.Function.spread( 
-					-> Deft.util.memoize( arguments, scope, hashFn )
-					scope
-				)
+			memoizedFn = Deft.util.Function.memoize( fn, scope, hashFn )
+			return Ext.bind(
+				->
+					return @all( Ext.Array.toArray( arguments ) ).then( ( values ) ->
+						return memoizedFn.apply( scope, values )
+					)
+				@
 			)
 		
 		###*
