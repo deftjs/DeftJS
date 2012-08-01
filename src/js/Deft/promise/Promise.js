@@ -250,15 +250,15 @@ Ext.define('Deft.promise.Promise', {
   	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
   */
 
-  otherwise: function(callback) {
-    return this.deferred.otherwise(callback);
+  otherwise: function(callback, scope) {
+    return this.deferred.otherwise.apply(this.deferred, arguments);
   },
   /**
   	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
   */
 
-  always: function(callback) {
-    return this.deferred.always(callback);
+  always: function(callback, scope) {
+    return this.deferred.always.apply(this.deferred, arguments);
   },
   /**
   	Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.
