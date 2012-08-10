@@ -73,6 +73,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			@removeComponentReference( id )
 		for selector of @registeredComponentSelectors
 			@removeComponentSelector( selector )
+		@removeObservers()
 		return true
 	
 	###*

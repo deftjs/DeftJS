@@ -2136,7 +2136,7 @@ describe( 'Deft.mvc.ViewController', ->
 					store:
 						beforesync: "genericHandler"
 					'store.proxy':
-						metachange: "genericHandler"
+						customevent: "genericHandler"
 					store2:
 						beforeload: "genericHandler"
 
@@ -2148,7 +2148,7 @@ describe( 'Deft.mvc.ViewController', ->
 			store2 = Ext.create( 'Ext.data.ArrayStore' )
 
 			expect( store.hasListener( 'beforesync' ) ).toBeFalsy()
-			expect( store.getProxy().hasListeners.metachange).toBe( 1 )
+			expect( store.getProxy().hasListener( 'customevent' ) ).toBeFalsy()
 			expect( store2.hasListener( 'beforeload' ) ).toBeFalsy()
 
 			viewController = Ext.create( 'ExampleClass',
@@ -2158,7 +2158,7 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 
 			expect( store.hasListener( 'beforesync' ) ).toBeTruthy()
-			expect( store.getProxy().hasListeners.metachange).toBe( 2 )
+			expect( store.getProxy().hasListener( 'customevent' )).toBeTruthy()
 			expect( store2.hasListener( 'beforeload' ) ).toBeTruthy()
 
 			spyOn( viewController, 'removeObservers' ).andCallThrough()
@@ -2168,7 +2168,7 @@ describe( 'Deft.mvc.ViewController', ->
 
 			runs( ->
 				expect( store.hasListener( 'beforesync' ) ).toBeFalsy()
-				expect( store.getProxy().hasListeners.metachange).toBe( 1 )
+				expect( store.getProxy().hasListener( 'customevent' )).toBeFalsy()
 				expect( store2.hasListener( 'beforeload' ) ).toBeFalsy()
 			)
 

@@ -80,11 +80,17 @@ Ext.define( 'Deft.mvc.Observer',
 
 	###*
 	Returns true if the passed host has a target that is Observable.
-	Checks for an isObservable=true property, or a fireEvent method, since Sencha Touch does not set an isObservable property.
+	Checks for an isObservable=true property, observable mixin, or if the class extends Observable.
 	###
 	isTargetObservable: ( host, target ) ->
 		hostTarget = @locateTarget( host, target )
-		return hostTarget? and ( hostTarget?.isObservable? or hostTarget?.fireEvent? )
+		return false if not hostTarget?
+
+		if hostTarget.isObservable? or hostTarget.mixins?.observable?
+			return true
+		else
+			hostTargetClass = Ext.ClassManager.getClass( hostTarget )
+			return ( Deft.Class.extendsClass( 'Ext.util.Observable', hostTargetClass ) or Deft.Class.extendsClass( 'Ext.mixin.Observable', hostTargetClass ) )
 
 	###*
 	Attempts to locate an observer target given the host object and target property name.
