@@ -1538,7 +1538,7 @@ describe( 'Deft.mvc.ViewController', ->
 			return
 		)
 		
-		it( 'should remove event listeners it attached to a view component referenced implicitly by item id when the associated view (and view controller) is destroyed', ->
+		it( 'should remove event listeners it attached to a view component referenced implicitly by itemId when the associated view (and view controller) is destroyed', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
 				
@@ -1560,6 +1560,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			component = view.query( '#example' )[ 0 ]
 			
+			expect( viewController.getExample ).not.toBe( null )
+			
 			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			
 			spyOn( viewController, 'destroy' ).andCallThrough()
@@ -1569,6 +1571,7 @@ describe( 'Deft.mvc.ViewController', ->
 			view.destroy()
 			
 			expect( viewController.destroy ).toHaveBeenCalled()
+			expect( viewController.getExample ).toBe( null )
 			expect( isViewDestroyed ).toBe( true )
 			
 			expect( hasListener( component, 'exampleevent' ) ).toBe( false )
@@ -1610,6 +1613,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			components = view.query( 'example' )
 			
+			expect( viewController.getExample ).not.toBe( null )
+			
 			for component in components
 				expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			
@@ -1620,6 +1625,7 @@ describe( 'Deft.mvc.ViewController', ->
 			view.destroy()
 			
 			expect( viewController.destroy ).toHaveBeenCalled()
+			expect( viewController.getExample ).toBe( null )
 			expect( isViewDestroyed ).toBe( true )
 			
 			for component in components
@@ -1628,7 +1634,7 @@ describe( 'Deft.mvc.ViewController', ->
 			return
 		)
 		
-		it( 'should remove event listeners it attached to a dynamic view component referenced by a live selector implicitly by item id when the associated view (and view controller) is destroyed', ->
+		it( 'should remove event listeners it attached to a dynamic view component referenced by a live selector implicitly by itemId when the associated view (and view controller) is destroyed', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
 				
@@ -1656,6 +1662,8 @@ describe( 'Deft.mvc.ViewController', ->
 				}
 			)
 			
+			expect( viewController.getDynamicExample ).not.toBe( null )
+			
 			expect( hasListener( component, 'exampleevent' ) ).toBe( true )
 			
 			spyOn( viewController, 'destroy' ).andCallThrough()
@@ -1665,6 +1673,7 @@ describe( 'Deft.mvc.ViewController', ->
 			view.destroy()
 			
 			expect( viewController.destroy ).toHaveBeenCalled()
+			expect( viewController.getDynamicExample ).toBe( null )
 			expect( isViewDestroyed ).toBe( true )
 			
 			expect( hasListener( component, 'exampleevent' ) ).toBe( false )
@@ -1708,6 +1717,8 @@ describe( 'Deft.mvc.ViewController', ->
 				]
 			)
 			components = view.query( 'example' )
+			
+			expect( viewController.getDynamicExample ).not.toBe( null )
 			expect( viewController.getDynamicExample() ).toEqual( components )
 			expect( viewController.getDynamicExample().length ).toEqual( 4 )
 			
@@ -1721,6 +1732,7 @@ describe( 'Deft.mvc.ViewController', ->
 			view.destroy()
 			
 			expect( viewController.destroy ).toHaveBeenCalled()
+			expect( viewController.getDynamicExample ).toBe( null )
 			expect( isViewDestroyed ).toBe( true )
 			
 			for component in components

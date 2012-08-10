@@ -71,6 +71,13 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   destroy: function() {
+    var id, selector;
+    for (id in this.registeredComponentReferences) {
+      this.removeComponentReference(id);
+    }
+    for (selector in this.registeredComponentSelectors) {
+      this.removeComponentSelector(selector);
+    }
     return true;
   },
   /**
@@ -81,9 +88,6 @@ Ext.define('Deft.mvc.ViewController', {
     var config, id, listeners, live, originalViewDestroyFunction, selector, self, _ref;
     if (Ext.getVersion('extjs') != null) {
       this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
-      this.getView().on('destroy', this.onViewDestroy, this, {
-        single: true
-      });
     } else {
       self = this;
       originalViewDestroyFunction = this.getView().destroy;
@@ -130,19 +134,6 @@ Ext.define('Deft.mvc.ViewController', {
       return true;
     }
     return false;
-  },
-  /**
-  	@private
-  */
-
-  onViewDestroy: function() {
-    var id, selector;
-    for (id in this.registeredComponentReferences) {
-      this.removeComponentReference(id);
-    }
-    for (selector in this.registeredComponentSelectors) {
-      this.removeComponentSelector(selector);
-    }
   },
   /**
   	Add a component accessor method the ViewController for the specified view-relative selector.
