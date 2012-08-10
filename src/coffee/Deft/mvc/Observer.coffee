@@ -61,7 +61,7 @@ Ext.define( 'Deft.mvc.Observer',
 		target = config?.target
 		events = config?.events
 
-		if host and target and ( @isPropertyChain( target ) or host?[ target ]?.isObservable )
+		if host and target and ( @isPropertyChain( target ) or @isTargetObservable( host, target ) )
 			for eventName, handlerArray of events
 				# If a ViewController has no subclasses, the onExtended() preprocessor won't fire, so transform any string handlers into arrays.
 				handlerArray = handlerArray.replace( ' ', '' ).split( ',' ) if Ext.isString( handlerArray )
@@ -77,6 +77,28 @@ Ext.define( 'Deft.mvc.Observer',
 			Deft.Logger.warn( "Could not create observers on '#{ target }' because '#{ target }' is not an Ext.util.Observable" )
 
 		return @
+
+	###*
+	Returns true if the passed host has a target that is Observable.
+	Checks for an isObservable=true property, or a fireEvent method, since Sencha Touch does not set an isObservable property.
+	###
+	isTargetObservable: ( host, target ) ->
+		hostTarget = @locateTarget( host, target )
+		return hostTarget? and ( hostTarget?.isObservable? or hostTarget?.fireEvent? )
+
+	###*
+	Attempts to locate an observer target given the host object and target property name.
+	Checks for both host[ target ], and host[ _target ] since Sencha Touch forces backing properties to being with an underscore.
+	###
+	locateTarget: ( host, target ) ->
+		if Ext.isFunction( host[ 'get' + Ext.String.capitalize( target ) ] )
+			result = host[ 'get' + Ext.String.capitalize( target ) ].call( host )
+			return result
+		else if host?[ target ]?
+			result = host[ target ]
+			return result
+		else
+			return null
 
 	###*
 	Returns true if the passed target is a string containing a '.', indicating that it is referencing a nested property.
@@ -98,9 +120,9 @@ Ext.define( 'Deft.mvc.Observer',
 			target = propertyChain.target
 
 		if Ext.isFunction( handler )
-			return { target: host[ target ], handler: handler  }
+			return { target: @locateTarget( host, target ), handler: handler  }
 		else if Ext.isFunction( handlerHost[ handler ] )
-			return { target: host[ target ], handler: handlerHost[ handler ]  }
+			return { target: @locateTarget( host, target ), handler: handlerHost[ handler ]  }
 		else
 			return null
 
@@ -116,9 +138,9 @@ Ext.define( 'Deft.mvc.Observer',
 		else
 			return null
 
-		if propertyChain.length > 1 and host?[ propertyChain[0] ]
-			return @parsePropertyChain( host[ propertyChain[0] ], propertyChain[1..] )
-		else if host?[ propertyChain[0] ] and host?[ propertyChain[0] ]?.isObservable
+		if propertyChain.length > 1 and @locateTarget( host, propertyChain[0] )?
+			return @parsePropertyChain( @locateTarget( host, propertyChain[0] ), propertyChain[1..] )
+		else if @isTargetObservable( host, propertyChain[0] )
 			return { host: host, target: propertyChain[0] }
 		else
 			return null

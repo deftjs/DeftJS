@@ -1687,7 +1687,7 @@ describe( 'Deft.mvc.ViewController', ->
 
 			parentEventData = { value1: true, value2: false }
 			storeEventData = { value3: true, value4: false }
-			storeFilterEventData = { value5: true, value6: false }
+			storeReaderEventData = { value5: true, value6: false }
 
 			Ext.define( 'ExampleClass',
 				extend: 'Deft.mvc.ViewController'
@@ -1699,13 +1699,13 @@ describe( 'Deft.mvc.ViewController', ->
 				observe:
 					messageBus:
 						parentMessage: "parentMessageHandler"
-					'store.data':
-						add: "storeDataHandler"
+					'store.proxy':
+						metachange: "storeProxyHandler"
 
 				parentMessageHandler: ( data ) ->
 					expect( data ).toEqual( parentEventData )
 
-				storeDataHandler: ( data ) ->
+				storeProxyHandler: ( data ) ->
 					expect( data ).toEqual( storeEventData )
 			)
 
@@ -1713,16 +1713,16 @@ describe( 'Deft.mvc.ViewController', ->
 				extend: 'ExampleClass'
 
 				observe:
-					'store.filters':
-						replace: "storeFilterHandler"
+					'store.proxy.reader':
+						exception: "storeReaderHandler"
 
-				storeFilterHandler: ( data ) ->
-					expect( data ).toEqual( storeFilterEventData )
+				storeReaderHandler: ( data ) ->
+					expect( data ).toEqual( storeReaderEventData )
 			)
 
 			spyOn( ExampleClass.prototype, 'parentMessageHandler' ).andCallThrough()
-			spyOn( ExampleClass.prototype, 'storeDataHandler' ).andCallThrough()
-			spyOn( ExampleSubClass.prototype, 'storeFilterHandler' ).andCallThrough()
+			spyOn( ExampleClass.prototype, 'storeProxyHandler' ).andCallThrough()
+			spyOn( ExampleSubClass.prototype, 'storeReaderHandler' ).andCallThrough()
 
 			messageBus = Ext.create( 'Ext.util.Observable' )
 			store = Ext.create( 'Ext.data.ArrayStore' )
@@ -1735,11 +1735,11 @@ describe( 'Deft.mvc.ViewController', ->
 			waitsFor( ( -> exampleInstance.parentMessageHandler.wasCalled ), "Parent message handler was not called.", 1000 )
 			messageBus.fireEvent( 'parentMessage', parentEventData )
 
-			waitsFor( ( -> exampleInstance.storeDataHandler.wasCalled ), "Nested store.data handler was not called.", 1000 )
-			store.data.fireEvent( 'add', storeEventData )
+			waitsFor( ( -> exampleInstance.storeProxyHandler.wasCalled ), "Nested store.proxy handler was not called.", 1000 )
+			store.getProxy().fireEvent( 'metachange', storeEventData )
 
-			waitsFor( ( -> exampleInstance.storeFilterHandler.wasCalled ), "Nested store.filters handler was not called.", 1000 )
-			store.filters.fireEvent( 'replace', storeFilterEventData )
+			waitsFor( ( -> exampleInstance.storeReaderHandler.wasCalled ), "Nested store.proxy.reader handler was not called.", 1000 )
+			store.getProxy().getReader().fireEvent( 'exception', storeReaderEventData )
 		)
 
 		it( 'should attach listeners in child and parent to the same observed object', ->
@@ -1898,13 +1898,13 @@ describe( 'Deft.mvc.ViewController', ->
 				onExampleViewExampleEvent: ( event ) ->
 					return
 			)
-			
+
 			view = Ext.create( 'ExampleView' )
 			
 			viewController = Ext.create( 'ExampleViewController', 
 				view: view
 			)
-			
+
 			expect( hasListener( view, 'exampleevent' ) ).toBe( true )
 			
 			spyOn( viewController, 'destroy' ).andCallThrough()
@@ -2123,8 +2123,8 @@ describe( 'Deft.mvc.ViewController', ->
 				observe:
 					store:
 						beforesync: "genericHandler"
-					'store.data':
-						add: "genericHandler"
+					'store.proxy':
+						metachange: "genericHandler"
 					store2:
 						beforeload: "genericHandler"
 
@@ -2136,7 +2136,7 @@ describe( 'Deft.mvc.ViewController', ->
 			store2 = Ext.create( 'Ext.data.ArrayStore' )
 
 			expect( store.hasListener( 'beforesync' ) ).toBeFalsy()
-			expect( store.data.hasListener( 'add' ) ).toBeFalsy()
+			expect( store.getProxy().hasListeners.metachange).toBe( 1 )
 			expect( store2.hasListener( 'beforeload' ) ).toBeFalsy()
 
 			viewController = Ext.create( 'ExampleClass',
@@ -2146,7 +2146,7 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 
 			expect( store.hasListener( 'beforesync' ) ).toBeTruthy()
-			expect( store.data.hasListener( 'add' ) ).toBeTruthy()
+			expect( store.getProxy().hasListeners.metachange).toBe( 2 )
 			expect( store2.hasListener( 'beforeload' ) ).toBeTruthy()
 
 			spyOn( viewController, 'removeObservers' ).andCallThrough()
@@ -2156,7 +2156,7 @@ describe( 'Deft.mvc.ViewController', ->
 
 			runs( ->
 				expect( store.hasListener( 'beforesync' ) ).toBeFalsy()
-				expect( store.data.hasListener( 'add' ) ).toBeFalsy()
+				expect( store.getProxy().hasListeners.metachange).toBe( 1 )
 				expect( store2.hasListener( 'beforeload' ) ).toBeFalsy()
 			)
 
