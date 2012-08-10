@@ -94,7 +94,7 @@ Ext.define( 'Deft.mvc.Observer',
 
 	###*
 	Attempts to locate an observer target given the host object and target property name.
-	Checks for both host[ target ], and host[ _target ] since Sencha Touch forces backing properties to being with an underscore.
+	Checks for both host[ target ], and host.getTarget().
 	###
 	locateTarget: ( host, target ) ->
 		if Ext.isFunction( host[ 'get' + Ext.String.capitalize( target ) ] )
