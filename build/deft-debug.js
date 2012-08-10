@@ -1,5 +1,5 @@
 /*!
-DeftJS 0.6.8pre
+DeftJS 0.8.0pre
 
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
@@ -881,6 +881,13 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   destroy: function() {
+    var id, selector;
+    for (id in this.registeredComponentReferences) {
+      this.removeComponentReference(id);
+    }
+    for (selector in this.registeredComponentSelectors) {
+      this.removeComponentSelector(selector);
+    }
     return true;
   },
   /**
@@ -891,9 +898,6 @@ Ext.define('Deft.mvc.ViewController', {
     var config, id, listeners, live, originalViewDestroyFunction, selector, self, _ref;
     if (Ext.getVersion('extjs') != null) {
       this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
-      this.getView().on('destroy', this.onViewDestroy, this, {
-        single: true
-      });
     } else {
       self = this;
       originalViewDestroyFunction = this.getView().destroy;
@@ -940,19 +944,6 @@ Ext.define('Deft.mvc.ViewController', {
       return true;
     }
     return false;
-  },
-  /**
-  	@private
-  */
-
-  onViewDestroy: function() {
-    var id, selector;
-    for (id in this.registeredComponentReferences) {
-      this.removeComponentReference(id);
-    }
-    for (selector in this.registeredComponentSelectors) {
-      this.removeComponentSelector(selector);
-    }
   },
   /**
   	Add a component accessor method the ViewController for the specified view-relative selector.
@@ -1201,11 +1192,11 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   then: function(callbacks) {
-    var callback, cancelCallback, deferred, failureCallback, progressCallback, successCallback, wrapCallback, wrapProgressCallback, _i, _len, _ref;
+    var callback, cancelCallback, deferred, failureCallback, progressCallback, scope, successCallback, wrapCallback, wrapProgressCallback, _i, _len, _ref;
     if (Ext.isObject(callbacks)) {
-      successCallback = callbacks.success, failureCallback = callbacks.failure, progressCallback = callbacks.progress, cancelCallback = callbacks.cancel;
+      successCallback = callbacks.success, failureCallback = callbacks.failure, progressCallback = callbacks.progress, cancelCallback = callbacks.cancel, scope = callbacks.scope;
     } else {
-      successCallback = arguments[0], failureCallback = arguments[1], progressCallback = arguments[2], cancelCallback = arguments[3];
+      successCallback = arguments[0], failureCallback = arguments[1], progressCallback = arguments[2], cancelCallback = arguments[3], scope = arguments[4];
     }
     _ref = [successCallback, failureCallback, progressCallback, cancelCallback];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1222,7 +1213,7 @@ Ext.define('Deft.promise.Deferred', {
         var result;
         if (Ext.isFunction(callback)) {
           try {
-            result = callback(value);
+            result = callback.call(scope, value);
             if (result instanceof Ext.ClassManager.get('Deft.promise.Promise') || result instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
               result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
             } else {
@@ -1243,7 +1234,7 @@ Ext.define('Deft.promise.Deferred', {
       return function(value) {
         var result;
         if (Ext.isFunction(callback)) {
-          result = callback(value);
+          result = callback.call(scope, value);
           deferred.update(result);
         } else {
           deferred.update(value);
@@ -1257,20 +1248,30 @@ Ext.define('Deft.promise.Deferred', {
   	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
   */
 
-  otherwise: function(callback) {
+  otherwise: function(callback, scope) {
+    var _ref;
+    if (Ext.isObject(callback)) {
+      _ref = callback, callback = _ref.fn, scope = _ref.scope;
+    }
     return this.then({
-      failure: callback
+      failure: callback,
+      scope: scope
     });
   },
   /**
   	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
   */
 
-  always: function(callback) {
+  always: function(callback, scope) {
+    var _ref;
+    if (Ext.isObject(callback)) {
+      _ref = callback, callback = _ref.fn, scope = _ref.scope;
+    }
     return this.then({
       success: callback,
       failure: callback,
-      cancel: callback
+      cancel: callback,
+      scope: scope
     });
   },
   /**
@@ -1429,59 +1430,64 @@ Ext.define('Deft.promise.Promise', {
     */
 
     all: function(promisesOrValues) {
-      var cancelFunction, canceller, complete, createSuccessFunction, deferred, failureFunction, index, progressFunction, promiseOrValue, rejecter, resolvedCount, resolvedValues, resolver, total, updater, _i, _len;
-      deferred = Ext.create('Deft.promise.Deferred');
-      total = promisesOrValues.length;
-      resolvedValues = new Array(promisesOrValues);
-      resolvedCount = 0;
-      updater = function(progress) {
-        deferred.update(progress);
-      };
-      resolver = function(index, value) {
-        resolvedValues[index] = value;
-        resolvedCount++;
-        if (resolvedCount === total) {
-          complete();
-          deferred.resolve(resolvedValues);
-        }
-      };
-      rejecter = function(error) {
-        complete();
-        deferred.reject(error);
-      };
-      canceller = function(reason) {
-        complete();
-        deferred.cancel(reason);
-      };
-      complete = function() {
-        return updater = resolver = rejecter = canceller = Ext.emptyFn;
-      };
-      createSuccessFunction = function(index) {
-        return function(value) {
-          return resolver(index, value);
-        };
-      };
-      failureFunction = function(value) {
-        return rejecter(value);
-      };
-      progressFunction = function(value) {
-        return updater(value);
-      };
-      cancelFunction = function(value) {
-        return canceller(value);
-      };
-      for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
-        promiseOrValue = promisesOrValues[index];
-        if (index in promisesOrValues) {
-          this.when(promiseOrValue).then({
-            success: createSuccessFunction(index),
-            failure: failureFunction,
-            progress: progressFunction,
-            cancel: cancelFunction
-          });
-        }
-      }
-      return deferred.getPromise();
+      return this.when(promisesOrValues).then({
+        success: function(promisesOrValues) {
+          var cancelFunction, canceller, complete, createSuccessFunction, deferred, failureFunction, index, progressFunction, promiseOrValue, rejecter, resolvedCount, resolvedValues, resolver, total, updater, _i, _len;
+          deferred = Ext.create('Deft.promise.Deferred');
+          total = promisesOrValues.length;
+          resolvedValues = new Array(promisesOrValues);
+          resolvedCount = 0;
+          updater = function(progress) {
+            deferred.update(progress);
+          };
+          resolver = function(index, value) {
+            resolvedValues[index] = value;
+            resolvedCount++;
+            if (resolvedCount === total) {
+              complete();
+              deferred.resolve(resolvedValues);
+            }
+          };
+          rejecter = function(error) {
+            complete();
+            deferred.reject(error);
+          };
+          canceller = function(reason) {
+            complete();
+            deferred.cancel(reason);
+          };
+          complete = function() {
+            return updater = resolver = rejecter = canceller = Ext.emptyFn;
+          };
+          createSuccessFunction = function(index) {
+            return function(value) {
+              return resolver(index, value);
+            };
+          };
+          failureFunction = function(value) {
+            return rejecter(value);
+          };
+          progressFunction = function(value) {
+            return updater(value);
+          };
+          cancelFunction = function(value) {
+            return canceller(value);
+          };
+          for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
+            promiseOrValue = promisesOrValues[index];
+            if (index in promisesOrValues) {
+              this.when(promiseOrValue).then({
+                success: createSuccessFunction(index),
+                failure: failureFunction,
+                progress: progressFunction,
+                cancel: cancelFunction
+              });
+            }
+          }
+          return deferred.getPromise();
+        },
+        scope: this
+      });
     },
     /**
     		Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
@@ -1489,50 +1495,55 @@ Ext.define('Deft.promise.Promise', {
     */
 
     any: function(promisesOrValues) {
-      var cancelFunction, canceller, complete, deferred, failureFunction, index, progressFunction, promiseOrValue, rejecter, resolver, successFunction, updater, _i, _len;
-      deferred = Ext.create('Deft.promise.Deferred');
-      updater = function(progress) {
-        deferred.update(progress);
-      };
-      resolver = function(value) {
-        complete();
-        deferred.resolve(value);
-      };
-      rejecter = function(error) {
-        complete();
-        deferred.reject(error);
-      };
-      canceller = function(reason) {
-        complete();
-        return deferred.cancel(reason);
-      };
-      complete = function() {
-        return updater = resolver = rejecter = canceller = Ext.emptyFn;
-      };
-      successFunction = function(value) {
-        return resolver(value);
-      };
-      failureFunction = function(value) {
-        return rejecter(value);
-      };
-      progressFunction = function(value) {
-        return updater(value);
-      };
-      cancelFunction = function(value) {
-        return canceller(value);
-      };
-      for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
-        promiseOrValue = promisesOrValues[index];
-        if (index in promisesOrValues) {
-          this.when(promiseOrValue).then({
-            success: successFunction,
-            failure: failureFunction,
-            progress: progressFunction,
-            cancel: cancelFunction
-          });
-        }
-      }
-      return deferred.getPromise();
+      return this.when(promisesOrValues).then({
+        success: function(promisesOrValues) {
+          var cancelFunction, canceller, complete, deferred, failureFunction, index, progressFunction, promiseOrValue, rejecter, resolver, successFunction, updater, _i, _len;
+          deferred = Ext.create('Deft.promise.Deferred');
+          updater = function(progress) {
+            deferred.update(progress);
+          };
+          resolver = function(value) {
+            complete();
+            deferred.resolve(value);
+          };
+          rejecter = function(error) {
+            complete();
+            deferred.reject(error);
+          };
+          canceller = function(reason) {
+            complete();
+            return deferred.cancel(reason);
+          };
+          complete = function() {
+            return updater = resolver = rejecter = canceller = Ext.emptyFn;
+          };
+          successFunction = function(value) {
+            return resolver(value);
+          };
+          failureFunction = function(value) {
+            return rejecter(value);
+          };
+          progressFunction = function(value) {
+            return updater(value);
+          };
+          cancelFunction = function(value) {
+            return canceller(value);
+          };
+          for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
+            promiseOrValue = promisesOrValues[index];
+            if (index in promisesOrValues) {
+              this.when(promiseOrValue).then({
+                success: successFunction,
+                failure: failureFunction,
+                progress: progressFunction,
+                cancel: cancelFunction
+              });
+            }
+          }
+          return deferred.getPromise();
+        },
+        scope: this
+      });
     },
     /**
     		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
@@ -1540,9 +1551,13 @@ Ext.define('Deft.promise.Promise', {
     */
 
     memoize: function(fn, scope, hashFn) {
-      return this.all(Ext.Array.toArray(arguments)).then(Deft.util.Function.spread(function() {
-        return Deft.util.memoize(arguments, scope, hashFn);
-      }, scope));
+      var memoizedFn;
+      memoizedFn = Deft.util.Function.memoize(fn, scope, hashFn);
+      return Ext.bind(function() {
+        return this.all(Ext.Array.toArray(arguments)).then(function(values) {
+          return memoizedFn.apply(scope, values);
+        });
+      }, this);
     },
     /**
     		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
@@ -1550,36 +1565,46 @@ Ext.define('Deft.promise.Promise', {
     */
 
     map: function(promisesOrValues, mapFunction) {
-      var index, promiseOrValue, results, _i, _len;
-      results = new Array(promisesOrValues.length);
-      for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
-        promiseOrValue = promisesOrValues[index];
-        if (index in promisesOrValues) {
-          results[index] = this.when(promiseOrValue).then(mapFunction);
-        }
-      }
-      return this.reduce(results, this.reduceIntoArray, results);
+      return this.when(promisesOrValues).then({
+        success: function(promisesOrValues) {
+          var index, promiseOrValue, results, _i, _len;
+          results = new Array(promisesOrValues.length);
+          for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
+            promiseOrValue = promisesOrValues[index];
+            if (index in promisesOrValues) {
+              results[index] = this.when(promiseOrValue).then(mapFunction);
+            }
+          }
+          return this.reduce(results, this.reduceIntoArray, results);
+        },
+        scope: this
+      });
     },
     /**
     		Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
     */
 
     reduce: function(promisesOrValues, reduceFunction, initialValue) {
-      var reduceArguments, whenFn;
-      whenFn = this.when;
-      reduceArguments = [
-        function(previousValueOrPromise, currentValueOrPromise, currentIndex) {
-          return whenFn(previousValueOrPromise).then(function(previousValue) {
-            return whenFn(currentValueOrPromise).then(function(currentValue) {
-              return reduceFunction(previousValue, currentValue, currentIndex, promisesOrValues);
-            });
-          });
-        }
-      ];
-      if (arguments.length === 3) {
-        reduceArguments.push(initialValue);
-      }
-      return this.when(this.reduceArray.apply(promisesOrValues, reduceArguments));
+      return this.when(promisesOrValues).then({
+        success: function(promisesOrValues) {
+          var reduceArguments, whenFunction;
+          whenFunction = this.when;
+          reduceArguments = [
+            function(previousValueOrPromise, currentValueOrPromise, currentIndex) {
+              return whenFunction(previousValueOrPromise).then(function(previousValue) {
+                return whenFunction(currentValueOrPromise).then(function(currentValue) {
+                  return reduceFunction(previousValue, currentValue, currentIndex, promisesOrValues);
+                });
+              });
+            }
+          ];
+          if (arguments.length === 3) {
+            reduceArguments.push(initialValue);
+          }
+          return this.when(this.reduceArray.apply(promisesOrValues, reduceArguments));
+        },
+        scope: this
+      });
     },
     /**
     		Fallback implementation when Array.reduce is not available.
@@ -1637,15 +1662,15 @@ Ext.define('Deft.promise.Promise', {
   	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
   */
 
-  otherwise: function(callback) {
-    return this.deferred.otherwise(callback);
+  otherwise: function(callback, scope) {
+    return this.deferred.otherwise.apply(this.deferred, arguments);
   },
   /**
   	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
   */
 
-  always: function(callback) {
-    return this.deferred.always(callback);
+  always: function(callback, scope) {
+    return this.deferred.always.apply(this.deferred, arguments);
   },
   /**
   	Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.

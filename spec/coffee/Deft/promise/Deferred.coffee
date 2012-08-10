@@ -408,18 +408,18 @@ describe( 'Deft.promise.Deferred', ->
 		createSpecsForThen = ( thenFunction, callbacksFactoryFunction ) ->
 			
 			deferred = null
-			successCallback = failureCallback = progressCallback = cancelCallback = null
+			successCallback = failureCallback = progressCallback = cancelCallback = scope = null
 			
 			beforeEach( ->
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
-				{ success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback } = callbacksFactoryFunction()
+				{ success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback, scope: scope } = callbacksFactoryFunction()
 				
 				return
 			)
 			
 			it( 'should call success callback (if specified) when resolved', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope )
 				
 				deferred.resolve( 'expected value' )
 				
@@ -432,7 +432,7 @@ describe( 'Deft.promise.Deferred', ->
 			)
 			
 			it( 'should call failure callback (if specified) when rejected', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope )
 				
 				deferred.reject( 'error message' )
 				
@@ -445,7 +445,7 @@ describe( 'Deft.promise.Deferred', ->
 			)
 			
 			it( 'should call progress callback (if specified) when updated', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope )
 				
 				deferred.update( 'progress' )
 				
@@ -458,7 +458,7 @@ describe( 'Deft.promise.Deferred', ->
 			)
 			
 			it( 'should call cancel callback (if specified) when cancelled', ->
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope )
 				
 				deferred.cancel( 'reason' )
 				
@@ -473,7 +473,7 @@ describe( 'Deft.promise.Deferred', ->
 			it( 'should immediately call newly added success callback (if specified) when already resolved', ->
 				deferred.resolve( 'expected value' )
 				
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope )
 				
 				expect( successCallback ).toHaveBeenCalledWith( 'expected value' ) if successCallback?
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
@@ -486,7 +486,7 @@ describe( 'Deft.promise.Deferred', ->
 			it( 'should immediately call newly added failure callback (if specified) when already rejected', ->
 				deferred.reject( 'error message' )
 				
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope )
 				
 				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
 				expect( failureCallback ).toHaveBeenCalledWith( 'error message' ) if failureCallback?
@@ -499,7 +499,7 @@ describe( 'Deft.promise.Deferred', ->
 			it( 'should immediately call newly added progress callback (if specified) when already updated', ->
 				deferred.update( 'progress' )
 				
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope )
 				
 				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
@@ -512,7 +512,7 @@ describe( 'Deft.promise.Deferred', ->
 			it( 'should immediately call newly added cancel callback (if specified) when already cancelled', ->
 				deferred.cancel( 'reason' )
 				
-				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope )
 				
 				expect( successCallback ).not.toHaveBeenCalled() if successCallback?
 				expect( failureCallback ).not.toHaveBeenCalled() if failureCallback?
@@ -531,6 +531,7 @@ describe( 'Deft.promise.Deferred', ->
 							if failureCallback  then 'value' else failureCallback
 							if progressCallback then 'value' else progressCallback
 							if cancelCallback   then 'value' else cancelCallback
+							scope
 						)
 						
 						return
@@ -538,7 +539,7 @@ describe( 'Deft.promise.Deferred', ->
 			)
 			
 			it( 'should return a new Promise', ->
-				result = thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback )
+				result = thenFunction( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope )
 				
 				expect( result ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( result ).not.toBe( deferred.promise )
@@ -598,7 +599,63 @@ describe( 'Deft.promise.Deferred', ->
 			return
 		)
 		
-		describe( 'with callbacks specified via configuration Object', ->
+		describe( 'with callbacks and scope specified via method parameters', ->
+			
+			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope ) ->
+				deferred.then( successCallback, failureCallback, progressCallback, cancelCallback, scope )
+			
+			expectedScope = {}
+			
+			callbacksFactoryFunction = ->
+				{
+					success:  jasmine.createSpy( 'success callback'  ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					failure:  jasmine.createSpy( 'failure callback'  ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					progress: jasmine.createSpy( 'progress callback' ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					cancel:   jasmine.createSpy( 'cancel callback'   ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					scope: expectedScope
+				}
+			
+			createSpecsForThen( thenFunction, callbacksFactoryFunction )
+			
+			return
+		)
+		
+		describe( 'with callbacks and scope specified via method parameters,', ->
+			
+			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope ) ->
+				deferred.then( successCallback, failureCallback, progressCallback, cancelCallback, scope )
+			
+			expectedScope = {}
+			
+			createCallbacksFactoryFunction = ( index, valueWhenOmitted ) ->
+				callbacksFactoryFunction = ->
+					callbacks = {}
+					
+					callbacks.success  = if index is 0 then jasmine.createSpy( 'success callback'  ).andCallFake( -> expect( @ ).toBe( expectedScope ) ) else valueWhenOmitted
+					callbacks.failure  = if index is 1 then jasmine.createSpy( 'failure callback'  ).andCallFake( -> expect( @ ).toBe( expectedScope ) ) else valueWhenOmitted
+					callbacks.progress = if index is 2 then jasmine.createSpy( 'progress callback' ).andCallFake( -> expect( @ ).toBe( expectedScope ) ) else valueWhenOmitted
+					callbacks.cancel   = if index is 3 then jasmine.createSpy( 'cancel callback'   ).andCallFake( -> expect( @ ).toBe( expectedScope ) ) else valueWhenOmitted
+					callbacks.scope    = expectedScope
+				
+					return callbacks
+				
+				return callbacksFactoryFunction
+			
+			callbackNames = [ 'success', 'failure', 'progress', 'cancel' ]
+			for index in [ 0..3 ]
+				describe( "omitting #{ callbackNames[ index ] } callback as null", ->
+					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index, null ) )
+					return
+				)
+				describe( "omitting #{ callbackNames[ index ] } callback as undefined", ->
+					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index, undefined ) )
+					return
+				)
+			
+			return
+		)
+		
+		describe( 'with callbacks specified via a configuration Object', ->
 			
 			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback ) ->
 					deferred.then( 
@@ -621,7 +678,7 @@ describe( 'Deft.promise.Deferred', ->
 			return
 		)
 		
-		describe( 'with callbacks specified via configuration Object,', ->
+		describe( 'with callbacks specified via a configuration Object,', ->
 			
 			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback ) ->
 					deferred.then( 
@@ -658,151 +715,295 @@ describe( 'Deft.promise.Deferred', ->
 				
 			return
 		)
+		
+		describe( 'with callbacks and scope specified via a configuration Object', ->
+			
+			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope ) ->
+					deferred.then( 
+						success:  successCallback
+						failure:  failureCallback
+						progress: progressCallback
+						cancel:   cancelCallback
+						scope:    scope
+					)
+			
+			expectedScope = {}
+			
+			callbacksFactoryFunction = ->
+				{
+					success:  jasmine.createSpy( 'success callback'  ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					failure:  jasmine.createSpy( 'failure callback'  ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					progress: jasmine.createSpy( 'progress callback' ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					cancel:   jasmine.createSpy( 'cancel callback'   ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					scope:    expectedScope
+				}
+			
+			createSpecsForThen( thenFunction, callbacksFactoryFunction )
+			
+			return
+		)
+		
+		describe( 'with callbacks and scope specified via a configuration Object,', ->
+			
+			thenFunction = ( deferred, successCallback, failureCallback, progressCallback, cancelCallback, scope ) ->
+					deferred.then( 
+						success:  successCallback
+						failure:  failureCallback
+						progress: progressCallback
+						cancel:   cancelCallback
+						scope:    scope
+					)
+			
+			expectedScope = {}
+			
+			createCallbacksFactoryFunction = ( index, valueWhenOmitted ) ->
+				callbacksFactoryFunction = ->
+					callbacks = {}
+					
+					callbacks.success  = if index is 0 then jasmine.createSpy( 'success callback'  ).andCallFake( -> expect( @ ).toBe( expectedScope ) ) else valueWhenOmitted
+					callbacks.failure  = if index is 1 then jasmine.createSpy( 'failure callback'  ).andCallFake( -> expect( @ ).toBe( expectedScope ) ) else valueWhenOmitted
+					callbacks.progress = if index is 2 then jasmine.createSpy( 'progress callback' ).andCallFake( -> expect( @ ).toBe( expectedScope ) ) else valueWhenOmitted
+					callbacks.cancel   = if index is 3 then jasmine.createSpy( 'cancel callback'   ).andCallFake( -> expect( @ ).toBe( expectedScope ) ) else valueWhenOmitted
+					callbacks.scope    = expectedScope
+					
+					return callbacks
+				
+				return callbacksFactoryFunction
+			
+			callbackNames = [ 'success', 'failure', 'progress', 'cancel' ]
+			for index in [ 0..3 ]
+				describe( "omitting #{ callbackNames[ index ] } callback as null", ->
+					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index, null ) )
+					return
+				)
+				
+				describe( "omitting #{ callbackNames[ index ] } callback as undefined", ->
+					createSpecsForThen( thenFunction, createCallbacksFactoryFunction( index, undefined ) )
+					return
+				)
+				
+			return
+		)
 	)
 	
 	describe( 'Callback registration via otherwise()', ->
 		
-		deferred = null
-		otherwiseCallback = null
-		
-		beforeEach( ->
-			deferred = Ext.create( 'Deft.promise.Deferred' )
+		createSpecsForOtherwise = ( otherwiseFunction, callbackFactoryFunction ) ->
 			
-			otherwiseCallback = jasmine.createSpy( 'otherwise callback' )
+			deferred = null
+			otherwiseCallback = scope = null
 			
-			return
-		)
-		
-		it( 'should not call otherwise callback when resolved', ->
-			deferred.otherwise( otherwiseCallback )
-			
-			deferred.resolve( 'expected value' )
-			
-			expect( otherwiseCallback ).not.toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should call otherwise callback when rejected', ->
-			deferred.otherwise( otherwiseCallback )
-			
-			deferred.reject( 'error message' )
-			
-			expect( otherwiseCallback ).toHaveBeenCalledWith( 'error message' )
-			
-			return
-		)
-		
-		it( 'should not call otherwise callback when updated', ->
-			deferred.otherwise( otherwiseCallback )
-			
-			deferred.update( 'progress' )
-			
-			expect( otherwiseCallback ).not.toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should not call otherwise callback when cancelled', ->
-			deferred.otherwise( otherwiseCallback )
-			
-			deferred.cancel( 'reason' )
-			
-			expect( otherwiseCallback ).not.toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should not immediately call otherwise callback when already resolved', ->
-			deferred.resolve( 'expected value' )
-			
-			deferred.otherwise( otherwiseCallback )
-			
-			expect( otherwiseCallback ).not.toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should immediately call otherwise callback when already rejected', ->
-			deferred.reject( 'error message' )
-			
-			deferred.otherwise( otherwiseCallback )
-			
-			expect( otherwiseCallback ).toHaveBeenCalledWith( 'error message' )
-			
-			return
-		)
-		
-		it( 'should not immediately call otherwise callback when already updated', ->
-			deferred.update( 'progress' )
-			
-			deferred.otherwise( otherwiseCallback )
-			
-			expect( otherwiseCallback ).not.toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should not immediately call otherwise callback when already cancelled', ->
-			deferred.cancel( 'reason' )
-			
-			deferred.otherwise( otherwiseCallback )
-			
-			expect( otherwiseCallback ).not.toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should allow a null callback to be specified', ->
-			expect( ->
-				deferred.otherwise( null )
+			beforeEach( ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				{ otherwiseCallback: otherwiseCallback, scope: scope } = callbackFactoryFunction()
+				
 				return
-			).not.toThrow()
+			)
 			
-			return
-		)
-		
-		it( 'should allow an undefined callback to be specified', ->
-			expect( ->
-				deferred.otherwise( undefined )
+			it( 'should not call otherwise callback when resolved', ->
+				otherwiseFunction( deferred, otherwiseCallback, scope )
+				
+				deferred.resolve( 'expected value' )
+				
+				expect( otherwiseCallback ).not.toHaveBeenCalled()
+				
 				return
-			).not.toThrow()
+			)
 			
-			return
-		)
-		
-		it( 'should throw an error when a non-function callback is specified', ->
-			expect( ->
-				deferred.otherwise( 'value' )
+			it( 'should call otherwise callback when rejected', ->
+				otherwiseFunction( deferred, otherwiseCallback, scope )
+				
+				deferred.reject( 'error message' )
+				
+				expect( otherwiseCallback ).toHaveBeenCalledWith( 'error message' )
+				
 				return
-			).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+			)
+			
+			it( 'should not call otherwise callback when updated', ->
+				otherwiseFunction( deferred, otherwiseCallback, scope )
+				
+				deferred.update( 'progress' )
+				
+				expect( otherwiseCallback ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should not call otherwise callback when cancelled', ->
+				otherwiseFunction( deferred, otherwiseCallback, scope )
+				
+				deferred.cancel( 'reason' )
+				
+				expect( otherwiseCallback ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should not immediately call otherwise callback when already resolved', ->
+				deferred.resolve( 'expected value' )
+				
+				otherwiseFunction( deferred, otherwiseCallback, scope )
+				
+				expect( otherwiseCallback ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should immediately call otherwise callback when already rejected', ->
+				deferred.reject( 'error message' )
+				
+				otherwiseFunction( deferred, otherwiseCallback, scope )
+				
+				expect( otherwiseCallback ).toHaveBeenCalledWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should not immediately call otherwise callback when already updated', ->
+				deferred.update( 'progress' )
+				
+				otherwiseFunction( deferred, otherwiseCallback, scope )
+				
+				expect( otherwiseCallback ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should not immediately call otherwise callback when already cancelled', ->
+				deferred.cancel( 'reason' )
+				
+				otherwiseFunction( deferred, otherwiseCallback, scope )
+				
+				expect( otherwiseCallback ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should allow a null callback to be specified', ->
+				expect( ->
+					otherwiseFunction( deferred, null, scope )
+					return
+				).not.toThrow()
+				
+				return
+			)
+			
+			it( 'should allow an undefined callback to be specified', ->
+				expect( ->
+					otherwiseFunction( deferred, undefined, scope )
+					return
+				).not.toThrow()
+				
+				return
+			)
+			
+			it( 'should throw an error when a non-function callback is specified', ->
+				expect( ->
+					otherwiseFunction( deferred, 'value', scope )
+					return
+				).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+				
+				return
+			)
+			
+			it( 'should return a new Promise', ->
+				promise = otherwiseFunction( deferred, otherwiseCallback, scope )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).not.toBe( deferred.promise )
+				
+				return
+			)
+			
+			it( 'should return a new Promise when a null callback is specified', ->
+				promise = otherwiseFunction( deferred, null, scope )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).not.toBe( deferred.promise )
+				
+				return
+			)
+			
+			it( 'should return a new Promise when an undefined callback is specified', ->
+				promise = otherwiseFunction( deferred, undefined, scope )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).not.toBe( deferred.promise )
+				
+				return
+			)
+			
+			return
+		
+		describe( 'with the callback specified via a method parameter', ->
+			
+			otherwiseFunction = ( deferred, otherwiseCallback ) ->
+				deferred.otherwise( otherwiseCallback )
+			
+			callbackFactoryFunction = ->
+				{
+					otherwiseCallback: jasmine.createSpy( 'otherwise callback' )
+				}
+			
+			createSpecsForOtherwise( otherwiseFunction, callbackFactoryFunction )
 			
 			return
 		)
 		
-		it( 'should return a new Promise', ->
-			promise = deferred.otherwise( otherwiseCallback )
+		describe( 'with the callback and scope specified via method parameters', ->
 			
-			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.promise )
+			otherwiseFunction = ( deferred, otherwiseCallback, scope ) ->
+				deferred.otherwise( otherwiseCallback, scope )
+			
+			expectedScope = {}
+			
+			callbackFactoryFunction = ->
+				{
+					otherwiseCallback: jasmine.createSpy( 'otherwise callback' ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					scope:             expectedScope
+				}
+			
+			createSpecsForOtherwise( otherwiseFunction, callbackFactoryFunction )
 			
 			return
 		)
 		
-		it( 'should return a new Promise when a null callback is specified', ->
-			promise = deferred.otherwise( null )
+		describe( 'with the callback specified via a configuration Object', ->
 			
-			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.promise )
+			otherwiseFunction = ( deferred, otherwiseCallback ) ->
+					deferred.otherwise( 
+						fn: otherwiseCallback
+					)
+			
+			callbackFactoryFunction = ->
+				{
+					otherwiseCallback: jasmine.createSpy( 'otherwise callback' )
+				}
+			
+			createSpecsForOtherwise( otherwiseFunction, callbackFactoryFunction )
 			
 			return
 		)
 		
-		it( 'should return a new Promise when an undefined callback is specified', ->
-			promise = deferred.otherwise( undefined )
+		describe( 'with callback and scope specified via a configuration Object', ->
 			
-			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.promise )
+			otherwiseFunction = ( deferred, otherwiseCallback, scope ) ->
+					deferred.otherwise( 
+						fn:    otherwiseCallback
+						scope: scope
+					)
+			
+			expectedScope = {}
+			
+			callbackFactoryFunction = ->
+				{
+					otherwiseCallback: jasmine.createSpy( 'otherwise callback' ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					scope:             expectedScope
+				}
+			
+			createSpecsForOtherwise( otherwiseFunction, callbackFactoryFunction )
 			
 			return
 		)
@@ -810,147 +1011,222 @@ describe( 'Deft.promise.Deferred', ->
 	
 	describe( 'Callback registration via always()', ->
 		
-		deferred = null
-		alwaysCallback = null
-		
-		beforeEach( ->
-			deferred = Ext.create( 'Deft.promise.Deferred' )
+		createSpecsForAlways = ( alwaysFunction, callbackFactoryFunction ) ->
 			
-			alwaysCallback = jasmine.createSpy( 'always callback' )
+			deferred = null
+			alwaysCallback = scope = null
 			
-			return
-		)
-		
-		it( 'should call always callback when resolved', ->
-			deferred.always( alwaysCallback )
-			
-			deferred.resolve( 'expected value' )
-			
-			expect( alwaysCallback ).toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should call always callback when rejected', ->
-			deferred.always( alwaysCallback )
-			
-			deferred.reject( 'error message' )
-			
-			expect( alwaysCallback ).toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should not call always callback when updated', ->
-			deferred.always( alwaysCallback )
-			
-			deferred.update( 'progress' )
-			
-			expect( alwaysCallback ).not.toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should call always callback when cancelled', ->
-			deferred.always( alwaysCallback )
-			
-			deferred.cancel( 'reason' )
-			
-			expect( alwaysCallback ).toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should immediately call always callback when already resolved', ->
-			deferred.resolve( 'expected value' )
-			
-			deferred.always( alwaysCallback )
-			
-			expect( alwaysCallback ).toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should immediately call always callback when already rejected', ->
-			deferred.reject( 'error message' )
-			
-			deferred.always( alwaysCallback )
-			
-			expect( alwaysCallback ).toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should not immediately call always callback when already updated', ->
-			deferred.update( 'progress' )
-			
-			deferred.always( alwaysCallback )
-			
-			expect( alwaysCallback ).not.toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should immediately call always callback when already cancelled', ->
-			deferred.cancel( 'reason' )
-			
-			deferred.always( alwaysCallback )
-			
-			expect( alwaysCallback ).toHaveBeenCalled()
-			
-			return
-		)
-		
-		it( 'should allow a null callback to be specified', ->
-			expect( ->
-				deferred.always( null )
+			beforeEach( ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				{ alwaysCallback: alwaysCallback, scope: scope } = callbackFactoryFunction()
+				
 				return
-			).not.toThrow()
+			)
 			
-			return
-		)
-		
-		it( 'should allow an undefined callback to be specified', ->
-			expect( ->
-				deferred.always( undefined )
+			it( 'should call always callback when resolved', ->
+				alwaysFunction( deferred, alwaysCallback, scope )
+				
+				deferred.resolve( 'expected value' )
+				
+				expect( alwaysCallback ).toHaveBeenCalled()
+				
 				return
-			).not.toThrow()
+			)
 			
-			return
-		)
-		
-		it( 'should throw an error when a non-function callback is specified', ->
-			expect( ->
-				deferred.always( 'value' )
+			it( 'should call always callback when rejected', ->
+				alwaysFunction( deferred, alwaysCallback, scope )
+				
+				deferred.reject( 'error message' )
+				
+				expect( alwaysCallback ).toHaveBeenCalled()
+				
 				return
-			).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+			)
+			
+			it( 'should not call always callback when updated', ->
+				alwaysFunction( deferred, alwaysCallback, scope )
+				
+				deferred.update( 'progress' )
+				
+				expect( alwaysCallback ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should call always callback when cancelled', ->
+				alwaysFunction( deferred, alwaysCallback, scope )
+				
+				deferred.cancel( 'reason' )
+				
+				expect( alwaysCallback ).toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should immediately call always callback when already resolved', ->
+				deferred.resolve( 'expected value' )
+				
+				alwaysFunction( deferred, alwaysCallback, scope )
+				
+				expect( alwaysCallback ).toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should immediately call always callback when already rejected', ->
+				deferred.reject( 'error message' )
+				
+				alwaysFunction( deferred, alwaysCallback, scope )
+				
+				expect( alwaysCallback ).toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should not immediately call always callback when already updated', ->
+				deferred.update( 'progress' )
+				
+				alwaysFunction( deferred, alwaysCallback, scope )
+				
+				expect( alwaysCallback ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should immediately call always callback when already cancelled', ->
+				deferred.cancel( 'reason' )
+				
+				alwaysFunction( deferred, alwaysCallback, scope )
+				
+				expect( alwaysCallback ).toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should allow a null callback to be specified', ->
+				expect( ->
+					alwaysFunction( deferred, null, scope )
+					return
+				).not.toThrow()
+				
+				return
+			)
+			
+			it( 'should allow an undefined callback to be specified', ->
+				expect( ->
+					alwaysFunction( deferred, undefined, scope )
+					return
+				).not.toThrow()
+				
+				return
+			)
+			
+			it( 'should throw an error when a non-function callback is specified', ->
+				expect( ->
+					alwaysFunction( deferred, 'value', scope )
+					return
+				).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+				
+				return
+			)
+			
+			it( 'should return a new Promise', ->
+				promise = alwaysFunction( deferred, alwaysCallback, scope )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).not.toBe( deferred.promise )
+				
+				return
+			)
+			
+			it( 'should return a new Promise when a null callback is specified', ->
+				promise = alwaysFunction( deferred, null, scope )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).not.toBe( deferred.promise )
+				
+				return
+			)
+			
+			it( 'should return a new Promise when an undefined callback is specified', ->
+				promise = alwaysFunction( deferred, undefined, scope )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).not.toBe( deferred.promise )
+				
+				return
+			)
+			
+			return
+		
+		describe( 'with the callback specified via a method parameter', ->
+			
+			alwaysFunction = ( deferred, alwaysCallback ) ->
+				deferred.always( alwaysCallback )
+			
+			callbackFactoryFunction = ->
+				{
+					alwaysCallback: jasmine.createSpy( 'always callback' )
+				}
+			
+			createSpecsForAlways( alwaysFunction, callbackFactoryFunction )
 			
 			return
 		)
 		
-		it( 'should return a new Promise', ->
-			promise = deferred.always( alwaysCallback )
+		describe( 'with the callback and scope specified via method parameters', ->
 			
-			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.promise )
+			alwaysFunction = ( deferred, alwaysCallback, scope ) ->
+				deferred.always( alwaysCallback, scope )
+			
+			expectedScope = {}
+			
+			callbackFactoryFunction = ->
+				{
+					alwaysCallback: jasmine.createSpy( 'always callback' ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					scope:          expectedScope
+				}
+			
+			createSpecsForAlways( alwaysFunction, callbackFactoryFunction )
 			
 			return
 		)
 		
-		it( 'should return a new Promise when a null callback is specified', ->
-			promise = deferred.always( null )
+		describe( 'with the callback specified via a configuration Object', ->
 			
-			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.promise )
+			alwaysFunction = ( deferred, alwaysCallback ) ->
+					deferred.always( 
+						fn: alwaysCallback
+					)
+			
+			callbackFactoryFunction = ->
+				{
+					alwaysCallback: jasmine.createSpy( 'always callback' )
+				}
+			
+			createSpecsForAlways( alwaysFunction, callbackFactoryFunction )
 			
 			return
 		)
 		
-		it( 'should return a new Promise when an undefined callback is specified', ->
-			promise = deferred.always( undefined )
+		describe( 'with callback and scope specified via a configuration Object', ->
 			
-			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.promise )
+			alwaysFunction = ( deferred, alwaysCallback, scope ) ->
+					deferred.always( 
+						fn:    alwaysCallback
+						scope: scope
+					)
+			
+			expectedScope = {}
+			
+			callbackFactoryFunction = ->
+				{
+					alwaysCallback: jasmine.createSpy( 'always callback' ).andCallFake( -> expect( @ ).toBe( expectedScope ) )
+					scope:          expectedScope
+				}
+			
+			createSpecsForAlways( alwaysFunction, callbackFactoryFunction )
 			
 			return
 		)

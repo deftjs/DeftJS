@@ -1286,7 +1286,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(isViewDestroyed).toBe(true);
       expect(hasListener(view, 'exampleevent')).toBe(false);
     });
-    it('should remove event listeners it attached to a view component referenced implicitly by item id when the associated view (and view controller) is destroyed', function() {
+    it('should remove event listeners it attached to a view component referenced implicitly by itemId when the associated view (and view controller) is destroyed', function() {
       var component, isViewDestroyed, view, viewController;
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
@@ -1305,6 +1305,7 @@ describe('Deft.mvc.ViewController', function() {
         view: view
       });
       component = view.query('#example')[0];
+      expect(viewController.getExample).not.toBe(null);
       expect(hasListener(component, 'exampleevent')).toBe(true);
       spyOn(viewController, 'destroy').andCallThrough();
       isViewDestroyed = false;
@@ -1313,6 +1314,7 @@ describe('Deft.mvc.ViewController', function() {
       });
       view.destroy();
       expect(viewController.destroy).toHaveBeenCalled();
+      expect(viewController.getExample).toBe(null);
       expect(isViewDestroyed).toBe(true);
       expect(hasListener(component, 'exampleevent')).toBe(false);
     });
@@ -1345,6 +1347,7 @@ describe('Deft.mvc.ViewController', function() {
         view: view
       });
       components = view.query('example');
+      expect(viewController.getExample).not.toBe(null);
       for (_i = 0, _len = components.length; _i < _len; _i++) {
         component = components[_i];
         expect(hasListener(component, 'exampleevent')).toBe(true);
@@ -1356,13 +1359,14 @@ describe('Deft.mvc.ViewController', function() {
       });
       view.destroy();
       expect(viewController.destroy).toHaveBeenCalled();
+      expect(viewController.getExample).toBe(null);
       expect(isViewDestroyed).toBe(true);
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];
         expect(hasListener(component, 'exampleevent')).toBe(false);
       }
     });
-    it('should remove event listeners it attached to a dynamic view component referenced by a live selector implicitly by item id when the associated view (and view controller) is destroyed', function() {
+    it('should remove event listeners it attached to a dynamic view component referenced by a live selector implicitly by itemId when the associated view (and view controller) is destroyed', function() {
       var component, isViewDestroyed, view, viewController;
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
@@ -1385,6 +1389,7 @@ describe('Deft.mvc.ViewController', function() {
         xtype: 'example',
         itemId: 'dynamicExample'
       });
+      expect(viewController.getDynamicExample).not.toBe(null);
       expect(hasListener(component, 'exampleevent')).toBe(true);
       spyOn(viewController, 'destroy').andCallThrough();
       isViewDestroyed = false;
@@ -1393,6 +1398,7 @@ describe('Deft.mvc.ViewController', function() {
       });
       view.destroy();
       expect(viewController.destroy).toHaveBeenCalled();
+      expect(viewController.getDynamicExample).toBe(null);
       expect(isViewDestroyed).toBe(true);
       expect(hasListener(component, 'exampleevent')).toBe(false);
     });
@@ -1425,6 +1431,7 @@ describe('Deft.mvc.ViewController', function() {
         }
       ]);
       components = view.query('example');
+      expect(viewController.getDynamicExample).not.toBe(null);
       expect(viewController.getDynamicExample()).toEqual(components);
       expect(viewController.getDynamicExample().length).toEqual(4);
       for (_i = 0, _len = components.length; _i < _len; _i++) {
@@ -1438,6 +1445,7 @@ describe('Deft.mvc.ViewController', function() {
       });
       view.destroy();
       expect(viewController.destroy).toHaveBeenCalled();
+      expect(viewController.getDynamicExample).toBe(null);
       expect(isViewDestroyed).toBe(true);
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];

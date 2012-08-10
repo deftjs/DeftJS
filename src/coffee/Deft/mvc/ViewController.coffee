@@ -69,6 +69,10 @@ Ext.define( 'Deft.mvc.ViewController',
 	Destroy the ViewController
 	###
 	destroy: ->
+		for id of @registeredComponentReferences
+			@removeComponentReference( id )
+		for selector of @registeredComponentSelectors
+			@removeComponentSelector( selector )
 		return true
 	
 	###*
@@ -78,7 +82,6 @@ Ext.define( 'Deft.mvc.ViewController',
 		if Ext.getVersion( 'extjs' )?
 			# Ext JS
 			@getView().on( 'beforedestroy', @onViewBeforeDestroy, @ )
-			@getView().on( 'destroy', @onViewDestroy, @, single: true )
 		else
 			# Sencha Touch
 			self = this
@@ -117,17 +120,6 @@ Ext.define( 'Deft.mvc.ViewController',
 			@getView().un( 'beforedestroy', @onBeforeDestroy, @ )
 			return true
 		return false
-	
-	###*
-	@private
-	###
-	onViewDestroy: ->
-		for id of @registeredComponentReferences
-			@removeComponentReference( id )
-		for selector of @registeredComponentSelectors
-			@removeComponentSelector( selector )
-		@removeObservers()
-		return
 	
 	###*
 	Add a component accessor method the ViewController for the specified view-relative selector.
@@ -279,4 +271,3 @@ Deft.Class.registerPreprocessor(
 	'before'
 	'extend'
 )
-
