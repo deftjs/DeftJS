@@ -440,7 +440,7 @@ describe('Deft.ioc.Injector', function() {
       });
       it('should not be configurable with a class name for a singleton class and constructor parameters', function() {
         expect(function() {
-          return Deft.Injector.configure({
+          Deft.Injector.configure({
             classNameForSingletonClassWithParameters: {
               className: 'ExampleSingletonClass',
               parameters: [
@@ -501,7 +501,7 @@ describe('Deft.ioc.Injector', function() {
       });
       it('should not be configurable with a class name for a singleton class, as a prototype', function() {
         expect(function() {
-          return Deft.Injector.configure({
+          Deft.Injector.configure({
             classNameForSingletonClassAsPrototype: {
               className: 'ExampleSingletonClass',
               singleton: false
@@ -511,7 +511,7 @@ describe('Deft.ioc.Injector', function() {
       });
       it('should not be configurable with a class name for a singleton class, as a prototype, eagerly', function() {
         expect(function() {
-          return Deft.Injector.configure({
+          Deft.Injector.configure({
             classNameForSingletonClassAsPrototypeEagerly: {
               className: 'ExampleSingletonClass',
               singleton: false,
@@ -522,7 +522,7 @@ describe('Deft.ioc.Injector', function() {
       });
       it('should not be configurable with a class name for a singleton class, as a prototype, (explicitly) lazily', function() {
         expect(function() {
-          return Deft.Injector.configure({
+          Deft.Injector.configure({
             classNameForSingletonClassAsPrototypeLazily: {
               className: 'ExampleSingletonClass',
               singleton: false,
@@ -1270,6 +1270,35 @@ describe('Deft.ioc.Injector', function() {
       });
     });
     describe('Runtime configuration changes', function() {
+      beforeEach(function() {
+        Deft.Injector.reset();
+      });
+      it('should clear out configured identifiers when the reset method is called', function() {
+        Deft.Injector.configure({
+          identifier: {
+            value: 'expected value'
+          }
+        });
+        expect(Deft.Injector.resolve('identifier')).toEqual('expected value');
+        Deft.Injector.reset();
+        expect(function() {
+          Deft.Injector.resolve('identifier');
+        }).toThrow(new Error("Error while resolving value to inject: no dependency provider found for 'identifier'."));
+      });
+      it('should aggregate providers across multiple calls to configure', function() {
+        Deft.Injector.configure({
+          identifier1: {
+            value: 'value #1'
+          }
+        });
+        Deft.Injector.configure({
+          identifier2: {
+            value: 'value #2'
+          }
+        });
+        expect(Deft.Injector.resolve('identifier1')).toEqual('value #1');
+        expect(Deft.Injector.resolve('identifier2')).toEqual('value #2');
+      });
       it('should resolve using the last provider to be configured for a given identifier (i.e. configuration for the same identifier overwrites the previous configuration)', function() {
         Deft.Injector.configure({
           existingIdentifier: {
@@ -1283,6 +1312,26 @@ describe('Deft.ioc.Injector', function() {
           }
         });
         expect(Deft.Injector.resolve('existingIdentifier')).toEqual('new value');
+      });
+      it('should instantiate eager providers when they are initially configured, and not reinstantiate them on subsequent calls to configure for other identifiers', function() {
+        var factoryFn;
+        factoryFn = jasmine.createSpy('factory function').andCallFake(function() {
+          return 'expected value';
+        });
+        Deft.Injector.configure({
+          eagerIdentifier: {
+            fn: factoryFn,
+            eager: true
+          }
+        });
+        expect(factoryFn).toHaveBeenCalled();
+        factoryFn.reset();
+        Deft.Injector.configure({
+          anyOtherIdentifier: {
+            value: 'value'
+          }
+        });
+        expect(factoryFn).not.toHaveBeenCalled();
       });
     });
   });

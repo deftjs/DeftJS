@@ -24,7 +24,8 @@ Ext.define( 'Deft.ioc.Injector',
 	Configure the Injector.
 	###
 	configure: ( configuration ) ->
-		Deft.Logger.log( 'Configuring injector.' )
+		Deft.Logger.log( 'Configuring the injector.' )
+		newProviders = {}
 		Ext.Object.each(
 			configuration,
 			( identifier, config ) ->
@@ -42,11 +43,12 @@ Ext.define( 'Deft.ioc.Injector',
 						)
 					)
 				@providers[ identifier ] = provider
+				newProviders[ identifier ] = provider
 				return
 			@
 		)
 		Ext.Object.each(
-			@providers
+			newProviders
 			( identifier, provider ) ->
 				if provider.getEager()
 					Deft.Logger.log( "Eagerly creating '#{ provider.getIdentifier() }'." )
@@ -54,6 +56,14 @@ Ext.define( 'Deft.ioc.Injector',
 				return
 			@
 		)
+		return
+	
+	###*
+	Reset the Injector.
+	###
+	reset: ->
+		Deft.Logger.log( 'Resetting the injector.' )
+		@providers = {}
 		return
 	
 	###*

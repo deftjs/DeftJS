@@ -23,7 +23,9 @@ Ext.define('Deft.ioc.Injector', {
   */
 
   configure: function(configuration) {
-    Deft.Logger.log('Configuring injector.');
+    var newProviders;
+    Deft.Logger.log('Configuring the injector.');
+    newProviders = {};
     Ext.Object.each(configuration, function(identifier, config) {
       var provider;
       Deft.Logger.log("Configuring dependency provider for '" + identifier + "'.");
@@ -38,13 +40,22 @@ Ext.define('Deft.ioc.Injector', {
         }, config));
       }
       this.providers[identifier] = provider;
+      newProviders[identifier] = provider;
     }, this);
-    Ext.Object.each(this.providers, function(identifier, provider) {
+    Ext.Object.each(newProviders, function(identifier, provider) {
       if (provider.getEager()) {
         Deft.Logger.log("Eagerly creating '" + (provider.getIdentifier()) + "'.");
         provider.resolve();
       }
     }, this);
+  },
+  /**
+  	Reset the Injector.
+  */
+
+  reset: function() {
+    Deft.Logger.log('Resetting the injector.');
+    this.providers = {};
   },
   /**
   	Indicates whether the Injector can resolve a dependency by the specified identifier with the corresponding object instance or value.
