@@ -41,6 +41,7 @@
 				<file name="Deft/mixin/Controllable.js" />
 				<file name="Deft/promise/Deferred.js" />
 				<file name="Deft/promise/Promise.js" />
+				<file name="Deft/promise/Chain.js" />
 			</filelist>
 		</concat>
 		
