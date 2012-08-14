@@ -197,6 +197,8 @@ Ext.define('Deft.promise.Promise', {
     */
 
     reduce: function(promisesOrValues, reduceFunction, initialValue) {
+      var initialValueSpecified;
+      initialValueSpecified = arguments.length === 3;
       return this.when(promisesOrValues).then({
         success: function(promisesOrValues) {
           var reduceArguments, whenFunction;
@@ -210,7 +212,7 @@ Ext.define('Deft.promise.Promise', {
               });
             }
           ];
-          if (arguments.length === 3) {
+          if (initialValueSpecified) {
             reduceArguments.push(initialValue);
           }
           return this.when(this.reduceArray.apply(promisesOrValues, reduceArguments));

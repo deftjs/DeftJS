@@ -175,6 +175,7 @@ Ext.define( 'Deft.promise.Promise',
 		Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
 		###
 		reduce: ( promisesOrValues, reduceFunction, initialValue ) ->
+			initialValueSpecified = arguments.length is 3
 			return @when( promisesOrValues ).then( 
 				success: ( promisesOrValues ) ->
 					# Wrap the reduce function with one that handles promises and then delegates to it.
@@ -188,7 +189,7 @@ Ext.define( 'Deft.promise.Promise',
 							)
 					]
 					
-					if ( arguments.length is 3 )
+					if initialValueSpecified
 						reduceArguments.push( initialValue )
 					
 					return @when( @reduceArray.apply( promisesOrValues, reduceArguments ) )
