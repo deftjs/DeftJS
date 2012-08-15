@@ -774,6 +774,10 @@ describe('Deft.promise.Promise', function() {
             expect(failureCallback).not.toHaveBeenCalled();
             expect(progressCallback).not.toHaveBeenCalled();
             expect(cancelCallback).not.toHaveBeenCalled();
+            successCallback.reset();
+            failureCallback.reset();
+            progressCallback.reset();
+            cancelCallback.reset();
           }
         }
       });
@@ -826,6 +830,10 @@ describe('Deft.promise.Promise', function() {
             expect(failureCallback).toHaveBeenCalledWith('error message');
             expect(progressCallback).not.toHaveBeenCalled();
             expect(cancelCallback).not.toHaveBeenCalled();
+            successCallback.reset();
+            failureCallback.reset();
+            progressCallback.reset();
+            cancelCallback.reset();
           }
         }
         rejectedPromiseParameter = {
@@ -854,7 +862,11 @@ describe('Deft.promise.Promise', function() {
               expect(successCallback).not.toHaveBeenCalled();
               expect(failureCallback).toHaveBeenCalledWith('error message');
               expect(progressCallback).not.toHaveBeenCalled();
-              _results1.push(expect(cancelCallback).not.toHaveBeenCalled());
+              expect(cancelCallback).not.toHaveBeenCalled();
+              successCallback.reset();
+              failureCallback.reset();
+              progressCallback.reset();
+              _results1.push(cancelCallback.reset());
             }
             return _results1;
           })());
@@ -910,6 +922,10 @@ describe('Deft.promise.Promise', function() {
             expect(failureCallback).not.toHaveBeenCalled();
             expect(progressCallback).toHaveBeenCalledWith('progress');
             expect(cancelCallback).not.toHaveBeenCalled();
+            successCallback.reset();
+            failureCallback.reset();
+            progressCallback.reset();
+            cancelCallback.reset();
           }
         }
         updatedPromiseParameter = {
@@ -938,7 +954,11 @@ describe('Deft.promise.Promise', function() {
               expect(successCallback).not.toHaveBeenCalled();
               expect(failureCallback).not.toHaveBeenCalled();
               expect(progressCallback).toHaveBeenCalledWith('progress');
-              _results1.push(expect(cancelCallback).not.toHaveBeenCalled());
+              expect(cancelCallback).not.toHaveBeenCalled();
+              successCallback.reset();
+              failureCallback.reset();
+              progressCallback.reset();
+              _results1.push(cancelCallback.reset());
             }
             return _results1;
           })());
@@ -994,6 +1014,10 @@ describe('Deft.promise.Promise', function() {
             expect(failureCallback).not.toHaveBeenCalled();
             expect(progressCallback).not.toHaveBeenCalled();
             expect(cancelCallback).toHaveBeenCalledWith('reason');
+            successCallback.reset();
+            failureCallback.reset();
+            progressCallback.reset();
+            cancelCallback.reset();
           }
         }
         cancelledPromiseParameter = {
@@ -1022,7 +1046,11 @@ describe('Deft.promise.Promise', function() {
               expect(successCallback).not.toHaveBeenCalled();
               expect(failureCallback).not.toHaveBeenCalled();
               expect(progressCallback).not.toHaveBeenCalled();
-              _results1.push(expect(cancelCallback).toHaveBeenCalledWith('reason'));
+              expect(cancelCallback).toHaveBeenCalledWith('reason');
+              successCallback.reset();
+              failureCallback.reset();
+              progressCallback.reset();
+              _results1.push(cancelCallback.reset());
             }
             return _results1;
           })());
@@ -1030,13 +1058,12 @@ describe('Deft.promise.Promise', function() {
         return _results;
       });
       return it('should return a resolved Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred or Promise is resolved', function() {
-        var combination, deferred, deferredB, deferredC, deferredParameter, parameters, pendingDeferred, permutation, promise, promiseC, _i, _j, _len, _len1, _ref, _ref1;
+        var combination, deferredB, deferredC, parameters, pendingDeferred, pendingDeferredParameter, pendingPromiseParameter, permutation, placeholder, promise, promiseC, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
         deferredB = Ext.create('Deft.promise.Deferred');
         deferredB.resolve('B');
         deferredC = Ext.create('Deft.promise.Deferred');
         deferredC.resolve('C');
         promiseC = deferredC.getPromise();
-        pendingDeferred = Ext.create('Deft.promise.Deferred');
         parameters = [
           {
             input: 'A',
@@ -1047,23 +1074,21 @@ describe('Deft.promise.Promise', function() {
           }, {
             input: promiseC,
             output: 'C'
-          }, {
-            input: pendingDeferred
-          }, {
-            input: pendingDeferred.getPromise()
           }
         ];
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferredParameter = {
-          input: deferred,
-          output: 'reason'
-        };
+        placeholder = {};
         _ref = generateCombinations(parameters);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
-          _ref1 = generatePermutations(combination.concat(deferredParameter));
+          _ref1 = generatePermutations(combination.concat(placeholder));
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             permutation = _ref1[_j];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingDeferredParameter = {
+              input: pendingDeferred,
+              output: 'expected value'
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingDeferredParameter;
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
             promise.then({
               success: successCallback,
@@ -1077,14 +1102,63 @@ describe('Deft.promise.Promise', function() {
             expect(failureCallback).not.toHaveBeenCalled();
             expect(progressCallback).not.toHaveBeenCalled();
             expect(cancelCallback).not.toHaveBeenCalled();
+            successCallback.reset();
+            failureCallback.reset();
+            progressCallback.reset();
+            cancelCallback.reset();
+            pendingDeferred.resolve('expected value');
+            expect(promise.getState()).toBe('resolved');
+            expect(successCallback).toHaveBeenCalledWith(getOutputParameters(permutation));
+            expect(failureCallback).not.toHaveBeenCalled();
+            expect(progressCallback).not.toHaveBeenCalled();
+            expect(cancelCallback).not.toHaveBeenCalled();
+            successCallback.reset();
+            failureCallback.reset();
+            progressCallback.reset();
+            cancelCallback.reset();
           }
         }
-        deferred.resolve('expectedValue');
-        expect(promise.getState()).toBe('resolved');
-        expect(successCallback).toHaveBeenCalledWith(getOutputParameters(permutation));
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).not.toHaveBeenCalled();
+        _ref2 = generateCombinations(parameters);
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _ref3 = generatePermutations(combination.concat(placeholder));
+          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+            permutation = _ref3[_l];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingPromiseParameter = {
+              input: pendingDeferred.getPromise(),
+              output: 'expected value'
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingPromiseParameter;
+            promise = Deft.promise.Promise.all(getInputParameters(permutation));
+            promise.then({
+              success: successCallback,
+              failure: failureCallback,
+              progress: progressCallback,
+              cancel: cancelCallback
+            });
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            expect(successCallback).not.toHaveBeenCalled();
+            expect(failureCallback).not.toHaveBeenCalled();
+            expect(progressCallback).not.toHaveBeenCalled();
+            expect(cancelCallback).not.toHaveBeenCalled();
+            successCallback.reset();
+            failureCallback.reset();
+            progressCallback.reset();
+            cancelCallback.reset();
+            pendingDeferred.resolve('expected value');
+            expect(promise.getState()).toBe('resolved');
+            expect(successCallback).toHaveBeenCalledWith(getOutputParameters(permutation));
+            expect(failureCallback).not.toHaveBeenCalled();
+            expect(progressCallback).not.toHaveBeenCalled();
+            expect(cancelCallback).not.toHaveBeenCalled();
+            successCallback.reset();
+            failureCallback.reset();
+            progressCallback.reset();
+            cancelCallback.reset();
+          }
+        }
       });
     });
   });
