@@ -1482,13 +1482,377 @@ describe('Deft.promise.Promise', function() {
     });
   });
   describe('memoize()', function() {
-    var cancelCallback, failureCallback, progressCallback, successCallback;
+    var cancelCallback, createSpecsForScope, failureCallback, fibonacci, progressCallback, successCallback;
     successCallback = failureCallback = progressCallback = cancelCallback = null;
-    return beforeEach(function() {
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
+    fibonacci = function(n) {
+      if (n < 2) {
+        return n;
+      } else {
+        return fibonacci(n - 1) + fibonacci(n - 2);
+      }
+    };
+    createSpecsForScope = function(expectedScope) {
+      var createTargetFunction;
+      createTargetFunction = function() {
+        return jasmine.createSpy('target function').andCallFake(function() {
+          if (expectedScope != null) {
+            expect(this).toBe(expectedScope);
+          } else {
+            expect(this).toBe(window);
+          }
+          return fibonacci.apply(this, arguments);
+        });
+      };
+      it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a resolved Promise when the input is a value', function() {
+        var memoFunction, promise, result, targetFunction;
+        targetFunction = createTargetFunction();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        result = null;
+        promise = memoFunction(12);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).toHaveBeenCalled();
+        targetFunction.reset();
+        result = null;
+        promise = memoFunction(12);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).not.toHaveBeenCalled();
+      });
+      it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a resolved Promise when the input is a resolved Deferred or Promise', function() {
+        var memoFunction, promise, resolvedDeferred, resolvedPromise, result, targetFunction;
+        targetFunction = createTargetFunction();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        resolvedDeferred = new Ext.create('Deft.promise.Deferred');
+        resolvedDeferred.resolve(12);
+        result = null;
+        promise = memoFunction(resolvedDeferred);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).toHaveBeenCalled();
+        targetFunction.reset();
+        result = null;
+        promise = memoFunction(resolvedDeferred);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).not.toHaveBeenCalled();
+        result = null;
+        promise = memoFunction(12);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).not.toHaveBeenCalled();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        resolvedPromise = resolvedDeferred.getPromise();
+        result = null;
+        promise = memoFunction(resolvedPromise);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).toHaveBeenCalled();
+        targetFunction.reset();
+        resolvedPromise = resolvedDeferred.getPromise();
+        result = null;
+        promise = memoFunction(resolvedPromise);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).not.toHaveBeenCalled();
+        result = null;
+        promise = memoFunction(12);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).not.toHaveBeenCalled();
+      });
+      it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a rejected Promise when the input is a rejected Deferred or Promise', function() {
+        var memoFunction, promise, rejectedDeferred, rejectedPromise, result, targetFunction;
+        targetFunction = createTargetFunction();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        rejectedDeferred = new Ext.create('Deft.promise.Deferred');
+        rejectedDeferred.reject('error message');
+        result = null;
+        promise = memoFunction(rejectedDeferred);
+        promise.then({
+          failure: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('rejected');
+        expect(result).toBe('error message');
+        expect(targetFunction).not.toHaveBeenCalled();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        rejectedPromise = rejectedDeferred.getPromise();
+        result = null;
+        promise = memoFunction(rejectedPromise);
+        promise.then({
+          failure: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('rejected');
+        expect(result).toBe('error message');
+        expect(targetFunction).not.toHaveBeenCalled();
+      });
+      it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending (and immediately updated) Promise when the input is a pending (and updated) Deferred or Promise', function() {
+        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        targetFunction = createTargetFunction();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        pendingDeferred.update('progress');
+        result = null;
+        promise = memoFunction(pendingDeferred);
+        promise.then({
+          progress: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        expect(result).toBe('progress');
+        expect(targetFunction).not.toHaveBeenCalled();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingPromise = pendingDeferred.getPromise();
+        result = null;
+        promise = memoFunction(pendingPromise);
+        promise.then({
+          progress: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        expect(result).toBe('progress');
+        expect(targetFunction).not.toHaveBeenCalled();
+      });
+      it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a cancelled Promise when the input is a cancelled Deferred or Promise', function() {
+        var cancelledDeferred, cancelledPromise, memoFunction, promise, result, targetFunction;
+        targetFunction = createTargetFunction();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        cancelledDeferred = new Ext.create('Deft.promise.Deferred');
+        cancelledDeferred.cancel('reason');
+        result = null;
+        promise = memoFunction(cancelledDeferred);
+        promise.then({
+          cancel: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('cancelled');
+        expect(result).toBe('reason');
+        expect(targetFunction).not.toHaveBeenCalled();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        cancelledPromise = cancelledDeferred.getPromise();
+        result = null;
+        promise = memoFunction(cancelledPromise);
+        promise.then({
+          cancel: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('cancelled');
+        expect(result).toBe('reason');
+        expect(targetFunction).not.toHaveBeenCalled();
+      });
+      it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise resolves when the specified Deferred or Promise is resolved', function() {
+        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        targetFunction = createTargetFunction();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        result = null;
+        promise = memoFunction(pendingDeferred);
+        promise.then(function(value) {
+          return result = value;
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.resolve(12);
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).toHaveBeenCalled();
+        targetFunction.reset();
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        result = null;
+        promise = memoFunction(pendingDeferred);
+        promise.then(function(value) {
+          return result = value;
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.resolve(12);
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).not.toHaveBeenCalled();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        pendingPromise = pendingDeferred.getPromise();
+        result = null;
+        promise = memoFunction(pendingPromise);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.resolve(12);
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).toHaveBeenCalled();
+        targetFunction.reset();
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        pendingPromise = pendingDeferred.getPromise();
+        result = null;
+        promise = memoFunction(pendingPromise);
+        promise.then({
+          success: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.resolve(12);
+        expect(promise.getState()).toBe('resolved');
+        expect(result).toBe(fibonacci(12));
+        expect(targetFunction).not.toHaveBeenCalled();
+      });
+      it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise rejects when the specified Deferred or Promise is rejected', function() {
+        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        targetFunction = createTargetFunction();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        result = null;
+        promise = memoFunction(pendingDeferred);
+        promise.then({
+          failure: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.reject('error message');
+        expect(promise.getState()).toBe('rejected');
+        expect(result).toBe('error message');
+        expect(targetFunction).not.toHaveBeenCalled();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        pendingPromise = pendingDeferred.getPromise();
+        result = null;
+        promise = memoFunction(pendingPromise);
+        promise.then({
+          failure: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.reject('error message');
+        expect(promise.getState()).toBe('rejected');
+        expect(result).toBe('error message');
+        expect(targetFunction).not.toHaveBeenCalled();
+      });
+      it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise updates when the specified Deferred or Promise is updated', function() {
+        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        targetFunction = createTargetFunction();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        result = null;
+        promise = memoFunction(pendingDeferred);
+        promise.then({
+          progress: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.update('progress');
+        expect(promise.getState()).toBe('pending');
+        expect(result).toBe('progress');
+        expect(targetFunction).not.toHaveBeenCalled();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        pendingPromise = pendingDeferred.getPromise();
+        result = null;
+        promise = memoFunction(pendingPromise);
+        promise.then({
+          progress: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.update('progress');
+        expect(promise.getState()).toBe('pending');
+        expect(result).toBe('progress');
+        expect(targetFunction).not.toHaveBeenCalled();
+      });
+      it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise cancels when the specified Deferred or Promise is cancelled', function() {
+        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        targetFunction = createTargetFunction();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        result = null;
+        promise = memoFunction(pendingDeferred);
+        promise.then({
+          cancel: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.cancel('reason');
+        expect(promise.getState()).toBe('cancelled');
+        expect(result).toBe('reason');
+        expect(targetFunction).not.toHaveBeenCalled();
+        memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
+        pendingDeferred = new Ext.create('Deft.promise.Deferred');
+        pendingPromise = pendingDeferred.getPromise();
+        result = null;
+        promise = memoFunction(pendingPromise);
+        promise.then({
+          cancel: function(value) {
+            return result = value;
+          }
+        });
+        expect(promise.getState()).toBe('pending');
+        pendingDeferred.cancel('reason');
+        expect(promise.getState()).toBe('cancelled');
+        expect(result).toBe('reason');
+        expect(targetFunction).not.toHaveBeenCalled();
+      });
+    };
+    describe('(omitting the optional scope and hash function parameters)', function() {
+      createSpecsForScope();
+    });
+    describe('(specifying the scope to execute the memoized function in via the optional scope parameter)', function() {
+      var expectedScope;
+      expectedScope = {};
+      createSpecsForScope(expectedScope);
     });
   });
   describe('map()', function() {

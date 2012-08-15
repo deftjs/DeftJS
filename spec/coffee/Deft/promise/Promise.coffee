@@ -1684,16 +1684,464 @@ describe( 'Deft.promise.Promise', ->
 		
 		successCallback = failureCallback = progressCallback = cancelCallback = null
 		
-		beforeEach( ->
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+		fibonacci = ( n ) ->
+			( if n < 2 then n else fibonacci( n - 1 ) + fibonacci( n - 2 ) )
+		
+		createSpecsForScope = ( expectedScope ) ->
+			
+			createTargetFunction = ->
+				return jasmine.createSpy( 'target function' ).andCallFake(
+					->
+						if expectedScope?
+							expect( @ ).toBe( expectedScope )
+						else
+							expect( @ ).toBe( window )
+						return fibonacci.apply( @, arguments )
+				)
+			
+			it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a resolved Promise when the input is a value', ->
+				targetFunction = createTargetFunction()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				result = null
+				promise = memoFunction( 12 )
+				promise.then(
+					success: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).toHaveBeenCalled()
+				
+				targetFunction.reset()
+				
+				result = null
+				promise = memoFunction( 12 )
+				promise.then(
+					success: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a resolved Promise when the input is a resolved Deferred or Promise', ->
+				targetFunction = createTargetFunction()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				resolvedDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				resolvedDeferred.resolve( 12 )
+				
+				result = null
+				promise = memoFunction( resolvedDeferred )
+				promise.then(
+					success:  ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).toHaveBeenCalled()
+				
+				targetFunction.reset()
+				
+				result = null
+				promise = memoFunction( resolvedDeferred )
+				promise.then(
+					success: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				result = null
+				promise = memoFunction( 12 )
+				promise.then(
+					success: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				resolvedPromise = resolvedDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( resolvedPromise )
+				promise.then(
+					success: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).toHaveBeenCalled()
+				
+				targetFunction.reset()
+				
+				resolvedPromise = resolvedDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( resolvedPromise )
+				promise.then(
+					success: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				result = null
+				promise = memoFunction( 12 )
+				promise.then(
+					success: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a rejected Promise when the input is a rejected Deferred or Promise', ->
+				targetFunction = createTargetFunction()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				rejectedDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred.reject( 'error message' )
+				
+				result = null
+				promise = memoFunction( rejectedDeferred )
+				promise.then(
+					failure: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'rejected' )
+				expect( result ).toBe( 'error message' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				rejectedPromise = rejectedDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( rejectedPromise )
+				promise.then(
+					failure: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'rejected' )
+				expect( result ).toBe( 'error message' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending (and immediately updated) Promise when the input is a pending (and updated) Deferred or Promise', ->
+				targetFunction = createTargetFunction()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				pendingDeferred.update( 'progress' )
+				
+				result = null
+				promise = memoFunction( pendingDeferred )
+				promise.then(
+					progress: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				expect( result ).toBe( 'progress' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingPromise = pendingDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( pendingPromise )
+				promise.then(
+					progress: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				expect( result ).toBe( 'progress' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a cancelled Promise when the input is a cancelled Deferred or Promise', ->
+				targetFunction = createTargetFunction()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				cancelledDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				cancelledDeferred.cancel( 'reason' )
+				
+				result = null
+				promise = memoFunction( cancelledDeferred )
+				promise.then(
+					cancel: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'cancelled' )
+				expect( result ).toBe( 'reason' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				cancelledPromise = cancelledDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( cancelledPromise )
+				promise.then(
+					cancel: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'cancelled' )
+				expect( result ).toBe( 'reason' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise resolves when the specified Deferred or Promise is resolved', ->
+				targetFunction = createTargetFunction()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				
+				result = null
+				promise = memoFunction( pendingDeferred )
+				promise.then(
+					( value ) ->
+						result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.resolve( 12 )
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).toHaveBeenCalled()
+				
+				targetFunction.reset()
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				
+				result = null
+				promise = memoFunction( pendingDeferred )
+				promise.then(
+					( value ) ->
+						result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.resolve( 12 )
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				pendingPromise = pendingDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( pendingPromise )
+				promise.then(
+					success: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.resolve( 12 )
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).toHaveBeenCalled()
+				
+				targetFunction.reset()
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				pendingPromise = pendingDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( pendingPromise )
+				promise.then(
+					success: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.resolve( 12 )
+				
+				expect( promise.getState() ).toBe( 'resolved' )
+				expect( result ).toBe( fibonacci( 12 ) )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise rejects when the specified Deferred or Promise is rejected', ->
+				targetFunction = createTargetFunction()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				
+				result = null
+				promise = memoFunction( pendingDeferred )
+				promise.then(
+					failure: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.reject( 'error message' )
+				
+				expect( promise.getState() ).toBe( 'rejected' )
+				expect( result ).toBe( 'error message' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				pendingPromise = pendingDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( pendingPromise )
+				promise.then(
+					failure: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.reject( 'error message' )
+				
+				expect( promise.getState() ).toBe( 'rejected' )
+				expect( result ).toBe( 'error message' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise updates when the specified Deferred or Promise is updated', ->
+				targetFunction = createTargetFunction()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				
+				result = null
+				promise = memoFunction( pendingDeferred )
+				promise.then(
+					progress: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.update( 'progress' )
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				expect( result ).toBe( 'progress' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				pendingPromise = pendingDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( pendingPromise )
+				promise.then(
+					progress: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.update( 'progress' )
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				expect( result ).toBe( 'progress' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			it( 'should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise cancels when the specified Deferred or Promise is cancelled', ->
+				targetFunction = createTargetFunction()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				
+				result = null
+				promise = memoFunction( pendingDeferred )
+				promise.then(
+					cancel: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.cancel( 'reason' )
+				
+				expect( promise.getState() ).toBe( 'cancelled' )
+				expect( result ).toBe( 'reason' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
+				
+				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
+				pendingPromise = pendingDeferred.getPromise()
+				
+				result = null
+				promise = memoFunction( pendingPromise )
+				promise.then(
+					cancel: ( value ) -> result = value
+				)
+				
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				pendingDeferred.cancel( 'reason' )
+				
+				expect( promise.getState() ).toBe( 'cancelled' )
+				expect( result ).toBe( 'reason' )
+				expect( targetFunction ).not.toHaveBeenCalled()
+				
+				return
+			)
+			
+			return
+		
+		describe( '(omitting the optional scope and hash function parameters)', ->
+			createSpecsForScope()
 			
 			return
 		)
 		
-		# TODO
+		describe( '(specifying the scope to execute the memoized function in via the optional scope parameter)', ->
+			expectedScope = {}
+			createSpecsForScope( expectedScope )
+			
+			return
+		)
+		
+		return
 	)
 	
 	describe( 'map()', ->
