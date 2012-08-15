@@ -473,7 +473,7 @@ describe( 'Deft.promise.Promise', ->
 				)
 				return
 				
-			values = [ undefined, null, false, 0, 1, 'expected value', [ '[Array]' ], {} ]
+			values = [ undefined, null, false, 0, 1, 'expected value', [], {} ]
 			for value in values
 				itShouldResolveForValue.call( this, value )
 				
@@ -1730,65 +1730,104 @@ describe( 'Deft.promise.Promise', ->
 	
 	describe( 'then()', ->
 		
-		successCallback = failureCallback = progressCallback = cancelCallback = null
+		successCallback = failureCallback = progressCallback = cancelCallback = scope = null
 		
 		beforeEach( ->
 			successCallback  = jasmine.createSpy( 'success callback' )
 			failureCallback  = jasmine.createSpy( 'failure callback' )
 			progressCallback = jasmine.createSpy( 'progress callback' )
 			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			scope = {}
 			
 			return
 		)
 		
-		# TODO
+		it( 'should call through to the underlying Deferred\'s then() method with the same specified parameters and return the same result', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
+			promise = deferred.getPromise()
+			
+			expectedReturnValue = {}
+			spyOn( deferred, 'then' ).andReturn( expectedReturnValue )
+			
+			expect( promise.then( successCallback, failureCallback, progressCallback, cancelCallback, scope ) ).toBe( expectedReturnValue )
+			expect( deferred.then ).toHaveBeenCalledWith( successCallback, failureCallback, progressCallback, cancelCallback, scope )
+			
+			expect( promise.then( { success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback, scope: scope } ) ).toBe( expectedReturnValue )
+			expect( deferred.then ).toHaveBeenCalledWith( { success: successCallback, failure: failureCallback, progress: progressCallback, cancel: cancelCallback, scope: scope } )
+			
+			return
+		)
 	)
 	
 	describe( 'otherwise()', ->
 		
-		successCallback = failureCallback = progressCallback = cancelCallback = null
+		otherwiseCallback = scope = null
 		
 		beforeEach( ->
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			otherwiseCallback = jasmine.createSpy( 'otherwise callback' )
+			scope = {}
 			
 			return
 		)
 		
-		# TODO
+		it( 'should call through to the underlying Deferred\'s otherwise() method with the same specified parameters and return the same result', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
+			promise = deferred.getPromise()
+			
+			expectedReturnValue = {}
+			spyOn( deferred, 'otherwise' ).andReturn( expectedReturnValue )
+			
+			expect( promise.otherwise( otherwiseCallback, scope ) ).toBe( expectedReturnValue )
+			expect( deferred.otherwise ).toHaveBeenCalledWith( otherwiseCallback, scope )
+			
+			expect( promise.otherwise( { fn: otherwiseCallback, scope: scope } ) ).toBe( expectedReturnValue )
+			expect( deferred.otherwise ).toHaveBeenCalledWith( { fn: otherwiseCallback, scope: scope } )
+			
+			return
+		)
 	)
 	
 	describe( 'always()', ->
 		
-		successCallback = failureCallback = progressCallback = cancelCallback = null
+		alwaysCallback = scope = null
 		
 		beforeEach( ->
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+			alwaysCallback = jasmine.createSpy( 'always callback' )
+			scope= {}
 			
 			return
 		)
 		
-		# TODO
+		it( 'should call through to the underlying Deferred\'s otherwise() method with the same specified parameters and return the same result', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
+			promise = deferred.getPromise()
+			
+			expectedReturnValue = {}
+			spyOn( deferred, 'always' ).andReturn( expectedReturnValue )
+			
+			expect( promise.always( alwaysCallback, scope ) ).toBe( expectedReturnValue )
+			expect( deferred.always ).toHaveBeenCalledWith( alwaysCallback, scope )
+			
+			expect( promise.always( { fn: alwaysCallback, scope: scope } ) ).toBe( expectedReturnValue )
+			expect( deferred.always ).toHaveBeenCalledWith( { fn: alwaysCallback, scope: scope } )
+			
+			return
+		)
 	)
 	
 	describe( 'cancel()', ->
 		
-		successCallback = failureCallback = progressCallback = cancelCallback = null
-		
-		beforeEach( ->
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+		it( 'should call through to the underlying Deferred\'s cancel() method with the same specified parameters and return the same result', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
+			promise = deferred.getPromise()
+			
+			expectedReturnValue = {}
+			spyOn( deferred, 'cancel' ).andReturn( expectedReturnValue )
+			
+			expect( promise.cancel( 'reason' ) ).toBe( expectedReturnValue )
+			expect( deferred.cancel ).toHaveBeenCalledWith( 'reason' )
 			
 			return
 		)
-		
-		# TODO
 	)
 )

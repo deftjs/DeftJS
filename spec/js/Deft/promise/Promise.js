@@ -410,7 +410,7 @@ describe('Deft.promise.Promise', function() {
           expect(cancelCallback).not.toHaveBeenCalled();
         });
       };
-      values = [void 0, null, false, 0, 1, 'expected value', ['[Array]'], {}];
+      values = [void 0, null, false, 0, 1, 'expected value', [], {}];
       for (_i = 0, _len = values.length; _i < _len; _i++) {
         value = values[_i];
         itShouldResolveForValue.call(this, value);
@@ -1512,43 +1512,98 @@ describe('Deft.promise.Promise', function() {
     });
   });
   describe('then()', function() {
-    var cancelCallback, failureCallback, progressCallback, successCallback;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
-    return beforeEach(function() {
+    var cancelCallback, failureCallback, progressCallback, scope, successCallback;
+    successCallback = failureCallback = progressCallback = cancelCallback = scope = null;
+    beforeEach(function() {
       successCallback = jasmine.createSpy('success callback');
       failureCallback = jasmine.createSpy('failure callback');
       progressCallback = jasmine.createSpy('progress callback');
       cancelCallback = jasmine.createSpy('cancel callback');
+      scope = {};
+    });
+    return it('should call through to the underlying Deferred\'s then() method with the same specified parameters and return the same result', function() {
+      var deferred, expectedReturnValue, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
+      promise = deferred.getPromise();
+      expectedReturnValue = {};
+      spyOn(deferred, 'then').andReturn(expectedReturnValue);
+      expect(promise.then(successCallback, failureCallback, progressCallback, cancelCallback, scope)).toBe(expectedReturnValue);
+      expect(deferred.then).toHaveBeenCalledWith(successCallback, failureCallback, progressCallback, cancelCallback, scope);
+      expect(promise.then({
+        success: successCallback,
+        failure: failureCallback,
+        progress: progressCallback,
+        cancel: cancelCallback,
+        scope: scope
+      })).toBe(expectedReturnValue);
+      expect(deferred.then).toHaveBeenCalledWith({
+        success: successCallback,
+        failure: failureCallback,
+        progress: progressCallback,
+        cancel: cancelCallback,
+        scope: scope
+      });
     });
   });
   describe('otherwise()', function() {
-    var cancelCallback, failureCallback, progressCallback, successCallback;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
-    return beforeEach(function() {
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
+    var otherwiseCallback, scope;
+    otherwiseCallback = scope = null;
+    beforeEach(function() {
+      otherwiseCallback = jasmine.createSpy('otherwise callback');
+      scope = {};
+    });
+    return it('should call through to the underlying Deferred\'s otherwise() method with the same specified parameters and return the same result', function() {
+      var deferred, expectedReturnValue, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
+      promise = deferred.getPromise();
+      expectedReturnValue = {};
+      spyOn(deferred, 'otherwise').andReturn(expectedReturnValue);
+      expect(promise.otherwise(otherwiseCallback, scope)).toBe(expectedReturnValue);
+      expect(deferred.otherwise).toHaveBeenCalledWith(otherwiseCallback, scope);
+      expect(promise.otherwise({
+        fn: otherwiseCallback,
+        scope: scope
+      })).toBe(expectedReturnValue);
+      expect(deferred.otherwise).toHaveBeenCalledWith({
+        fn: otherwiseCallback,
+        scope: scope
+      });
     });
   });
   describe('always()', function() {
-    var cancelCallback, failureCallback, progressCallback, successCallback;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
-    return beforeEach(function() {
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
+    var alwaysCallback, scope;
+    alwaysCallback = scope = null;
+    beforeEach(function() {
+      alwaysCallback = jasmine.createSpy('always callback');
+      scope = {};
+    });
+    return it('should call through to the underlying Deferred\'s otherwise() method with the same specified parameters and return the same result', function() {
+      var deferred, expectedReturnValue, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
+      promise = deferred.getPromise();
+      expectedReturnValue = {};
+      spyOn(deferred, 'always').andReturn(expectedReturnValue);
+      expect(promise.always(alwaysCallback, scope)).toBe(expectedReturnValue);
+      expect(deferred.always).toHaveBeenCalledWith(alwaysCallback, scope);
+      expect(promise.always({
+        fn: alwaysCallback,
+        scope: scope
+      })).toBe(expectedReturnValue);
+      expect(deferred.always).toHaveBeenCalledWith({
+        fn: alwaysCallback,
+        scope: scope
+      });
     });
   });
   return describe('cancel()', function() {
-    var cancelCallback, failureCallback, progressCallback, successCallback;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
-    return beforeEach(function() {
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
+    return it('should call through to the underlying Deferred\'s cancel() method with the same specified parameters and return the same result', function() {
+      var deferred, expectedReturnValue, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
+      promise = deferred.getPromise();
+      expectedReturnValue = {};
+      spyOn(deferred, 'cancel').andReturn(expectedReturnValue);
+      expect(promise.cancel('reason')).toBe(expectedReturnValue);
+      expect(deferred.cancel).toHaveBeenCalledWith('reason');
     });
   });
 });
