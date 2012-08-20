@@ -1180,6 +1180,402 @@ describe('Deft.mvc.ViewController', function() {
       expect(eventListenerFunction.callCount).toBe(0);
     });
   });
+  describe('Observer creation', function() {
+    it('should merge child observe configurations', function() {
+      var exampleInstance, expectedObserve;
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        observe: {
+          messageBus: {
+            parentMessage: "parentMessageHandler"
+          }
+        }
+      });
+      Ext.define('ExampleSubClass', {
+        extend: 'ExampleClass',
+        observe: {
+          messageBus: {
+            childMessage: "childMessageHandler"
+          }
+        }
+      });
+      exampleInstance = Ext.create('ExampleSubClass');
+      expectedObserve = {
+        messageBus: {
+          childMessage: ['childMessageHandler'],
+          parentMessage: ['parentMessageHandler']
+        }
+      };
+      return expect(exampleInstance.observe).toEqual(expectedObserve);
+    });
+    it('should merge child observe configurations when handler is a list', function() {
+      var exampleInstance, expectedObserve;
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        observe: {
+          messageBus: {
+            parentMessage: "parentMessageHandler"
+          }
+        }
+      });
+      Ext.define('ExampleSubClass', {
+        extend: 'ExampleClass',
+        observe: {
+          messageBus: {
+            childMessage: "childMessageHandler1, childMessageHandler2"
+          }
+        }
+      });
+      exampleInstance = Ext.create('ExampleSubClass');
+      expectedObserve = {
+        messageBus: {
+          childMessage: ['childMessageHandler1', 'childMessageHandler2'],
+          parentMessage: ['parentMessageHandler']
+        }
+      };
+      return expect(exampleInstance.observe).toEqual(expectedObserve);
+    });
+    it('should merge three levels of child observe configurations', function() {
+      var exampleInstance, expectedObserve;
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        observe: {
+          messageBus: {
+            parentMessage: "parentMessageHandler"
+          }
+        }
+      });
+      Ext.define('ExampleSubClass', {
+        extend: 'ExampleClass',
+        observe: {
+          messageBus: {
+            childMessage: "childMessageHandler"
+          }
+        }
+      });
+      Ext.define('ExampleSubClass2', {
+        extend: 'ExampleSubClass',
+        observe: {
+          messageBus: {
+            child2Message: "child2MessageHandler"
+          }
+        }
+      });
+      exampleInstance = Ext.create('ExampleSubClass2');
+      expectedObserve = {
+        messageBus: {
+          child2Message: ['child2MessageHandler'],
+          childMessage: ['childMessageHandler'],
+          parentMessage: ['parentMessageHandler']
+        }
+      };
+      return expect(exampleInstance.observe).toEqual(expectedObserve);
+    });
+    it('should merge three levels of child observe configurations, with child observers taking precidence', function() {
+      var exampleInstance, expectedObserve;
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        observe: {
+          messageBus: {
+            parentMessage: "parentMessageHandler"
+          }
+        }
+      });
+      Ext.define('ExampleSubClass', {
+        extend: 'ExampleClass',
+        observe: {
+          messageBus: {
+            childMessage: "childMessageHandler"
+          }
+        }
+      });
+      Ext.define('ExampleSubClass2', {
+        extend: 'ExampleSubClass',
+        observe: {
+          messageBus: {
+            parentMessage: "child2MessageHandler"
+          }
+        }
+      });
+      exampleInstance = Ext.create('ExampleSubClass2');
+      expectedObserve = {
+        messageBus: {
+          parentMessage: ['child2MessageHandler', 'parentMessageHandler'],
+          childMessage: ['childMessageHandler']
+        }
+      };
+      return expect(exampleInstance.observe).toEqual(expectedObserve);
+    });
+    it('should merge three levels of child observe configurations when middle class has no messages', function() {
+      var exampleInstance, expectedObserve;
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        observe: {
+          messageBus: {
+            parentMessage: "parentMessageHandler"
+          }
+        }
+      });
+      Ext.define('ExampleSubClass', {
+        extend: 'ExampleClass'
+      });
+      Ext.define('ExampleSubClass2', {
+        extend: 'ExampleSubClass',
+        observe: {
+          messageBus: {
+            child2Message: "child2MessageHandler"
+          }
+        }
+      });
+      exampleInstance = Ext.create('ExampleSubClass2');
+      expectedObserve = {
+        messageBus: {
+          child2Message: ['child2MessageHandler'],
+          parentMessage: ['parentMessageHandler']
+        }
+      };
+      return expect(exampleInstance.observe).toEqual(expectedObserve);
+    });
+    it('should merge three levels of child observe configurations when parent has no messages', function() {
+      var exampleInstance, expectedObserve;
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController'
+      });
+      Ext.define('ExampleSubClass', {
+        extend: 'ExampleClass',
+        observe: {
+          messageBus: {
+            childMessage: "childMessageHandler"
+          }
+        }
+      });
+      Ext.define('ExampleSubClass2', {
+        extend: 'ExampleSubClass',
+        observe: {
+          messageBus: {
+            child2Message: "child2MessageHandler"
+          }
+        }
+      });
+      exampleInstance = Ext.create('ExampleSubClass2');
+      expectedObserve = {
+        messageBus: {
+          child2Message: ['child2MessageHandler'],
+          childMessage: ['childMessageHandler']
+        }
+      };
+      return expect(exampleInstance.observe).toEqual(expectedObserve);
+    });
+    it('should attach listeners to observed objects in a ViewController with no subclasses', function() {
+      var eventData, exampleInstance, messageBus;
+      eventData = {
+        value1: true,
+        value2: false
+      };
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        config: {
+          messageBus: null
+        },
+        observe: {
+          messageBus: {
+            myMessage: "messageHandler"
+          }
+        },
+        messageHandler: function(data) {
+          return expect(data).toEqual(eventData);
+        }
+      });
+      spyOn(ExampleClass.prototype, 'messageHandler').andCallThrough();
+      messageBus = Ext.create('Ext.util.Observable');
+      exampleInstance = Ext.create('ExampleClass', {
+        messageBus: messageBus
+      });
+      waitsFor((function() {
+        return exampleInstance.messageHandler.wasCalled;
+      }), "Message handler was not called.", 1000);
+      return messageBus.fireEvent('myMessage', eventData);
+    });
+    it('should attach listeners to observed objects in a ViewController where the child has an observe configuration', function() {
+      var childEventData, exampleInstance, messageBus, parentEventData, store, storeEventData;
+      parentEventData = {
+        value1: true,
+        value2: false
+      };
+      childEventData = {
+        value2: true,
+        value3: false
+      };
+      storeEventData = {
+        value5: true,
+        value6: false
+      };
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        config: {
+          messageBus: null,
+          store: null
+        },
+        observe: {
+          messageBus: {
+            parentMessage: "parentMessageHandler"
+          },
+          store: {
+            beforesync: "storeHandler"
+          }
+        },
+        parentMessageHandler: function(data) {
+          return expect(data).toEqual(parentEventData);
+        },
+        storeHandler: function(data) {
+          return expect(data).toEqual(storeEventData);
+        }
+      });
+      Ext.define('ExampleSubClass', {
+        extend: 'ExampleClass',
+        observe: {
+          messageBus: {
+            childMessage: "childMessageHandler"
+          }
+        },
+        childMessageHandler: function(data) {
+          return expect(data).toEqual(childEventData);
+        }
+      });
+      spyOn(ExampleClass.prototype, 'parentMessageHandler').andCallThrough();
+      spyOn(ExampleClass.prototype, 'storeHandler').andCallThrough();
+      spyOn(ExampleSubClass.prototype, 'childMessageHandler').andCallThrough();
+      messageBus = Ext.create('Ext.util.Observable');
+      store = Ext.create('Ext.data.ArrayStore');
+      exampleInstance = Ext.create('ExampleSubClass', {
+        messageBus: messageBus,
+        store: store
+      });
+      waitsFor((function() {
+        return exampleInstance.parentMessageHandler.wasCalled;
+      }), "Parent message handler was not called.", 1000);
+      messageBus.fireEvent('parentMessage', parentEventData);
+      waitsFor((function() {
+        return exampleInstance.childMessageHandler.wasCalled;
+      }), "Child message handler was not called.", 1000);
+      messageBus.fireEvent('childMessage', childEventData);
+      waitsFor((function() {
+        return exampleInstance.storeHandler.wasCalled;
+      }), "Store beforesync handler was not called.", 1000);
+      return store.fireEvent('beforesync', storeEventData);
+    });
+    it('should attach listeners to observed objects using nested property declaration', function() {
+      var exampleInstance, messageBus, parentEventData, store, storeEventData, storeReaderEventData;
+      parentEventData = {
+        value1: true,
+        value2: false
+      };
+      storeEventData = {
+        value3: true,
+        value4: false
+      };
+      storeReaderEventData = {
+        value5: true,
+        value6: false
+      };
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        config: {
+          messageBus: null,
+          store: null
+        },
+        observe: {
+          messageBus: {
+            parentMessage: "parentMessageHandler"
+          },
+          'store.proxy': {
+            metachange: "storeProxyHandler"
+          }
+        },
+        parentMessageHandler: function(data) {
+          return expect(data).toEqual(parentEventData);
+        },
+        storeProxyHandler: function(data) {
+          return expect(data).toEqual(storeEventData);
+        }
+      });
+      Ext.define('ExampleSubClass', {
+        extend: 'ExampleClass',
+        observe: {
+          'store.proxy.reader': {
+            exception: "storeReaderHandler"
+          }
+        },
+        storeReaderHandler: function(data) {
+          return expect(data).toEqual(storeReaderEventData);
+        }
+      });
+      spyOn(ExampleClass.prototype, 'parentMessageHandler').andCallThrough();
+      spyOn(ExampleClass.prototype, 'storeProxyHandler').andCallThrough();
+      spyOn(ExampleSubClass.prototype, 'storeReaderHandler').andCallThrough();
+      messageBus = Ext.create('Ext.util.Observable');
+      store = Ext.create('Ext.data.ArrayStore');
+      exampleInstance = Ext.create('ExampleSubClass', {
+        messageBus: messageBus,
+        store: store
+      });
+      waitsFor((function() {
+        return exampleInstance.parentMessageHandler.wasCalled;
+      }), "Parent message handler was not called.", 1000);
+      messageBus.fireEvent('parentMessage', parentEventData);
+      waitsFor((function() {
+        return exampleInstance.storeProxyHandler.wasCalled;
+      }), "Nested store.proxy handler was not called.", 1000);
+      store.getProxy().fireEvent('metachange', storeEventData);
+      waitsFor((function() {
+        return exampleInstance.storeReaderHandler.wasCalled;
+      }), "Nested store.proxy.reader handler was not called.", 1000);
+      return store.getProxy().getReader().fireEvent('exception', storeReaderEventData);
+    });
+    return it('should attach listeners in child and parent to the same observed object', function() {
+      var eventData, exampleInstance, messageBus;
+      eventData = {
+        value1: true,
+        value2: false
+      };
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        config: {
+          messageBus: null,
+          store: null
+        },
+        observe: {
+          messageBus: {
+            parentMessage: "parentMessageHandler"
+          }
+        },
+        parentMessageHandler: function(data) {
+          return expect(data).toEqual(eventData);
+        }
+      });
+      Ext.define('ExampleSubClass', {
+        extend: 'ExampleClass',
+        observe: {
+          messageBus: {
+            parentMessage: "childMessageHandler"
+          }
+        },
+        childMessageHandler: function(data) {
+          return expect(data).toEqual(eventData);
+        }
+      });
+      spyOn(ExampleClass.prototype, 'parentMessageHandler').andCallThrough();
+      spyOn(ExampleSubClass.prototype, 'childMessageHandler').andCallThrough();
+      messageBus = Ext.create('Ext.util.Observable');
+      exampleInstance = Ext.create('ExampleSubClass', {
+        messageBus: messageBus
+      });
+      waitsFor((function() {
+        return exampleInstance.parentMessageHandler.wasCalled && exampleInstance.childMessageHandler.wasCalled;
+      }), "Parent and child message handlers were not called.", 1000);
+      return messageBus.fireEvent('parentMessage', eventData);
+    });
+  });
   describe('Destruction and clean-up', function() {
     beforeEach(function() {
       Ext.define('ExampleComponent', {
@@ -1402,7 +1798,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(isViewDestroyed).toBe(true);
       expect(hasListener(component, 'exampleevent')).toBe(false);
     });
-    return it('should remove event listeners it attached to dynamic view components referenced explicitly by a live selector when the associated view (and view controller) is destroyed', function() {
+    it('should remove event listeners it attached to dynamic view components referenced explicitly by a live selector when the associated view (and view controller) is destroyed', function() {
       var component, components, isViewDestroyed, view, viewController, _i, _j, _len, _len1;
       Ext.define('ExampleViewController', {
         extend: 'Deft.mvc.ViewController',
@@ -1451,6 +1847,52 @@ describe('Deft.mvc.ViewController', function() {
         component = components[_j];
         expect(hasListener(component, 'exampleevent')).toBe(false);
       }
+    });
+    return it('should remove listeners from observed objects when the view controller is destroyed', function() {
+      var store, store2, view, viewController;
+      Ext.define('ExampleClass', {
+        extend: 'Deft.mvc.ViewController',
+        config: {
+          store: null,
+          store2: null
+        },
+        observe: {
+          store: {
+            beforesync: "genericHandler"
+          },
+          'store.proxy': {
+            customevent: "genericHandler"
+          },
+          store2: {
+            beforeload: "genericHandler"
+          }
+        },
+        genericHandler: function() {}
+      });
+      view = Ext.create('ExampleView');
+      store = Ext.create('Ext.data.ArrayStore');
+      store2 = Ext.create('Ext.data.ArrayStore');
+      expect(store.hasListener('beforesync')).toBeFalsy();
+      expect(store.getProxy().hasListener('customevent')).toBeFalsy();
+      expect(store2.hasListener('beforeload')).toBeFalsy();
+      viewController = Ext.create('ExampleClass', {
+        view: view,
+        store: store,
+        store2: store2
+      });
+      expect(store.hasListener('beforesync')).toBeTruthy();
+      expect(store.getProxy().hasListener('customevent')).toBeTruthy();
+      expect(store2.hasListener('beforeload')).toBeTruthy();
+      spyOn(viewController, 'removeObservers').andCallThrough();
+      waitsFor((function() {
+        return viewController.removeObservers.wasCalled;
+      }), "Observe listeners were not removed by view controller.", 1000);
+      view.destroy();
+      return runs(function() {
+        expect(store.hasListener('beforesync')).toBeFalsy();
+        expect(store.getProxy().hasListener('customevent')).toBeFalsy();
+        return expect(store2.hasListener('beforeload')).toBeFalsy();
+      });
     });
   });
 });

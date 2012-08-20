@@ -46,6 +46,28 @@ Ext.define('Deft.core.Class', {
       } else {
         data.onClassExtended = onClassExtended;
       }
+    },
+    /**
+    		Returns true if the passed class name is a superclass of the passed Class reference.
+    */
+
+    extendsClass: function(className, currentClass) {
+      try {
+        if (Ext.getClassName(currentClass) === className) {
+          return true;
+        }
+        if (currentClass != null ? currentClass.superclass : void 0) {
+          if (Ext.getClassName(currentClass.superclass) === className) {
+            return true;
+          } else {
+            return Deft.Class.extendsClass(className, Ext.getClass(currentClass.superclass));
+          }
+        } else {
+          return false;
+        }
+      } catch (error) {
+        return false;
+      }
     }
   }
 });
@@ -691,6 +713,217 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+Ext.define('Deft.mvc.Observer', {
+  statics: {
+    /**
+    		Merges child and parent observers into a single object. This differs from a normal object merge because
+    		a given observer target and event can potentially have multiple handlers declared in different parent or
+    		child classes. It transforms an event handler value into an array of values, and merges the arrays of handlers
+    		from child to parent. This maintains the handlers even if both parent and child classes have handlers for the
+    		same target and event.
+    */
+
+    mergeObserve: function(originalParentObserve, originalChildObserve) {
+      var childEvent, childEvents, childHandler, childHandlerArray, childObserve, childTarget, parentEvent, parentEvents, parentHandler, parentHandlerArray, parentObserve, parentTarget, _ref, _ref1;
+      if (!Ext.isObject(originalParentObserve)) {
+        parentObserve = {};
+      } else {
+        parentObserve = Ext.clone(originalParentObserve);
+      }
+      if (!Ext.isObject(originalChildObserve)) {
+        childObserve = {};
+      } else {
+        childObserve = Ext.clone(originalChildObserve);
+      }
+      for (childTarget in childObserve) {
+        childEvents = childObserve[childTarget];
+        for (childEvent in childEvents) {
+          childHandler = childEvents[childEvent];
+          if (Ext.isString(childHandler)) {
+            childObserve[childTarget][childEvent] = childHandler.replace(' ', '').split(',');
+          }
+          if (!(parentObserve != null ? parentObserve[childTarget] : void 0)) {
+            parentObserve[childTarget] = {};
+          }
+          if (!(parentObserve != null ? (_ref = parentObserve[childTarget]) != null ? _ref[childEvent] : void 0 : void 0)) {
+            parentObserve[childTarget][childEvent] = childObserve[childTarget][childEvent];
+            delete childObserve[childTarget][childEvent];
+          }
+        }
+      }
+      for (parentTarget in parentObserve) {
+        parentEvents = parentObserve[parentTarget];
+        for (parentEvent in parentEvents) {
+          parentHandler = parentEvents[parentEvent];
+          if (Ext.isString(parentHandler)) {
+            parentObserve[parentTarget][parentEvent] = parentHandler.split(',');
+          }
+          if (childObserve != null ? (_ref1 = childObserve[parentTarget]) != null ? _ref1[parentEvent] : void 0 : void 0) {
+            childHandlerArray = childObserve[parentTarget][parentEvent];
+            parentHandlerArray = parentObserve[parentTarget][parentEvent];
+            parentObserve[parentTarget][parentEvent] = Ext.Array.unique(Ext.Array.insert(parentHandlerArray, 0, childHandlerArray));
+          }
+        }
+      }
+      return parentObserve;
+    }
+  },
+  /**
+  	Expects a config object with properties for host, target, and events.
+  */
+
+  constructor: function(config) {
+    var eventName, events, handler, handlerArray, host, references, target, _i, _len;
+    this.listeners = [];
+    host = config != null ? config.host : void 0;
+    target = config != null ? config.target : void 0;
+    events = config != null ? config.events : void 0;
+    if (host && target && (this.isPropertyChain(target) || this.isTargetObservable(host, target))) {
+      for (eventName in events) {
+        handlerArray = events[eventName];
+        if (Ext.isString(handlerArray)) {
+          handlerArray = handlerArray.replace(' ', '').split(',');
+        }
+        for (_i = 0, _len = handlerArray.length; _i < _len; _i++) {
+          handler = handlerArray[_i];
+          references = this.locateReferences(host, target, handler);
+          if (references) {
+            references.target.on(eventName, references.handler, host);
+            this.listeners.push({
+              targetName: target,
+              target: references.target,
+              event: eventName,
+              handler: references.handler,
+              scope: host
+            });
+            Deft.Logger.log("Created observer on '" + target + "' for event '" + eventName + "'.");
+          } else {
+            Deft.Logger.warn("Could not create observer on '" + target + "' for event '" + eventName + "'.");
+          }
+        }
+      }
+    } else {
+      Deft.Logger.warn("Could not create observers on '" + target + "' because '" + target + "' is not an Ext.util.Observable");
+    }
+    return this;
+  },
+  /**
+  	Returns true if the passed host has a target that is Observable.
+  	Checks for an isObservable=true property, observable mixin, or if the class extends Observable.
+  */
+
+  isTargetObservable: function(host, target) {
+    var hostTarget, hostTargetClass, _ref;
+    hostTarget = this.locateTarget(host, target);
+    if (!(hostTarget != null)) {
+      return false;
+    }
+    if ((hostTarget.isObservable != null) || (((_ref = hostTarget.mixins) != null ? _ref.observable : void 0) != null)) {
+      return true;
+    } else {
+      hostTargetClass = Ext.ClassManager.getClass(hostTarget);
+      return Deft.Class.extendsClass('Ext.util.Observable', hostTargetClass) || Deft.Class.extendsClass('Ext.mixin.Observable', hostTargetClass);
+    }
+  },
+  /**
+  	Attempts to locate an observer target given the host object and target property name.
+  	Checks for both host[ target ], and host.getTarget().
+  */
+
+  locateTarget: function(host, target) {
+    var result;
+    if (Ext.isFunction(host['get' + Ext.String.capitalize(target)])) {
+      result = host['get' + Ext.String.capitalize(target)].call(host);
+      return result;
+    } else if ((host != null ? host[target] : void 0) != null) {
+      result = host[target];
+      return result;
+    } else {
+      return null;
+    }
+  },
+  /**
+  	Returns true if the passed target is a string containing a '.', indicating that it is referencing a nested property.
+  */
+
+  isPropertyChain: function(target) {
+    return Ext.isString(target) && target.indexOf('.') > -1;
+  },
+  /**
+  	Given a host object, target property name, and handler, return object references for the final target and handler function.
+  	If necessary, recurse down a property chain to locate the final target object for the event listener.
+  */
+
+  locateReferences: function(host, target, handler) {
+    var handlerHost, propertyChain;
+    handlerHost = host;
+    if (this.isPropertyChain(target)) {
+      propertyChain = this.parsePropertyChain(host, target);
+      if (!propertyChain) {
+        return null;
+      }
+      host = propertyChain.host;
+      target = propertyChain.target;
+    }
+    if (Ext.isFunction(handler)) {
+      return {
+        target: this.locateTarget(host, target),
+        handler: handler
+      };
+    } else if (Ext.isFunction(handlerHost[handler])) {
+      return {
+        target: this.locateTarget(host, target),
+        handler: handlerHost[handler]
+      };
+    } else {
+      return null;
+    }
+  },
+  /**
+  	Given a target property chain and a property host object, recurse down the property chain and return
+  	the final host object from the property chain, and the final object that will accept the event listener.
+  */
+
+  parsePropertyChain: function(host, target) {
+    var propertyChain;
+    if (Ext.isString(target)) {
+      propertyChain = target.split('.');
+    } else if (Ext.isArray(target)) {
+      propertyChain = target;
+    } else {
+      return null;
+    }
+    if (propertyChain.length > 1 && (this.locateTarget(host, propertyChain[0]) != null)) {
+      return this.parsePropertyChain(this.locateTarget(host, propertyChain[0]), propertyChain.slice(1));
+    } else if (this.isTargetObservable(host, propertyChain[0])) {
+      return {
+        host: host,
+        target: propertyChain[0]
+      };
+    } else {
+      return null;
+    }
+  },
+  /**
+  	Iterate through the listeners array and remove each event listener.
+  */
+
+  destroy: function() {
+    var listenerData, _i, _len, _ref;
+    _ref = this.listeners;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      listenerData = _ref[_i];
+      Deft.Logger.log("Removing observer on '" + listenerData.targetName + "' for event '" + listenerData.event + "'.");
+      listenerData.target.un(listenerData.event, listenerData.handler, listenerData.scope);
+    }
+    this.listeners = [];
+  }
+});
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
 Ext.define('Deft.mvc.ComponentSelectorListener', {
   requires: ['Deft.event.LiveEventBus'],
   constructor: function(config) {
@@ -833,7 +1066,7 @@ Used in conjunction with {@link Deft.mixin.Controllable}.
 
 Ext.define('Deft.mvc.ViewController', {
   alternateClassName: ['Deft.ViewController'],
-  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelector'],
+  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mvc.Observer'],
   config: {
     /**
     		View controlled by this ViewController.
@@ -841,14 +1074,24 @@ Ext.define('Deft.mvc.ViewController', {
 
     view: null
   },
+  /**
+  	Observers automatically created and removed by this ViewController.
+  */
+
+  observe: {},
   constructor: function(config) {
+    var initializedConfig;
     if (config == null) {
       config = {};
     }
     if (config.view) {
       this.controlView(config.view);
     }
-    return this.initConfig(config);
+    initializedConfig = this.initConfig(config);
+    if (Ext.Object.getSize(this.observe) > 0) {
+      this.createObservers();
+    }
+    return initializedConfig;
   },
   /**
   	@protected
@@ -899,6 +1142,7 @@ Ext.define('Deft.mvc.ViewController', {
     for (selector in this.registeredComponentSelectors) {
       this.removeComponentSelector(selector);
     }
+    this.removeObservers();
     return true;
   },
   /**
@@ -1078,8 +1322,57 @@ Ext.define('Deft.mvc.ViewController', {
 
   getComponentSelector: function(selector) {
     return this.registeredComponentSelectors[selector];
+  },
+  /**
+  	@protected
+  */
+
+  createObservers: function() {
+    var events, target, _ref;
+    this.registeredObservers = {};
+    _ref = this.observe;
+    for (target in _ref) {
+      events = _ref[target];
+      this.addObserver(target, events);
+    }
+  },
+  addObserver: function(target, events) {
+    var observer;
+    observer = Ext.create('Deft.mvc.Observer', {
+      host: this,
+      target: target,
+      events: events
+    });
+    return this.registeredObservers[target] = observer;
+  },
+  /**
+  	@protected
+  */
+
+  removeObservers: function() {
+    var observer, target, _ref;
+    _ref = this.registeredObservers;
+    for (target in _ref) {
+      observer = _ref[target];
+      observer.destroy();
+      delete this.registeredObservers[target];
+    }
   }
 });
+
+/**
+Preprocessor to handle merging of 'observe' objects on parent and child classes.
+*/
+
+
+Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
+  Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
+    var _ref;
+    if (Class.superclass && ((_ref = Class.superclass) != null ? _ref.observe : void 0) && Deft.Class.extendsClass('Deft.mvc.ViewController', Class)) {
+      data.observe = Deft.mvc.Observer.mergeObserve(Class.superclass.observe, data.observe);
+    }
+  });
+}, 'before', 'extend');
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).

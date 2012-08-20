@@ -40,6 +40,28 @@ Ext.define('Deft.core.Class', {
       } else {
         data.onClassExtended = onClassExtended;
       }
+    },
+    /**
+    		Returns true if the passed class name is a superclass of the passed Class reference.
+    */
+
+    extendsClass: function(className, currentClass) {
+      try {
+        if (Ext.getClassName(currentClass) === className) {
+          return true;
+        }
+        if (currentClass != null ? currentClass.superclass : void 0) {
+          if (Ext.getClassName(currentClass.superclass) === className) {
+            return true;
+          } else {
+            return Deft.Class.extendsClass(className, Ext.getClass(currentClass.superclass));
+          }
+        } else {
+          return false;
+        }
+      } catch (error) {
+        return false;
+      }
     }
   }
 });

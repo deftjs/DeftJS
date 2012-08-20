@@ -12,7 +12,6 @@ describe('Deft.mixin.Injectable', function() {
   it('should trigger injection before the target class constructor is executed', function() {
     var exampleInstance;
     Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable'],
       inject: ['identifier'],
       constructor: function() {
         expect(Deft.Injector.inject).toHaveBeenCalledWith(this.inject, this, false);
@@ -28,7 +27,6 @@ describe('Deft.mixin.Injectable', function() {
   it('should should merge subclass injections with parent class injections', function() {
     var exampleInstance;
     Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable'],
       inject: ['identifier1']
     });
     Ext.define('ExampleSubclass', {
@@ -50,7 +48,6 @@ describe('Deft.mixin.Injectable', function() {
   it('should should merge multiple levels of inherited injections', function() {
     var exampleInstance;
     Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable'],
       inject: ['identifier1']
     });
     Ext.define('ExampleSubclass', {
@@ -78,7 +75,6 @@ describe('Deft.mixin.Injectable', function() {
   it('should should merge multiple levels of inherited injections when only the root class in the class hierarchy has injections', function() {
     var exampleInstance;
     Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable'],
       inject: ['identifier1', 'identifier2']
     });
     Ext.define('ExampleSubclass', {
@@ -102,7 +98,6 @@ describe('Deft.mixin.Injectable', function() {
   it('should should merge multiple levels of inherited injections when an intermediate class in the class hierarchy has no injections', function() {
     var exampleInstance;
     Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable'],
       inject: ['identifier1']
     });
     Ext.define('ExampleSubclass', {
@@ -127,9 +122,7 @@ describe('Deft.mixin.Injectable', function() {
   });
   it('should should merge multiple levels of inherited injections when only the intermediate class in the class hierarchy has injections', function() {
     var exampleInstance;
-    Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable']
-    });
+    Ext.define('ExampleClass', {});
     Ext.define('ExampleSubclass', {
       extend: 'ExampleClass',
       inject: ['identifier1', 'identifier2']
@@ -151,9 +144,7 @@ describe('Deft.mixin.Injectable', function() {
   });
   it('should should merge multiple levels of inherited injections when only the leaf class in the class hierarchy has injections', function() {
     var exampleInstance;
-    Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable']
-    });
+    Ext.define('ExampleClass', {});
     Ext.define('ExampleSubclass', {
       extend: 'ExampleClass'
     });
@@ -176,7 +167,6 @@ describe('Deft.mixin.Injectable', function() {
   it('should should merge inherited injections when some injections are specified as Strings', function() {
     var exampleInstance;
     Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable'],
       inject: ['identifier1', 'identifier2']
     });
     Ext.define('ExampleSubclass', {
@@ -199,7 +189,6 @@ describe('Deft.mixin.Injectable', function() {
   it('should should merge inherited injections when some injections are specified as Objects', function() {
     var exampleInstance;
     Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable'],
       inject: ['identifier1']
     });
     Ext.define('ExampleSubclass', {
@@ -225,7 +214,6 @@ describe('Deft.mixin.Injectable', function() {
   it('should should allow child injections into a property to override parent injections into that property', function() {
     var exampleInstance;
     Ext.define('ExampleClass', {
-      mixins: ['Deft.mixin.Injectable'],
       inject: ['identifier1', 'identifier2', 'identifier3']
     });
     Ext.define('ExampleSubclass', {

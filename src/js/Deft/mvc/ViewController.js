@@ -12,7 +12,7 @@ Used in conjunction with {@link Deft.mixin.Controllable}.
 
 Ext.define('Deft.mvc.ViewController', {
   alternateClassName: ['Deft.ViewController'],
-  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelector'],
+  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mvc.Observer'],
   config: {
     /**
     		View controlled by this ViewController.
@@ -20,14 +20,24 @@ Ext.define('Deft.mvc.ViewController', {
 
     view: null
   },
+  /**
+  	Observers automatically created and removed by this ViewController.
+  */
+
+  observe: {},
   constructor: function(config) {
+    var initializedConfig;
     if (config == null) {
       config = {};
     }
     if (config.view) {
       this.controlView(config.view);
     }
-    return this.initConfig(config);
+    initializedConfig = this.initConfig(config);
+    if (Ext.Object.getSize(this.observe) > 0) {
+      this.createObservers();
+    }
+    return initializedConfig;
   },
   /**
   	@protected
@@ -78,6 +88,7 @@ Ext.define('Deft.mvc.ViewController', {
     for (selector in this.registeredComponentSelectors) {
       this.removeComponentSelector(selector);
     }
+    this.removeObservers();
     return true;
   },
   /**
@@ -257,5 +268,54 @@ Ext.define('Deft.mvc.ViewController', {
 
   getComponentSelector: function(selector) {
     return this.registeredComponentSelectors[selector];
+  },
+  /**
+  	@protected
+  */
+
+  createObservers: function() {
+    var events, target, _ref;
+    this.registeredObservers = {};
+    _ref = this.observe;
+    for (target in _ref) {
+      events = _ref[target];
+      this.addObserver(target, events);
+    }
+  },
+  addObserver: function(target, events) {
+    var observer;
+    observer = Ext.create('Deft.mvc.Observer', {
+      host: this,
+      target: target,
+      events: events
+    });
+    return this.registeredObservers[target] = observer;
+  },
+  /**
+  	@protected
+  */
+
+  removeObservers: function() {
+    var observer, target, _ref;
+    _ref = this.registeredObservers;
+    for (target in _ref) {
+      observer = _ref[target];
+      observer.destroy();
+      delete this.registeredObservers[target];
+    }
   }
 });
+
+/**
+Preprocessor to handle merging of 'observe' objects on parent and child classes.
+*/
+
+
+Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
+  Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
+    var _ref;
+    if (Class.superclass && ((_ref = Class.superclass) != null ? _ref.observe : void 0) && Deft.Class.extendsClass('Deft.mvc.ViewController', Class)) {
+      data.observe = Deft.mvc.Observer.mergeObserve(Class.superclass.observe, data.observe);
+    }
+  });
+}, 'before', 'extend');
