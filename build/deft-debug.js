@@ -170,6 +170,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Ext.define('Deft.event.LiveEventListener', {
   alternateClassName: ['Deft.LiveEventListener'],
+  requires: ['Ext.ComponentQuery'],
   constructor: function(config) {
     var component, components, _i, _len;
     Ext.apply(this, config);
@@ -224,7 +225,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Ext.define('Deft.event.LiveEventBus', {
   alternateClassName: ['Deft.LiveEventBus'],
-  requires: ['Deft.event.LiveEventListener'],
+  requires: ['Ext.Component', 'Ext.ComponentManager', 'Deft.event.LiveEventListener'],
   singleton: true,
   constructor: function() {
     this.listeners = [];
@@ -330,13 +331,11 @@ Ext.define('Deft.event.LiveEventBus', {
       }
     });
   }
-  Ext.require('Ext.ComponentManager', function() {
-    Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
-      Deft.event.LiveEventBus.register(component);
-    });
-    Ext.Function.interceptAfter(Ext.ComponentManager, 'unregister', function(component) {
-      Deft.event.LiveEventBus.unregister(component);
-    });
+  Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
+    Deft.event.LiveEventBus.register(component);
+  });
+  Ext.Function.interceptAfter(Ext.ComponentManager, 'unregister', function(component) {
+    Deft.event.LiveEventBus.unregister(component);
   });
 });
 /*
@@ -491,7 +490,7 @@ Used in conjunction with {@link Deft.mixin.Injectable}.
 
 Ext.define('Deft.ioc.Injector', {
   alternateClassName: ['Deft.Injector'],
-  requires: ['Deft.log.Logger', 'Deft.ioc.DependencyProvider'],
+  requires: ['Ext.Component', 'Deft.log.Logger', 'Deft.ioc.DependencyProvider'],
   singleton: true,
   constructor: function() {
     this.providers = {};
@@ -611,14 +610,12 @@ Ext.define('Deft.ioc.Injector', {
 }, function() {
   if (Ext.getVersion('extjs') != null) {
     if (Ext.getVersion('core').isLessThan('4.1.0')) {
-      Ext.require('Ext.Component', function() {
-        Ext.Component.override({
-          constructor: function(config) {
-            config = Ext.Object.merge({}, config || {}, this.injectConfig || {});
-            delete this.injectConfig;
-            return this.callOverridden([config]);
-          }
-        });
+      Ext.Component.override({
+        constructor: function(config) {
+          config = Ext.Object.merge({}, config || {}, this.injectConfig || {});
+          delete this.injectConfig;
+          return this.callOverridden([config]);
+        }
       });
     } else {
       Ext.define('Deft.InjectableComponent', {
@@ -714,6 +711,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mvc.Observer', {
+  requires: ['Ext.util.Observable'],
   statics: {
     /**
     		Merges child and parent observers into a single object. This differs from a normal object merge because
@@ -959,7 +957,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mvc.ComponentSelector', {
-  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
+  requires: ['Ext.ComponentQuery', 'Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
   constructor: function(config) {
     var eventName, fn, listener, options, scope, _ref;
     Ext.apply(this, config);
@@ -1385,7 +1383,7 @@ Used in conjunction with {@link Deft.mvc.ViewController}.
 */
 
 Ext.define('Deft.mixin.Controllable', {
-  requires: ['Deft.core.Class', 'Deft.log.Logger'],
+  requires: ['Ext.Container', 'Deft.core.Class', 'Deft.log.Logger'],
   /**
   	@private
   */
@@ -1472,224 +1470,6 @@ Ext.define('Deft.mixin.Controllable', {
     });
     return false;
   }, 'before', 'extend');
-});
-/*
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
-Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
-*/
-
-Ext.define('Deft.promise.Deferred', {
-  alternateClassName: ['Deft.Deferred'],
-  constructor: function() {
-    this.state = 'pending';
-    this.progress = void 0;
-    this.value = void 0;
-    this.progressCallbacks = [];
-    this.successCallbacks = [];
-    this.failureCallbacks = [];
-    this.cancelCallbacks = [];
-    this.promise = Ext.create('Deft.Promise', this);
-    return this;
-  },
-  /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Deferred} is resolved, rejected, updated or cancelled.
-  */
-
-  then: function(callbacks) {
-    var callback, cancelCallback, deferred, failureCallback, progressCallback, scope, successCallback, wrapCallback, wrapProgressCallback, _i, _len, _ref;
-    if (Ext.isObject(callbacks)) {
-      successCallback = callbacks.success, failureCallback = callbacks.failure, progressCallback = callbacks.progress, cancelCallback = callbacks.cancel, scope = callbacks.scope;
-    } else {
-      successCallback = arguments[0], failureCallback = arguments[1], progressCallback = arguments[2], cancelCallback = arguments[3], scope = arguments[4];
-    }
-    _ref = [successCallback, failureCallback, progressCallback, cancelCallback];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      callback = _ref[_i];
-      if (!(Ext.isFunction(callback) || callback === null || callback === void 0)) {
-        Ext.Error.raise({
-          msg: 'Error while configuring callback: a non-function specified.'
-        });
-      }
-    }
-    deferred = Ext.create('Deft.promise.Deferred');
-    wrapCallback = function(callback, action) {
-      return function(value) {
-        var result;
-        if (Ext.isFunction(callback)) {
-          try {
-            result = callback.call(scope, value);
-            if (result instanceof Ext.ClassManager.get('Deft.promise.Promise') || result instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
-              result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
-            } else {
-              deferred.resolve(result);
-            }
-          } catch (error) {
-            deferred.reject(error);
-          }
-        } else {
-          deferred[action](value);
-        }
-      };
-    };
-    this.register(wrapCallback(successCallback, 'resolve'), this.successCallbacks, 'resolved', this.value);
-    this.register(wrapCallback(failureCallback, 'reject'), this.failureCallbacks, 'rejected', this.value);
-    this.register(wrapCallback(cancelCallback, 'cancel'), this.cancelCallbacks, 'cancelled', this.value);
-    wrapProgressCallback = function(callback) {
-      return function(value) {
-        var result;
-        if (Ext.isFunction(callback)) {
-          result = callback.call(scope, value);
-          deferred.update(result);
-        } else {
-          deferred.update(value);
-        }
-      };
-    };
-    this.register(wrapProgressCallback(progressCallback), this.progressCallbacks, 'pending', this.progress);
-    return deferred.getPromise();
-  },
-  /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
-  */
-
-  otherwise: function(callback, scope) {
-    var _ref;
-    if (Ext.isObject(callback)) {
-      _ref = callback, callback = _ref.fn, scope = _ref.scope;
-    }
-    return this.then({
-      failure: callback,
-      scope: scope
-    });
-  },
-  /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
-  */
-
-  always: function(callback, scope) {
-    var _ref;
-    if (Ext.isObject(callback)) {
-      _ref = callback, callback = _ref.fn, scope = _ref.scope;
-    }
-    return this.then({
-      success: callback,
-      failure: callback,
-      cancel: callback,
-      scope: scope
-    });
-  },
-  /**
-  	Update progress for this {@link Deft.promise.Deferred} and notify relevant callbacks.
-  */
-
-  update: function(progress) {
-    if (this.state === 'pending') {
-      this.progress = progress;
-      this.notify(this.progressCallbacks, progress);
-    } else {
-      if (this.state !== 'cancelled') {
-        Ext.Error.raise({
-          msg: 'Error: this Deferred has already been completed and cannot be modified.'
-        });
-      }
-    }
-  },
-  /**
-  	Resolve this {@link Deft.promise.Deferred} and notify relevant callbacks.
-  */
-
-  resolve: function(value) {
-    this.complete('resolved', value, this.successCallbacks);
-  },
-  /**
-  	Reject this {@link Deft.promise.Deferred} and notify relevant callbacks.
-  */
-
-  reject: function(error) {
-    this.complete('rejected', error, this.failureCallbacks);
-  },
-  /**
-  	Cancel this {@link Deft.promise.Deferred} and notify relevant callbacks.
-  */
-
-  cancel: function(reason) {
-    this.complete('cancelled', reason, this.cancelCallbacks);
-  },
-  /**
-  	Get this {@link Deft.promise.Deferred}'s associated {@link Deft.promise.Promise}.
-  */
-
-  getPromise: function() {
-    return this.promise;
-  },
-  /**
-  	Get this {@link Deft.promise.Deferred}'s current state.
-  */
-
-  getState: function() {
-    return this.state;
-  },
-  /**
-  	Register a callback for this {@link Deft.promise.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
-  	@private
-  */
-
-  register: function(callback, callbacks, state, value) {
-    if (Ext.isFunction(callback)) {
-      if (this.state === 'pending') {
-        callbacks.push(callback);
-        if (this.state === state && value !== void 0) {
-          this.notify([callback], value);
-        }
-      } else {
-        if (this.state === state) {
-          this.notify([callback], value);
-        }
-      }
-    }
-  },
-  /**
-  	Complete this {@link Deft.promise.Deferred} with the specified state and value.
-  	@private
-  */
-
-  complete: function(state, value, callbacks) {
-    if (this.state === 'pending') {
-      this.state = state;
-      this.value = value;
-      this.notify(callbacks, value);
-      this.releaseCallbacks();
-    } else {
-      if (this.state !== 'cancelled') {
-        Ext.Error.raise({
-          msg: 'Error: this Deferred has already been completed and cannot be modified.'
-        });
-      }
-    }
-  },
-  /**
-  	Notify the specified callbacks with the specified value.
-  	@private
-  */
-
-  notify: function(callbacks, value) {
-    var callback, _i, _len;
-    for (_i = 0, _len = callbacks.length; _i < _len; _i++) {
-      callback = callbacks[_i];
-      callback(value);
-    }
-  },
-  /**
-  	Release references to all callbacks registered with this {@link Deft.promise.Deferred}.
-  	@private
-  */
-
-  releaseCallbacks: function() {
-    this.progressCallbacks = null;
-    this.successCallbacks = null;
-    this.failureCallbacks = null;
-    this.cancelCallbacks = null;
-  }
 });
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
@@ -1995,6 +1775,225 @@ Ext.define('Deft.promise.Promise', {
 }, function() {
   if (Array.prototype.reduce != null) {
     this.reduceArray = Array.prototype.reduce;
+  }
+});
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+Ext.define('Deft.promise.Deferred', {
+  alternateClassName: ['Deft.Deferred'],
+  requires: ['Deft.promise.Promise'],
+  constructor: function() {
+    this.state = 'pending';
+    this.progress = void 0;
+    this.value = void 0;
+    this.progressCallbacks = [];
+    this.successCallbacks = [];
+    this.failureCallbacks = [];
+    this.cancelCallbacks = [];
+    this.promise = Ext.create('Deft.Promise', this);
+    return this;
+  },
+  /**
+  	Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Deferred} is resolved, rejected, updated or cancelled.
+  */
+
+  then: function(callbacks) {
+    var callback, cancelCallback, deferred, failureCallback, progressCallback, scope, successCallback, wrapCallback, wrapProgressCallback, _i, _len, _ref;
+    if (Ext.isObject(callbacks)) {
+      successCallback = callbacks.success, failureCallback = callbacks.failure, progressCallback = callbacks.progress, cancelCallback = callbacks.cancel, scope = callbacks.scope;
+    } else {
+      successCallback = arguments[0], failureCallback = arguments[1], progressCallback = arguments[2], cancelCallback = arguments[3], scope = arguments[4];
+    }
+    _ref = [successCallback, failureCallback, progressCallback, cancelCallback];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      callback = _ref[_i];
+      if (!(Ext.isFunction(callback) || callback === null || callback === void 0)) {
+        Ext.Error.raise({
+          msg: 'Error while configuring callback: a non-function specified.'
+        });
+      }
+    }
+    deferred = Ext.create('Deft.promise.Deferred');
+    wrapCallback = function(callback, action) {
+      return function(value) {
+        var result;
+        if (Ext.isFunction(callback)) {
+          try {
+            result = callback.call(scope, value);
+            if (result instanceof Ext.ClassManager.get('Deft.promise.Promise') || result instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
+              result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
+            } else {
+              deferred.resolve(result);
+            }
+          } catch (error) {
+            deferred.reject(error);
+          }
+        } else {
+          deferred[action](value);
+        }
+      };
+    };
+    this.register(wrapCallback(successCallback, 'resolve'), this.successCallbacks, 'resolved', this.value);
+    this.register(wrapCallback(failureCallback, 'reject'), this.failureCallbacks, 'rejected', this.value);
+    this.register(wrapCallback(cancelCallback, 'cancel'), this.cancelCallbacks, 'cancelled', this.value);
+    wrapProgressCallback = function(callback) {
+      return function(value) {
+        var result;
+        if (Ext.isFunction(callback)) {
+          result = callback.call(scope, value);
+          deferred.update(result);
+        } else {
+          deferred.update(value);
+        }
+      };
+    };
+    this.register(wrapProgressCallback(progressCallback), this.progressCallbacks, 'pending', this.progress);
+    return deferred.getPromise();
+  },
+  /**
+  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
+  */
+
+  otherwise: function(callback, scope) {
+    var _ref;
+    if (Ext.isObject(callback)) {
+      _ref = callback, callback = _ref.fn, scope = _ref.scope;
+    }
+    return this.then({
+      failure: callback,
+      scope: scope
+    });
+  },
+  /**
+  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
+  */
+
+  always: function(callback, scope) {
+    var _ref;
+    if (Ext.isObject(callback)) {
+      _ref = callback, callback = _ref.fn, scope = _ref.scope;
+    }
+    return this.then({
+      success: callback,
+      failure: callback,
+      cancel: callback,
+      scope: scope
+    });
+  },
+  /**
+  	Update progress for this {@link Deft.promise.Deferred} and notify relevant callbacks.
+  */
+
+  update: function(progress) {
+    if (this.state === 'pending') {
+      this.progress = progress;
+      this.notify(this.progressCallbacks, progress);
+    } else {
+      if (this.state !== 'cancelled') {
+        Ext.Error.raise({
+          msg: 'Error: this Deferred has already been completed and cannot be modified.'
+        });
+      }
+    }
+  },
+  /**
+  	Resolve this {@link Deft.promise.Deferred} and notify relevant callbacks.
+  */
+
+  resolve: function(value) {
+    this.complete('resolved', value, this.successCallbacks);
+  },
+  /**
+  	Reject this {@link Deft.promise.Deferred} and notify relevant callbacks.
+  */
+
+  reject: function(error) {
+    this.complete('rejected', error, this.failureCallbacks);
+  },
+  /**
+  	Cancel this {@link Deft.promise.Deferred} and notify relevant callbacks.
+  */
+
+  cancel: function(reason) {
+    this.complete('cancelled', reason, this.cancelCallbacks);
+  },
+  /**
+  	Get this {@link Deft.promise.Deferred}'s associated {@link Deft.promise.Promise}.
+  */
+
+  getPromise: function() {
+    return this.promise;
+  },
+  /**
+  	Get this {@link Deft.promise.Deferred}'s current state.
+  */
+
+  getState: function() {
+    return this.state;
+  },
+  /**
+  	Register a callback for this {@link Deft.promise.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
+  	@private
+  */
+
+  register: function(callback, callbacks, state, value) {
+    if (Ext.isFunction(callback)) {
+      if (this.state === 'pending') {
+        callbacks.push(callback);
+        if (this.state === state && value !== void 0) {
+          this.notify([callback], value);
+        }
+      } else {
+        if (this.state === state) {
+          this.notify([callback], value);
+        }
+      }
+    }
+  },
+  /**
+  	Complete this {@link Deft.promise.Deferred} with the specified state and value.
+  	@private
+  */
+
+  complete: function(state, value, callbacks) {
+    if (this.state === 'pending') {
+      this.state = state;
+      this.value = value;
+      this.notify(callbacks, value);
+      this.releaseCallbacks();
+    } else {
+      if (this.state !== 'cancelled') {
+        Ext.Error.raise({
+          msg: 'Error: this Deferred has already been completed and cannot be modified.'
+        });
+      }
+    }
+  },
+  /**
+  	Notify the specified callbacks with the specified value.
+  	@private
+  */
+
+  notify: function(callbacks, value) {
+    var callback, _i, _len;
+    for (_i = 0, _len = callbacks.length; _i < _len; _i++) {
+      callback = callbacks[_i];
+      callback(value);
+    }
+  },
+  /**
+  	Release references to all callbacks registered with this {@link Deft.promise.Deferred}.
+  	@private
+  */
+
+  releaseCallbacks: function() {
+    this.progressCallbacks = null;
+    this.successCallbacks = null;
+    this.failureCallbacks = null;
+    this.cancelCallbacks = null;
   }
 });
 /*

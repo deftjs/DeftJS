@@ -6,7 +6,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Ext.define('Deft.event.LiveEventBus', {
   alternateClassName: ['Deft.LiveEventBus'],
-  requires: ['Deft.event.LiveEventListener'],
+  requires: ['Ext.Component', 'Ext.ComponentManager', 'Deft.event.LiveEventListener'],
   singleton: true,
   constructor: function() {
     this.listeners = [];
@@ -112,12 +112,10 @@ Ext.define('Deft.event.LiveEventBus', {
       }
     });
   }
-  Ext.require('Ext.ComponentManager', function() {
-    Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
-      Deft.event.LiveEventBus.register(component);
-    });
-    Ext.Function.interceptAfter(Ext.ComponentManager, 'unregister', function(component) {
-      Deft.event.LiveEventBus.unregister(component);
-    });
+  Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
+    Deft.event.LiveEventBus.register(component);
+  });
+  Ext.Function.interceptAfter(Ext.ComponentManager, 'unregister', function(component) {
+    Deft.event.LiveEventBus.unregister(component);
   });
 });

@@ -12,7 +12,7 @@ Used in conjunction with {@link Deft.mixin.Injectable}.
 
 Ext.define('Deft.ioc.Injector', {
   alternateClassName: ['Deft.Injector'],
-  requires: ['Deft.log.Logger', 'Deft.ioc.DependencyProvider'],
+  requires: ['Ext.Component', 'Deft.log.Logger', 'Deft.ioc.DependencyProvider'],
   singleton: true,
   constructor: function() {
     this.providers = {};
@@ -132,14 +132,12 @@ Ext.define('Deft.ioc.Injector', {
 }, function() {
   if (Ext.getVersion('extjs') != null) {
     if (Ext.getVersion('core').isLessThan('4.1.0')) {
-      Ext.require('Ext.Component', function() {
-        Ext.Component.override({
-          constructor: function(config) {
-            config = Ext.Object.merge({}, config || {}, this.injectConfig || {});
-            delete this.injectConfig;
-            return this.callOverridden([config]);
-          }
-        });
+      Ext.Component.override({
+        constructor: function(config) {
+          config = Ext.Object.merge({}, config || {}, this.injectConfig || {});
+          delete this.injectConfig;
+          return this.callOverridden([config]);
+        }
       });
     } else {
       Ext.define('Deft.InjectableComponent', {

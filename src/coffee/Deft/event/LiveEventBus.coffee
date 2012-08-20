@@ -6,6 +6,9 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define( 'Deft.event.LiveEventBus',
 	alternateClassName: [ 'Deft.LiveEventBus' ]
 	requires: [ 
+		'Ext.Component'
+		'Ext.ComponentManager'
+		
 		'Deft.event.LiveEventListener'
 	]
 	singleton: true
@@ -107,24 +110,20 @@ Ext.define( 'Deft.event.LiveEventBus',
 					return false
 			)
 		
-		Ext.require( 'Ext.ComponentManager', ->
-			Ext.Function.interceptAfter(
-				Ext.ComponentManager,
-				'register',
-				( component ) ->
-					Deft.event.LiveEventBus.register( component )
-					return
-			)
-			
-			Ext.Function.interceptAfter(
-				Ext.ComponentManager,
-				'unregister',
-				( component ) ->
-					Deft.event.LiveEventBus.unregister( component )
-					return
-			)
-			
-			return
+		Ext.Function.interceptAfter(
+			Ext.ComponentManager,
+			'register',
+			( component ) ->
+				Deft.event.LiveEventBus.register( component )
+				return
+		)
+		
+		Ext.Function.interceptAfter(
+			Ext.ComponentManager,
+			'unregister',
+			( component ) ->
+				Deft.event.LiveEventBus.unregister( component )
+				return
 		)
 		
 		return

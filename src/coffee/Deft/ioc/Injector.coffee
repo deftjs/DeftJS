@@ -10,7 +10,9 @@ Used in conjunction with {@link Deft.mixin.Injectable}.
 ###
 Ext.define( 'Deft.ioc.Injector',
 	alternateClassName: [ 'Deft.Injector' ]
-	requires: [ 
+	requires: [
+		'Ext.Component'
+		
 		'Deft.log.Logger'
 		'Deft.ioc.DependencyProvider'
 	]
@@ -133,22 +135,17 @@ Ext.define( 'Deft.ioc.Injector',
 		if Ext.getVersion( 'extjs' )?
 			if Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
 				# Ext JS 4.0
-				Ext.require(
-					'Ext.Component',
-					->
-						Ext.Component.override(
-							constructor: ( config ) ->
-								config = Ext.Object.merge( {}, config or {}, @injectConfig or {} )
-								delete @injectConfig
-								return @callOverridden( [ config ] )
-						)
-						return
+				Ext.Component.override(
+					constructor: ( config ) ->
+						config = Ext.Object.merge( {}, config or {}, @injectConfig or {} )
+						delete @injectConfig
+						return @callOverridden( [ config ] )
 				)
 			else
 				# Ext JS 4.1+
 				Ext.define( 'Deft.InjectableComponent',
 					override: 'Ext.Component'
-				
+					
 					constructor: ( config ) ->
 						config = Ext.Object.merge( {}, config or {}, @injectConfig or {} )
 						delete @injectConfig

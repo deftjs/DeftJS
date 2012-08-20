@@ -6,6 +6,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Ext.define('Deft.event.LiveEventListener', {
   alternateClassName: ['Deft.LiveEventListener'],
+  requires: ['Ext.ComponentQuery'],
   constructor: function(config) {
     var component, components, _i, _len;
     Ext.apply(this, config);

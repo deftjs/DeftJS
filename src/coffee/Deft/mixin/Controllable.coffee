@@ -9,7 +9,9 @@ A mixin that creates and attaches the specified view controller(s) to the target
 Used in conjunction with {@link Deft.mvc.ViewController}.
 ###
 Ext.define( 'Deft.mixin.Controllable',
-	requires: [ 
+	requires: [
+		'Ext.Container'
+		
 		'Deft.core.Class'
 		'Deft.log.Logger'
 	]

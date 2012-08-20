@@ -11,7 +11,7 @@ Used in conjunction with {@link Deft.mvc.ViewController}.
 */
 
 Ext.define('Deft.mixin.Controllable', {
-  requires: ['Deft.core.Class', 'Deft.log.Logger'],
+  requires: ['Ext.Container', 'Deft.core.Class', 'Deft.log.Logger'],
   /**
   	@private
   */

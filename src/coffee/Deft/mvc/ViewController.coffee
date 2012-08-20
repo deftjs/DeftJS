@@ -15,13 +15,13 @@ Ext.define( 'Deft.mvc.ViewController',
 		'Deft.mvc.ComponentSelector'
 		'Deft.mvc.Observer'
 	]
-
+	
 	config:
 		###*
 		View controlled by this ViewController.
 		###
 		view: null
-
+	
 	###*
 	Observers automatically created and removed by this ViewController.
 	###
@@ -33,7 +33,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		initializedConfig = @initConfig( config ) #Ensure any config values are set before creating observers.
 		if Ext.Object.getSize( @observe ) > 0 then @createObservers()
 		return initializedConfig
-
+	
 	###*
 	@protected
 	###
@@ -109,7 +109,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			live = config.live? and config.live
 			@addComponentReference( id, selector, live )
 			@addComponentSelector( selector, listeners, live )
-
+		
 		@init()
 		return
 	
@@ -161,7 +161,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			getterName = 'get' + Ext.String.capitalize( id )
 			if @[ getterName ].generated
 				@[ getterName ] = null
-
+		
 		delete @registeredComponentReferences[ id ]
 		
 		return
@@ -222,7 +222,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	###
 	getComponentSelector: ( selector ) ->
 		return @registeredComponentSelectors[ selector ]
-
+	
 	###*
 	@protected
 	###
@@ -230,9 +230,9 @@ Ext.define( 'Deft.mvc.ViewController',
 		@registeredObservers = {}
 		for target, events of @observe
 			@addObserver( target, events )
-
+		
 		return
-
+	
 	addObserver: ( target, events ) ->
 		observer = Ext.create( 'Deft.mvc.Observer',
 			host: @
@@ -240,7 +240,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			events: events
 		)
 		@registeredObservers[ target ] = observer
-
+	
 	###*
 	@protected
 	###
@@ -248,9 +248,8 @@ Ext.define( 'Deft.mvc.ViewController',
 		for target, observer of @registeredObservers
 			observer.destroy()
 			delete @registeredObservers[ target ]
-
+		
 		return
-
 )
 
 ###*
@@ -259,7 +258,7 @@ Preprocessor to handle merging of 'observe' objects on parent and child classes.
 Deft.Class.registerPreprocessor(
 	'observe'
 	( Class, data, hooks, callback ) ->
-
+		
 		# Process any classes that extend this class.
 		Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
 			# If the Class extends ViewController at some point in its inheritance chain, merge the parent and child class observers.
@@ -267,7 +266,7 @@ Deft.Class.registerPreprocessor(
 				data.observe = Deft.mvc.Observer.mergeObserve( Class.superclass.observe, data.observe )
 			return
 		)
-
+		
 		return
 	'before'
 	'extend'

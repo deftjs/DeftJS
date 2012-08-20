@@ -5,7 +5,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mvc.ComponentSelector', {
-  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
+  requires: ['Ext.ComponentQuery', 'Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
   constructor: function(config) {
     var eventName, fn, listener, options, scope, _ref;
     Ext.apply(this, config);

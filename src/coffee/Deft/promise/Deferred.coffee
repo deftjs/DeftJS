@@ -5,6 +5,9 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Ext.define( 'Deft.promise.Deferred',
 	alternateClassName: [ 'Deft.Deferred' ]
+	requires: [
+		'Deft.promise.Promise'
+	]
 	
 	constructor: ->
 		@state = 'pending'
