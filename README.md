@@ -522,6 +522,6 @@ Provided the specified `controller` extends `Deft.mvc.ViewController`, the contr
 	* [Jason Barry](http://dribbble.com/artifactdesign) for creating the Deft JS logo.
 	* [Thomas Burleson](http://twitter.com/thomasburleson) for beta-testing and providing feedback on view controllers and promises.
 	* [David Tucker](http://www.davidtucker.net/) for reviewing several iterations of the proposed syntax.
-	* [Claude Gauthier](http://www.sencha.com/training) for leading the 5-day 'Fast Track to Ext JS' training where this idea was born.
+	* [Claude Gauthier](mailto:claude_r_gauthier@hotmail.com) for leading the 5-day ['Fast Track to Ext JS'](http://www.sencha.com/training) training where this idea was born.
 	* [Tim Marshall](http://twitter.com/timothymarshall) for parting with the twitter account and project name, which he'd previously used for a personal project.
 
