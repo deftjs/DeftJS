@@ -10,30 +10,31 @@ Used in conjunction with {@link Deft.mixin.Controllable}.
 ###
 Ext.define( 'Deft.mvc.ViewController',
 	alternateClassName: [ 'Deft.ViewController' ]
-	requires: [ 
+	requires: [
+    'Deft.core.Class'
 		'Deft.log.Logger'
 		'Deft.mvc.ComponentSelector'
 		'Deft.mvc.Observer'
 	]
-	
+
 	config:
 		###*
 		View controlled by this ViewController.
 		###
 		view: null
-	
+
 	###*
 	Observers automatically created and removed by this ViewController.
 	###
 	observe: {}
-	
+
 	constructor: ( config = {} ) ->
 		if config.view
 			@controlView( config.view )
 		initializedConfig = @initConfig( config ) #Ensure any config values are set before creating observers.
 		if Ext.Object.getSize( @observe ) > 0 then @createObservers()
 		return initializedConfig
-	
+
 	###*
 	@protected
 	###
@@ -42,7 +43,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			@setView( view )
 			@registeredComponentReferences = {}
 			@registeredComponentSelectors = {}
-			
+
 			if Ext.getVersion( 'extjs' )?
 				# Ext JS
 				if @getView().rendered
@@ -58,13 +59,13 @@ Ext.define( 'Deft.mvc.ViewController',
 		else
 			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Container.' )
 		return
-	
+
 	###*
 	Initialize the ViewController
 	###
 	init: ->
 		return
-	
+
 	###*
 	Destroy the ViewController
 	###
@@ -75,7 +76,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			@removeComponentSelector( selector )
 		@removeObservers()
 		return true
-	
+
 	###*
 	@private
 	###
@@ -91,7 +92,7 @@ Ext.define( 'Deft.mvc.ViewController',
 				if self.destroy()
 					originalViewDestroyFunction.call( @ )
 				return
-		
+
 		for id, config of @control
 			selector = null
 			if id isnt 'view'
@@ -104,15 +105,15 @@ Ext.define( 'Deft.mvc.ViewController',
 			listeners = null
 			if Ext.isObject( config.listeners )
 				listeners = config.listeners
-			else 
+			else
 				listeners = config unless config.selector? or config.live?
 			live = config.live? and config.live
 			@addComponentReference( id, selector, live )
 			@addComponentSelector( selector, listeners, live )
-		
+
 		@init()
 		return
-	
+
 	###*
 	@private
 	###
@@ -121,16 +122,16 @@ Ext.define( 'Deft.mvc.ViewController',
 			@getView().un( 'beforedestroy', @onBeforeDestroy, @ )
 			return true
 		return false
-	
+
 	###*
 	Add a component accessor method the ViewController for the specified view-relative selector.
 	###
 	addComponentReference: ( id, selector, live = false ) ->
 		Deft.Logger.log( "Adding '#{ id }' component reference for selector: '#{ selector }'." )
-		
+
 		if @registeredComponentReferences[ id ]?
 			Ext.Error.raise( msg: "Error adding component reference: an existing component reference was already registered as '#{ id }'." )
-		
+
 		# Add generated getter function.
 		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
@@ -143,29 +144,29 @@ Ext.define( 'Deft.mvc.ViewController',
 						Ext.Error.raise( msg: "Error locating component: no component(s) found matching '#{ selector }'." )
 					@[ getterName ] = -> matches
 				@[ getterName ].generated = true
-				
+
 		@registeredComponentReferences[ id ] = true
 		return
-	
+
 	###*
 	Remove a component accessor method the ViewController for the specified view-relative selector.
 	###
 	removeComponentReference: ( id ) ->
 		Deft.Logger.log( "Removing '#{ id }' component reference." )
-		
+
 		unless @registeredComponentReferences[ id ]?
 			Ext.Error.raise( msg: "Error removing component reference: no component reference is registered as '#{ id }'." )
-		
+
 		# Remove generated getter function.
 		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
 			if @[ getterName ].generated
 				@[ getterName ] = null
-		
+
 		delete @registeredComponentReferences[ id ]
-		
+
 		return
-	
+
 	###*
 	Get the component(s) corresponding to the specified view-relative selector.
 	###
@@ -180,17 +181,17 @@ Ext.define( 'Deft.mvc.ViewController',
 				return matches
 		else
 			return @getView()
-	
+
 	###*
 	Add a component selector with the specified listeners for the specified view-relative selector.
 	###
 	addComponentSelector: ( selector, listeners, live = false ) ->
 		Deft.Logger.log( "Adding component selector for: '#{ selector }'." )
-		
+
 		existingComponentSelector = @getComponentSelector( selector )
 		if existingComponentSelector?
 			Ext.Error.raise( msg: "Error adding component selector: an existing component selector was already registered for '#{ selector }'." )
-		
+
 		componentSelector = Ext.create( 'Deft.mvc.ComponentSelector',
 			view: @getView()
 			selector: selector
@@ -199,30 +200,30 @@ Ext.define( 'Deft.mvc.ViewController',
 			live: live
 		)
 		@registeredComponentSelectors[ selector ] = componentSelector
-		
+
 		return
-	
+
 	###*
 	Remove a component selector with the specified listeners for the specified view-relative selector.
 	###
 	removeComponentSelector: ( selector ) ->
 		Deft.Logger.log( "Removing component selector for '#{ selector }'." )
-		
+
 		existingComponentSelector = @getComponentSelector( selector )
 		unless existingComponentSelector?
 			Ext.Error.raise( msg: "Error removing component selector: no component selector registered for '#{ selector }'." )
-		
+
 		existingComponentSelector.destroy()
 		delete @registeredComponentSelectors[ selector ]
-		
+
 		return
-	
+
 	###*
 	Get the component selectorcorresponding to the specified view-relative selector.
 	###
 	getComponentSelector: ( selector ) ->
 		return @registeredComponentSelectors[ selector ]
-	
+
 	###*
 	@protected
 	###
@@ -230,9 +231,9 @@ Ext.define( 'Deft.mvc.ViewController',
 		@registeredObservers = {}
 		for target, events of @observe
 			@addObserver( target, events )
-		
+
 		return
-	
+
 	addObserver: ( target, events ) ->
 		observer = Ext.create( 'Deft.mvc.Observer',
 			host: @
@@ -240,7 +241,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			events: events
 		)
 		@registeredObservers[ target ] = observer
-	
+
 	###*
 	@protected
 	###
@@ -248,26 +249,27 @@ Ext.define( 'Deft.mvc.ViewController',
 		for target, observer of @registeredObservers
 			observer.destroy()
 			delete @registeredObservers[ target ]
-		
+
 		return
+, ->
+  ###*
+  Preprocessor to handle merging of 'observe' objects on parent and child classes.
+  ###
+  Deft.Class.registerPreprocessor(
+    'observe'
+    ( Class, data, hooks, callback ) ->
+
+      # Process any classes that extend this class.
+      Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
+        # If the Class extends ViewController at some point in its inheritance chain, merge the parent and child class observers.
+        if Class.superclass and Class.superclass?.observe and Deft.Class.extendsClass( 'Deft.mvc.ViewController', Class )
+          data.observe = Deft.mvc.Observer.mergeObserve( Class.superclass.observe, data.observe )
+        return
+      )
+
+      return
+    'before'
+    'extend'
+  )
 )
 
-###*
-Preprocessor to handle merging of 'observe' objects on parent and child classes.
-###
-Deft.Class.registerPreprocessor(
-	'observe'
-	( Class, data, hooks, callback ) ->
-		
-		# Process any classes that extend this class.
-		Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
-			# If the Class extends ViewController at some point in its inheritance chain, merge the parent and child class observers.
-			if Class.superclass and Class.superclass?.observe and Deft.Class.extendsClass( 'Deft.mvc.ViewController', Class )
-				data.observe = Deft.mvc.Observer.mergeObserve( Class.superclass.observe, data.observe )
-			return
-		)
-		
-		return
-	'before'
-	'extend'
-)
