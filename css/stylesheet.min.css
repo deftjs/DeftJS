@@ -9,7 +9,7 @@ strong{font-weight:bold;}
 ol,ul{margin-left:2em;margin-bottom:20px;}
 ul ul,ol ol,ul ol,ol ul{margin-top:10px;}
 li{margin-bottom:10px;}
-h1,h2,h3,h4,h5,h6{color:#126499;border-color:#ffffff;font-weight:lighter;text-transform:capitalize;margin-top:40px;margin-bottom:20px;}
+h1,h2,h3,h4,h5,h6{color:#126499;border-color:#ffffff;font-weight:lighter;margin-top:40px;margin-bottom:20px;}
 h1{font-size:24.624px;line-height:29.548799999999996px;}
 h2{font-size:24.624px;line-height:29.548799999999996px;}
 h3{font-size:23.44px;line-height:28.128px;}
@@ -36,3 +36,4 @@ a.button.icon.download span{background:url(../image/icon/download-dark.png) no-r
 a.button.icon.download:hover span{background:url(../image/icon/download-light.png) no-repeat 0 -2px;}
 a.button.icon.google span{background:url(../image/icon/google.png) no-repeat 0 -2px;}
 a.button.icon.github span{background:url(../image/icon/github.png) no-repeat 0 -2px;}
+pre.example-code.prettyprint{border:0;padding:0px 15px;font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,"Courier New",monospace;font-size:14px;}

@@ -5,12 +5,18 @@
 		<title>DeftJS</title>
 		<meta name="description" content="DeftJS: Essential extensions for enterprise web and mobile application development with Ext JS and Sencha Touch" />
 		<meta name="author" content="John Yanarella" />
+		
+		<link rel="stylesheet" type="text/css" href="lib/prettify/prettify.css">
 		<link rel="stylesheet" type="text/css" href="css/stylesheet.min.css">
+		
+		<script type="text/javascript" src="lib/prettify/prettify.js"></script>
 		<script type="text/javascript" src="script/lib/jquery-1.7.2.min.js"></script>
 		<script type="text/javascript" src="script/lib/jquery.retina.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function() {
 				$('img.retina').retina();
+				
+				prettyPrint();
 			});
 		</script>
 	</head>
@@ -161,8 +167,9 @@
 			<p>
 				In the simplest scenario, the Injector can be configured to map identifiers by class names:
 			</p>
-			<pre>
-<code>Deft.Injector.configure({
+			<pre class="example-code prettyprint">
+<code>
+Deft.Injector.configure({
     contactStore: 'MyApp.store.ContactStore',
     contactManager: 'MyApp.manager.ContactManager',
     ...
@@ -175,7 +182,7 @@
 			<p>
 				Where necessary, you can also specify constructor parameters:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Deft.Injector.configure({
     contactStore: {
         className: 'MyApp.store.ContactStore',
@@ -198,7 +205,7 @@
 		<p>
 			You can also specify whether a class is instantiated as a singleton (the default) or a prototype:
 		</p>
-		<pre>
+		<pre class="example-code prettyprint">
 <code>Deft.Injector.configure({
     contactManager: {
         className: 'MyApp.manager.ContactManager',
@@ -214,7 +221,7 @@
 			<p>
 				Additionally, you can configure dependency providers to be eagerly or lazily (the default) instantiated:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Deft.Injector.configure({
     preferences:  {
         className: 'MyApp.preferences.Preferences',
@@ -236,7 +243,7 @@
 			<p>
 				The Injector can also be configured to map identifiers to factory functions:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Deft.Injector.configure({
     contactStore: {
         fn: function() {
@@ -282,7 +289,7 @@
 			<p>
 				The Injector can also be configured to map identifiers to values:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Deft.Injector.configure({
     brandedApplicationName: {
         value: "Contact Manager"
@@ -309,7 +316,7 @@
 			<p>
 				A class is marked as participating in dependency injection by including the Injectable mixin:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
@@ -320,7 +327,7 @@
 			<p>
 				Its dependencies are expressed using the <code>inject</code> annotation:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
@@ -339,7 +346,7 @@
 			<p>
 				You can override this behavior and indicate the specific property to inject into, by using slightly more verbose syntax:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
@@ -357,7 +364,7 @@
 			<p>
 				A class does not need to explicitly define a config or property for the property to be injected. However, if that property is defined as an existing config (even in a superclass), the Injector will correctly populate the config value.
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.manager.ContactManager', {
     extend: 'MyApp.manager.AbstractManager',
     mixins: [ 'Deft.mixin.Injectable' ],
@@ -376,7 +383,7 @@
         // this.getStore() will return the injected value.
 
         return this.callParent( arguments )
-    }
+    },
     ...
 });
 </code>
@@ -390,7 +397,7 @@
 			<p>
 				The ViewController is an abstract base class which can be extended to create view-specific view controllers.
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController',
     ...
@@ -400,7 +407,7 @@
 			<p>
 				References to view components can be established via the <code>control</code> annotation and view-relative component query selectors:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController',  
     ...
@@ -408,14 +415,14 @@
         submitButton: 'panel &gt; button[text="Submit"]',
         cancelButton: 'panel &gt; button[text="Cancel"]',
         ...
-    }
+    },
     ...
     init: function() {
         // getSubmitButton() accessor will be automatically created.
         this.getSubmitButton().disable();
 
         return this.callParent( arguments );
-    }
+    },
     ...
 });
 </code>
@@ -429,7 +436,7 @@
 			<p>
 				Alternatively, the selector can be omitted if the component identifier being registered matches the view component’s <code>itemId</code>:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController',  
     ...
@@ -437,7 +444,7 @@
         // indicates the Button in the view has an itemId of 'submitButton'
         submitButton: true, 
         ...
-    }
+    },
 });
 </code>
 </pre>
@@ -447,7 +454,7 @@
 			<p>
 				The <code>control</code> annotation can also be used to register event listeners for events dispatched by referenced view components.
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController',  
     ...
@@ -455,12 +462,12 @@
         submitButton: {
             click: 'onSubmitButtonClick'
         }
-    }
+    },
     ...
     onSubmitButtonClick: function() {
         // executed in the view controller's scope
         ...
-    }
+    },
     ...
 });
 </code>
@@ -474,7 +481,7 @@
 			<p>
 				Standard event listener options such as <code>buffer</code>, <code>delay</code>, <code>scope</code>, <code>single</code> and <code>element</code> can be specified for a given view component event using slightly more verbose syntax:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController',  
     ...
@@ -485,7 +492,7 @@
                 buffer: 70
             }
         }
-    }
+    },
     ...
 });
 </code>
@@ -493,7 +500,7 @@
 			<p>
 				As an alternative to relying on matching component <code>itemId</code>’s, the <code>control</code> annotation can be configured to both reference a component by a view-relative component query selector and add event listeners, using slightly more verbose syntax:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController',  
     ...
@@ -504,7 +511,7 @@
                 click: 'onSubmitButtonClick'
             }
         }
-    }
+    },
     ...
 });
 </code>
@@ -512,7 +519,7 @@
 			<p>
 				To listen to events dispatched by the view, use the <code>view</code> identifier:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController',  
     ...
@@ -521,7 +528,7 @@
             show: 'onViewShow',
             hide: 'onViewHide'
         }
-    }
+    },
     ...
     init: function() {
         this.getView().show()
@@ -537,13 +544,13 @@
 			<p>
 				After the view has been initialized or rendered for the first time, the view controller’s <code>init()</code> template method will be called.
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController',  
     ...
     control: {
         ...
-    }
+    },
     ...
     init: function() {
         // all accessors will have been created
@@ -557,13 +564,13 @@
 			<p>
 				When the <code>destroy()</code> is called on the view, the view controller’s <code>destroy()</code> template method is called. If this method returns <code>false</code>, view destruction will be cancelled. If this method returns <code>true</code>, the view will be destroyed, and all references and event listeners created in the view controller using <code>control</code> will automatically be removed.
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController',  
     ...
     control: {
         ...
-    }
+    },
     ...
     destroy: function() {
         if (this.hasUnsavedChanges) {
@@ -580,11 +587,11 @@
 			<p>
 				Recall that a view controller is expected to delegate work to injected business services. This can be accomplished by leveraging <code>Deft.ioc.Injector</code> and including the <code>Deft.mixin.Injectable</code> mixin.
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.controller.ContactsViewController', {
     extend: 'Deft.mvc.ViewController', 
-    mixins: [ 'Deft.mixin.Injectable' ]
-    inject: [ 'contactStore' ]
+    mixins: [ 'Deft.mixin.Injectable' ],
+    inject: [ 'contactStore' ],
     ...
     control: {
         refreshButton: {
@@ -607,11 +614,11 @@
 			<p>
 				A view class can be configured to be controlled by a view controller by including the Controllable mixin:
 			</p>
-			<pre>
+			<pre class="example-code prettyprint">
 <code>Ext.define( 'MyApp.view.ContactsView', {
     extend: 'Ext.panel.Panel',
     mixins: [ 'Deft.mixin.Controllable' ],
-    controller: 'MyApp.controller.ContactsViewController'
+    controller: 'MyApp.controller.ContactsViewController',
     ...
 });
 </code>
