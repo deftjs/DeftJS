@@ -248,7 +248,7 @@ a.button.icon.github span {
 }
 pre.example-code.prettyprint {
   border: 0;
-  padding: 0px 15px;
+  padding: 20px 15px 0px 15px;
   font-family: Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, "Courier New", monospace;
   font-size: 14px;
 }

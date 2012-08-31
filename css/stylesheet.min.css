@@ -36,4 +36,4 @@ a.button.icon.download span{background:url(../image/icon/download-dark.png) no-r
 a.button.icon.download:hover span{background:url(../image/icon/download-light.png) no-repeat 0 -2px;}
 a.button.icon.google span{background:url(../image/icon/google.png) no-repeat 0 -2px;}
 a.button.icon.github span{background:url(../image/icon/github.png) no-repeat 0 -2px;}
-pre.example-code.prettyprint{border:0;padding:0px 15px;font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,"Courier New",monospace;font-size:14px;}
+pre.example-code.prettyprint{border:0;padding:20px 15px 0px 15px;font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,"Courier New",monospace;font-size:14px;}
