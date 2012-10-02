@@ -32,6 +32,37 @@ Ext.define( 'Deft.mvc.Observer',
 			else
 				childObserve = Ext.clone( originalChildObserve )
 
+			# Convert any observers that use an array of configuration objects into object keys for event name, and array of configuration objects
+			for parentTarget, parentEvents of parentObserve
+				if( Ext.isArray( parentEvents ) )
+					newParentEvents = {}
+					for thisParentEvent in parentEvents
+						# Object with only one key means this is just an event name/handler pair, not a config object.
+						if( Ext.Object.getSize( thisParentEvent ) is 1 )
+							Ext.apply( newParentEvents, thisParentEvent )
+						else
+							handlerConfig = {}
+							handlerConfig.fn = thisParentEvent.fn if thisParentEvent?.fn
+							handlerConfig.scope = thisParentEvent.scope if thisParentEvent?.scope
+							newParentEvents[ thisParentEvent.event ] = [ handlerConfig ]
+
+					parentObserve[ parentTarget ] = newParentEvents
+
+			for childTarget, childEvents of childObserve
+				if( Ext.isArray( childEvents ) )
+					newChildEvents = {}
+					for thisChildEvent in childEvents
+						# Object with only one key means this is just an event name/handler pair, not a config object.
+						if( Ext.Object.getSize( thisChildEvent ) is 1 )
+							Ext.apply( newChildEvents, thisChildEvent )
+						else
+							handlerConfig = {}
+							handlerConfig.fn = thisChildEvent.fn if thisChildEvent?.fn
+							handlerConfig.scope = thisChildEvent.scope if thisChildEvent?.scope
+							newChildEvents[ thisChildEvent.event ] = [ handlerConfig ]
+
+					childObserve[ childTarget ] = newChildEvents
+
 			# Ensure that all child handler elements are arrays, then copy any targets not present in parent into parent and remove from child.
 			for childTarget, childEvents of childObserve
 				for childEvent, childHandler of childEvents
@@ -48,6 +79,7 @@ Ext.define( 'Deft.mvc.Observer',
 				for parentEvent, parentHandler of parentEvents
 					if Ext.isString( parentHandler )
 						parentObserve[ parentTarget ][ parentEvent ] = parentHandler.split( ',' )
+
 					if childObserve?[ parentTarget ]?[ parentEvent ]
 						childHandlerArray = childObserve[ parentTarget ][ parentEvent ]
 						parentHandlerArray = parentObserve[ parentTarget ][ parentEvent ]
@@ -66,14 +98,26 @@ Ext.define( 'Deft.mvc.Observer',
 		events = config?.events
 
 		if host and target and ( @isPropertyChain( target ) or @isTargetObservable( host, target ) )
+
 			for eventName, handlerArray of events
+
 				# If a ViewController has no subclasses, the onExtended() preprocessor won't fire, so transform any string handlers into arrays.
 				handlerArray = handlerArray.replace( ' ', '' ).split( ',' ) if Ext.isString( handlerArray )
 				for handler in handlerArray
+
+					# Default scope is the object hosting the Observer.
+					scope = host
+
+					# If the handler is a configuration object, parse it and use those values to create the Observer.
+					if( Ext.isObject( handler ) )
+						eventName = handler.event if handler?.event
+						handler = handler.fn if handler?.fn
+						scope = handler.scope if handler?.scope
+
 					references = @locateReferences( host, target, handler )
 					if references
 						references.target.on( eventName, references.handler, host )
-						@listeners.push( { targetName: target, target: references.target, event: eventName, handler: references.handler, scope: host } )
+						@listeners.push( { targetName: target, target: references.target, event: eventName, handler: references.handler, scope: scope } )
 						Deft.Logger.log( "Created observer on '#{ target }' for event '#{ eventName }'." )
 					else
 						Deft.Logger.warn( "Could not create observer on '#{ target }' for event '#{ eventName }'." )

@@ -5,7 +5,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mvc.Observer', {
-  requires: ['Ext.util.Observable'],
+  requires: ['Deft.core.Class', 'Ext.util.Observable'],
   statics: {
     /**
     		Merges child and parent observers into a single object. This differs from a normal object merge because
@@ -16,7 +16,7 @@ Ext.define('Deft.mvc.Observer', {
     */
 
     mergeObserve: function(originalParentObserve, originalChildObserve) {
-      var childEvent, childEvents, childHandler, childHandlerArray, childObserve, childTarget, parentEvent, parentEvents, parentHandler, parentHandlerArray, parentObserve, parentTarget, _ref, _ref1;
+      var childEvent, childEvents, childHandler, childHandlerArray, childObserve, childTarget, handlerConfig, newChildEvents, newParentEvents, parentEvent, parentEvents, parentHandler, parentHandlerArray, parentObserve, parentTarget, thisChildEvent, thisParentEvent, _i, _j, _len, _len1, _ref, _ref1;
       if (!Ext.isObject(originalParentObserve)) {
         parentObserve = {};
       } else {
@@ -26,6 +26,50 @@ Ext.define('Deft.mvc.Observer', {
         childObserve = {};
       } else {
         childObserve = Ext.clone(originalChildObserve);
+      }
+      for (parentTarget in parentObserve) {
+        parentEvents = parentObserve[parentTarget];
+        if (Ext.isArray(parentEvents)) {
+          newParentEvents = {};
+          for (_i = 0, _len = parentEvents.length; _i < _len; _i++) {
+            thisParentEvent = parentEvents[_i];
+            if (Ext.Object.getSize(thisParentEvent) === 1) {
+              Ext.apply(newParentEvents, thisParentEvent);
+            } else {
+              handlerConfig = {};
+              if (thisParentEvent != null ? thisParentEvent.fn : void 0) {
+                handlerConfig.fn = thisParentEvent.fn;
+              }
+              if (thisParentEvent != null ? thisParentEvent.scope : void 0) {
+                handlerConfig.scope = thisParentEvent.scope;
+              }
+              newParentEvents[thisParentEvent.event] = [handlerConfig];
+            }
+          }
+          parentObserve[parentTarget] = newParentEvents;
+        }
+      }
+      for (childTarget in childObserve) {
+        childEvents = childObserve[childTarget];
+        if (Ext.isArray(childEvents)) {
+          newChildEvents = {};
+          for (_j = 0, _len1 = childEvents.length; _j < _len1; _j++) {
+            thisChildEvent = childEvents[_j];
+            if (Ext.Object.getSize(thisChildEvent) === 1) {
+              Ext.apply(newChildEvents, thisChildEvent);
+            } else {
+              handlerConfig = {};
+              if (thisChildEvent != null ? thisChildEvent.fn : void 0) {
+                handlerConfig.fn = thisChildEvent.fn;
+              }
+              if (thisChildEvent != null ? thisChildEvent.scope : void 0) {
+                handlerConfig.scope = thisChildEvent.scope;
+              }
+              newChildEvents[thisChildEvent.event] = [handlerConfig];
+            }
+          }
+          childObserve[childTarget] = newChildEvents;
+        }
       }
       for (childTarget in childObserve) {
         childEvents = childObserve[childTarget];
@@ -65,7 +109,7 @@ Ext.define('Deft.mvc.Observer', {
   */
 
   constructor: function(config) {
-    var eventName, events, handler, handlerArray, host, references, target, _i, _len;
+    var eventName, events, handler, handlerArray, host, references, scope, target, _i, _len;
     this.listeners = [];
     host = config != null ? config.host : void 0;
     target = config != null ? config.target : void 0;
@@ -78,6 +122,18 @@ Ext.define('Deft.mvc.Observer', {
         }
         for (_i = 0, _len = handlerArray.length; _i < _len; _i++) {
           handler = handlerArray[_i];
+          scope = host;
+          if (Ext.isObject(handler)) {
+            if (handler != null ? handler.event : void 0) {
+              eventName = handler.event;
+            }
+            if (handler != null ? handler.fn : void 0) {
+              handler = handler.fn;
+            }
+            if (handler != null ? handler.scope : void 0) {
+              scope = handler.scope;
+            }
+          }
           references = this.locateReferences(host, target, handler);
           if (references) {
             references.target.on(eventName, references.handler, host);
@@ -86,7 +142,7 @@ Ext.define('Deft.mvc.Observer', {
               target: references.target,
               event: eventName,
               handler: references.handler,
-              scope: host
+              scope: scope
             });
             Deft.Logger.log("Created observer on '" + target + "' for event '" + eventName + "'.");
           } else {

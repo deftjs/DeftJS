@@ -1,22 +1,33 @@
 <project name="DeftJS" default="build">
-	
+
 	<property file="build.properties" />
-	
+
 	<target name="clean" description="Remove artifacts in build directory from previous builds.">
 		<delete dir="build" />
 	</target>
-	
+
 	<target name="init" description="Initialize build directory.">
 		<mkdir dir="build" />
 	</target>
-	
+
 	<target name="build" depends="init" description="Builds debug and deployment versions of the framework.">
-		
+
 		<echo message="Compiling CoffeeScript..." />
-		<exec dir="src" executable="coffee">
+		<condition property="coffeeExecutable" value="coffee.cmd">
+			<os family="windows"/>
+		</condition>
+		<condition property="coffeeExecutable" value="coffee">
+			<os family="unix"/>
+		</condition>
+
+		<exec dir="src" executable="${coffeeExecutable}">
 			<arg line="-cb -o js coffee" />
 		</exec>
-		
+
+		<exec dir="src" executable="${coffeeExecutable}">
+			<arg line="-cb -o js coffee" />
+		</exec>
+
 		<echo message="Concatenating JavaScript files..." />
 		<concat destfile="build/${deftjs.filename.debug}" encoding="UTF-8" outputencoding="UTF-8">
 			<header>${deftjs.copyright.notice}</header>
@@ -45,14 +56,31 @@
 				<file name="Deft/promise/Chain.js" />
 			</filelist>
 		</concat>
-		
+
 		<echo message="Minifying concatenated JavaScript file..." />
-		<exec dir="build" executable="yuicompressor">
+		<condition property="yuiCompressorExecutable" value="yuicompressor.cmd">
+			<os family="windows"/>
+		</condition>
+		<condition property="yuiCompressorExecutable" value="yuicompressor">
+			<os family="unix"/>
+		</condition>
+
+		<exec dir="build" executable="${yuiCompressorExecutable}">
 			<arg line="${deftjs.filename.debug} -o ${deftjs.filename.deploy} --charset utf-8" />
 		</exec>
-		
+
+		<condition property="isWindows">
+			<os family="windows"/>
+		</condition>
+		<antcall target="fixCrlfOnWindows"/>
+
 		<echo message="Done." />
-		
+
 	</target>
-	
+
+	<target name="fixCrlfOnWindows" if="isWindows">
+		<fixcrlf srcdir="src/js" includes="**/*.js" eol="crlf" />
+		<fixcrlf srcdir="build" includes="**/*.js" eol="crlf" />
+	</target>
+
 </project>

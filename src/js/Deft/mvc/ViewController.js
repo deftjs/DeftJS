@@ -12,7 +12,7 @@ Used in conjunction with {@link Deft.mixin.Controllable}.
 
 Ext.define('Deft.mvc.ViewController', {
   alternateClassName: ['Deft.ViewController'],
-  requires: ['Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mvc.Observer'],
+  requires: ['Deft.core.Class', 'Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mvc.Observer'],
   config: {
     /**
     		View controlled by this ViewController.
@@ -304,18 +304,16 @@ Ext.define('Deft.mvc.ViewController', {
       delete this.registeredObservers[target];
     }
   }
+}, function() {
+  /**
+  Preprocessor to handle merging of 'observe' objects on parent and child classes.
+  */
+  return Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
+    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
+      var _ref;
+      if (Class.superclass && ((_ref = Class.superclass) != null ? _ref.observe : void 0) && Deft.Class.extendsClass('Deft.mvc.ViewController', Class)) {
+        data.observe = Deft.mvc.Observer.mergeObserve(Class.superclass.observe, data.observe);
+      }
+    });
+  }, 'before', 'extend');
 });
-
-/**
-Preprocessor to handle merging of 'observe' objects on parent and child classes.
-*/
-
-
-Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
-  Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
-    var _ref;
-    if (Class.superclass && ((_ref = Class.superclass) != null ? _ref.observe : void 0) && Deft.Class.extendsClass('Deft.mvc.ViewController', Class)) {
-      data.observe = Deft.mvc.Observer.mergeObserve(Class.superclass.observe, data.observe);
-    }
-  });
-}, 'before', 'extend');
