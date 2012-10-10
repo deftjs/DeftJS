@@ -5,7 +5,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mvc.Observer', {
-  requires: ['Ext.util.Observable'],
+  requires: ['Deft.core.Class', 'Ext.util.Observable'],
   statics: {
     /**
     		Merges child and parent observers into a single object. This differs from a normal object merge because
