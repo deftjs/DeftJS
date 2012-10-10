@@ -19,15 +19,15 @@
 		<condition property="coffeeExecutable" value="coffee">
 			<os family="unix"/>
 		</condition>
-
+		
 		<exec dir="src" executable="${coffeeExecutable}">
 			<arg line="-cb -o js coffee" />
 		</exec>
-
+		
 		<exec dir="src" executable="${coffeeExecutable}">
 			<arg line="-cb -o js coffee" />
 		</exec>
-
+		
 		<echo message="Concatenating JavaScript files..." />
 		<concat destfile="build/${deftjs.filename.debug}" encoding="UTF-8" outputencoding="UTF-8">
 			<header>${deftjs.copyright.notice}</header>
@@ -64,23 +64,17 @@
 		<condition property="yuiCompressorExecutable" value="yuicompressor">
 			<os family="unix"/>
 		</condition>
-
+		
 		<exec dir="build" executable="${yuiCompressorExecutable}">
 			<arg line="${deftjs.filename.debug} -o ${deftjs.filename.deploy} --charset utf-8" />
 		</exec>
 		
-		<condition property="isWindows">
-			<os family="windows"/>
-		</condition>
-		<antcall target="fixCrlfOnWindows"/>
-
+		<!-- Convert EOL characters to match local OS conventions. -->
+		<fixcrlf srcdir="src/js" includes="**/*.js" />
+		<fixcrlf srcdir="build" includes="**/*.js" />
+		
 		<echo message="Done." />
 		
-	</target>
-
-	<target name="fixCrlfOnWindows" if="isWindows">
-		<fixcrlf srcdir="src/js" includes="**/*.js" eol="crlf" />
-		<fixcrlf srcdir="build" includes="**/*.js" eol="crlf" />
 	</target>
 
 </project>
