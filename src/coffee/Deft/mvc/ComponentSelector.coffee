@@ -3,10 +3,12 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
+###*
+* Models a component selector used by Deft.mvc.ViewController to locate view components and attach event listeners.
+###
 Ext.define( 'Deft.mvc.ComponentSelector',
 	requires: [
 		'Ext.ComponentQuery'
-		
 		'Deft.log.Logger'
 		'Deft.mvc.ComponentSelectorListener'
 	]

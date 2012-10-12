@@ -9,14 +9,18 @@ Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* Utility class with static methods to create chains of Deft.promise.Promises objects.
+*/
+
 Ext.define('Deft.promise.Chain', {
   alternateClassName: ['Deft.Chain'],
   requires: ['Deft.promise.Promise'],
   statics: {
     /**
-    		Execute an Array (or Deferred/Promise of an Array) of functions sequentially.
-    		The specified functions may optionally return their results as Promises.
-    		Returns a Promise of an Array of results for each function call (in the same order).
+    		* Execute an Array (or Deferred/Promise of an Array) of functions sequentially.
+    		* The specified functions may optionally return their results as Promises.
+    		* Returns a Promise of an Array of results for each function call (in the same order).
     */
 
     sequence: function(fns, scope) {
@@ -28,9 +32,9 @@ Ext.define('Deft.promise.Chain', {
       }, []);
     },
     /**
-    		Execute an Array (or Deferred/Promise of an Array) of functions in parallel.
-    		The specified functions may optionally return their results as Promises.
-    		Returns a Promise of an Array of results for each function call (in the same order).
+    		* Execute an Array (or Deferred/Promise of an Array) of functions in parallel.
+    		* The specified functions may optionally return their results as Promises.
+    		* Returns a Promise of an Array of results for each function call (in the same order).
     */
 
     parallel: function(fns, scope) {
@@ -39,9 +43,9 @@ Ext.define('Deft.promise.Chain', {
       });
     },
     /**
-    		Execute an Array (or Deferred/Promise of an Array) of functions as a pipeline, where each function's result is passed to the subsequent function as input.
-    		The specified functions may optionally return their results as Promises.
-    		Returns a Promise of the result value for the final function in the pipeline.
+    		* Execute an Array (or Deferred/Promise of an Array) of functions as a pipeline, where each function's result is passed to the subsequent function as input.
+    		* The specified functions may optionally return their results as Promises.
+    		* Returns a Promise of the result value for the final function in the pipeline.
     */
 
     pipeline: function(fns, scope, initialValue) {

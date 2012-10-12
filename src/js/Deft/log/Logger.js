@@ -4,6 +4,11 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* Logger used by DeftJS. Output is shown in the console when using ext-dev/ext-all-dev.
+* @private
+*/
+
 Ext.define('Deft.log.Logger', {
   alternateClassName: ['Deft.Logger'],
   singleton: true,

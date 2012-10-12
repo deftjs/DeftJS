@@ -3,6 +3,9 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
+###*
+* A Deferred manages the state of an asynchronous process that will eventually be exposed to external code via a Deft.promise.Promise.
+###
 Ext.define( 'Deft.promise.Deferred',
 	alternateClassName: [ 'Deft.Deferred' ]
 	requires: [
@@ -24,7 +27,7 @@ Ext.define( 'Deft.promise.Deferred',
 		return @
 	
 	###*
-	Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Deferred} is resolved, rejected, updated or cancelled.
+	* Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Deferred} is resolved, rejected, updated or cancelled.
 	###
 	then: ( callbacks ) ->
 		if Ext.isObject( callbacks )
@@ -71,7 +74,7 @@ Ext.define( 'Deft.promise.Deferred',
 		return deferred.getPromise()
 	
 	###*
-	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
+	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
 	###
 	otherwise: ( callback, scope ) ->
 		if Ext.isObject( callback )
@@ -82,7 +85,7 @@ Ext.define( 'Deft.promise.Deferred',
 		)
 	
 	###*
-	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
+	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
 	###
 	always: ( callback, scope ) ->
 		if Ext.isObject( callback )
@@ -95,7 +98,7 @@ Ext.define( 'Deft.promise.Deferred',
 		)
 	
 	###*
-	Update progress for this {@link Deft.promise.Deferred} and notify relevant callbacks.
+	* Update progress for this {@link Deft.promise.Deferred} and notify relevant callbacks.
 	###
 	update: ( progress ) ->
 		if @state is 'pending'
@@ -107,41 +110,41 @@ Ext.define( 'Deft.promise.Deferred',
 		return
 	
 	###*
-	Resolve this {@link Deft.promise.Deferred} and notify relevant callbacks.
+	* Resolve this {@link Deft.promise.Deferred} and notify relevant callbacks.
 	###
 	resolve: ( value ) ->
 		@complete( 'resolved', value, @successCallbacks )
 		return
 	
 	###*
-	Reject this {@link Deft.promise.Deferred} and notify relevant callbacks.
+	* Reject this {@link Deft.promise.Deferred} and notify relevant callbacks.
 	###
 	reject: ( error ) ->
 		@complete( 'rejected', error, @failureCallbacks )
 		return
 	
 	###*
-	Cancel this {@link Deft.promise.Deferred} and notify relevant callbacks.
+	* Cancel this {@link Deft.promise.Deferred} and notify relevant callbacks.
 	###
 	cancel: ( reason ) ->
 		@complete( 'cancelled', reason, @cancelCallbacks )
 		return
 	
 	###*
-	Get this {@link Deft.promise.Deferred}'s associated {@link Deft.promise.Promise}.
+	* Get this {@link Deft.promise.Deferred}'s associated {@link Deft.promise.Promise}.
 	###
 	getPromise: ->
 		return @promise
 	
 	###*
-	Get this {@link Deft.promise.Deferred}'s current state.
+	* Get this {@link Deft.promise.Deferred}'s current state.
 	###
 	getState: ->
 		return @state
 	
 	###*
-	Register a callback for this {@link Deft.promise.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
-	@private
+	* Register a callback for this {@link Deft.promise.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
+	* @private
 	###
 	register: ( callback, callbacks, state, value ) ->
 		if Ext.isFunction( callback )
@@ -155,8 +158,8 @@ Ext.define( 'Deft.promise.Deferred',
 		return
 	
 	###*
-	Complete this {@link Deft.promise.Deferred} with the specified state and value.
-	@private
+	* Complete this {@link Deft.promise.Deferred} with the specified state and value.
+	* @private
 	###
 	complete: ( state, value, callbacks ) ->
 		if @state is 'pending'
@@ -170,8 +173,8 @@ Ext.define( 'Deft.promise.Deferred',
 		return
 	
 	###*
-	Notify the specified callbacks with the specified value.
-	@private
+	* Notify the specified callbacks with the specified value.
+	* @private
 	###
 	notify: ( callbacks, value ) ->
 		for callback in callbacks
@@ -179,8 +182,8 @@ Ext.define( 'Deft.promise.Deferred',
 		return
 	
 	###*
-	Release references to all callbacks registered with this {@link Deft.promise.Deferred}.
-	@private
+	* Release references to all callbacks registered with this {@link Deft.promise.Deferred}.
+	* @private
 	###
 	releaseCallbacks: ->
 		@progressCallbacks = null

@@ -5,9 +5,8 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-@private
-
-Used by {@link Deft.ioc.Injector}.
+* Used by Deft.ioc.Injector.
+* @private
 */
 
 Ext.define('Deft.ioc.DependencyProvider', {

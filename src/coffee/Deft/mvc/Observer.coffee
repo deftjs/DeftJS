@@ -3,7 +3,9 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
-# @private
+###*
+* Used by Deft.mvc.ViewController to handle events fired from injected objects.
+###
 Ext.define( 'Deft.mvc.Observer',
 	requires: [
     'Deft.core.Class'
@@ -13,11 +15,11 @@ Ext.define( 'Deft.mvc.Observer',
 	statics:
 
 		###*
-		Merges child and parent observers into a single object. This differs from a normal object merge because
-		a given observer target and event can potentially have multiple handlers declared in different parent or
-		child classes. It transforms an event handler value into an array of values, and merges the arrays of handlers
-		from child to parent. This maintains the handlers even if both parent and child classes have handlers for the
-		same target and event.
+		* Merges child and parent observers into a single object. This differs from a normal object merge because
+		* a given observer target and event can potentially have multiple handlers declared in different parent or
+		* child classes. It transforms an event handler value into an array of values, and merges the arrays of handlers
+		* from child to parent. This maintains the handlers even if both parent and child classes have handlers for the
+		* same target and event.
 		###
 		mergeObserve: ( originalParentObserve, originalChildObserve ) ->
 
@@ -88,7 +90,7 @@ Ext.define( 'Deft.mvc.Observer',
 			return parentObserve
 
 	###*
-	Expects a config object with properties for host, target, and events.
+	* Expects a config object with properties for host, target, and events.
 	###
 	constructor: ( config ) ->
 		@listeners = []
@@ -127,8 +129,8 @@ Ext.define( 'Deft.mvc.Observer',
 		return @
 
 	###*
-	Returns true if the passed host has a target that is Observable.
-	Checks for an isObservable=true property, observable mixin, or if the class extends Observable.
+	* Returns true if the passed host has a target that is Observable.
+	* Checks for an isObservable=true property, observable mixin, or if the class extends Observable.
 	###
 	isTargetObservable: ( host, target ) ->
 		hostTarget = @locateTarget( host, target )
@@ -141,8 +143,8 @@ Ext.define( 'Deft.mvc.Observer',
 			return ( Deft.Class.extendsClass( 'Ext.util.Observable', hostTargetClass ) or Deft.Class.extendsClass( 'Ext.mixin.Observable', hostTargetClass ) )
 
 	###*
-	Attempts to locate an observer target given the host object and target property name.
-	Checks for both host[ target ], and host.getTarget().
+	* Attempts to locate an observer target given the host object and target property name.
+	* Checks for both host[ target ], and host.getTarget().
 	###
 	locateTarget: ( host, target ) ->
 		if Ext.isFunction( host[ 'get' + Ext.String.capitalize( target ) ] )
@@ -155,14 +157,14 @@ Ext.define( 'Deft.mvc.Observer',
 			return null
 
 	###*
-	Returns true if the passed target is a string containing a '.', indicating that it is referencing a nested property.
+	* Returns true if the passed target is a string containing a '.', indicating that it is referencing a nested property.
 	###
 	isPropertyChain: ( target ) ->
 		return Ext.isString( target ) and target.indexOf( '.' ) > -1
 
 	###*
-	Given a host object, target property name, and handler, return object references for the final target and handler function.
-	If necessary, recurse down a property chain to locate the final target object for the event listener.
+	* Given a host object, target property name, and handler, return object references for the final target and handler function.
+	* If necessary, recurse down a property chain to locate the final target object for the event listener.
 	###
 	locateReferences: ( host, target, handler ) ->
 		handlerHost = host
@@ -181,8 +183,8 @@ Ext.define( 'Deft.mvc.Observer',
 			return null
 
 	###*
-	Given a target property chain and a property host object, recurse down the property chain and return
-	the final host object from the property chain, and the final object that will accept the event listener.
+	* Given a target property chain and a property host object, recurse down the property chain and return
+	* the final host object from the property chain, and the final object that will accept the event listener.
 	###
 	parsePropertyChain: ( host, target ) ->
 		if Ext.isString( target )
@@ -200,7 +202,7 @@ Ext.define( 'Deft.mvc.Observer',
 			return null
 
 	###*
-	Iterate through the listeners array and remove each event listener.
+	* Iterate through the listeners array and remove each event listener.
 	###
 	destroy: ->
 		for listenerData in @listeners

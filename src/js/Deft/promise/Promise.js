@@ -9,13 +9,17 @@ Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* A Promise represents the result of a future value that has not been defined yet, typically because it is created asynchronously. Used in conjunction with Deft.promise.Deferred.
+*/
+
 Ext.define('Deft.promise.Promise', {
   alternateClassName: ['Deft.Promise'],
   statics: {
     /**
-    		Returns a new {@link Deft.promise.Promise} that:
-    		- resolves immediately for the specified value, or
-    		- resolves, rejects, updates or cancels when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
+    		* Returns a new {@link Deft.promise.Promise} that:
+    		* - resolves immediately for the specified value, or
+    		* - resolves, rejects, updates or cancels when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
     */
 
     when: function(promiseOrValue) {
@@ -37,8 +41,8 @@ Ext.define('Deft.promise.Promise', {
       }
     },
     /**
-    		Returns a new {@link Deft.promise.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
-    		The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
+    		* Returns a new {@link Deft.promise.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
+    		* The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
     */
 
     all: function(promisesOrValues) {
@@ -102,8 +106,8 @@ Ext.define('Deft.promise.Promise', {
       });
     },
     /**
-    		Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
-    		The resolution value will be the resolution value of the triggering `promiseOrValue`.
+    		* Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
+    		* The resolution value will be the resolution value of the triggering `promiseOrValue`.
     */
 
     any: function(promisesOrValues) {
@@ -158,8 +162,8 @@ Ext.define('Deft.promise.Promise', {
       });
     },
     /**
-    		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
-    		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
+    		* Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+    		* Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
     */
 
     memoize: function(fn, scope, hashFn) {
@@ -172,8 +176,8 @@ Ext.define('Deft.promise.Promise', {
       }, this);
     },
     /**
-    		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
-    		The specified map function may return either a value or a promise.
+    		* Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
+    		* The specified map function may return either a value or a promise.
     */
 
     map: function(promisesOrValues, mapFunction) {
@@ -193,7 +197,7 @@ Ext.define('Deft.promise.Promise', {
       });
     },
     /**
-    		Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
+    		* Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
     */
 
     reduce: function(promisesOrValues, reduceFunction, initialValue) {
@@ -221,8 +225,8 @@ Ext.define('Deft.promise.Promise', {
       });
     },
     /**
-    		Fallback implementation when Array.reduce is not available.
-    		@private
+    		* Fallback implementation when Array.reduce is not available.
+    		* @private
     */
 
     reduceArray: function(reduceFunction, initialValue) {
@@ -253,7 +257,7 @@ Ext.define('Deft.promise.Promise', {
       return reduced;
     },
     /**
-    		@private
+    		* @private
     */
 
     reduceIntoArray: function(previousValue, currentValue, currentIndex) {
@@ -266,35 +270,35 @@ Ext.define('Deft.promise.Promise', {
     return this;
   },
   /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
+  	* Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
   */
 
   then: function(callbacks) {
     return this.deferred.then.apply(this.deferred, arguments);
   },
   /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
+  	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
   */
 
   otherwise: function(callback, scope) {
     return this.deferred.otherwise.apply(this.deferred, arguments);
   },
   /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
+  	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
   */
 
   always: function(callback, scope) {
     return this.deferred.always.apply(this.deferred, arguments);
   },
   /**
-  	Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.
+  	* Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.
   */
 
   cancel: function(reason) {
     return this.deferred.cancel(reason);
   },
   /**
-  	Get this {@link Deft.promise.Promise}'s current state.
+  	* Get this {@link Deft.promise.Promise}'s current state.
   */
 
   getState: function() {

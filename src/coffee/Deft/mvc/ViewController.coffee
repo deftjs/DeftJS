@@ -4,9 +4,13 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
 ###*
-A lightweight MVC view controller.
-
-Used in conjunction with {@link Deft.mixin.Controllable}.
+* A lightweight MVC view controller.
+*
+*     Ext.define("MyApp.view.MyTabPanel", {
+*       extend: "Ext.tab.Panel",
+*       controller: 'MyApp.controller.MyTabPanelController',
+*       ...
+*     });
 ###
 Ext.define( 'Deft.mvc.ViewController',
 	alternateClassName: [ 'Deft.ViewController' ]
@@ -19,12 +23,12 @@ Ext.define( 'Deft.mvc.ViewController',
 
 	config:
 		###*
-		View controlled by this ViewController.
+		* View controlled by this ViewController.
 		###
 		view: null
 
 	###*
-	Observers automatically created and removed by this ViewController.
+	* Observers automatically created and removed by this ViewController.
 	###
 	observe: {}
 
@@ -36,7 +40,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		return initializedConfig
 
 	###*
-	@protected
+	* @protected
 	###
 	controlView: ( view ) ->
 		if view instanceof Ext.ClassManager.get( 'Ext.Container' )
@@ -61,13 +65,13 @@ Ext.define( 'Deft.mvc.ViewController',
 		return
 
 	###*
-	Initialize the ViewController
+	* Initialize the ViewController
 	###
 	init: ->
 		return
 
 	###*
-	Destroy the ViewController
+	* Destroy the ViewController
 	###
 	destroy: ->
 		for id of @registeredComponentReferences
@@ -78,7 +82,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		return true
 
 	###*
-	@private
+	* @private
 	###
 	onViewInitialize: ->
 		if Ext.getVersion( 'extjs' )?
@@ -115,7 +119,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		return
 
 	###*
-	@private
+	* @private
 	###
 	onViewBeforeDestroy: ->
 		if @destroy()
@@ -124,7 +128,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		return false
 
 	###*
-	Add a component accessor method the ViewController for the specified view-relative selector.
+	* Add a component accessor method the ViewController for the specified view-relative selector.
 	###
 	addComponentReference: ( id, selector, live = false ) ->
 		Deft.Logger.log( "Adding '#{ id }' component reference for selector: '#{ selector }'." )
@@ -149,7 +153,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		return
 
 	###*
-	Remove a component accessor method the ViewController for the specified view-relative selector.
+	* Remove a component accessor method the ViewController for the specified view-relative selector.
 	###
 	removeComponentReference: ( id ) ->
 		Deft.Logger.log( "Removing '#{ id }' component reference." )
@@ -168,7 +172,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		return
 
 	###*
-	Get the component(s) corresponding to the specified view-relative selector.
+	* Get the component(s) corresponding to the specified view-relative selector.
 	###
 	getViewComponent: ( selector ) ->
 		if selector?
@@ -183,7 +187,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			return @getView()
 
 	###*
-	Add a component selector with the specified listeners for the specified view-relative selector.
+	* Add a component selector with the specified listeners for the specified view-relative selector.
 	###
 	addComponentSelector: ( selector, listeners, live = false ) ->
 		Deft.Logger.log( "Adding component selector for: '#{ selector }'." )
@@ -204,7 +208,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		return
 
 	###*
-	Remove a component selector with the specified listeners for the specified view-relative selector.
+	* Remove a component selector with the specified listeners for the specified view-relative selector.
 	###
 	removeComponentSelector: ( selector ) ->
 		Deft.Logger.log( "Removing component selector for '#{ selector }'." )
@@ -219,13 +223,13 @@ Ext.define( 'Deft.mvc.ViewController',
 		return
 
 	###*
-	Get the component selectorcorresponding to the specified view-relative selector.
+	* Get the component selectorcorresponding to the specified view-relative selector.
 	###
 	getComponentSelector: ( selector ) ->
 		return @registeredComponentSelectors[ selector ]
 
 	###*
-	@protected
+	* @protected
 	###
 	createObservers: ->
 		@registeredObservers = {}
@@ -243,7 +247,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		@registeredObservers[ target ] = observer
 
 	###*
-	@protected
+	* @protected
 	###
 	removeObservers: ->
 		for target, observer of @registeredObservers
@@ -253,7 +257,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		return
 , ->
   ###*
-  Preprocessor to handle merging of 'observe' objects on parent and child classes.
+  * Preprocessor to handle merging of 'observe' objects on parent and child classes.
   ###
   Deft.Class.registerPreprocessor(
     'observe'

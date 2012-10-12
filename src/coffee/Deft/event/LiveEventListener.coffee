@@ -3,8 +3,11 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
-# @private
-Ext.define( 'Deft.event.LiveEventListener', 
+###*
+* Event listener for events fired via the Deft.event.LiveEventBus.
+* @private
+###
+Ext.define( 'Deft.event.LiveEventListener',
 	alternateClassName: [ 'Deft.LiveEventListener' ]
 	requires: [
 		'Ext.ComponentQuery'

@@ -5,9 +5,13 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-A lightweight MVC view controller.
-
-Used in conjunction with {@link Deft.mixin.Controllable}.
+* A lightweight MVC view controller.
+*
+*     Ext.define("MyApp.view.MyTabPanel", {
+*       extend: "Ext.tab.Panel",
+*       controller: 'MyApp.controller.MyTabPanelController',
+*       ...
+*     });
 */
 
 Ext.define('Deft.mvc.ViewController', {
@@ -15,13 +19,13 @@ Ext.define('Deft.mvc.ViewController', {
   requires: ['Deft.core.Class', 'Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mvc.Observer'],
   config: {
     /**
-    		View controlled by this ViewController.
+    		* View controlled by this ViewController.
     */
 
     view: null
   },
   /**
-  	Observers automatically created and removed by this ViewController.
+  	* Observers automatically created and removed by this ViewController.
   */
 
   observe: {},
@@ -40,7 +44,7 @@ Ext.define('Deft.mvc.ViewController', {
     return initializedConfig;
   },
   /**
-  	@protected
+  	* @protected
   */
 
   controlView: function(view) {
@@ -72,12 +76,12 @@ Ext.define('Deft.mvc.ViewController', {
     }
   },
   /**
-  	Initialize the ViewController
+  	* Initialize the ViewController
   */
 
   init: function() {},
   /**
-  	Destroy the ViewController
+  	* Destroy the ViewController
   */
 
   destroy: function() {
@@ -92,7 +96,7 @@ Ext.define('Deft.mvc.ViewController', {
     return true;
   },
   /**
-  	@private
+  	* @private
   */
 
   onViewInitialize: function() {
@@ -136,7 +140,7 @@ Ext.define('Deft.mvc.ViewController', {
     this.init();
   },
   /**
-  	@private
+  	* @private
   */
 
   onViewBeforeDestroy: function() {
@@ -147,7 +151,7 @@ Ext.define('Deft.mvc.ViewController', {
     return false;
   },
   /**
-  	Add a component accessor method the ViewController for the specified view-relative selector.
+  	* Add a component accessor method the ViewController for the specified view-relative selector.
   */
 
   addComponentReference: function(id, selector, live) {
@@ -183,7 +187,7 @@ Ext.define('Deft.mvc.ViewController', {
     this.registeredComponentReferences[id] = true;
   },
   /**
-  	Remove a component accessor method the ViewController for the specified view-relative selector.
+  	* Remove a component accessor method the ViewController for the specified view-relative selector.
   */
 
   removeComponentReference: function(id) {
@@ -203,7 +207,7 @@ Ext.define('Deft.mvc.ViewController', {
     delete this.registeredComponentReferences[id];
   },
   /**
-  	Get the component(s) corresponding to the specified view-relative selector.
+  	* Get the component(s) corresponding to the specified view-relative selector.
   */
 
   getViewComponent: function(selector) {
@@ -222,7 +226,7 @@ Ext.define('Deft.mvc.ViewController', {
     }
   },
   /**
-  	Add a component selector with the specified listeners for the specified view-relative selector.
+  	* Add a component selector with the specified listeners for the specified view-relative selector.
   */
 
   addComponentSelector: function(selector, listeners, live) {
@@ -247,7 +251,7 @@ Ext.define('Deft.mvc.ViewController', {
     this.registeredComponentSelectors[selector] = componentSelector;
   },
   /**
-  	Remove a component selector with the specified listeners for the specified view-relative selector.
+  	* Remove a component selector with the specified listeners for the specified view-relative selector.
   */
 
   removeComponentSelector: function(selector) {
@@ -263,14 +267,14 @@ Ext.define('Deft.mvc.ViewController', {
     delete this.registeredComponentSelectors[selector];
   },
   /**
-  	Get the component selectorcorresponding to the specified view-relative selector.
+  	* Get the component selectorcorresponding to the specified view-relative selector.
   */
 
   getComponentSelector: function(selector) {
     return this.registeredComponentSelectors[selector];
   },
   /**
-  	@protected
+  	* @protected
   */
 
   createObservers: function() {
@@ -292,7 +296,7 @@ Ext.define('Deft.mvc.ViewController', {
     return this.registeredObservers[target] = observer;
   },
   /**
-  	@protected
+  	* @protected
   */
 
   removeObservers: function() {
@@ -306,7 +310,7 @@ Ext.define('Deft.mvc.ViewController', {
   }
 }, function() {
   /**
-  Preprocessor to handle merging of 'observe' objects on parent and child classes.
+  * Preprocessor to handle merging of 'observe' objects on parent and child classes.
   */
   return Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {

@@ -5,9 +5,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-A lightweight IoC container for dependency injection.
-
-Used in conjunction with {@link Deft.mixin.Injectable}.
+* A lightweight IoC container for dependency injection.
 */
 
 Ext.define('Deft.ioc.Injector', {

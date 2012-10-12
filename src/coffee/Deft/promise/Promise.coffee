@@ -8,14 +8,17 @@ Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
+###*
+* A Promise represents the result of a future value that has not been defined yet, typically because it is created asynchronously. Used in conjunction with Deft.promise.Deferred.
+###
 Ext.define( 'Deft.promise.Promise',
 	alternateClassName: [ 'Deft.Promise' ]
 	
 	statics:
 		###*
-		Returns a new {@link Deft.promise.Promise} that:
-		- resolves immediately for the specified value, or
-		- resolves, rejects, updates or cancels when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
+		* Returns a new {@link Deft.promise.Promise} that:
+		* - resolves immediately for the specified value, or
+		* - resolves, rejects, updates or cancels when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
 		###
 		when: ( promiseOrValue ) ->
 			if promiseOrValue instanceof Ext.ClassManager.get( 'Deft.promise.Promise' ) or promiseOrValue instanceof Ext.ClassManager.get( 'Deft.promise.Deferred' )
@@ -37,8 +40,8 @@ Ext.define( 'Deft.promise.Promise',
 				return deferred.then()
 		
 		###*
-		Returns a new {@link Deft.promise.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
-		The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
+		* Returns a new {@link Deft.promise.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
+		* The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
 		###
 		all: ( promisesOrValues ) ->
 			return @when( promisesOrValues ).then( 
@@ -94,8 +97,8 @@ Ext.define( 'Deft.promise.Promise',
 		
 		
 		###*
-		Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
-		The resolution value will be the resolution value of the triggering `promiseOrValue`.
+		* Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
+		* The resolution value will be the resolution value of the triggering `promiseOrValue`.
 		###
 		any: ( promisesOrValues ) ->
 			return @when( promisesOrValues ).then( 
@@ -140,8 +143,8 @@ Ext.define( 'Deft.promise.Promise',
 			)
 		
 		###*
-		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
-		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
+		* Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+		* Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
 		###
 		memoize: ( fn, scope, hashFn ) ->
 			memoizedFn = Deft.util.Function.memoize( fn, scope, hashFn )
@@ -154,8 +157,8 @@ Ext.define( 'Deft.promise.Promise',
 			)
 		
 		###*
-		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
-		The specified map function may return either a value or a promise.
+		* Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
+		* The specified map function may return either a value or a promise.
 		###
 		map: ( promisesOrValues, mapFunction ) ->
 			return @when( promisesOrValues ).then( 
@@ -172,7 +175,7 @@ Ext.define( 'Deft.promise.Promise',
 			)
 		
 		###*
-		Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
+		* Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
 		###
 		reduce: ( promisesOrValues, reduceFunction, initialValue ) ->
 			initialValueSpecified = arguments.length is 3
@@ -197,8 +200,8 @@ Ext.define( 'Deft.promise.Promise',
 			)
 		
 		###*
-		Fallback implementation when Array.reduce is not available.
-		@private
+		* Fallback implementation when Array.reduce is not available.
+		* @private
 		###
 		reduceArray: ( reduceFunction, initialValue ) ->
 			# ES5 reduce implementation if native not available
@@ -235,7 +238,7 @@ Ext.define( 'Deft.promise.Promise',
 			return reduced
 		
 		###*
-		@private
+		* @private
 		###
 		reduceIntoArray: ( previousValue, currentValue, currentIndex ) ->
 			previousValue[ currentIndex ] = currentValue
@@ -246,31 +249,31 @@ Ext.define( 'Deft.promise.Promise',
 		return @
 	
 	###*
-	Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
+	* Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
 	###
 	then: ( callbacks ) ->
 		return @deferred.then.apply( @deferred, arguments )
 	
 	###*
-	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
+	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
 	###	
 	otherwise: ( callback, scope ) ->
 		return @deferred.otherwise.apply( @deferred, arguments )
 		
 	###*
-	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
+	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
 	###	
 	always: ( callback, scope ) ->
 		return @deferred.always.apply( @deferred, arguments )
 	
 	###*
-	Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.
+	* Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.
 	###
 	cancel: ( reason ) ->
 		return @deferred.cancel( reason )
 	
 	###*
-	Get this {@link Deft.promise.Promise}'s current state.
+	* Get this {@link Deft.promise.Promise}'s current state.
 	###
 	getState: ->
 		return @deferred.getState()

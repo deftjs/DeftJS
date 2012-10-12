@@ -3,6 +3,9 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
+###*
+* Event bus for live component selectors.
+###
 Ext.define( 'Deft.event.LiveEventBus',
 	alternateClassName: [ 'Deft.LiveEventBus' ]
 	requires: [ 

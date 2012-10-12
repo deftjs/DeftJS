@@ -5,6 +5,10 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* DeftJS Class-related static utility methods.
+* @private
+*/
 
 Ext.define('Deft.core.Class', {
   alternateClassName: ['Deft.Class'],
@@ -48,7 +52,7 @@ Ext.define('Deft.core.Class', {
       }
     },
     /**
-    		Returns true if the passed class name is a superclass of the passed Class reference.
+    		* Returns true if the passed class name is a superclass of the passed Class reference.
     */
 
     extendsClass: function(className, currentClass) {
@@ -74,6 +78,11 @@ Ext.define('Deft.core.Class', {
 /**
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+/**
+* Logger used by DeftJS. Output is shown in the console when using ext-dev/ext-all-dev.
+* @private
 */
 
 Ext.define('Deft.log.Logger', {
@@ -128,11 +137,15 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* Common utility functions used by DeftJS.
+*/
+
 Ext.define('Deft.util.Function', {
   alternateClassName: ['Deft.Function'],
   statics: {
     /**
-    		Creates a new wrapper function that spreads the passed Array over the target function arguments.
+    		* Creates a new wrapper function that spreads the passed Array over the target function arguments.
     */
 
     spread: function(fn, scope) {
@@ -146,7 +159,7 @@ Ext.define('Deft.util.Function', {
       };
     },
     /**
-    		Returns a new wrapper function that caches the return value for previously processed function argument(s).
+    		* Returns a new wrapper function that caches the return value for previously processed function argument(s).
     */
 
     memoize: function(fn, scope, hashFn) {
@@ -166,6 +179,11 @@ Ext.define('Deft.util.Function', {
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+/**
+* Event listener for events fired via the Deft.event.LiveEventBus.
+* @private
 */
 
 Ext.define('Deft.event.LiveEventListener', {
@@ -221,6 +239,10 @@ Ext.define('Deft.event.LiveEventListener', {
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+/**
+* Event bus for live component selectors.
 */
 
 Ext.define('Deft.event.LiveEventBus', {
@@ -344,9 +366,8 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-@private
-
-Used by {@link Deft.ioc.Injector}.
+* Used by Deft.ioc.Injector.
+* @private
 */
 
 Ext.define('Deft.ioc.DependencyProvider', {
@@ -483,9 +504,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-A lightweight IoC container for dependency injection.
-
-Used in conjunction with {@link Deft.mixin.Injectable}.
+* A lightweight IoC container for dependency injection.
 */
 
 Ext.define('Deft.ioc.Injector', {
@@ -635,9 +654,8 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-A mixin that marks a class as participating in dependency injection.
-
-Used in conjunction with {@link Deft.ioc.Injector}.
+* A mixin that marks a class as participating in dependency injection. Used in conjunction with Deft.ioc.Injector.
+* @deprecated 0.8 Injections are now done automatically using class preprocessors.
 */
 
 Ext.define('Deft.mixin.Injectable', {
@@ -710,15 +728,19 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* Used by Deft.mvc.ViewController to handle events fired from injected objects.
+*/
+
 Ext.define('Deft.mvc.Observer', {
   requires: ['Deft.core.Class', 'Ext.util.Observable'],
   statics: {
     /**
-    		Merges child and parent observers into a single object. This differs from a normal object merge because
-    		a given observer target and event can potentially have multiple handlers declared in different parent or
-    		child classes. It transforms an event handler value into an array of values, and merges the arrays of handlers
-    		from child to parent. This maintains the handlers even if both parent and child classes have handlers for the
-    		same target and event.
+    		* Merges child and parent observers into a single object. This differs from a normal object merge because
+    		* a given observer target and event can potentially have multiple handlers declared in different parent or
+    		* child classes. It transforms an event handler value into an array of values, and merges the arrays of handlers
+    		* from child to parent. This maintains the handlers even if both parent and child classes have handlers for the
+    		* same target and event.
     */
 
     mergeObserve: function(originalParentObserve, originalChildObserve) {
@@ -811,7 +833,7 @@ Ext.define('Deft.mvc.Observer', {
     }
   },
   /**
-  	Expects a config object with properties for host, target, and events.
+  	* Expects a config object with properties for host, target, and events.
   */
 
   constructor: function(config) {
@@ -862,8 +884,8 @@ Ext.define('Deft.mvc.Observer', {
     return this;
   },
   /**
-  	Returns true if the passed host has a target that is Observable.
-  	Checks for an isObservable=true property, observable mixin, or if the class extends Observable.
+  	* Returns true if the passed host has a target that is Observable.
+  	* Checks for an isObservable=true property, observable mixin, or if the class extends Observable.
   */
 
   isTargetObservable: function(host, target) {
@@ -880,8 +902,8 @@ Ext.define('Deft.mvc.Observer', {
     }
   },
   /**
-  	Attempts to locate an observer target given the host object and target property name.
-  	Checks for both host[ target ], and host.getTarget().
+  	* Attempts to locate an observer target given the host object and target property name.
+  	* Checks for both host[ target ], and host.getTarget().
   */
 
   locateTarget: function(host, target) {
@@ -897,15 +919,15 @@ Ext.define('Deft.mvc.Observer', {
     }
   },
   /**
-  	Returns true if the passed target is a string containing a '.', indicating that it is referencing a nested property.
+  	* Returns true if the passed target is a string containing a '.', indicating that it is referencing a nested property.
   */
 
   isPropertyChain: function(target) {
     return Ext.isString(target) && target.indexOf('.') > -1;
   },
   /**
-  	Given a host object, target property name, and handler, return object references for the final target and handler function.
-  	If necessary, recurse down a property chain to locate the final target object for the event listener.
+  	* Given a host object, target property name, and handler, return object references for the final target and handler function.
+  	* If necessary, recurse down a property chain to locate the final target object for the event listener.
   */
 
   locateReferences: function(host, target, handler) {
@@ -934,8 +956,8 @@ Ext.define('Deft.mvc.Observer', {
     }
   },
   /**
-  	Given a target property chain and a property host object, recurse down the property chain and return
-  	the final host object from the property chain, and the final object that will accept the event listener.
+  	* Given a target property chain and a property host object, recurse down the property chain and return
+  	* the final host object from the property chain, and the final object that will accept the event listener.
   */
 
   parsePropertyChain: function(host, target) {
@@ -959,7 +981,7 @@ Ext.define('Deft.mvc.Observer', {
     }
   },
   /**
-  	Iterate through the listeners array and remove each event listener.
+  	* Iterate through the listeners array and remove each event listener.
   */
 
   destroy: function() {
@@ -976,6 +998,11 @@ Ext.define('Deft.mvc.Observer', {
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+/**
+* Manages live events attached to component selectors. Used by Deft.mvc.ComponentSelector.
+* @private
 */
 
 Ext.define('Deft.mvc.ComponentSelectorListener', {
@@ -1010,6 +1037,10 @@ Ext.define('Deft.mvc.ComponentSelectorListener', {
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+/**
+* Models a component selector used by Deft.mvc.ViewController to locate view components and attach event listeners.
 */
 
 Ext.define('Deft.mvc.ComponentSelector', {
@@ -1113,9 +1144,13 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-A lightweight MVC view controller.
-
-Used in conjunction with {@link Deft.mixin.Controllable}.
+* A lightweight MVC view controller.
+*
+*     Ext.define("MyApp.view.MyTabPanel", {
+*       extend: "Ext.tab.Panel",
+*       controller: 'MyApp.controller.MyTabPanelController',
+*       ...
+*     });
 */
 
 Ext.define('Deft.mvc.ViewController', {
@@ -1123,13 +1158,13 @@ Ext.define('Deft.mvc.ViewController', {
   requires: ['Deft.core.Class', 'Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mvc.Observer'],
   config: {
     /**
-    		View controlled by this ViewController.
+    		* View controlled by this ViewController.
     */
 
     view: null
   },
   /**
-  	Observers automatically created and removed by this ViewController.
+  	* Observers automatically created and removed by this ViewController.
   */
 
   observe: {},
@@ -1148,7 +1183,7 @@ Ext.define('Deft.mvc.ViewController', {
     return initializedConfig;
   },
   /**
-  	@protected
+  	* @protected
   */
 
   controlView: function(view) {
@@ -1180,12 +1215,12 @@ Ext.define('Deft.mvc.ViewController', {
     }
   },
   /**
-  	Initialize the ViewController
+  	* Initialize the ViewController
   */
 
   init: function() {},
   /**
-  	Destroy the ViewController
+  	* Destroy the ViewController
   */
 
   destroy: function() {
@@ -1200,7 +1235,7 @@ Ext.define('Deft.mvc.ViewController', {
     return true;
   },
   /**
-  	@private
+  	* @private
   */
 
   onViewInitialize: function() {
@@ -1244,7 +1279,7 @@ Ext.define('Deft.mvc.ViewController', {
     this.init();
   },
   /**
-  	@private
+  	* @private
   */
 
   onViewBeforeDestroy: function() {
@@ -1255,7 +1290,7 @@ Ext.define('Deft.mvc.ViewController', {
     return false;
   },
   /**
-  	Add a component accessor method the ViewController for the specified view-relative selector.
+  	* Add a component accessor method the ViewController for the specified view-relative selector.
   */
 
   addComponentReference: function(id, selector, live) {
@@ -1291,7 +1326,7 @@ Ext.define('Deft.mvc.ViewController', {
     this.registeredComponentReferences[id] = true;
   },
   /**
-  	Remove a component accessor method the ViewController for the specified view-relative selector.
+  	* Remove a component accessor method the ViewController for the specified view-relative selector.
   */
 
   removeComponentReference: function(id) {
@@ -1311,7 +1346,7 @@ Ext.define('Deft.mvc.ViewController', {
     delete this.registeredComponentReferences[id];
   },
   /**
-  	Get the component(s) corresponding to the specified view-relative selector.
+  	* Get the component(s) corresponding to the specified view-relative selector.
   */
 
   getViewComponent: function(selector) {
@@ -1330,7 +1365,7 @@ Ext.define('Deft.mvc.ViewController', {
     }
   },
   /**
-  	Add a component selector with the specified listeners for the specified view-relative selector.
+  	* Add a component selector with the specified listeners for the specified view-relative selector.
   */
 
   addComponentSelector: function(selector, listeners, live) {
@@ -1355,7 +1390,7 @@ Ext.define('Deft.mvc.ViewController', {
     this.registeredComponentSelectors[selector] = componentSelector;
   },
   /**
-  	Remove a component selector with the specified listeners for the specified view-relative selector.
+  	* Remove a component selector with the specified listeners for the specified view-relative selector.
   */
 
   removeComponentSelector: function(selector) {
@@ -1371,14 +1406,14 @@ Ext.define('Deft.mvc.ViewController', {
     delete this.registeredComponentSelectors[selector];
   },
   /**
-  	Get the component selectorcorresponding to the specified view-relative selector.
+  	* Get the component selectorcorresponding to the specified view-relative selector.
   */
 
   getComponentSelector: function(selector) {
     return this.registeredComponentSelectors[selector];
   },
   /**
-  	@protected
+  	* @protected
   */
 
   createObservers: function() {
@@ -1400,7 +1435,7 @@ Ext.define('Deft.mvc.ViewController', {
     return this.registeredObservers[target] = observer;
   },
   /**
-  	@protected
+  	* @protected
   */
 
   removeObservers: function() {
@@ -1414,7 +1449,7 @@ Ext.define('Deft.mvc.ViewController', {
   }
 }, function() {
   /**
-  Preprocessor to handle merging of 'observe' objects on parent and child classes.
+  * Preprocessor to handle merging of 'observe' objects on parent and child classes.
   */
   return Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
@@ -1431,9 +1466,8 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-A mixin that creates and attaches the specified view controller(s) to the target view.
-
-Used in conjunction with {@link Deft.mvc.ViewController}.
+* A mixin that creates and attaches the specified view controller(s) to the target view. Used in conjunction with Deft.mvc.ViewController.
+* @deprecated 0.8 ViewController attachemnt is now done automatically using class preprocessors.
 */
 
 Ext.define('Deft.mixin.Controllable', {
@@ -1535,13 +1569,17 @@ Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* A Promise represents the result of a future value that has not been defined yet, typically because it is created asynchronously. Used in conjunction with Deft.promise.Deferred.
+*/
+
 Ext.define('Deft.promise.Promise', {
   alternateClassName: ['Deft.Promise'],
   statics: {
     /**
-    		Returns a new {@link Deft.promise.Promise} that:
-    		- resolves immediately for the specified value, or
-    		- resolves, rejects, updates or cancels when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
+    		* Returns a new {@link Deft.promise.Promise} that:
+    		* - resolves immediately for the specified value, or
+    		* - resolves, rejects, updates or cancels when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
     */
 
     when: function(promiseOrValue) {
@@ -1563,8 +1601,8 @@ Ext.define('Deft.promise.Promise', {
       }
     },
     /**
-    		Returns a new {@link Deft.promise.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
-    		The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
+    		* Returns a new {@link Deft.promise.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
+    		* The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
     */
 
     all: function(promisesOrValues) {
@@ -1628,8 +1666,8 @@ Ext.define('Deft.promise.Promise', {
       });
     },
     /**
-    		Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
-    		The resolution value will be the resolution value of the triggering `promiseOrValue`.
+    		* Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
+    		* The resolution value will be the resolution value of the triggering `promiseOrValue`.
     */
 
     any: function(promisesOrValues) {
@@ -1684,8 +1722,8 @@ Ext.define('Deft.promise.Promise', {
       });
     },
     /**
-    		Returns a new function that wraps the specified function and caches the results for previously processed inputs.
-    		Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
+    		* Returns a new function that wraps the specified function and caches the results for previously processed inputs.
+    		* Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
     */
 
     memoize: function(fn, scope, hashFn) {
@@ -1698,8 +1736,8 @@ Ext.define('Deft.promise.Promise', {
       }, this);
     },
     /**
-    		Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
-    		The specified map function may return either a value or a promise.
+    		* Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
+    		* The specified map function may return either a value or a promise.
     */
 
     map: function(promisesOrValues, mapFunction) {
@@ -1719,7 +1757,7 @@ Ext.define('Deft.promise.Promise', {
       });
     },
     /**
-    		Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
+    		* Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
     */
 
     reduce: function(promisesOrValues, reduceFunction, initialValue) {
@@ -1747,8 +1785,8 @@ Ext.define('Deft.promise.Promise', {
       });
     },
     /**
-    		Fallback implementation when Array.reduce is not available.
-    		@private
+    		* Fallback implementation when Array.reduce is not available.
+    		* @private
     */
 
     reduceArray: function(reduceFunction, initialValue) {
@@ -1779,7 +1817,7 @@ Ext.define('Deft.promise.Promise', {
       return reduced;
     },
     /**
-    		@private
+    		* @private
     */
 
     reduceIntoArray: function(previousValue, currentValue, currentIndex) {
@@ -1792,35 +1830,35 @@ Ext.define('Deft.promise.Promise', {
     return this;
   },
   /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
+  	* Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
   */
 
   then: function(callbacks) {
     return this.deferred.then.apply(this.deferred, arguments);
   },
   /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
+  	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
   */
 
   otherwise: function(callback, scope) {
     return this.deferred.otherwise.apply(this.deferred, arguments);
   },
   /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
+  	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
   */
 
   always: function(callback, scope) {
     return this.deferred.always.apply(this.deferred, arguments);
   },
   /**
-  	Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.
+  	* Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.
   */
 
   cancel: function(reason) {
     return this.deferred.cancel(reason);
   },
   /**
-  	Get this {@link Deft.promise.Promise}'s current state.
+  	* Get this {@link Deft.promise.Promise}'s current state.
   */
 
   getState: function() {
@@ -1834,6 +1872,10 @@ Ext.define('Deft.promise.Promise', {
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+/**
+* A Deferred manages the state of an asynchronous process that will eventually be exposed to external code via a Deft.promise.Promise.
 */
 
 Ext.define('Deft.promise.Deferred', {
@@ -1851,7 +1893,7 @@ Ext.define('Deft.promise.Deferred', {
     return this;
   },
   /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Deferred} is resolved, rejected, updated or cancelled.
+  	* Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Deferred} is resolved, rejected, updated or cancelled.
   */
 
   then: function(callbacks) {
@@ -1908,7 +1950,7 @@ Ext.define('Deft.promise.Deferred', {
     return deferred.getPromise();
   },
   /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
+  	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is rejected.
   */
 
   otherwise: function(callback, scope) {
@@ -1922,7 +1964,7 @@ Ext.define('Deft.promise.Deferred', {
     });
   },
   /**
-  	Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
+  	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Deferred} is either resolved, rejected, or cancelled.
   */
 
   always: function(callback, scope) {
@@ -1938,7 +1980,7 @@ Ext.define('Deft.promise.Deferred', {
     });
   },
   /**
-  	Update progress for this {@link Deft.promise.Deferred} and notify relevant callbacks.
+  	* Update progress for this {@link Deft.promise.Deferred} and notify relevant callbacks.
   */
 
   update: function(progress) {
@@ -1954,43 +1996,43 @@ Ext.define('Deft.promise.Deferred', {
     }
   },
   /**
-  	Resolve this {@link Deft.promise.Deferred} and notify relevant callbacks.
+  	* Resolve this {@link Deft.promise.Deferred} and notify relevant callbacks.
   */
 
   resolve: function(value) {
     this.complete('resolved', value, this.successCallbacks);
   },
   /**
-  	Reject this {@link Deft.promise.Deferred} and notify relevant callbacks.
+  	* Reject this {@link Deft.promise.Deferred} and notify relevant callbacks.
   */
 
   reject: function(error) {
     this.complete('rejected', error, this.failureCallbacks);
   },
   /**
-  	Cancel this {@link Deft.promise.Deferred} and notify relevant callbacks.
+  	* Cancel this {@link Deft.promise.Deferred} and notify relevant callbacks.
   */
 
   cancel: function(reason) {
     this.complete('cancelled', reason, this.cancelCallbacks);
   },
   /**
-  	Get this {@link Deft.promise.Deferred}'s associated {@link Deft.promise.Promise}.
+  	* Get this {@link Deft.promise.Deferred}'s associated {@link Deft.promise.Promise}.
   */
 
   getPromise: function() {
     return this.promise;
   },
   /**
-  	Get this {@link Deft.promise.Deferred}'s current state.
+  	* Get this {@link Deft.promise.Deferred}'s current state.
   */
 
   getState: function() {
     return this.state;
   },
   /**
-  	Register a callback for this {@link Deft.promise.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
-  	@private
+  	* Register a callback for this {@link Deft.promise.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
+  	* @private
   */
 
   register: function(callback, callbacks, state, value) {
@@ -2008,8 +2050,8 @@ Ext.define('Deft.promise.Deferred', {
     }
   },
   /**
-  	Complete this {@link Deft.promise.Deferred} with the specified state and value.
-  	@private
+  	* Complete this {@link Deft.promise.Deferred} with the specified state and value.
+  	* @private
   */
 
   complete: function(state, value, callbacks) {
@@ -2027,8 +2069,8 @@ Ext.define('Deft.promise.Deferred', {
     }
   },
   /**
-  	Notify the specified callbacks with the specified value.
-  	@private
+  	* Notify the specified callbacks with the specified value.
+  	* @private
   */
 
   notify: function(callbacks, value) {
@@ -2039,8 +2081,8 @@ Ext.define('Deft.promise.Deferred', {
     }
   },
   /**
-  	Release references to all callbacks registered with this {@link Deft.promise.Deferred}.
-  	@private
+  	* Release references to all callbacks registered with this {@link Deft.promise.Deferred}.
+  	* @private
   */
 
   releaseCallbacks: function() {
@@ -2060,14 +2102,18 @@ Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* Utility class with static methods to create chains of Deft.promise.Promises objects.
+*/
+
 Ext.define('Deft.promise.Chain', {
   alternateClassName: ['Deft.Chain'],
   requires: ['Deft.promise.Promise'],
   statics: {
     /**
-    		Execute an Array (or Deferred/Promise of an Array) of functions sequentially.
-    		The specified functions may optionally return their results as Promises.
-    		Returns a Promise of an Array of results for each function call (in the same order).
+    		* Execute an Array (or Deferred/Promise of an Array) of functions sequentially.
+    		* The specified functions may optionally return their results as Promises.
+    		* Returns a Promise of an Array of results for each function call (in the same order).
     */
 
     sequence: function(fns, scope) {
@@ -2079,9 +2125,9 @@ Ext.define('Deft.promise.Chain', {
       }, []);
     },
     /**
-    		Execute an Array (or Deferred/Promise of an Array) of functions in parallel.
-    		The specified functions may optionally return their results as Promises.
-    		Returns a Promise of an Array of results for each function call (in the same order).
+    		* Execute an Array (or Deferred/Promise of an Array) of functions in parallel.
+    		* The specified functions may optionally return their results as Promises.
+    		* Returns a Promise of an Array of results for each function call (in the same order).
     */
 
     parallel: function(fns, scope) {
@@ -2090,9 +2136,9 @@ Ext.define('Deft.promise.Chain', {
       });
     },
     /**
-    		Execute an Array (or Deferred/Promise of an Array) of functions as a pipeline, where each function's result is passed to the subsequent function as input.
-    		The specified functions may optionally return their results as Promises.
-    		Returns a Promise of the result value for the final function in the pipeline.
+    		* Execute an Array (or Deferred/Promise of an Array) of functions as a pipeline, where each function's result is passed to the subsequent function as input.
+    		* The specified functions may optionally return their results as Promises.
+    		* Returns a Promise of the result value for the final function in the pipeline.
     */
 
     pipeline: function(fns, scope, initialValue) {

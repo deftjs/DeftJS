@@ -4,6 +4,11 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* Manages live events attached to component selectors. Used by Deft.mvc.ComponentSelector.
+* @private
+*/
+
 Ext.define('Deft.mvc.ComponentSelectorListener', {
   requires: ['Deft.event.LiveEventBus'],
   constructor: function(config) {

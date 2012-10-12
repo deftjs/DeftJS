@@ -1,4 +1,7 @@
-# @private
+###*
+* DeftJS Class-related static utility methods.
+* @private
+###
 Ext.define( 'Deft.core.Class', 
 	alternateClassName: [ 'Deft.Class' ]
 	
@@ -53,7 +56,7 @@ Ext.define( 'Deft.core.Class',
 			return
 
 		###*
-		Returns true if the passed class name is a superclass of the passed Class reference.
+		* Returns true if the passed class name is a superclass of the passed Class reference.
 		###
 		extendsClass: ( className, currentClass ) ->
 			try

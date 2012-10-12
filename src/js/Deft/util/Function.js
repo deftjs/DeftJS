@@ -4,11 +4,15 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
+/**
+* Common utility functions used by DeftJS.
+*/
+
 Ext.define('Deft.util.Function', {
   alternateClassName: ['Deft.Function'],
   statics: {
     /**
-    		Creates a new wrapper function that spreads the passed Array over the target function arguments.
+    		* Creates a new wrapper function that spreads the passed Array over the target function arguments.
     */
 
     spread: function(fn, scope) {
@@ -22,7 +26,7 @@ Ext.define('Deft.util.Function', {
       };
     },
     /**
-    		Returns a new wrapper function that caches the return value for previously processed function argument(s).
+    		* Returns a new wrapper function that caches the return value for previously processed function argument(s).
     */
 
     memoize: function(fn, scope, hashFn) {
