@@ -30,18 +30,17 @@ Ext.define('Deft.mvc.ViewController', {
 
   observe: {},
   constructor: function(config) {
-    var initializedConfig;
     if (config == null) {
       config = {};
     }
     if (config.view) {
       this.controlView(config.view);
     }
-    initializedConfig = this.initConfig(config);
+    this.initConfig(config);
     if (Ext.Object.getSize(this.observe) > 0) {
       this.createObservers();
     }
-    return initializedConfig;
+    return this;
   },
   /**
   	* @protected
@@ -310,7 +309,7 @@ Ext.define('Deft.mvc.ViewController', {
   }
 }, function() {
   /**
-  * Preprocessor to handle merging of 'observe' objects on parent and child classes.
+  	* Preprocessor to handle merging of 'observe' objects on parent and child classes.
   */
   return Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
