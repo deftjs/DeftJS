@@ -50,6 +50,7 @@
 				<file name="Deft/mvc/ComponentSelectorListener.js" />
 				<file name="Deft/mvc/ComponentSelector.js" />
 				<file name="Deft/mvc/ViewController.js" />
+				<file name="Deft/mvc/Application.js" />
 				<file name="Deft/mixin/Controllable.js" />
 				<file name="Deft/promise/Promise.js" />
 				<file name="Deft/promise/Deferred.js" />

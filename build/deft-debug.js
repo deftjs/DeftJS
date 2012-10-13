@@ -1169,18 +1169,17 @@ Ext.define('Deft.mvc.ViewController', {
 
   observe: {},
   constructor: function(config) {
-    var initializedConfig;
     if (config == null) {
       config = {};
     }
     if (config.view) {
       this.controlView(config.view);
     }
-    initializedConfig = this.initConfig(config);
+    this.initConfig(config);
     if (Ext.Object.getSize(this.observe) > 0) {
       this.createObservers();
     }
-    return initializedConfig;
+    return this;
   },
   /**
   	* @protected
@@ -1449,7 +1448,7 @@ Ext.define('Deft.mvc.ViewController', {
   }
 }, function() {
   /**
-  * Preprocessor to handle merging of 'observe' objects on parent and child classes.
+  	* Preprocessor to handle merging of 'observe' objects on parent and child classes.
   */
   return Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
@@ -1459,6 +1458,45 @@ Ext.define('Deft.mvc.ViewController', {
       }
     });
   }, 'before', 'extend');
+});
+/*
+Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+*/
+
+/**
+* A lightweight Application template class.
+*/
+
+var initialized;
+
+Ext.define('Deft.mvc.Application', {
+  alternateClassName: ['Deft.Application']
+  /**
+  	* Indicates whether this Application instance has been initialized.
+  */
+
+}, initialized = false, {
+  /**
+  	* @param {Object} [config] Configuration object.
+  */
+
+  constructor: function(config) {
+    if (config == null) {
+      config = {};
+    }
+    this.initConfig(config);
+    Ext.onReady(function() {
+      this.init();
+      this.initialized = true;
+    }, this);
+    return this;
+  },
+  /**
+  	* Initialize the Application
+  */
+
+  init: function() {}
 });
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
