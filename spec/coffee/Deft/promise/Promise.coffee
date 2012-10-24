@@ -54,19 +54,82 @@ describe( 'Deft.promise.Promise', ->
 		
 		return combinations
 	
+	wasSpyCalled = ( spy ) ->
+		return spy.callCount != 0
+	
+	wasSpyCalledWith = ( spy, value ) ->
+		return jasmine.getEnv().contains_( spy.argsForCall, [ value ] )
+	
 	beforeEach( ->
 		@addMatchers(
 			toBeInstanceOf: ( className ) ->
 				return @actual instanceof Ext.ClassManager.get( className )
+			
+			toResolveWith: ( value ) ->
+				successCallback  = jasmine.createSpy( 'success callback' )
+				failureCallback  = jasmine.createSpy( 'failure callback' )
+				progressCallback = jasmine.createSpy( 'progress callback' )
+				cancelCallback   = jasmine.createSpy( 'cancel callback' )
+				
+				@actual.then(
+					success: successCallback
+					failure: failureCallback
+					progress: progressCallback
+					cancel: cancelCallback
+				)
+				
+				return @actual.getState() is 'resolved' and wasSpyCalledWith( successCallback, value ) and not wasSpyCalled( failureCallback ) and not wasSpyCalled( progressCallback ) and not wasSpyCalled( cancelCallback )
+			
+			toRejectWith: ( message ) ->
+				successCallback  = jasmine.createSpy( 'success callback' )
+				failureCallback  = jasmine.createSpy( 'failure callback' )
+				progressCallback = jasmine.createSpy( 'progress callback' )
+				cancelCallback   = jasmine.createSpy( 'cancel callback' )
+				
+				@actual.then(
+					success: successCallback
+					failure: failureCallback
+					progress: progressCallback
+					cancel: cancelCallback
+				)
+				
+				return @actual.getState() is 'rejected' and not wasSpyCalled( successCallback ) and wasSpyCalledWith( failureCallback, message ) and not wasSpyCalled( progressCallback ) and not wasSpyCalled( cancelCallback )
+			
+			toUpdateWith: ( progress ) ->
+				successCallback  = jasmine.createSpy( 'success callback' )
+				failureCallback  = jasmine.createSpy( 'failure callback' )
+				progressCallback = jasmine.createSpy( 'progress callback' )
+				cancelCallback   = jasmine.createSpy( 'cancel callback' )
+					
+				@actual.then(
+					success: successCallback
+					failure: failureCallback
+					progress: progressCallback
+					cancel: cancelCallback
+				)
+				
+				return @actual.getState() is 'pending' and not wasSpyCalled( successCallback ) and not wasSpyCalled( failureCallback ) and wasSpyCalledWith( progressCallback, progress ) and not wasSpyCalled( cancelCallback )
+			
+			toCancelWith: ( reason ) ->
+				successCallback  = jasmine.createSpy( 'success callback' )
+				failureCallback  = jasmine.createSpy( 'failure callback' )
+				progressCallback = jasmine.createSpy( 'progress callback' )
+				cancelCallback   = jasmine.createSpy( 'cancel callback' )
+				
+				@actual.then(
+					success: successCallback
+					failure: failureCallback
+					progress: progressCallback
+					cancel: cancelCallback
+				)
+				
+				return @actual.getState() is 'cancelled' and not wasSpyCalled( successCallback ) and not wasSpyCalled( failureCallback ) and not wasSpyCalled( progressCallback, reason ) and wasSpyCalledWith( cancelCallback, reason )
 		)
 		
 		return
 	)
 	
 	describe( 'when()', ->
-		
-		deferred = null
-		successCallback = failureCallback = progressCallback = cancelCallback = null
 		
 		class MockThirdPartyPromise
 			then: ( @successCallback, @failureCallback ) ->
@@ -87,241 +150,115 @@ describe( 'Deft.promise.Promise', ->
 					@failureCallback( @value )
 				return
 		
-		beforeEach( ->
-			deferred = Ext.create( 'Deft.promise.Deferred' )
-			
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
-			
-			return
-		)
-		
 		it( 'should return an immediately resolved Promise when a value specified', ->
 			promise = Deft.promise.Promise.when( 'expected value' )
-			promise.then( 
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-
-			expect( promise.getState() ).toBe( 'resolved' )			
-			expect( successCallback ).toHaveBeenCalledWith( 'expected value' )
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toResolveWith( 'expected value' )
 			
 			return
 		)
 		
 		it( 'should return a new resolved Promise when a resolved Promise is specified', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			deferred.resolve( 'expected value' )
-		
+			
 			promise = Deft.promise.Promise.when( deferred.getPromise() )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.getPromise() )
-			
-			expect( promise.getState() ).toBe( 'resolved' )
-			expect( successCallback ).toHaveBeenCalledWith( 'expected value' )
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toResolveWith( 'expected value' )
 			
 			return
 		)
 		
 		it( 'should return a new rejected Promise when a rejected Promise is specified', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			deferred.reject( 'error message' )
 			
 			promise = Deft.promise.Promise.when( deferred.getPromise() )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.getPromise() )
-			
-			expect( promise.getState() ).toBe( 'rejected' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toRejectWith( 'error message' )
 			
 			return
 		)
 		
 		it( 'should return a new pending (and immediately updated) Promise when a pending (and updated) Promise is specified', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			deferred.update( 'progress' )
 			
 			promise = Deft.promise.Promise.when( deferred.getPromise() )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.getPromise() )
-			
-			expect( promise.getState() ).toBe( 'pending' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toUpdateWith( 'progress' )
 			
 			return
 		)
 		
 		it( 'should return a new cancelled Promise when a cancelled Promise specified', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			deferred.cancel( 'reason' )
 			
 			promise = Deft.promise.Promise.when( deferred.getPromise() )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.getPromise() )
-			
-			expect( promise.getState() ).toBe( 'cancelled' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
+			expect( promise ).toCancelWith( 'reason' )
 			
 			return
 		)
 		
 		it( 'should return a new pending Promise that resolves when the pending Promise specified is resolved', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			promise = Deft.promise.Promise.when( deferred.getPromise() )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.getPromise() )
-			
 			expect( promise.getState() ).toBe( 'pending' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
 			
-			deferred.resolve( 'expected value' )
+			deferred.resolve( 'expected value' ) 
 			
-			expect( promise.getState() ).toBe( 'resolved' )
-			expect( successCallback ).toHaveBeenCalledWith( 'expected value' )
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toResolveWith( 'expected value' )
 			
 			return
 		)
 	
 		it( 'should return a new pending Promise that rejects when the pending Promise specified is rejected', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			promise = Deft.promise.Promise.when( deferred.getPromise() )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.getPromise() )
-			
 			expect( promise.getState() ).toBe( 'pending' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
 			
 			deferred.reject( 'error message' )
 			
-			expect( promise.getState() ).toBe( 'rejected' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toRejectWith( 'error message' )
 			
 			return
 		)
 	
 		it( 'should return a new pending Promise that updates when the pending Promise specified is updated', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			promise = Deft.promise.Promise.when( deferred.getPromise() )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.getPromise() )
-			
 			expect( promise.getState() ).toBe( 'pending' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
 			
 			deferred.update( 'progress' )
 			
-			expect( promise.getState() ).toBe( 'pending' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toUpdateWith( 'progress' )
 			
 			return
 		)
 	
 		it( 'should return a new pending Promise that cancels when the pending Promise specified is cancelled', ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
 			promise = Deft.promise.Promise.when( deferred.getPromise() )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( deferred.getPromise() )
-			
 			expect( promise.getState() ).toBe( 'pending' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
 			
 			deferred.cancel( 'reason' )
 			
-			expect( promise.getState() ).toBe( 'cancelled' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
+			expect( promise ).toCancelWith( 'reason' )
 			
 			return
 		)
@@ -331,21 +268,10 @@ describe( 'Deft.promise.Promise', ->
 			mockThirdPartyPromise.resolve( 'expected value' )
 			
 			promise = Deft.promise.Promise.when( mockThirdPartyPromise )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 			expect( promise ).not.toBe( mockThirdPartyPromise )
-			
-			expect( promise.getState() ).toBe( 'resolved' )
-			expect( successCallback ).toHaveBeenCalledWith( 'expected value' )
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toResolveWith( 'expected value' )
 			
 			return
 		)
@@ -355,21 +281,10 @@ describe( 'Deft.promise.Promise', ->
 			mockThirdPartyPromise.reject( 'error message' )
 			
 			promise = Deft.promise.Promise.when( mockThirdPartyPromise )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 			expect( promise ).not.toBe( mockThirdPartyPromise )
-			
-			expect( promise.getState() ).toBe( 'rejected' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toRejectWith( 'error message' )
 			
 			return
 		)
@@ -378,29 +293,14 @@ describe( 'Deft.promise.Promise', ->
 			mockThirdPartyPromise = new MockThirdPartyPromise()
 			
 			promise = Deft.promise.Promise.when( mockThirdPartyPromise )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( mockThirdPartyPromise )
-			
 			expect( promise.getState() ).toBe( 'pending' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).not.toBe( mockThirdPartyPromise )
 			
 			mockThirdPartyPromise.resolve( 'expected value' )
 			
-			expect( promise.getState() ).toBe( 'resolved' )
-			expect( successCallback ).toHaveBeenCalledWith( 'expected value' )
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toResolveWith( 'expected value' )
 			
 			return
 		)
@@ -409,29 +309,14 @@ describe( 'Deft.promise.Promise', ->
 			mockThirdPartyPromise = new MockThirdPartyPromise()
 			
 			promise = Deft.promise.Promise.when( mockThirdPartyPromise )
-			promise.then(
-				success: successCallback
-				failure: failureCallback
-				progress: progressCallback
-				cancel: cancelCallback
-			)
 			
 			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-			expect( promise ).not.toBe( mockThirdPartyPromise )
-			
 			expect( promise.getState() ).toBe( 'pending' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).not.toHaveBeenCalled()
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).not.toBe( mockThirdPartyPromise )
 			
 			mockThirdPartyPromise.reject( 'error message' )
 			
-			expect( promise.getState() ).toBe( 'rejected' )
-			expect( successCallback ).not.toHaveBeenCalled()
-			expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-			expect( progressCallback ).not.toHaveBeenCalled()
-			expect( cancelCallback ).not.toHaveBeenCalled()
+			expect( promise ).toRejectWith( 'error message' )
 			
 			return
 		)
@@ -439,35 +324,13 @@ describe( 'Deft.promise.Promise', ->
 	
 	describe( 'all()', ->
 		
-		successCallback = failureCallback = progressCallback = cancelCallback = null
-		
-		beforeEach( ->
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
-			
-			return
-		)
-		
 		describe( 'with an Array containing a single value', ->
 			itShouldResolveForValue = ( value ) ->
 				it( "should return an immediately resolved Promise when an Array containing '#{ value }' is specified", ->
-					promise = Deft.promise.Promise.all( [ 'expected value' ] )
-					promise.then( 
-						success: successCallback
-						failure: failureCallback
-						progress: progressCallback
-						cancel: cancelCallback
-					)
+					promise = Deft.promise.Promise.all( [ value ] )
 					
 					expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-					expect( promise.getState() ).toBe( 'resolved' )
-					
-					expect( successCallback ).toHaveBeenCalledWith( [ 'expected value' ] )
-					expect( failureCallback ).not.toHaveBeenCalled()
-					expect( progressCallback ).not.toHaveBeenCalled()
-					expect( cancelCallback ).not.toHaveBeenCalled()
+					expect( promise ).toResolveWith( [ value ] )
 					
 					return
 				)
@@ -487,20 +350,9 @@ describe( 'Deft.promise.Promise', ->
 				deferred.resolve( 'expected value' )
 				
 				promise = Deft.promise.Promise.all( [ deferred ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-				expect( promise.getState() ).toBe( 'resolved' )
-				
-				expect( successCallback ).toHaveBeenCalledWith( [ 'expected value' ] )
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toResolveWith( [ 'expected value' ] )
 				
 				return
 			)
@@ -510,20 +362,9 @@ describe( 'Deft.promise.Promise', ->
 				deferred.reject( 'error message' )
 				
 				promise = Deft.promise.Promise.all( [ deferred ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-				expect( promise.getState() ).toBe( 'rejected' )
-				
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toRejectWith( 'error message' )
 				
 				return
 			)
@@ -533,20 +374,9 @@ describe( 'Deft.promise.Promise', ->
 				deferred.update( 'progress' )
 				
 				promise = Deft.promise.Promise.all( [ deferred ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-				expect( promise.getState() ).toBe( 'pending' )
-				
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toUpdateWith( 'progress' )
 				
 				return
 			)
@@ -556,20 +386,9 @@ describe( 'Deft.promise.Promise', ->
 				deferred.cancel( 'reason' )
 				
 				promise = Deft.promise.Promise.all( [ deferred ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-				expect( promise.getState() ).toBe( 'cancelled' )
-				
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
+				expect( promise ).toCancelWith( 'reason' )
 				
 				return
 			)
@@ -578,23 +397,13 @@ describe( 'Deft.promise.Promise', ->
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
 				promise = Deft.promise.Promise.all( [ deferred ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				deferred.resolve( 'expected value' )
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( successCallback ).toHaveBeenCalledWith( [ 'expected value' ] )
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toResolveWith( [ 'expected value' ] )
 				
 				return
 			)
@@ -603,23 +412,13 @@ describe( 'Deft.promise.Promise', ->
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
 				promise = Deft.promise.Promise.all( [ deferred ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				deferred.reject( 'error message' )
 				
-				expect( promise.getState() ).toBe( 'rejected' )
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toRejectWith( 'error message' )
 				
 				return
 			)
@@ -628,23 +427,13 @@ describe( 'Deft.promise.Promise', ->
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
 				promise = Deft.promise.Promise.all( [ deferred ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				deferred.update( 'progress' )
 				
-				expect( promise.getState() ).toBe( 'pending' )
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toUpdateWith( 'progress' )
 				
 				return
 			)
@@ -653,23 +442,13 @@ describe( 'Deft.promise.Promise', ->
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
 				promise = Deft.promise.Promise.all( [ deferred ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				deferred.cancel( 'reason' )
 				
-				expect( promise.getState() ).toBe( 'cancelled' )
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
+				expect( promise ).toCancelWith( 'reason' )
 				
 				return
 			)
@@ -682,20 +461,9 @@ describe( 'Deft.promise.Promise', ->
 				deferred.resolve( 'expected value' )
 				
 				promise = Deft.promise.Promise.all( [ deferred.getPromise() ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-				expect( promise.getState() ).toBe( 'resolved' )
-				
-				expect( successCallback ).toHaveBeenCalledWith( [ 'expected value' ] )
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toResolveWith( [ 'expected value' ] )
 				
 				return
 			)
@@ -705,20 +473,9 @@ describe( 'Deft.promise.Promise', ->
 				deferred.reject( 'error message' )
 				
 				promise = Deft.promise.Promise.all( [ deferred.getPromise() ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-				expect( promise.getState() ).toBe( 'rejected' )
-				
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toRejectWith( 'error message' )
 				
 				return
 			)
@@ -728,20 +485,9 @@ describe( 'Deft.promise.Promise', ->
 				deferred.update( 'progress' )
 				
 				promise = Deft.promise.Promise.all( [ deferred.getPromise() ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-				expect( promise.getState() ).toBe( 'pending' )
-				
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toUpdateWith( 'progress' )
 				
 				return
 			)
@@ -751,20 +497,9 @@ describe( 'Deft.promise.Promise', ->
 				deferred.cancel( 'reason' )
 				
 				promise = Deft.promise.Promise.all( [ deferred.getPromise() ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-				expect( promise.getState() ).toBe( 'cancelled' )
-				
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
+				expect( promise ).toCancelWith( 'reason' )
 				
 				return
 			)
@@ -773,23 +508,13 @@ describe( 'Deft.promise.Promise', ->
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
 				promise = Deft.promise.Promise.all( [ deferred.getPromise() ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				deferred.resolve( 'expected value' )
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( successCallback ).toHaveBeenCalledWith( [ 'expected value' ] )
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toResolveWith( [ 'expected value' ] )
 				
 				return
 			)
@@ -798,23 +523,13 @@ describe( 'Deft.promise.Promise', ->
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
 				promise = Deft.promise.Promise.all( [ deferred.getPromise() ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				deferred.reject( 'error message' )
 				
-				expect( promise.getState() ).toBe( 'rejected' )
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toRejectWith( 'error message' )
 				
 				return
 			)
@@ -823,23 +538,13 @@ describe( 'Deft.promise.Promise', ->
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
 				promise = Deft.promise.Promise.all( [ deferred.getPromise() ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				deferred.update( 'progress' )
 				
-				expect( promise.getState() ).toBe( 'pending' )
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-				expect( cancelCallback ).not.toHaveBeenCalled()
+				expect( promise ).toUpdateWith( 'progress' )
 				
 				return
 			)
@@ -848,23 +553,13 @@ describe( 'Deft.promise.Promise', ->
 				deferred = Ext.create( 'Deft.promise.Deferred' )
 				
 				promise = Deft.promise.Promise.all( [ deferred.getPromise() ] )
-				promise.then( 
-					success: successCallback
-					failure: failureCallback
-					progress: progressCallback
-					cancel: cancelCallback
-				)
 				
 				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				deferred.cancel( 'reason' )
 				
-				expect( promise.getState() ).toBe( 'cancelled' )
-				expect( successCallback ).not.toHaveBeenCalled()
-				expect( failureCallback ).not.toHaveBeenCalled()
-				expect( progressCallback ).not.toHaveBeenCalled()
-				expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
+				expect( promise ).toCancelWith( 'reason' )
 				
 				return
 			)
@@ -904,25 +599,9 @@ describe( 'Deft.promise.Promise', ->
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination )
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise.getState() ).toBe( 'resolved' )
-						
-						expect( successCallback ).toHaveBeenCalledWith( getOutputParameters( permutation ) )
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toResolveWith( getOutputParameters( permutation ) )
 				
 				return
 			)
@@ -968,25 +647,9 @@ describe( 'Deft.promise.Promise', ->
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( rejectedDeferredParameter ) )
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise.getState() ).toBe( 'rejected' )
-						
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toRejectWith( 'error message' )
 				
 				rejectedPromiseParameter =
 					input: rejectedDeferred.getPromise()
@@ -995,25 +658,9 @@ describe( 'Deft.promise.Promise', ->
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( rejectedPromiseParameter ) )
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise.getState() ).toBe( 'rejected' )
-						
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toRejectWith( 'error message' )
 			)
 			
 			it( 'should return a pending (and immediately updated) Promise when an Array containing any combination of values, resolved or pending Deferreds, and/or resolved or pending Promises, and pending (and updated) Deferred or Promise is specified', ->
@@ -1057,25 +704,9 @@ describe( 'Deft.promise.Promise', ->
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( updatedDeferredParameter ) )
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise.getState() ).toBe( 'pending' )
-						
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toUpdateWith( 'progress' )
 				
 				updatedPromiseParameter =
 					input: updatedDeferred.getPromise()
@@ -1084,25 +715,9 @@ describe( 'Deft.promise.Promise', ->
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( updatedPromiseParameter ) )
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise.getState() ).toBe( 'pending' )
-						
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toUpdateWith( 'progress' )
 			)
 			
 			it( 'should return a cancelled Promise when an Array containing any combination of values, resolved or pending Deferreds, and/or resolved or pending Promises, and a cancelled Deferred or Promise is specified', ->
@@ -1146,25 +761,9 @@ describe( 'Deft.promise.Promise', ->
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( cancelledDeferredParameter ) )
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise.getState() ).toBe( 'cancelled' )
-						
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toCancelWith( 'reason' )
 				
 				cancelledPromiseParameter =
 					input: cancelledDeferred.getPromise()
@@ -1173,25 +772,9 @@ describe( 'Deft.promise.Promise', ->
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( cancelledPromiseParameter ) )
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise.getState() ).toBe( 'cancelled' )
-						
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toCancelWith( 'reason' )
 			)
 			
 			it( 'should return a resolved Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred or Promise is resolved', ->
@@ -1230,38 +813,13 @@ describe( 'Deft.promise.Promise', ->
 						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingDeferredParameter
 						
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						
 						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
 						
 						pendingDeferred.resolve( 'expected value' )
 						
-						expect( promise.getState() ).toBe( 'resolved' )
-						expect( successCallback ).toHaveBeenCalledWith( getOutputParameters( permutation ) )
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toResolveWith( getOutputParameters( permutation ) )
 				
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( placeholder ) )
@@ -1274,38 +832,13 @@ describe( 'Deft.promise.Promise', ->
 						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingPromiseParameter
 						
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						
 						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
 						
 						pendingDeferred.resolve( 'expected value' )
 						
-						expect( promise.getState() ).toBe( 'resolved' )
-						expect( successCallback ).toHaveBeenCalledWith( getOutputParameters( permutation ) )
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toResolveWith( getOutputParameters( permutation ) )
 				
 				return
 			)
@@ -1346,38 +879,13 @@ describe( 'Deft.promise.Promise', ->
 						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingDeferredParameter
 						
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						
 						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
 						
 						pendingDeferred.reject( 'error message' )
 						
-						expect( promise.getState() ).toBe( 'rejected' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toRejectWith( 'error message' )
 				
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( placeholder ) )
@@ -1390,38 +898,13 @@ describe( 'Deft.promise.Promise', ->
 						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingPromiseParameter
 						
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						
 						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
 						
 						pendingDeferred.reject( 'error message' )
 						
-						expect( promise.getState() ).toBe( 'rejected' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).toHaveBeenCalledWith( 'error message' )
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toRejectWith( 'error message' )
 				
 				return
 			)
@@ -1462,38 +945,13 @@ describe( 'Deft.promise.Promise', ->
 						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingDeferredParameter
 						
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						
 						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
 						
 						pendingDeferred.update( 'progress' )
 						
-						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toUpdateWith( 'progress' )
 				
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( placeholder ) )
@@ -1506,38 +964,13 @@ describe( 'Deft.promise.Promise', ->
 						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingPromiseParameter
 						
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						
 						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
 						
 						pendingDeferred.update( 'progress' )
 						
-						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).toHaveBeenCalledWith( 'progress' )
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toUpdateWith( 'progress' )
 				
 				return
 			)
@@ -1578,38 +1011,13 @@ describe( 'Deft.promise.Promise', ->
 						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingDeferredParameter
 						
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						
 						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
 						
 						pendingDeferred.cancel( 'reason' )
 						
-						expect( promise.getState() ).toBe( 'cancelled' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toCancelWith( 'reason' )
 				
 				for combination in generateCombinations( parameters )
 					for permutation in generatePermutations( combination.concat( placeholder ) )
@@ -1622,38 +1030,13 @@ describe( 'Deft.promise.Promise', ->
 						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingPromiseParameter
 						
 						promise = Deft.promise.Promise.all( getInputParameters( permutation ) )
-						promise.then( 
-							success: successCallback
-							failure: failureCallback
-							progress: progressCallback
-							cancel: cancelCallback
-						)
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						
 						expect( promise.getState() ).toBe( 'pending' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).not.toHaveBeenCalled()
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
 						
 						pendingDeferred.cancel( 'reason' )
 						
-						expect( promise.getState() ).toBe( 'cancelled' )
-						expect( successCallback ).not.toHaveBeenCalled()
-						expect( failureCallback ).not.toHaveBeenCalled()
-						expect( progressCallback ).not.toHaveBeenCalled()
-						expect( cancelCallback ).toHaveBeenCalledWith( 'reason' )
-						
-						successCallback.reset()
-						failureCallback.reset()
-						progressCallback.reset()
-						cancelCallback.reset()
+						expect( promise ).toCancelWith( 'reason' )
 				
 				return
 			)
@@ -1666,23 +1049,253 @@ describe( 'Deft.promise.Promise', ->
 	
 	describe( 'any()', ->
 		
-		successCallback = failureCallback = progressCallback = cancelCallback = null
-		
-		beforeEach( ->
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
-			
+		describe( 'with an Array containing a single value', ->
+			itShouldResolveForValue = ( value ) ->
+				it( "should return an immediately resolved Promise when an Array containing '#{ value }' is specified", ->
+					promise = Deft.promise.Promise.any( [ value ] )
+					
+					expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+					expect( promise ).toResolveWith( value )
+					
+					return
+				)
+				return
+				
+			values = [ undefined, null, false, 0, 1, 'expected value', [], {} ]
+			for value in values
+				itShouldResolveForValue.call( this, value )
+				
 			return
 		)
 		
-		# TODO
+		describe( 'with an Array containing a single Deferred', ->
+			
+			it( 'should return a resolved Promise when an Array containing a single resolved Deferred is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.resolve( 'expected value' )
+				
+				promise = Deft.promise.Promise.any( [ deferred ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toResolveWith( 'expected value' )
+				
+				return
+			)
+			
+			it( 'should return a rejected Promise completed with the originating error when an Array containing a single rejected Deferred is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.reject( 'error message' )
+				
+				promise = Deft.promise.Promise.any( [ deferred ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toRejectWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Deferred is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.update( 'progress' )
+				
+				promise = Deft.promise.Promise.any( [ deferred ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toUpdateWith( 'progress' )
+				
+				return
+			)
+			
+			it( 'should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Deferred is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.cancel( 'reason' )
+				
+				promise = Deft.promise.Promise.any( [ deferred ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toCancelWith( 'reason' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that resolves when an Array containing a single Deferred is specified and that Deferred is resolved', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.any( [ deferred ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.resolve( 'expected value' )
+				
+				expect( promise ).toResolveWith( 'expected value' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that rejects when an Array containing a single Deferred is specified and that Deferred is rejected', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.any( [ deferred ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.reject( 'error message' )
+				
+				expect( promise ).toRejectWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that updates when an Array containing a single Deferred is specified and that Deferred is updated', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.any( [ deferred ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.update( 'progress' )
+				
+				expect( promise ).toUpdateWith( 'progress' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that cancels when an Array containing a single Deferred is specified and that Deferred is cancelled', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.any( [ deferred ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.cancel( 'reason' )
+				
+				expect( promise ).toCancelWith( 'reason' )
+				
+				return
+			)
+		)
+		
+		describe( 'with an Array containing a single Promise', ->
+			
+			it( 'should return a resolved Promise when an Array containing a single resolved Promise is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.resolve( 'expected value' )
+				
+				promise = Deft.promise.Promise.any( [ deferred.getPromise() ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toResolveWith( 'expected value' )
+				
+				return
+			)
+			
+			it( 'should return a rejected Promise completed with the originating error when an Array containing a single rejected Promise is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.reject( 'error message' )
+				
+				promise = Deft.promise.Promise.any( [ deferred.getPromise() ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toRejectWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Promise is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.update( 'progress' )
+				
+				promise = Deft.promise.Promise.any( [ deferred.getPromise() ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toUpdateWith( 'progress' )
+				
+				return
+			)
+			
+			it( 'should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Promise is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.cancel( 'reason' )
+				
+				promise = Deft.promise.Promise.any( [ deferred.getPromise() ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toCancelWith( 'reason' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that resolves when an Array containing a single Promise is specified and that Promise is resolved', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.any( [ deferred.getPromise() ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.resolve( 'expected value' )
+				
+				expect( promise ).toResolveWith( 'expected value' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that rejects when an Array containing a single Promise is specified and that Promise is rejected', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.any( [ deferred.getPromise() ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.reject( 'error message' )
+				
+				expect( promise ).toRejectWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that updates when an Array containing a single Promise is specified and that Promise is updated', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.any( [ deferred.getPromise() ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.update( 'progress' )
+				
+				expect( promise ).toUpdateWith( 'progress' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that cancels when an Array containing a single Promise is specified and that Promise is cancelled', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.any( [ deferred.getPromise() ] )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.cancel( 'reason' )
+				
+				expect( promise ).toCancelWith( 'reason' )
+				
+				return
+			)
+		)
+		
+		# TODO: With multiple items specified.
+		
+		return
 	)
 	
 	describe( 'memoize()', ->
-		
-		successCallback = failureCallback = progressCallback = cancelCallback = null
 		
 		fibonacci = ( n ) ->
 			( if n < 2 then n else fibonacci( n - 1 ) + fibonacci( n - 2 ) )
@@ -1704,26 +1317,16 @@ describe( 'Deft.promise.Promise', ->
 				
 				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
 				
-				result = null
 				promise = memoFunction( 12 )
-				promise.then(
-					success: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).toHaveBeenCalled()
 				
 				targetFunction.reset()
 				
-				result = null
 				promise = memoFunction( 12 )
-				promise.then(
-					success: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				return
@@ -1737,74 +1340,44 @@ describe( 'Deft.promise.Promise', ->
 				resolvedDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				resolvedDeferred.resolve( 12 )
 				
-				result = null
 				promise = memoFunction( resolvedDeferred )
-				promise.then(
-					success:  ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).toHaveBeenCalled()
 				
 				targetFunction.reset()
 				
-				result = null
 				promise = memoFunction( resolvedDeferred )
-				promise.then(
-					success: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
-				result = null
 				promise = memoFunction( 12 )
-				promise.then(
-					success: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
 				
 				resolvedPromise = resolvedDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( resolvedPromise )
-				promise.then(
-					success: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).toHaveBeenCalled()
 				
 				targetFunction.reset()
 				
 				resolvedPromise = resolvedDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( resolvedPromise )
-				promise.then(
-					success: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
-				result = null
 				promise = memoFunction( 12 )
-				promise.then(
-					success: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				return
@@ -1818,28 +1391,18 @@ describe( 'Deft.promise.Promise', ->
 				rejectedDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				rejectedDeferred.reject( 'error message' )
 				
-				result = null
 				promise = memoFunction( rejectedDeferred )
-				promise.then(
-					failure: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'rejected' )
-				expect( result ).toBe( 'error message' )
+				expect( promise ).toRejectWith( 'error message' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
 				
 				rejectedPromise = rejectedDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( rejectedPromise )
-				promise.then(
-					failure: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'rejected' )
-				expect( result ).toBe( 'error message' )
+				expect( promise ).toRejectWith( 'error message' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				return
@@ -1853,28 +1416,18 @@ describe( 'Deft.promise.Promise', ->
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				pendingDeferred.update( 'progress' )
 				
-				result = null
 				promise = memoFunction( pendingDeferred )
-				promise.then(
-					progress: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'pending' )
-				expect( result ).toBe( 'progress' )
+				expect( promise ).toUpdateWith( 'progress' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
 				
 				pendingPromise = pendingDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( pendingPromise )
-				promise.then(
-					progress: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'pending' )
-				expect( result ).toBe( 'progress' )
+				expect( promise ).toUpdateWith( 'progress' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				return
@@ -1888,28 +1441,18 @@ describe( 'Deft.promise.Promise', ->
 				cancelledDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				cancelledDeferred.cancel( 'reason' )
 				
-				result = null
 				promise = memoFunction( cancelledDeferred )
-				promise.then(
-					cancel: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'cancelled' )
-				expect( result ).toBe( 'reason' )
+				expect( promise ).toCancelWith( 'reason' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
 				
 				cancelledPromise = cancelledDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( cancelledPromise )
-				promise.then(
-					cancel: ( value ) -> result = value
-				)
 				
-				expect( promise.getState() ).toBe( 'cancelled' )
-				expect( result ).toBe( 'reason' )
+				expect( promise ).toCancelWith( 'reason' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				return
@@ -1922,38 +1465,26 @@ describe( 'Deft.promise.Promise', ->
 				
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				
-				result = null
 				promise = memoFunction( pendingDeferred )
-				promise.then(
-					( value ) ->
-						result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.resolve( 12 )
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).toHaveBeenCalled()
 				
 				targetFunction.reset()
 				
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				
-				result = null
 				promise = memoFunction( pendingDeferred )
-				promise.then(
-					( value ) ->
-						result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.resolve( 12 )
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
@@ -1961,18 +1492,13 @@ describe( 'Deft.promise.Promise', ->
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				pendingPromise = pendingDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( pendingPromise )
-				promise.then(
-					success: ( value ) -> result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.resolve( 12 )
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).toHaveBeenCalled()
 				
 				targetFunction.reset()
@@ -1980,18 +1506,13 @@ describe( 'Deft.promise.Promise', ->
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				pendingPromise = pendingDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( pendingPromise )
-				promise.then(
-					success: ( value ) -> result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.resolve( 12 )
 				
-				expect( promise.getState() ).toBe( 'resolved' )
-				expect( result ).toBe( fibonacci( 12 ) )
+				expect( promise ).toResolveWith( fibonacci( 12 ) )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				return
@@ -2004,18 +1525,13 @@ describe( 'Deft.promise.Promise', ->
 				
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				
-				result = null
 				promise = memoFunction( pendingDeferred )
-				promise.then(
-					failure: ( value ) -> result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.reject( 'error message' )
 				
-				expect( promise.getState() ).toBe( 'rejected' )
-				expect( result ).toBe( 'error message' )
+				expect( promise ).toRejectWith( 'error message' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
@@ -2023,18 +1539,13 @@ describe( 'Deft.promise.Promise', ->
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				pendingPromise = pendingDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( pendingPromise )
-				promise.then(
-					failure: ( value ) -> result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.reject( 'error message' )
 				
-				expect( promise.getState() ).toBe( 'rejected' )
-				expect( result ).toBe( 'error message' )
+				expect( promise ).toRejectWith( 'error message' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				return
@@ -2047,18 +1558,13 @@ describe( 'Deft.promise.Promise', ->
 				
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				
-				result = null
 				promise = memoFunction( pendingDeferred )
-				promise.then(
-					progress: ( value ) -> result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.update( 'progress' )
 				
-				expect( promise.getState() ).toBe( 'pending' )
-				expect( result ).toBe( 'progress' )
+				expect( promise ).toUpdateWith( 'progress' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
@@ -2066,18 +1572,13 @@ describe( 'Deft.promise.Promise', ->
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				pendingPromise = pendingDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( pendingPromise )
-				promise.then(
-					progress: ( value ) -> result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.update( 'progress' )
 				
-				expect( promise.getState() ).toBe( 'pending' )
-				expect( result ).toBe( 'progress' )
+				expect( promise ).toUpdateWith( 'progress' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				return
@@ -2090,18 +1591,13 @@ describe( 'Deft.promise.Promise', ->
 				
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				
-				result = null
 				promise = memoFunction( pendingDeferred )
-				promise.then(
-					cancel: ( value ) -> result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.cancel( 'reason' )
 				
-				expect( promise.getState() ).toBe( 'cancelled' )
-				expect( result ).toBe( 'reason' )
+				expect( promise ).toCancelWith( 'reason' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				memoFunction = Deft.promise.Promise.memoize( targetFunction, expectedScope )
@@ -2109,18 +1605,13 @@ describe( 'Deft.promise.Promise', ->
 				pendingDeferred = new Ext.create( 'Deft.promise.Deferred' )
 				pendingPromise = pendingDeferred.getPromise()
 				
-				result = null
 				promise = memoFunction( pendingPromise )
-				promise.then(
-					cancel: ( value ) -> result = value
-				)
 				
 				expect( promise.getState() ).toBe( 'pending' )
 				
 				pendingDeferred.cancel( 'reason' )
 				
-				expect( promise.getState() ).toBe( 'cancelled' )
-				expect( result ).toBe( 'reason' )
+				expect( promise ).toCancelWith( 'reason' )
 				expect( targetFunction ).not.toHaveBeenCalled()
 				
 				return
@@ -2146,34 +1637,753 @@ describe( 'Deft.promise.Promise', ->
 	
 	describe( 'map()', ->
 		
-		successCallback = failureCallback = progressCallback = cancelCallback = null
+		identityFunction = ( value ) -> value
 		
-		beforeEach( ->
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+		doubleFunction = ( value ) -> value * 2
+		
+		getInputParameters = ( parameters ) ->
+			inputs = parameter.input for parameter in parameters
+		
+		getOutputParameters = ( parameters ) ->
+			outputs = parameter.output for parameter in parameters
+		
+		describe( 'with an Array of values specified', ->
+			
+			it( 'should map input values of any type to corresponding output values using a mapping function', ->
+				values = [ undefined, null, false, 0, 1, 'expected value', [], {} ]
+				
+				promise = Deft.promise.Promise.map( values, identityFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toResolveWith( values )
+			)
+			
+			it( 'should map input values to corresponding output values using a mapping function', ->
+				parameters = [
+					{
+						input: 1
+						output: 2
+					}
+					{
+						input: 2
+						output: 4
+					}
+					{
+						input: 3
+						output: 6
+					}
+				]
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination )
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise ).toResolveWith( getOutputParameters( permutation ) )
+			)
+		)
+		
+		describe( 'with an Array containing a single Deferred', ->
+			
+			it( 'should return a resolved Promise when an Array containing a single resolved Deferred is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.resolve( 1 )
+				
+				promise = Deft.promise.Promise.map( [ deferred ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toResolveWith( [ 2 ] )
+				
+				return
+			)
+			
+			it( 'should return a rejected Promise completed with the originating error when an Array containing a single rejected Deferred is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.reject( 'error message' )
+				
+				promise = Deft.promise.Promise.map( [ deferred ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toRejectWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Deferred is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.update( 'progress' )
+				
+				promise = Deft.promise.Promise.map( [ deferred ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toUpdateWith( 'progress' )
+				
+				return
+			)
+			
+			it( 'should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Deferred is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.cancel( 'reason' )
+				
+				promise = Deft.promise.Promise.map( [ deferred ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toCancelWith( 'reason' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that resolves when an Array containing a single Deferred is specified and that Deferred is resolved', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.map( [ deferred ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.resolve( 1 )
+				
+				expect( promise ).toResolveWith( [ 2 ] )
+				
+				return
+			)
+			
+			it( 'should return a Promise that rejects when an Array containing a single Deferred is specified and that Deferred is rejected', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.map( [ deferred ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.reject( 'error message' )
+				
+				expect( promise ).toRejectWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that updates when an Array containing a single Deferred is specified and that Deferred is updated', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.map( [ deferred ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.update( 'progress' )
+				
+				expect( promise ).toUpdateWith( 'progress' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that cancels when an Array containing a single Deferred is specified and that Deferred is cancelled', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.map( [ deferred ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.cancel( 'reason' )
+				
+				expect( promise ).toCancelWith( 'reason' )
+				
+				return
+			)
+		)
+		
+		describe( 'with an Array containing a single Promise', ->
+			
+			it( 'should return a resolved Promise when an Array containing a single resolved Promise is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.resolve( 1 )
+				
+				promise = Deft.promise.Promise.map( [ deferred.getPromise() ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toResolveWith( [ 2 ] )
+				
+				return
+			)
+			
+			it( 'should return a rejected Promise completed with the originating error when an Array containing a single rejected Promise is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.reject( 'error message' )
+				
+				promise = Deft.promise.Promise.map( [ deferred.getPromise() ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toRejectWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Promise is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.update( 'progress' )
+				
+				promise = Deft.promise.Promise.map( [ deferred.getPromise() ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toUpdateWith( 'progress' )
+				
+				return
+			)
+			
+			it( 'should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Promise is specified', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				deferred.cancel( 'reason' )
+				
+				promise = Deft.promise.Promise.map( [ deferred.getPromise() ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise ).toCancelWith( 'reason' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that resolves when an Array containing a single Promise is specified and that Promise is resolved', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.map( [ deferred.getPromise() ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.resolve( 1 )
+				
+				expect( promise ).toResolveWith( [ 2 ] )
+				
+				return
+			)
+			
+			it( 'should return a Promise that rejects when an Array containing a single Promise is specified and that Promise is rejected', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.map( [ deferred.getPromise() ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.reject( 'error message' )
+				
+				expect( promise ).toRejectWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that updates when an Array containing a single Promise is specified and that Promise is updated', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.map( [ deferred.getPromise() ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.update( 'progress' )
+				
+				expect( promise ).toUpdateWith( 'progress' )
+				
+				return
+			)
+			
+			it( 'should return a Promise that cancels when an Array containing a single Promise is specified and that Promise is cancelled', ->
+				deferred = Ext.create( 'Deft.promise.Deferred' )
+				
+				promise = Deft.promise.Promise.map( [ deferred.getPromise() ], doubleFunction )
+				
+				expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+				expect( promise.getState() ).toBe( 'pending' )
+				
+				deferred.cancel( 'reason' )
+				
+				expect( promise ).toCancelWith( 'reason' )
+				
+				return
+			)
+		)
+		
+		describe( 'with multiple items specified', ->
+			
+			getInputParameters = ( parameters ) ->
+				inputs = parameter.input for parameter in parameters
+			
+			getOutputParameters = ( parameters ) ->
+				outputs = parameter.output for parameter in parameters
+			
+			it( 'should return a resolved Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises is specified', ->
+				deferred2 = Ext.create( 'Deft.promise.Deferred' )
+				deferred2.resolve( 2 )
+				
+				deferred3 = Ext.create( 'Deft.promise.Deferred' )
+				deferred3.resolve( 3 )
+				promise3 = deferred3.getPromise()
+				
+				parameters = [
+					{
+						input: 1
+						output: 2
+					}
+					{
+						input: deferred2
+						output: 4
+					}
+					{
+						input: promise3
+						output: 6
+					}
+				]
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination )
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise ).toResolveWith( getOutputParameters( permutation ) )
+				
+				return
+			)
+			
+			it( 'should return a rejected Promise when an Array containing any combination of values, resolved Deferreds, and/or resolved Promises, and a rejected Deferred or Promise is specified', ->
+				deferred2 = Ext.create( 'Deft.promise.Deferred' )
+				deferred2.resolve( 2 )
+				
+				deferred3 = Ext.create( 'Deft.promise.Deferred' )
+				deferred3.resolve( 3 )
+				promise3 = deferred3.getPromise()
+				
+				parameters = [
+					{
+						input: 1
+						output: 2
+					}
+					{
+						input: deferred2
+						output: 4
+					}
+					{
+						input: promise3
+						output: 6
+					}
+				]
+				
+				rejectedDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred.reject( 'error message' )
+				
+				rejectedDeferredParameter =
+					input: rejectedDeferred
+					output: 'error message'
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( rejectedDeferredParameter ) )
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise ).toRejectWith( 'error message' )
+				
+				rejectedPromiseParameter =
+					input: rejectedDeferred.getPromise()
+					output: 'error message'
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( rejectedPromiseParameter ) )
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise ).toRejectWith( 'error message' )
+			)
+			
+			it( 'should return a pending (and immediately updated) Promise when an Array containing any combination of values, resolved Deferreds, and/or resolved Promises, and pending (and updated) Deferred or Promise is specified', ->
+				deferred2 = Ext.create( 'Deft.promise.Deferred' )
+				deferred2.resolve( 2 )
+				
+				deferred3 = Ext.create( 'Deft.promise.Deferred' )
+				deferred3.resolve( 3 )
+				promise3 = deferred3.getPromise()
+				
+				parameters = [
+					{
+						input: 1
+						output: 2
+					}
+					{
+						input: deferred2
+						output: 4
+					}
+					{
+						input: promise3
+						output: 6
+					}
+				]
+				
+				updatedDeferred = Ext.create( 'Deft.promise.Deferred' )
+				updatedDeferred.update( 'progress' )
+				
+				updatedDeferredParameter =
+					input: updatedDeferred
+					output: 'progress'
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( updatedDeferredParameter ) )
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise ).toUpdateWith( 'progress' )
+				
+				updatedPromiseParameter =
+					input: updatedDeferred.getPromise()
+					output: 'progress'
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( updatedPromiseParameter ) )
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise ).toUpdateWith( 'progress' )
+			)
+			
+			it( 'should return a cancelled Promise when an Array containing any combination of values, resolved Deferreds, and/or resolved Promises, and a cancelled Deferred or Promise is specified', ->
+				deferred2 = Ext.create( 'Deft.promise.Deferred' )
+				deferred2.resolve( 2 )
+				
+				deferred3 = Ext.create( 'Deft.promise.Deferred' )
+				deferred3.resolve( 3 )
+				promise3 = deferred3.getPromise()
+				
+				parameters = [
+					{
+						input: 1
+						output: 2
+					}
+					{
+						input: deferred2
+						output: 4
+					}
+					{
+						input: promise3
+						output: 6
+					}
+				]
+				
+				cancelledDeferred = Ext.create( 'Deft.promise.Deferred' )
+				cancelledDeferred.cancel( 'reason' )
+				
+				cancelledDeferredParameter =
+					input: cancelledDeferred
+					output: 'reason'
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( cancelledDeferredParameter ) )
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise ).toCancelWith( 'reason' )
+				
+				cancelledPromiseParameter =
+					input: cancelledDeferred.getPromise()
+					output: 'reason'
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( cancelledPromiseParameter ) )
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise ).toCancelWith( 'reason' )
+			)
+			
+			it( 'should return a resolved Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred or Promise is resolved', ->
+				deferred2 = Ext.create( 'Deft.promise.Deferred' )
+				deferred2.resolve( 2 )
+				
+				deferred3 = Ext.create( 'Deft.promise.Deferred' )
+				deferred3.resolve( 3 )
+				promise3 = deferred3.getPromise()
+				
+				parameters = [
+					{
+						input: 1
+						output: 2
+					}
+					{
+						input: deferred2
+						output: 4
+					}
+					{
+						input: promise3
+						output: 6
+					}
+				]
+				
+				placeholder = {}
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( placeholder ) )
+						pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+						
+						pendingDeferredParameter =
+							input: pendingDeferred
+							output: 8
+						
+						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingDeferredParameter
+						
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise.getState() ).toBe( 'pending' )
+						
+						pendingDeferred.resolve( 4 )
+						
+						expect( promise ).toResolveWith( getOutputParameters( permutation ) )
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( placeholder ) )
+						pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+						
+						pendingPromiseParameter =
+							input: pendingDeferred.getPromise()
+							output: 8
+						
+						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingPromiseParameter
+						
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise.getState() ).toBe( 'pending' )
+						
+						pendingDeferred.resolve( 4 )
+						
+						expect( promise ).toResolveWith( getOutputParameters( permutation ) )
+				
+				return
+			)
+			
+			it( 'should return a rejected Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred or Promise is rejected', ->
+				deferred2 = Ext.create( 'Deft.promise.Deferred' )
+				deferred2.resolve( 2 )
+				
+				deferred3 = Ext.create( 'Deft.promise.Deferred' )
+				deferred3.resolve( 3 )
+				promise3 = deferred3.getPromise()
+				
+				parameters = [
+					{
+						input: 1
+						output: 2
+					}
+					{
+						input: deferred2
+						output: 4
+					}
+					{
+						input: promise3
+						output: 6
+					}
+				]
+				
+				placeholder = {}
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( placeholder ) )
+						pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+						
+						pendingDeferredParameter =
+							input: pendingDeferred
+							output: 'error message'
+						
+						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingDeferredParameter
+						
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise.getState() ).toBe( 'pending' )
+						
+						pendingDeferred.reject( 'error message' )
+						
+						expect( promise ).toRejectWith( 'error message' )
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( placeholder ) )
+						pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+						
+						pendingPromiseParameter =
+							input: pendingDeferred.getPromise()
+							output: 'error message'
+						
+						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingPromiseParameter
+						
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise.getState() ).toBe( 'pending' )
+						
+						pendingDeferred.reject( 'error message' )
+						
+						expect( promise ).toRejectWith( 'error message' )
+				
+				return
+			)
+			
+			it( 'should return a pending (and later updated) when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred is updated', ->
+				deferred2 = Ext.create( 'Deft.promise.Deferred' )
+				deferred2.resolve( 2 )
+				
+				deferred3 = Ext.create( 'Deft.promise.Deferred' )
+				deferred3.resolve( 3 )
+				promise3 = deferred3.getPromise()
+				
+				parameters = [
+					{
+						input: 1
+						output: 2
+					}
+					{
+						input: deferred2
+						output: 4
+					}
+					{
+						input: promise3
+						output: 6
+					}
+				]
+				
+				placeholder = {}
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( placeholder ) )
+						pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+						
+						pendingDeferredParameter =
+							input: pendingDeferred
+							output: 'error message'
+						
+						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingDeferredParameter
+						
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise.getState() ).toBe( 'pending' )
+						
+						pendingDeferred.update( 'progress' )
+						
+						expect( promise ).toUpdateWith( 'progress' )
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( placeholder ) )
+						pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+						
+						pendingPromiseParameter =
+							input: pendingDeferred.getPromise()
+							output: 'error message'
+						
+						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingPromiseParameter
+						
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise.getState() ).toBe( 'pending' )
+						
+						pendingDeferred.update( 'progress' )
+						
+						expect( promise ).toUpdateWith( 'progress' )
+				
+				return
+			)
+			
+			it( 'should return a cancelled Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred or Promise is cancelled', ->
+				deferred2 = Ext.create( 'Deft.promise.Deferred' )
+				deferred2.resolve( 2 )
+				
+				deferred3 = Ext.create( 'Deft.promise.Deferred' )
+				deferred3.resolve( 3 )
+				promise3 = deferred3.getPromise()
+				
+				parameters = [
+					{
+						input: 1
+						output: 2
+					}
+					{
+						input: deferred2
+						output: 4
+					}
+					{
+						input: promise3
+						output: 6
+					}
+				]
+				
+				placeholder = {}
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( placeholder ) )
+						pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+						
+						pendingDeferredParameter =
+							input: pendingDeferred
+							output: 'reason'
+						
+						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingDeferredParameter
+						
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise.getState() ).toBe( 'pending' )
+						
+						pendingDeferred.cancel( 'reason' )
+						
+						expect( promise ).toCancelWith( 'reason' )
+				
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination.concat( placeholder ) )
+						pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+						
+						pendingPromiseParameter =
+							input: pendingDeferred.getPromise()
+							output: 'error message'
+						
+						permutation[ Ext.Array.indexOf( permutation, placeholder ) ] = pendingPromiseParameter
+						
+						promise = Deft.promise.Promise.map( getInputParameters( permutation ), doubleFunction )
+						
+						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+						expect( promise.getState() ).toBe( 'pending' )
+						
+						pendingDeferred.cancel( 'reason' )
+						
+						expect( promise ).toCancelWith( 'reason' )
+				
+				return
+			)
 			
 			return
 		)
-		
-		# TODO
 	)
 	
 	describe( 'reduce()', ->
 		
-		successCallback = failureCallback = progressCallback = cancelCallback = null
+		sumFunction = ( previousValue, currentValue, index, array ) -> previousValue + currentValue
 		
-		beforeEach( ->
-			successCallback  = jasmine.createSpy( 'success callback' )
-			failureCallback  = jasmine.createSpy( 'failure callback' )
-			progressCallback = jasmine.createSpy( 'progress callback' )
-			cancelCallback   = jasmine.createSpy( 'cancel callback' )
+		it( 'should reduce input values to a corresponding output value using a reduce function (with no initial value specified)', ->
+			values = [ 0, 1, 2, 3, 4 ]
 			
-			return
+			promise = Deft.promise.Promise.reduce( values, sumFunction )
+			
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+			expect( promise ).toResolveWith( 10 )
 		)
 		
-		# TODO
+		it( 'should reduce input values to a corresponding output value using a reduce function (with an initial value specified)', ->
+			values = [ 0, 1, 2, 3, 4 ]
+			
+			promise = Deft.promise.Promise.reduce( values, sumFunction, 10 )
+			
+			expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
+			expect( promise ).toResolveWith( 20 )
+		)
+		
+		# TODO: Add tests for reduce function that returns a Promise.
 	)
 	
 	describe( 'then()', ->

@@ -9,7 +9,7 @@ Jasmine test suite for Deft.promise.Promise
 */
 
 describe('Deft.promise.Promise', function() {
-  var generateCombinations, generatePermutations;
+  var generateCombinations, generatePermutations, wasSpyCalled, wasSpyCalledWith;
   generatePermutations = function(array) {
     var swap, _generatePermutations;
     swap = function(array, indexA, indexB) {
@@ -61,17 +61,77 @@ describe('Deft.promise.Promise', function() {
     combinations.push(array);
     return combinations;
   };
+  wasSpyCalled = function(spy) {
+    return spy.callCount !== 0;
+  };
+  wasSpyCalledWith = function(spy, value) {
+    return jasmine.getEnv().contains_(spy.argsForCall, [value]);
+  };
   beforeEach(function() {
     this.addMatchers({
       toBeInstanceOf: function(className) {
         return this.actual instanceof Ext.ClassManager.get(className);
+      },
+      toResolveWith: function(value) {
+        var cancelCallback, failureCallback, progressCallback, successCallback;
+        successCallback = jasmine.createSpy('success callback');
+        failureCallback = jasmine.createSpy('failure callback');
+        progressCallback = jasmine.createSpy('progress callback');
+        cancelCallback = jasmine.createSpy('cancel callback');
+        this.actual.then({
+          success: successCallback,
+          failure: failureCallback,
+          progress: progressCallback,
+          cancel: cancelCallback
+        });
+        return this.actual.getState() === 'resolved' && wasSpyCalledWith(successCallback, value) && !wasSpyCalled(failureCallback) && !wasSpyCalled(progressCallback) && !wasSpyCalled(cancelCallback);
+      },
+      toRejectWith: function(message) {
+        var cancelCallback, failureCallback, progressCallback, successCallback;
+        successCallback = jasmine.createSpy('success callback');
+        failureCallback = jasmine.createSpy('failure callback');
+        progressCallback = jasmine.createSpy('progress callback');
+        cancelCallback = jasmine.createSpy('cancel callback');
+        this.actual.then({
+          success: successCallback,
+          failure: failureCallback,
+          progress: progressCallback,
+          cancel: cancelCallback
+        });
+        return this.actual.getState() === 'rejected' && !wasSpyCalled(successCallback) && wasSpyCalledWith(failureCallback, message) && !wasSpyCalled(progressCallback) && !wasSpyCalled(cancelCallback);
+      },
+      toUpdateWith: function(progress) {
+        var cancelCallback, failureCallback, progressCallback, successCallback;
+        successCallback = jasmine.createSpy('success callback');
+        failureCallback = jasmine.createSpy('failure callback');
+        progressCallback = jasmine.createSpy('progress callback');
+        cancelCallback = jasmine.createSpy('cancel callback');
+        this.actual.then({
+          success: successCallback,
+          failure: failureCallback,
+          progress: progressCallback,
+          cancel: cancelCallback
+        });
+        return this.actual.getState() === 'pending' && !wasSpyCalled(successCallback) && !wasSpyCalled(failureCallback) && wasSpyCalledWith(progressCallback, progress) && !wasSpyCalled(cancelCallback);
+      },
+      toCancelWith: function(reason) {
+        var cancelCallback, failureCallback, progressCallback, successCallback;
+        successCallback = jasmine.createSpy('success callback');
+        failureCallback = jasmine.createSpy('failure callback');
+        progressCallback = jasmine.createSpy('progress callback');
+        cancelCallback = jasmine.createSpy('cancel callback');
+        this.actual.then({
+          success: successCallback,
+          failure: failureCallback,
+          progress: progressCallback,
+          cancel: cancelCallback
+        });
+        return this.actual.getState() === 'cancelled' && !wasSpyCalled(successCallback) && !wasSpyCalled(failureCallback) && !wasSpyCalled(progressCallback, reason) && wasSpyCalledWith(cancelCallback, reason);
       }
     });
   });
   describe('when()', function() {
-    var MockThirdPartyPromise, cancelCallback, deferred, failureCallback, progressCallback, successCallback;
-    deferred = null;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    var MockThirdPartyPromise;
     MockThirdPartyPromise = (function() {
 
       function MockThirdPartyPromise() {}
@@ -107,307 +167,128 @@ describe('Deft.promise.Promise', function() {
       return MockThirdPartyPromise;
 
     })();
-    beforeEach(function() {
-      deferred = Ext.create('Deft.promise.Deferred');
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
-    });
     it('should return an immediately resolved Promise when a value specified', function() {
       var promise;
       promise = Deft.promise.Promise.when('expected value');
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise.getState()).toBe('resolved');
-      expect(successCallback).toHaveBeenCalledWith('expected value');
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toResolveWith('expected value');
     });
     it('should return a new resolved Promise when a resolved Promise is specified', function() {
-      var promise;
+      var deferred, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
       deferred.resolve('expected value');
       promise = Deft.promise.Promise.when(deferred.getPromise());
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.getPromise());
-      expect(promise.getState()).toBe('resolved');
-      expect(successCallback).toHaveBeenCalledWith('expected value');
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toResolveWith('expected value');
     });
     it('should return a new rejected Promise when a rejected Promise is specified', function() {
-      var promise;
+      var deferred, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
       deferred.reject('error message');
       promise = Deft.promise.Promise.when(deferred.getPromise());
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.getPromise());
-      expect(promise.getState()).toBe('rejected');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).toHaveBeenCalledWith('error message');
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toRejectWith('error message');
     });
     it('should return a new pending (and immediately updated) Promise when a pending (and updated) Promise is specified', function() {
-      var promise;
+      var deferred, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
       deferred.update('progress');
       promise = Deft.promise.Promise.when(deferred.getPromise());
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.getPromise());
-      expect(promise.getState()).toBe('pending');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).toHaveBeenCalledWith('progress');
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toUpdateWith('progress');
     });
     it('should return a new cancelled Promise when a cancelled Promise specified', function() {
-      var promise;
+      var deferred, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
       deferred.cancel('reason');
       promise = Deft.promise.Promise.when(deferred.getPromise());
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.getPromise());
-      expect(promise.getState()).toBe('cancelled');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).toHaveBeenCalledWith('reason');
+      expect(promise).toCancelWith('reason');
     });
     it('should return a new pending Promise that resolves when the pending Promise specified is resolved', function() {
-      var promise;
+      var deferred, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
       promise = Deft.promise.Promise.when(deferred.getPromise());
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.getPromise());
       expect(promise.getState()).toBe('pending');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
       deferred.resolve('expected value');
-      expect(promise.getState()).toBe('resolved');
-      expect(successCallback).toHaveBeenCalledWith('expected value');
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toResolveWith('expected value');
     });
     it('should return a new pending Promise that rejects when the pending Promise specified is rejected', function() {
-      var promise;
+      var deferred, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
       promise = Deft.promise.Promise.when(deferred.getPromise());
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.getPromise());
       expect(promise.getState()).toBe('pending');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
       deferred.reject('error message');
-      expect(promise.getState()).toBe('rejected');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).toHaveBeenCalledWith('error message');
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toRejectWith('error message');
     });
     it('should return a new pending Promise that updates when the pending Promise specified is updated', function() {
-      var promise;
+      var deferred, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
       promise = Deft.promise.Promise.when(deferred.getPromise());
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.getPromise());
       expect(promise.getState()).toBe('pending');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
       deferred.update('progress');
-      expect(promise.getState()).toBe('pending');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).toHaveBeenCalledWith('progress');
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toUpdateWith('progress');
     });
     it('should return a new pending Promise that cancels when the pending Promise specified is cancelled', function() {
-      var promise;
+      var deferred, promise;
+      deferred = Ext.create('Deft.promise.Deferred');
       promise = Deft.promise.Promise.when(deferred.getPromise());
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(deferred.getPromise());
       expect(promise.getState()).toBe('pending');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
       deferred.cancel('reason');
-      expect(promise.getState()).toBe('cancelled');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).toHaveBeenCalledWith('reason');
+      expect(promise).toCancelWith('reason');
     });
     it('should return a new resolved Promise when a resolved untrusted Promise is specified', function() {
       var mockThirdPartyPromise, promise;
       mockThirdPartyPromise = new MockThirdPartyPromise();
       mockThirdPartyPromise.resolve('expected value');
       promise = Deft.promise.Promise.when(mockThirdPartyPromise);
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
       expect(promise).not.toBe(mockThirdPartyPromise);
-      expect(promise.getState()).toBe('resolved');
-      expect(successCallback).toHaveBeenCalledWith('expected value');
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toResolveWith('expected value');
     });
     it('should return a new rejected Promise when a rejected untrusted Promise is specified', function() {
       var mockThirdPartyPromise, promise;
       mockThirdPartyPromise = new MockThirdPartyPromise();
       mockThirdPartyPromise.reject('error message');
       promise = Deft.promise.Promise.when(mockThirdPartyPromise);
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
       expect(promise).not.toBe(mockThirdPartyPromise);
-      expect(promise.getState()).toBe('rejected');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).toHaveBeenCalledWith('error message');
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toRejectWith('error message');
     });
     it('should return a new Promise that resolves when the specified untrusted Promise is resolved', function() {
       var mockThirdPartyPromise, promise;
       mockThirdPartyPromise = new MockThirdPartyPromise();
       promise = Deft.promise.Promise.when(mockThirdPartyPromise);
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(mockThirdPartyPromise);
       expect(promise.getState()).toBe('pending');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).not.toBe(mockThirdPartyPromise);
       mockThirdPartyPromise.resolve('expected value');
-      expect(promise.getState()).toBe('resolved');
-      expect(successCallback).toHaveBeenCalledWith('expected value');
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toResolveWith('expected value');
     });
     return it('should return a new Promise that rejects when the specified untrusted Promise is rejected', function() {
       var mockThirdPartyPromise, promise;
       mockThirdPartyPromise = new MockThirdPartyPromise();
       promise = Deft.promise.Promise.when(mockThirdPartyPromise);
-      promise.then({
-        success: successCallback,
-        failure: failureCallback,
-        progress: progressCallback,
-        cancel: cancelCallback
-      });
       expect(promise).toBeInstanceOf('Deft.promise.Promise');
-      expect(promise).not.toBe(mockThirdPartyPromise);
       expect(promise.getState()).toBe('pending');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).not.toHaveBeenCalled();
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).not.toBe(mockThirdPartyPromise);
       mockThirdPartyPromise.reject('error message');
-      expect(promise.getState()).toBe('rejected');
-      expect(successCallback).not.toHaveBeenCalled();
-      expect(failureCallback).toHaveBeenCalledWith('error message');
-      expect(progressCallback).not.toHaveBeenCalled();
-      expect(cancelCallback).not.toHaveBeenCalled();
+      expect(promise).toRejectWith('error message');
     });
   });
   describe('all()', function() {
-    var cancelCallback, failureCallback, progressCallback, successCallback;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
-    beforeEach(function() {
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
-    });
     describe('with an Array containing a single value', function() {
       var itShouldResolveForValue, value, values, _i, _len;
       itShouldResolveForValue = function(value) {
         it("should return an immediately resolved Promise when an Array containing '" + value + "' is specified", function() {
           var promise;
-          promise = Deft.promise.Promise.all(['expected value']);
-          promise.then({
-            success: successCallback,
-            failure: failureCallback,
-            progress: progressCallback,
-            cancel: cancelCallback
-          });
+          promise = Deft.promise.Promise.all([value]);
           expect(promise).toBeInstanceOf('Deft.promise.Promise');
-          expect(promise.getState()).toBe('resolved');
-          expect(successCallback).toHaveBeenCalledWith(['expected value']);
-          expect(failureCallback).not.toHaveBeenCalled();
-          expect(progressCallback).not.toHaveBeenCalled();
-          expect(cancelCallback).not.toHaveBeenCalled();
+          expect(promise).toResolveWith([value]);
         });
       };
       values = [void 0, null, false, 0, 1, 'expected value', [], {}];
@@ -422,148 +303,68 @@ describe('Deft.promise.Promise', function() {
         deferred = Ext.create('Deft.promise.Deferred');
         deferred.resolve('expected value');
         promise = Deft.promise.Promise.all([deferred]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('resolved');
-        expect(successCallback).toHaveBeenCalledWith(['expected value']);
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toResolveWith(['expected value']);
       });
       it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Deferred is specified', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         deferred.reject('error message');
         promise = Deft.promise.Promise.all([deferred]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('rejected');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).toHaveBeenCalledWith('error message');
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toRejectWith('error message');
       });
       it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Deferred is specified', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         deferred.update('progress');
         promise = Deft.promise.Promise.all([deferred]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).toHaveBeenCalledWith('progress');
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toUpdateWith('progress');
       });
       it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Deferred is specified', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         deferred.cancel('reason');
         promise = Deft.promise.Promise.all([deferred]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('cancelled');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).toHaveBeenCalledWith('reason');
+        expect(promise).toCancelWith('reason');
       });
       it('should return a Promise that resolves when an Array containing a single Deferred is specified and that Deferred is resolved', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         promise = Deft.promise.Promise.all([deferred]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
         expect(promise.getState()).toBe('pending');
         deferred.resolve('expected value');
-        expect(promise.getState()).toBe('resolved');
-        expect(successCallback).toHaveBeenCalledWith(['expected value']);
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toResolveWith(['expected value']);
       });
       it('should return a Promise that rejects when an Array containing a single Deferred is specified and that Deferred is rejected', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         promise = Deft.promise.Promise.all([deferred]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
         expect(promise.getState()).toBe('pending');
         deferred.reject('error message');
-        expect(promise.getState()).toBe('rejected');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).toHaveBeenCalledWith('error message');
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toRejectWith('error message');
       });
       it('should return a Promise that updates when an Array containing a single Deferred is specified and that Deferred is updated', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         promise = Deft.promise.Promise.all([deferred]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
         expect(promise.getState()).toBe('pending');
         deferred.update('progress');
-        expect(promise.getState()).toBe('pending');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).toHaveBeenCalledWith('progress');
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toUpdateWith('progress');
       });
       return it('should return a Promise that cancels when an Array containing a single Deferred is specified and that Deferred is cancelled', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         promise = Deft.promise.Promise.all([deferred]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
         expect(promise.getState()).toBe('pending');
         deferred.cancel('reason');
-        expect(promise.getState()).toBe('cancelled');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).toHaveBeenCalledWith('reason');
+        expect(promise).toCancelWith('reason');
       });
     });
     describe('with an Array containing a single Promise', function() {
@@ -572,148 +373,68 @@ describe('Deft.promise.Promise', function() {
         deferred = Ext.create('Deft.promise.Deferred');
         deferred.resolve('expected value');
         promise = Deft.promise.Promise.all([deferred.getPromise()]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('resolved');
-        expect(successCallback).toHaveBeenCalledWith(['expected value']);
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toResolveWith(['expected value']);
       });
       it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Promise is specified', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         deferred.reject('error message');
         promise = Deft.promise.Promise.all([deferred.getPromise()]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('rejected');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).toHaveBeenCalledWith('error message');
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toRejectWith('error message');
       });
       it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Promise is specified', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         deferred.update('progress');
         promise = Deft.promise.Promise.all([deferred.getPromise()]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).toHaveBeenCalledWith('progress');
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toUpdateWith('progress');
       });
       it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Promise is specified', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         deferred.cancel('reason');
         promise = Deft.promise.Promise.all([deferred.getPromise()]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('cancelled');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).toHaveBeenCalledWith('reason');
+        expect(promise).toCancelWith('reason');
       });
       it('should return a Promise that resolves when an Array containing a single Promise is specified and that Promise is resolved', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         promise = Deft.promise.Promise.all([deferred.getPromise()]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
         expect(promise.getState()).toBe('pending');
         deferred.resolve('expected value');
-        expect(promise.getState()).toBe('resolved');
-        expect(successCallback).toHaveBeenCalledWith(['expected value']);
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toResolveWith(['expected value']);
       });
       it('should return a Promise that rejects when an Array containing a single Promise is specified and that Promise is rejected', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         promise = Deft.promise.Promise.all([deferred.getPromise()]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
         expect(promise.getState()).toBe('pending');
         deferred.reject('error message');
-        expect(promise.getState()).toBe('rejected');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).toHaveBeenCalledWith('error message');
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toRejectWith('error message');
       });
       it('should return a Promise that updates when an Array containing a single Promise is specified and that Promise is updated', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         promise = Deft.promise.Promise.all([deferred.getPromise()]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
         expect(promise.getState()).toBe('pending');
         deferred.update('progress');
-        expect(promise.getState()).toBe('pending');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).toHaveBeenCalledWith('progress');
-        expect(cancelCallback).not.toHaveBeenCalled();
+        expect(promise).toUpdateWith('progress');
       });
       return it('should return a Promise that cancels when an Array containing a single Promise is specified and that Promise is cancelled', function() {
         var deferred, promise;
         deferred = Ext.create('Deft.promise.Deferred');
         promise = Deft.promise.Promise.all([deferred.getPromise()]);
-        promise.then({
-          success: successCallback,
-          failure: failureCallback,
-          progress: progressCallback,
-          cancel: cancelCallback
-        });
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
         expect(promise.getState()).toBe('pending');
         deferred.cancel('reason');
-        expect(promise.getState()).toBe('cancelled');
-        expect(successCallback).not.toHaveBeenCalled();
-        expect(failureCallback).not.toHaveBeenCalled();
-        expect(progressCallback).not.toHaveBeenCalled();
-        expect(cancelCallback).toHaveBeenCalledWith('reason');
+        expect(promise).toCancelWith('reason');
       });
     });
     describe('with multiple items specified', function() {
@@ -762,22 +483,8 @@ describe('Deft.promise.Promise', function() {
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             permutation = _ref1[_j];
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
-            expect(promise.getState()).toBe('resolved');
-            expect(successCallback).toHaveBeenCalledWith(getOutputParameters(permutation));
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toResolveWith(getOutputParameters(permutation));
           }
         }
       });
@@ -818,22 +525,8 @@ describe('Deft.promise.Promise', function() {
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             permutation = _ref1[_j];
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
-            expect(promise.getState()).toBe('rejected');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).toHaveBeenCalledWith('error message');
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toRejectWith('error message');
           }
         }
         rejectedPromiseParameter = {
@@ -851,22 +544,8 @@ describe('Deft.promise.Promise', function() {
             for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
               permutation = _ref3[_l];
               promise = Deft.promise.Promise.all(getInputParameters(permutation));
-              promise.then({
-                success: successCallback,
-                failure: failureCallback,
-                progress: progressCallback,
-                cancel: cancelCallback
-              });
               expect(promise).toBeInstanceOf('Deft.promise.Promise');
-              expect(promise.getState()).toBe('rejected');
-              expect(successCallback).not.toHaveBeenCalled();
-              expect(failureCallback).toHaveBeenCalledWith('error message');
-              expect(progressCallback).not.toHaveBeenCalled();
-              expect(cancelCallback).not.toHaveBeenCalled();
-              successCallback.reset();
-              failureCallback.reset();
-              progressCallback.reset();
-              _results1.push(cancelCallback.reset());
+              _results1.push(expect(promise).toRejectWith('error message'));
             }
             return _results1;
           })());
@@ -910,22 +589,8 @@ describe('Deft.promise.Promise', function() {
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             permutation = _ref1[_j];
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
-            expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).toHaveBeenCalledWith('progress');
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toUpdateWith('progress');
           }
         }
         updatedPromiseParameter = {
@@ -943,22 +608,8 @@ describe('Deft.promise.Promise', function() {
             for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
               permutation = _ref3[_l];
               promise = Deft.promise.Promise.all(getInputParameters(permutation));
-              promise.then({
-                success: successCallback,
-                failure: failureCallback,
-                progress: progressCallback,
-                cancel: cancelCallback
-              });
               expect(promise).toBeInstanceOf('Deft.promise.Promise');
-              expect(promise.getState()).toBe('pending');
-              expect(successCallback).not.toHaveBeenCalled();
-              expect(failureCallback).not.toHaveBeenCalled();
-              expect(progressCallback).toHaveBeenCalledWith('progress');
-              expect(cancelCallback).not.toHaveBeenCalled();
-              successCallback.reset();
-              failureCallback.reset();
-              progressCallback.reset();
-              _results1.push(cancelCallback.reset());
+              _results1.push(expect(promise).toUpdateWith('progress'));
             }
             return _results1;
           })());
@@ -1002,22 +653,8 @@ describe('Deft.promise.Promise', function() {
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             permutation = _ref1[_j];
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
-            expect(promise.getState()).toBe('cancelled');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).toHaveBeenCalledWith('reason');
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toCancelWith('reason');
           }
         }
         cancelledPromiseParameter = {
@@ -1035,22 +672,8 @@ describe('Deft.promise.Promise', function() {
             for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
               permutation = _ref3[_l];
               promise = Deft.promise.Promise.all(getInputParameters(permutation));
-              promise.then({
-                success: successCallback,
-                failure: failureCallback,
-                progress: progressCallback,
-                cancel: cancelCallback
-              });
               expect(promise).toBeInstanceOf('Deft.promise.Promise');
-              expect(promise.getState()).toBe('cancelled');
-              expect(successCallback).not.toHaveBeenCalled();
-              expect(failureCallback).not.toHaveBeenCalled();
-              expect(progressCallback).not.toHaveBeenCalled();
-              expect(cancelCallback).toHaveBeenCalledWith('reason');
-              successCallback.reset();
-              failureCallback.reset();
-              progressCallback.reset();
-              _results1.push(cancelCallback.reset());
+              _results1.push(expect(promise).toCancelWith('reason'));
             }
             return _results1;
           })());
@@ -1090,32 +713,10 @@ describe('Deft.promise.Promise', function() {
             };
             permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingDeferredParameter;
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
             pendingDeferred.resolve('expected value');
-            expect(promise.getState()).toBe('resolved');
-            expect(successCallback).toHaveBeenCalledWith(getOutputParameters(permutation));
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toResolveWith(getOutputParameters(permutation));
           }
         }
         _ref2 = generateCombinations(parameters);
@@ -1131,32 +732,10 @@ describe('Deft.promise.Promise', function() {
             };
             permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingPromiseParameter;
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
             pendingDeferred.resolve('expected value');
-            expect(promise.getState()).toBe('resolved');
-            expect(successCallback).toHaveBeenCalledWith(getOutputParameters(permutation));
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toResolveWith(getOutputParameters(permutation));
           }
         }
       });
@@ -1193,32 +772,10 @@ describe('Deft.promise.Promise', function() {
             };
             permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingDeferredParameter;
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
             pendingDeferred.reject('error message');
-            expect(promise.getState()).toBe('rejected');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).toHaveBeenCalledWith('error message');
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toRejectWith('error message');
           }
         }
         _ref2 = generateCombinations(parameters);
@@ -1234,32 +791,10 @@ describe('Deft.promise.Promise', function() {
             };
             permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingPromiseParameter;
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
             pendingDeferred.reject('error message');
-            expect(promise.getState()).toBe('rejected');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).toHaveBeenCalledWith('error message');
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toRejectWith('error message');
           }
         }
       });
@@ -1296,32 +831,10 @@ describe('Deft.promise.Promise', function() {
             };
             permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingDeferredParameter;
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
             pendingDeferred.update('progress');
-            expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).toHaveBeenCalledWith('progress');
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toUpdateWith('progress');
           }
         }
         _ref2 = generateCombinations(parameters);
@@ -1337,32 +850,10 @@ describe('Deft.promise.Promise', function() {
             };
             permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingPromiseParameter;
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
             pendingDeferred.update('progress');
-            expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).toHaveBeenCalledWith('progress');
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toUpdateWith('progress');
           }
         }
       });
@@ -1399,32 +890,10 @@ describe('Deft.promise.Promise', function() {
             };
             permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingDeferredParameter;
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
             pendingDeferred.cancel('reason');
-            expect(promise.getState()).toBe('cancelled');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).toHaveBeenCalledWith('reason');
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toCancelWith('reason');
           }
         }
         _ref2 = generateCombinations(parameters);
@@ -1440,50 +909,175 @@ describe('Deft.promise.Promise', function() {
             };
             permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingPromiseParameter;
             promise = Deft.promise.Promise.all(getInputParameters(permutation));
-            promise.then({
-              success: successCallback,
-              failure: failureCallback,
-              progress: progressCallback,
-              cancel: cancelCallback
-            });
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).not.toHaveBeenCalled();
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
             pendingDeferred.cancel('reason');
-            expect(promise.getState()).toBe('cancelled');
-            expect(successCallback).not.toHaveBeenCalled();
-            expect(failureCallback).not.toHaveBeenCalled();
-            expect(progressCallback).not.toHaveBeenCalled();
-            expect(cancelCallback).toHaveBeenCalledWith('reason');
-            successCallback.reset();
-            failureCallback.reset();
-            progressCallback.reset();
-            cancelCallback.reset();
+            expect(promise).toCancelWith('reason');
           }
         }
       });
     });
   });
   describe('any()', function() {
-    var cancelCallback, failureCallback, progressCallback, successCallback;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
-    return beforeEach(function() {
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
+    describe('with an Array containing a single value', function() {
+      var itShouldResolveForValue, value, values, _i, _len;
+      itShouldResolveForValue = function(value) {
+        it("should return an immediately resolved Promise when an Array containing '" + value + "' is specified", function() {
+          var promise;
+          promise = Deft.promise.Promise.any([value]);
+          expect(promise).toBeInstanceOf('Deft.promise.Promise');
+          expect(promise).toResolveWith(value);
+        });
+      };
+      values = [void 0, null, false, 0, 1, 'expected value', [], {}];
+      for (_i = 0, _len = values.length; _i < _len; _i++) {
+        value = values[_i];
+        itShouldResolveForValue.call(this, value);
+      }
+    });
+    describe('with an Array containing a single Deferred', function() {
+      it('should return a resolved Promise when an Array containing a single resolved Deferred is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.resolve('expected value');
+        promise = Deft.promise.Promise.any([deferred]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toResolveWith('expected value');
+      });
+      it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Deferred is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.reject('error message');
+        promise = Deft.promise.Promise.any([deferred]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toRejectWith('error message');
+      });
+      it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Deferred is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.update('progress');
+        promise = Deft.promise.Promise.any([deferred]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toUpdateWith('progress');
+      });
+      it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Deferred is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.cancel('reason');
+        promise = Deft.promise.Promise.any([deferred]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toCancelWith('reason');
+      });
+      it('should return a Promise that resolves when an Array containing a single Deferred is specified and that Deferred is resolved', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.any([deferred]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.resolve('expected value');
+        expect(promise).toResolveWith('expected value');
+      });
+      it('should return a Promise that rejects when an Array containing a single Deferred is specified and that Deferred is rejected', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.any([deferred]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.reject('error message');
+        expect(promise).toRejectWith('error message');
+      });
+      it('should return a Promise that updates when an Array containing a single Deferred is specified and that Deferred is updated', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.any([deferred]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.update('progress');
+        expect(promise).toUpdateWith('progress');
+      });
+      return it('should return a Promise that cancels when an Array containing a single Deferred is specified and that Deferred is cancelled', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.any([deferred]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.cancel('reason');
+        expect(promise).toCancelWith('reason');
+      });
+    });
+    describe('with an Array containing a single Promise', function() {
+      it('should return a resolved Promise when an Array containing a single resolved Promise is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.resolve('expected value');
+        promise = Deft.promise.Promise.any([deferred.getPromise()]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toResolveWith('expected value');
+      });
+      it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Promise is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.reject('error message');
+        promise = Deft.promise.Promise.any([deferred.getPromise()]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toRejectWith('error message');
+      });
+      it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Promise is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.update('progress');
+        promise = Deft.promise.Promise.any([deferred.getPromise()]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toUpdateWith('progress');
+      });
+      it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Promise is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.cancel('reason');
+        promise = Deft.promise.Promise.any([deferred.getPromise()]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toCancelWith('reason');
+      });
+      it('should return a Promise that resolves when an Array containing a single Promise is specified and that Promise is resolved', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.any([deferred.getPromise()]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.resolve('expected value');
+        expect(promise).toResolveWith('expected value');
+      });
+      it('should return a Promise that rejects when an Array containing a single Promise is specified and that Promise is rejected', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.any([deferred.getPromise()]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.reject('error message');
+        expect(promise).toRejectWith('error message');
+      });
+      it('should return a Promise that updates when an Array containing a single Promise is specified and that Promise is updated', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.any([deferred.getPromise()]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.update('progress');
+        expect(promise).toUpdateWith('progress');
+      });
+      return it('should return a Promise that cancels when an Array containing a single Promise is specified and that Promise is cancelled', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.any([deferred.getPromise()]);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.cancel('reason');
+        expect(promise).toCancelWith('reason');
+      });
     });
   });
   describe('memoize()', function() {
-    var cancelCallback, createSpecsForScope, failureCallback, fibonacci, progressCallback, successCallback;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
+    var createSpecsForScope, fibonacci;
     fibonacci = function(n) {
       if (n < 2) {
         return n;
@@ -1504,345 +1098,181 @@ describe('Deft.promise.Promise', function() {
         });
       };
       it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a resolved Promise when the input is a value', function() {
-        var memoFunction, promise, result, targetFunction;
+        var memoFunction, promise, targetFunction;
         targetFunction = createTargetFunction();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
-        result = null;
         promise = memoFunction(12);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).toHaveBeenCalled();
         targetFunction.reset();
-        result = null;
         promise = memoFunction(12);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).not.toHaveBeenCalled();
       });
       it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a resolved Promise when the input is a resolved Deferred or Promise', function() {
-        var memoFunction, promise, resolvedDeferred, resolvedPromise, result, targetFunction;
+        var memoFunction, promise, resolvedDeferred, resolvedPromise, targetFunction;
         targetFunction = createTargetFunction();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         resolvedDeferred = new Ext.create('Deft.promise.Deferred');
         resolvedDeferred.resolve(12);
-        result = null;
         promise = memoFunction(resolvedDeferred);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).toHaveBeenCalled();
         targetFunction.reset();
-        result = null;
         promise = memoFunction(resolvedDeferred);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).not.toHaveBeenCalled();
-        result = null;
         promise = memoFunction(12);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).not.toHaveBeenCalled();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         resolvedPromise = resolvedDeferred.getPromise();
-        result = null;
         promise = memoFunction(resolvedPromise);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).toHaveBeenCalled();
         targetFunction.reset();
         resolvedPromise = resolvedDeferred.getPromise();
-        result = null;
         promise = memoFunction(resolvedPromise);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).not.toHaveBeenCalled();
-        result = null;
         promise = memoFunction(12);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).not.toHaveBeenCalled();
       });
       it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a rejected Promise when the input is a rejected Deferred or Promise', function() {
-        var memoFunction, promise, rejectedDeferred, rejectedPromise, result, targetFunction;
+        var memoFunction, promise, rejectedDeferred, rejectedPromise, targetFunction;
         targetFunction = createTargetFunction();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         rejectedDeferred = new Ext.create('Deft.promise.Deferred');
         rejectedDeferred.reject('error message');
-        result = null;
         promise = memoFunction(rejectedDeferred);
-        promise.then({
-          failure: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('rejected');
-        expect(result).toBe('error message');
+        expect(promise).toRejectWith('error message');
         expect(targetFunction).not.toHaveBeenCalled();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         rejectedPromise = rejectedDeferred.getPromise();
-        result = null;
         promise = memoFunction(rejectedPromise);
-        promise.then({
-          failure: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('rejected');
-        expect(result).toBe('error message');
+        expect(promise).toRejectWith('error message');
         expect(targetFunction).not.toHaveBeenCalled();
       });
       it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending (and immediately updated) Promise when the input is a pending (and updated) Deferred or Promise', function() {
-        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        var memoFunction, pendingDeferred, pendingPromise, promise, targetFunction;
         targetFunction = createTargetFunction();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
         pendingDeferred.update('progress');
-        result = null;
         promise = memoFunction(pendingDeferred);
-        promise.then({
-          progress: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('pending');
-        expect(result).toBe('progress');
+        expect(promise).toUpdateWith('progress');
         expect(targetFunction).not.toHaveBeenCalled();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingPromise = pendingDeferred.getPromise();
-        result = null;
         promise = memoFunction(pendingPromise);
-        promise.then({
-          progress: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('pending');
-        expect(result).toBe('progress');
+        expect(promise).toUpdateWith('progress');
         expect(targetFunction).not.toHaveBeenCalled();
       });
       it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a cancelled Promise when the input is a cancelled Deferred or Promise', function() {
-        var cancelledDeferred, cancelledPromise, memoFunction, promise, result, targetFunction;
+        var cancelledDeferred, cancelledPromise, memoFunction, promise, targetFunction;
         targetFunction = createTargetFunction();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         cancelledDeferred = new Ext.create('Deft.promise.Deferred');
         cancelledDeferred.cancel('reason');
-        result = null;
         promise = memoFunction(cancelledDeferred);
-        promise.then({
-          cancel: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('cancelled');
-        expect(result).toBe('reason');
+        expect(promise).toCancelWith('reason');
         expect(targetFunction).not.toHaveBeenCalled();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         cancelledPromise = cancelledDeferred.getPromise();
-        result = null;
         promise = memoFunction(cancelledPromise);
-        promise.then({
-          cancel: function(value) {
-            return result = value;
-          }
-        });
-        expect(promise.getState()).toBe('cancelled');
-        expect(result).toBe('reason');
+        expect(promise).toCancelWith('reason');
         expect(targetFunction).not.toHaveBeenCalled();
       });
       it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise resolves when the specified Deferred or Promise is resolved', function() {
-        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        var memoFunction, pendingDeferred, pendingPromise, promise, targetFunction;
         targetFunction = createTargetFunction();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
-        result = null;
         promise = memoFunction(pendingDeferred);
-        promise.then(function(value) {
-          return result = value;
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.resolve(12);
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).toHaveBeenCalled();
         targetFunction.reset();
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
-        result = null;
         promise = memoFunction(pendingDeferred);
-        promise.then(function(value) {
-          return result = value;
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.resolve(12);
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).not.toHaveBeenCalled();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
         pendingPromise = pendingDeferred.getPromise();
-        result = null;
         promise = memoFunction(pendingPromise);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.resolve(12);
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).toHaveBeenCalled();
         targetFunction.reset();
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
         pendingPromise = pendingDeferred.getPromise();
-        result = null;
         promise = memoFunction(pendingPromise);
-        promise.then({
-          success: function(value) {
-            return result = value;
-          }
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.resolve(12);
-        expect(promise.getState()).toBe('resolved');
-        expect(result).toBe(fibonacci(12));
+        expect(promise).toResolveWith(fibonacci(12));
         expect(targetFunction).not.toHaveBeenCalled();
       });
       it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise rejects when the specified Deferred or Promise is rejected', function() {
-        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        var memoFunction, pendingDeferred, pendingPromise, promise, targetFunction;
         targetFunction = createTargetFunction();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
-        result = null;
         promise = memoFunction(pendingDeferred);
-        promise.then({
-          failure: function(value) {
-            return result = value;
-          }
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.reject('error message');
-        expect(promise.getState()).toBe('rejected');
-        expect(result).toBe('error message');
+        expect(promise).toRejectWith('error message');
         expect(targetFunction).not.toHaveBeenCalled();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
         pendingPromise = pendingDeferred.getPromise();
-        result = null;
         promise = memoFunction(pendingPromise);
-        promise.then({
-          failure: function(value) {
-            return result = value;
-          }
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.reject('error message');
-        expect(promise.getState()).toBe('rejected');
-        expect(result).toBe('error message');
+        expect(promise).toRejectWith('error message');
         expect(targetFunction).not.toHaveBeenCalled();
       });
       it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise updates when the specified Deferred or Promise is updated', function() {
-        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        var memoFunction, pendingDeferred, pendingPromise, promise, targetFunction;
         targetFunction = createTargetFunction();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
-        result = null;
         promise = memoFunction(pendingDeferred);
-        promise.then({
-          progress: function(value) {
-            return result = value;
-          }
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.update('progress');
-        expect(promise.getState()).toBe('pending');
-        expect(result).toBe('progress');
+        expect(promise).toUpdateWith('progress');
         expect(targetFunction).not.toHaveBeenCalled();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
         pendingPromise = pendingDeferred.getPromise();
-        result = null;
         promise = memoFunction(pendingPromise);
-        promise.then({
-          progress: function(value) {
-            return result = value;
-          }
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.update('progress');
-        expect(promise.getState()).toBe('pending');
-        expect(result).toBe('progress');
+        expect(promise).toUpdateWith('progress');
         expect(targetFunction).not.toHaveBeenCalled();
       });
       it('should return a new function that wraps the specified function and caches the results for previously processed inputs, and returns a pending Promise when the input is a pending Deferred or Promise, and where that pending Promise cancels when the specified Deferred or Promise is cancelled', function() {
-        var memoFunction, pendingDeferred, pendingPromise, promise, result, targetFunction;
+        var memoFunction, pendingDeferred, pendingPromise, promise, targetFunction;
         targetFunction = createTargetFunction();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
-        result = null;
         promise = memoFunction(pendingDeferred);
-        promise.then({
-          cancel: function(value) {
-            return result = value;
-          }
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.cancel('reason');
-        expect(promise.getState()).toBe('cancelled');
-        expect(result).toBe('reason');
+        expect(promise).toCancelWith('reason');
         expect(targetFunction).not.toHaveBeenCalled();
         memoFunction = Deft.promise.Promise.memoize(targetFunction, expectedScope);
         pendingDeferred = new Ext.create('Deft.promise.Deferred');
         pendingPromise = pendingDeferred.getPromise();
-        result = null;
         promise = memoFunction(pendingPromise);
-        promise.then({
-          cancel: function(value) {
-            return result = value;
-          }
-        });
         expect(promise.getState()).toBe('pending');
         pendingDeferred.cancel('reason');
-        expect(promise.getState()).toBe('cancelled');
-        expect(result).toBe('reason');
+        expect(promise).toCancelWith('reason');
         expect(targetFunction).not.toHaveBeenCalled();
       });
     };
@@ -1856,23 +1286,696 @@ describe('Deft.promise.Promise', function() {
     });
   });
   describe('map()', function() {
-    var cancelCallback, failureCallback, progressCallback, successCallback;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
-    return beforeEach(function() {
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
+    var doubleFunction, getInputParameters, getOutputParameters, identityFunction;
+    identityFunction = function(value) {
+      return value;
+    };
+    doubleFunction = function(value) {
+      return value * 2;
+    };
+    getInputParameters = function(parameters) {
+      var inputs, parameter, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = parameters.length; _i < _len; _i++) {
+        parameter = parameters[_i];
+        _results.push(inputs = parameter.input);
+      }
+      return _results;
+    };
+    getOutputParameters = function(parameters) {
+      var outputs, parameter, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = parameters.length; _i < _len; _i++) {
+        parameter = parameters[_i];
+        _results.push(outputs = parameter.output);
+      }
+      return _results;
+    };
+    describe('with an Array of values specified', function() {
+      it('should map input values of any type to corresponding output values using a mapping function', function() {
+        var promise, values;
+        values = [void 0, null, false, 0, 1, 'expected value', [], {}];
+        promise = Deft.promise.Promise.map(values, identityFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        return expect(promise).toResolveWith(values);
+      });
+      return it('should map input values to corresponding output values using a mapping function', function() {
+        var combination, parameters, permutation, promise, _i, _len, _ref, _results;
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: 2,
+            output: 4
+          }, {
+            input: 3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _results.push((function() {
+            var _j, _len1, _ref1, _results1;
+            _ref1 = generatePermutations(combination);
+            _results1 = [];
+            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+              permutation = _ref1[_j];
+              promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              _results1.push(expect(promise).toResolveWith(getOutputParameters(permutation)));
+            }
+            return _results1;
+          })());
+        }
+        return _results;
+      });
+    });
+    describe('with an Array containing a single Deferred', function() {
+      it('should return a resolved Promise when an Array containing a single resolved Deferred is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.resolve(1);
+        promise = Deft.promise.Promise.map([deferred], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toResolveWith([2]);
+      });
+      it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Deferred is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.reject('error message');
+        promise = Deft.promise.Promise.map([deferred], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toRejectWith('error message');
+      });
+      it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Deferred is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.update('progress');
+        promise = Deft.promise.Promise.map([deferred], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toUpdateWith('progress');
+      });
+      it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Deferred is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.cancel('reason');
+        promise = Deft.promise.Promise.map([deferred], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toCancelWith('reason');
+      });
+      it('should return a Promise that resolves when an Array containing a single Deferred is specified and that Deferred is resolved', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.map([deferred], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.resolve(1);
+        expect(promise).toResolveWith([2]);
+      });
+      it('should return a Promise that rejects when an Array containing a single Deferred is specified and that Deferred is rejected', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.map([deferred], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.reject('error message');
+        expect(promise).toRejectWith('error message');
+      });
+      it('should return a Promise that updates when an Array containing a single Deferred is specified and that Deferred is updated', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.map([deferred], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.update('progress');
+        expect(promise).toUpdateWith('progress');
+      });
+      return it('should return a Promise that cancels when an Array containing a single Deferred is specified and that Deferred is cancelled', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.map([deferred], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.cancel('reason');
+        expect(promise).toCancelWith('reason');
+      });
+    });
+    describe('with an Array containing a single Promise', function() {
+      it('should return a resolved Promise when an Array containing a single resolved Promise is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.resolve(1);
+        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toResolveWith([2]);
+      });
+      it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Promise is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.reject('error message');
+        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toRejectWith('error message');
+      });
+      it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Promise is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.update('progress');
+        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toUpdateWith('progress');
+      });
+      it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Promise is specified', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        deferred.cancel('reason');
+        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise).toCancelWith('reason');
+      });
+      it('should return a Promise that resolves when an Array containing a single Promise is specified and that Promise is resolved', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.resolve(1);
+        expect(promise).toResolveWith([2]);
+      });
+      it('should return a Promise that rejects when an Array containing a single Promise is specified and that Promise is rejected', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.reject('error message');
+        expect(promise).toRejectWith('error message');
+      });
+      it('should return a Promise that updates when an Array containing a single Promise is specified and that Promise is updated', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.update('progress');
+        expect(promise).toUpdateWith('progress');
+      });
+      return it('should return a Promise that cancels when an Array containing a single Promise is specified and that Promise is cancelled', function() {
+        var deferred, promise;
+        deferred = Ext.create('Deft.promise.Deferred');
+        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
+        expect(promise).toBeInstanceOf('Deft.promise.Promise');
+        expect(promise.getState()).toBe('pending');
+        deferred.cancel('reason');
+        expect(promise).toCancelWith('reason');
+      });
+    });
+    return describe('with multiple items specified', function() {
+      getInputParameters = function(parameters) {
+        var inputs, parameter, _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = parameters.length; _i < _len; _i++) {
+          parameter = parameters[_i];
+          _results.push(inputs = parameter.input);
+        }
+        return _results;
+      };
+      getOutputParameters = function(parameters) {
+        var outputs, parameter, _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = parameters.length; _i < _len; _i++) {
+          parameter = parameters[_i];
+          _results.push(outputs = parameter.output);
+        }
+        return _results;
+      };
+      it('should return a resolved Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises is specified', function() {
+        var combination, deferred2, deferred3, parameters, permutation, promise, promise3, _i, _j, _len, _len1, _ref, _ref1;
+        deferred2 = Ext.create('Deft.promise.Deferred');
+        deferred2.resolve(2);
+        deferred3 = Ext.create('Deft.promise.Deferred');
+        deferred3.resolve(3);
+        promise3 = deferred3.getPromise();
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: deferred2,
+            output: 4
+          }, {
+            input: promise3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination);
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise).toResolveWith(getOutputParameters(permutation));
+          }
+        }
+      });
+      it('should return a rejected Promise when an Array containing any combination of values, resolved Deferreds, and/or resolved Promises, and a rejected Deferred or Promise is specified', function() {
+        var combination, deferred2, deferred3, parameters, permutation, promise, promise3, rejectedDeferred, rejectedDeferredParameter, rejectedPromiseParameter, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
+        deferred2 = Ext.create('Deft.promise.Deferred');
+        deferred2.resolve(2);
+        deferred3 = Ext.create('Deft.promise.Deferred');
+        deferred3.resolve(3);
+        promise3 = deferred3.getPromise();
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: deferred2,
+            output: 4
+          }, {
+            input: promise3,
+            output: 6
+          }
+        ];
+        rejectedDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred.reject('error message');
+        rejectedDeferredParameter = {
+          input: rejectedDeferred,
+          output: 'error message'
+        };
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination.concat(rejectedDeferredParameter));
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise).toRejectWith('error message');
+          }
+        }
+        rejectedPromiseParameter = {
+          input: rejectedDeferred.getPromise(),
+          output: 'error message'
+        };
+        _ref2 = generateCombinations(parameters);
+        _results = [];
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _results.push((function() {
+            var _l, _len3, _ref3, _results1;
+            _ref3 = generatePermutations(combination.concat(rejectedPromiseParameter));
+            _results1 = [];
+            for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+              permutation = _ref3[_l];
+              promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              _results1.push(expect(promise).toRejectWith('error message'));
+            }
+            return _results1;
+          })());
+        }
+        return _results;
+      });
+      it('should return a pending (and immediately updated) Promise when an Array containing any combination of values, resolved Deferreds, and/or resolved Promises, and pending (and updated) Deferred or Promise is specified', function() {
+        var combination, deferred2, deferred3, parameters, permutation, promise, promise3, updatedDeferred, updatedDeferredParameter, updatedPromiseParameter, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
+        deferred2 = Ext.create('Deft.promise.Deferred');
+        deferred2.resolve(2);
+        deferred3 = Ext.create('Deft.promise.Deferred');
+        deferred3.resolve(3);
+        promise3 = deferred3.getPromise();
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: deferred2,
+            output: 4
+          }, {
+            input: promise3,
+            output: 6
+          }
+        ];
+        updatedDeferred = Ext.create('Deft.promise.Deferred');
+        updatedDeferred.update('progress');
+        updatedDeferredParameter = {
+          input: updatedDeferred,
+          output: 'progress'
+        };
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination.concat(updatedDeferredParameter));
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise).toUpdateWith('progress');
+          }
+        }
+        updatedPromiseParameter = {
+          input: updatedDeferred.getPromise(),
+          output: 'progress'
+        };
+        _ref2 = generateCombinations(parameters);
+        _results = [];
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _results.push((function() {
+            var _l, _len3, _ref3, _results1;
+            _ref3 = generatePermutations(combination.concat(updatedPromiseParameter));
+            _results1 = [];
+            for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+              permutation = _ref3[_l];
+              promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              _results1.push(expect(promise).toUpdateWith('progress'));
+            }
+            return _results1;
+          })());
+        }
+        return _results;
+      });
+      it('should return a cancelled Promise when an Array containing any combination of values, resolved Deferreds, and/or resolved Promises, and a cancelled Deferred or Promise is specified', function() {
+        var cancelledDeferred, cancelledDeferredParameter, cancelledPromiseParameter, combination, deferred2, deferred3, parameters, permutation, promise, promise3, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
+        deferred2 = Ext.create('Deft.promise.Deferred');
+        deferred2.resolve(2);
+        deferred3 = Ext.create('Deft.promise.Deferred');
+        deferred3.resolve(3);
+        promise3 = deferred3.getPromise();
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: deferred2,
+            output: 4
+          }, {
+            input: promise3,
+            output: 6
+          }
+        ];
+        cancelledDeferred = Ext.create('Deft.promise.Deferred');
+        cancelledDeferred.cancel('reason');
+        cancelledDeferredParameter = {
+          input: cancelledDeferred,
+          output: 'reason'
+        };
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination.concat(cancelledDeferredParameter));
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise).toCancelWith('reason');
+          }
+        }
+        cancelledPromiseParameter = {
+          input: cancelledDeferred.getPromise(),
+          output: 'reason'
+        };
+        _ref2 = generateCombinations(parameters);
+        _results = [];
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _results.push((function() {
+            var _l, _len3, _ref3, _results1;
+            _ref3 = generatePermutations(combination.concat(cancelledPromiseParameter));
+            _results1 = [];
+            for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+              permutation = _ref3[_l];
+              promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              _results1.push(expect(promise).toCancelWith('reason'));
+            }
+            return _results1;
+          })());
+        }
+        return _results;
+      });
+      it('should return a resolved Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred or Promise is resolved', function() {
+        var combination, deferred2, deferred3, parameters, pendingDeferred, pendingDeferredParameter, pendingPromiseParameter, permutation, placeholder, promise, promise3, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        deferred2 = Ext.create('Deft.promise.Deferred');
+        deferred2.resolve(2);
+        deferred3 = Ext.create('Deft.promise.Deferred');
+        deferred3.resolve(3);
+        promise3 = deferred3.getPromise();
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: deferred2,
+            output: 4
+          }, {
+            input: promise3,
+            output: 6
+          }
+        ];
+        placeholder = {};
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination.concat(placeholder));
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingDeferredParameter = {
+              input: pendingDeferred,
+              output: 8
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingDeferredParameter;
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            pendingDeferred.resolve(4);
+            expect(promise).toResolveWith(getOutputParameters(permutation));
+          }
+        }
+        _ref2 = generateCombinations(parameters);
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _ref3 = generatePermutations(combination.concat(placeholder));
+          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+            permutation = _ref3[_l];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingPromiseParameter = {
+              input: pendingDeferred.getPromise(),
+              output: 8
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingPromiseParameter;
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            pendingDeferred.resolve(4);
+            expect(promise).toResolveWith(getOutputParameters(permutation));
+          }
+        }
+      });
+      it('should return a rejected Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred or Promise is rejected', function() {
+        var combination, deferred2, deferred3, parameters, pendingDeferred, pendingDeferredParameter, pendingPromiseParameter, permutation, placeholder, promise, promise3, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        deferred2 = Ext.create('Deft.promise.Deferred');
+        deferred2.resolve(2);
+        deferred3 = Ext.create('Deft.promise.Deferred');
+        deferred3.resolve(3);
+        promise3 = deferred3.getPromise();
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: deferred2,
+            output: 4
+          }, {
+            input: promise3,
+            output: 6
+          }
+        ];
+        placeholder = {};
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination.concat(placeholder));
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingDeferredParameter = {
+              input: pendingDeferred,
+              output: 'error message'
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingDeferredParameter;
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            pendingDeferred.reject('error message');
+            expect(promise).toRejectWith('error message');
+          }
+        }
+        _ref2 = generateCombinations(parameters);
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _ref3 = generatePermutations(combination.concat(placeholder));
+          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+            permutation = _ref3[_l];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingPromiseParameter = {
+              input: pendingDeferred.getPromise(),
+              output: 'error message'
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingPromiseParameter;
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            pendingDeferred.reject('error message');
+            expect(promise).toRejectWith('error message');
+          }
+        }
+      });
+      it('should return a pending (and later updated) when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred is updated', function() {
+        var combination, deferred2, deferred3, parameters, pendingDeferred, pendingDeferredParameter, pendingPromiseParameter, permutation, placeholder, promise, promise3, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        deferred2 = Ext.create('Deft.promise.Deferred');
+        deferred2.resolve(2);
+        deferred3 = Ext.create('Deft.promise.Deferred');
+        deferred3.resolve(3);
+        promise3 = deferred3.getPromise();
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: deferred2,
+            output: 4
+          }, {
+            input: promise3,
+            output: 6
+          }
+        ];
+        placeholder = {};
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination.concat(placeholder));
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingDeferredParameter = {
+              input: pendingDeferred,
+              output: 'error message'
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingDeferredParameter;
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            pendingDeferred.update('progress');
+            expect(promise).toUpdateWith('progress');
+          }
+        }
+        _ref2 = generateCombinations(parameters);
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _ref3 = generatePermutations(combination.concat(placeholder));
+          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+            permutation = _ref3[_l];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingPromiseParameter = {
+              input: pendingDeferred.getPromise(),
+              output: 'error message'
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingPromiseParameter;
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            pendingDeferred.update('progress');
+            expect(promise).toUpdateWith('progress');
+          }
+        }
+      });
+      it('should return a cancelled Promise when an Array containing any combination of values, resolved Deferreds and/or resolved Promises, and a pending Deferred or Promise is specified, and that pending Deferred or Promise is cancelled', function() {
+        var combination, deferred2, deferred3, parameters, pendingDeferred, pendingDeferredParameter, pendingPromiseParameter, permutation, placeholder, promise, promise3, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        deferred2 = Ext.create('Deft.promise.Deferred');
+        deferred2.resolve(2);
+        deferred3 = Ext.create('Deft.promise.Deferred');
+        deferred3.resolve(3);
+        promise3 = deferred3.getPromise();
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: deferred2,
+            output: 4
+          }, {
+            input: promise3,
+            output: 6
+          }
+        ];
+        placeholder = {};
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination.concat(placeholder));
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingDeferredParameter = {
+              input: pendingDeferred,
+              output: 'reason'
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingDeferredParameter;
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            pendingDeferred.cancel('reason');
+            expect(promise).toCancelWith('reason');
+          }
+        }
+        _ref2 = generateCombinations(parameters);
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _ref3 = generatePermutations(combination.concat(placeholder));
+          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+            permutation = _ref3[_l];
+            pendingDeferred = Ext.create('Deft.promise.Deferred');
+            pendingPromiseParameter = {
+              input: pendingDeferred.getPromise(),
+              output: 'error message'
+            };
+            permutation[Ext.Array.indexOf(permutation, placeholder)] = pendingPromiseParameter;
+            promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            pendingDeferred.cancel('reason');
+            expect(promise).toCancelWith('reason');
+          }
+        }
+      });
     });
   });
   describe('reduce()', function() {
-    var cancelCallback, failureCallback, progressCallback, successCallback;
-    successCallback = failureCallback = progressCallback = cancelCallback = null;
-    return beforeEach(function() {
-      successCallback = jasmine.createSpy('success callback');
-      failureCallback = jasmine.createSpy('failure callback');
-      progressCallback = jasmine.createSpy('progress callback');
-      cancelCallback = jasmine.createSpy('cancel callback');
+    var sumFunction;
+    sumFunction = function(previousValue, currentValue, index, array) {
+      return previousValue + currentValue;
+    };
+    it('should reduce input values to a corresponding output value using a reduce function (with no initial value specified)', function() {
+      var promise, values;
+      values = [0, 1, 2, 3, 4];
+      promise = Deft.promise.Promise.reduce(values, sumFunction);
+      expect(promise).toBeInstanceOf('Deft.promise.Promise');
+      return expect(promise).toResolveWith(10);
+    });
+    return it('should reduce input values to a corresponding output value using a reduce function (with an initial value specified)', function() {
+      var promise, values;
+      values = [0, 1, 2, 3, 4];
+      promise = Deft.promise.Promise.reduce(values, sumFunction, 10);
+      expect(promise).toBeInstanceOf('Deft.promise.Promise');
+      return expect(promise).toResolveWith(20);
     });
   });
   describe('then()', function() {
