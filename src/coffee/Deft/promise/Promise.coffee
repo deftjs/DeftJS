@@ -166,8 +166,9 @@ Ext.define( 'Deft.promise.Promise',
 					# Since the map function may be asynchronous, get all invocations of it into flight ASAP.
 					results = new Array( promisesOrValues.length )
 					for promiseOrValue, index in promisesOrValues
-						if index of promisesOrValues
-							results[ index ] = @when( promiseOrValue ).then( mapFunction )
+						do ( promiseOrValue, index ) ->
+							if index of promisesOrValues
+								results[ index ] = @when( promiseOrValue ).then( ( value ) -> mapFunction( value, index, promisesOrValues ) )
 					
 					# Then use reduce() to collect all the results.
 					return @reduce( results, @reduceIntoArray, results )
