@@ -161,14 +161,16 @@ Ext.define( 'Deft.promise.Promise',
 		* The specified map function may return either a value or a promise.
 		###
 		map: ( promisesOrValues, mapFunction ) ->
+			createCallback = ( index ) ->
+				return ( value ) -> mapFunction( value, index, promisesOrValues )
+			
 			return @when( promisesOrValues ).then( 
 				success: ( promisesOrValues ) ->
 					# Since the map function may be asynchronous, get all invocations of it into flight ASAP.
 					results = new Array( promisesOrValues.length )
 					for promiseOrValue, index in promisesOrValues
-						do ( promiseOrValue, index ) ->
-							if index of promisesOrValues
-								results[ index ] = @when( promiseOrValue ).then( ( value ) -> mapFunction( value, index, promisesOrValues ) )
+						if index of promisesOrValues
+							results[ index ] = @when( promiseOrValue ).then( createCallback( index ) )
 					
 					# Then use reduce() to collect all the results.
 					return @reduce( results, @reduceIntoArray, results )

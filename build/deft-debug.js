@@ -1779,20 +1779,21 @@ Ext.define('Deft.promise.Promise', {
     */
 
     map: function(promisesOrValues, mapFunction) {
+      var createCallback;
+      createCallback = function(index) {
+        return function(value) {
+          return mapFunction(value, index, promisesOrValues);
+        };
+      };
       return this.when(promisesOrValues).then({
         success: function(promisesOrValues) {
-          var index, promiseOrValue, results, _fn, _i, _len;
+          var index, promiseOrValue, results, _i, _len;
           results = new Array(promisesOrValues.length);
-          _fn = function(promiseOrValue, index) {
-            if (index in promisesOrValues) {
-              return results[index] = this.when(promiseOrValue).then(function(value) {
-                return mapFunction(value, index, promisesOrValues);
-              });
-            }
-          };
           for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
             promiseOrValue = promisesOrValues[index];
-            _fn(promiseOrValue, index);
+            if (index in promisesOrValues) {
+              results[index] = this.when(promiseOrValue).then(createCallback(index));
+            }
           }
           return this.reduce(results, this.reduceIntoArray, results);
         },
