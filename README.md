@@ -291,7 +291,7 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 
 *NOTE:* The specified component query selector is evaluated relative to the view, rather than globally as in `Ext.app.Controller`.
 
-As seen above, a getter function will automatically created and added to the view controller for each referenced component.
+As seen above, a getter function will be automatically created and added to the view controller for each referenced component.
 
 Alternatively, the selector can be omitted if the component identifier being registered matches the view component's `itemId`:
 
@@ -411,7 +411,7 @@ Ext.define( 'MyApp.controller.ContactsViewController', {
 });
 ```
 
-When the `destroy()` is called on the view, the view controller's `destroy()` template method is called. If this method returns `false`, view destruction will be cancelled. If this method returns `true`, the view will be destroyed, and all references and event listeners created in the view controller using `control` will automatically be removed.
+When `destroy()` is called on the view, the view controller's `destroy()` template method is called. If this method returns `false`, view destruction will be cancelled. If this method returns `true`, the view will be destroyed, and all references and event listeners created in the view controller using `control` will automatically be removed.
 
 ```javascript
 Ext.define( 'MyApp.controller.ContactsViewController', {
