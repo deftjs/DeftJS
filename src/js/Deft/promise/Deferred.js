@@ -11,6 +11,32 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.promise.Deferred', {
   alternateClassName: ['Deft.Deferred'],
   requires: ['Deft.promise.Promise'],
+  statics: {
+    /**
+     * Logs an error that happened in a promise callback to the console. These errors are required by the 
+     * Promise/A spec to not halt the execution. Override this method to customize how these errors are 
+     * logged.
+     *
+     * The default implementation just tries to log the error to the console in the best available manner
+     * depending on the browser.
+     *
+     * @param Error err
+     */
+    logError: function(err) {
+      // console.error will correctly dump the stack trace in chrome (untested in other browser)
+      if (console && console.error) {
+        if (Ext.isWebKit) {
+          // In Chrome, logging the whole error let introspect the error which is a bit disconcerting. The following
+          // just log the correct error message and stack trace.
+          console.error(err.stack);
+        } else {
+          // Best result in Firefox (not tested in other browsers). The content of the error lines is a bit messy
+          // but the trace and the error message are fine.
+          console.error(error);
+        }
+      }
+    }
+  },
   constructor: function() {
     this.state = 'pending';
     this.progress = void 0;
@@ -55,6 +81,9 @@ Ext.define('Deft.promise.Deferred', {
               deferred.resolve(result);
             }
           } catch (error) {
+            // Log error so that we get a clue when things go wrong in a deferred callback
+            Deft.promise.Deferred.logError(error);
+            // Reject promises without dieing, as required by the spec
             deferred.reject(error);
           }
         } else {
