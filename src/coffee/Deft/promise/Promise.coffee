@@ -54,22 +54,22 @@ Ext.define( 'Deft.promise.Promise',
 					
 					updater = ( progress ) ->
 						deferred.update( progress )
-						return
+						return progress
 					resolver = ( index, value ) ->
 						resolvedValues[ index ] = value
 						resolvedCount++
 						if resolvedCount is total
 							complete()
 							deferred.resolve( resolvedValues )
-						return
+						return value
 					rejecter = ( error ) ->
 						complete()
 						deferred.reject( error )
-						return
+						return error
 					canceller = ( reason ) ->
 						complete()
 						deferred.cancel( reason )
-						return
+						return reason
 					
 					complete = ->
 						updater = resolver = rejecter = canceller = Ext.emptyFn
@@ -107,18 +107,19 @@ Ext.define( 'Deft.promise.Promise',
 					
 					updater = ( progress ) ->
 						deferred.update( progress )
-						return
+						return progress
 					resolver = ( value ) ->
 						complete()
 						deferred.resolve( value )
-						return
+						return value
 					rejecter = ( error ) ->
 						complete()
 						deferred.reject( error )
-						return
+						return error
 					canceller = ( reason ) ->
 						complete()
 						deferred.cancel( reason )
+						return reason
 					
 					complete = ->
 						updater = resolver = rejecter = canceller = Ext.emptyFn
@@ -247,8 +248,11 @@ Ext.define( 'Deft.promise.Promise',
 			previousValue[ currentIndex ] = currentValue
 			return previousValue
 	
-	constructor: ( deferred ) ->
-		@deferred = deferred
+	id: null
+	
+	constructor: ( config ) ->
+		@id = config.id
+		@deferred = config.deferred
 		return @
 	
 	###*
@@ -280,6 +284,14 @@ Ext.define( 'Deft.promise.Promise',
 	###
 	getState: ->
 		return @deferred.getState()
+	
+	###*
+	* Returns a text representation of this {@link Deft.promise.Promise}, including its optional id.
+	###
+	toString: ->
+		if @id?
+			return "Promise #{ @id }"
+		return "Promise"
 ,
 	->
 		# Use native reduce implementation, if available.

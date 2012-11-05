@@ -413,7 +413,7 @@ describe('Deft.promise.Deferred', function() {
         if (successCallback || failureCallback || progressCallback || cancelCallback) {
           return expect(function() {
             thenFunction(deferred, successCallback ? 'value' : successCallback, failureCallback ? 'value' : failureCallback, progressCallback ? 'value' : progressCallback, cancelCallback ? 'value' : cancelCallback, scope);
-          }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
+          }).toThrow(new Error('Error while registering callback with Deferred: a non-function specified.'));
         }
       });
       it('should return a new Promise', function() {
@@ -722,7 +722,7 @@ describe('Deft.promise.Deferred', function() {
       it('should throw an error when a non-function callback is specified', function() {
         expect(function() {
           otherwiseFunction(deferred, 'value', scope);
-        }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
+        }).toThrow(new Error('Error while registering callback with Deferred: a non-function specified.'));
       });
       it('should return a new Promise', function() {
         var promise;
@@ -869,7 +869,7 @@ describe('Deft.promise.Deferred', function() {
       it('should throw an error when a non-function callback is specified', function() {
         expect(function() {
           alwaysFunction(deferred, 'value', scope);
-        }).toThrow(new Error('Error while configuring callback: a non-function specified.'));
+        }).toThrow(new Error('Error while registering callback with Deferred: a non-function specified.'));
       });
       it('should return a new Promise', function() {
         var promise;

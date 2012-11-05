@@ -55,6 +55,7 @@ Ext.define('Deft.promise.Promise', {
           resolvedCount = 0;
           updater = function(progress) {
             deferred.update(progress);
+            return progress;
           };
           resolver = function(index, value) {
             resolvedValues[index] = value;
@@ -63,14 +64,17 @@ Ext.define('Deft.promise.Promise', {
               complete();
               deferred.resolve(resolvedValues);
             }
+            return value;
           };
           rejecter = function(error) {
             complete();
             deferred.reject(error);
+            return error;
           };
           canceller = function(reason) {
             complete();
             deferred.cancel(reason);
+            return reason;
           };
           complete = function() {
             return updater = resolver = rejecter = canceller = Ext.emptyFn;
@@ -117,18 +121,22 @@ Ext.define('Deft.promise.Promise', {
           deferred = Ext.create('Deft.promise.Deferred');
           updater = function(progress) {
             deferred.update(progress);
+            return progress;
           };
           resolver = function(value) {
             complete();
             deferred.resolve(value);
+            return value;
           };
           rejecter = function(error) {
             complete();
             deferred.reject(error);
+            return error;
           };
           canceller = function(reason) {
             complete();
-            return deferred.cancel(reason);
+            deferred.cancel(reason);
+            return reason;
           };
           complete = function() {
             return updater = resolver = rejecter = canceller = Ext.emptyFn;
@@ -271,8 +279,10 @@ Ext.define('Deft.promise.Promise', {
       return previousValue;
     }
   },
-  constructor: function(deferred) {
-    this.deferred = deferred;
+  id: null,
+  constructor: function(config) {
+    this.id = config.id;
+    this.deferred = config.deferred;
     return this;
   },
   /**
@@ -309,6 +319,16 @@ Ext.define('Deft.promise.Promise', {
 
   getState: function() {
     return this.deferred.getState();
+  },
+  /**
+  	* Returns a text representation of this {@link Deft.promise.Promise}, including its optional id.
+  */
+
+  toString: function() {
+    if (this.id != null) {
+      return "Promise " + this.id;
+    }
+    return "Promise";
   }
 }, function() {
   if (Array.prototype.reduce != null) {

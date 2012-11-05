@@ -535,7 +535,7 @@ describe( 'Deft.promise.Deferred', ->
 						)
 						
 						return
-					).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+					).toThrow( new Error( 'Error while registering callback with Deferred: a non-function specified.' ) )
 			)
 			
 			it( 'should return a new Promise', ->
@@ -903,7 +903,7 @@ describe( 'Deft.promise.Deferred', ->
 				expect( ->
 					otherwiseFunction( deferred, 'value', scope )
 					return
-				).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+				).toThrow( new Error( 'Error while registering callback with Deferred: a non-function specified.' ) )
 				
 				return
 			)
@@ -1126,7 +1126,7 @@ describe( 'Deft.promise.Deferred', ->
 				expect( ->
 					alwaysFunction( deferred, 'value', scope )
 					return
-				).toThrow( new Error( 'Error while configuring callback: a non-function specified.' ) )
+				).toThrow( new Error( 'Error while registering callback with Deferred: a non-function specified.' ) )
 				
 				return
 			)

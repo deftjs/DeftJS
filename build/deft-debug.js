@@ -1468,15 +1468,13 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * A lightweight Application template class.
 */
 
-var initialized;
-
 Ext.define('Deft.mvc.Application', {
-  alternateClassName: ['Deft.Application']
+  alternateClassName: ['Deft.Application'],
   /**
   	* Indicates whether this Application instance has been initialized.
   */
 
-}, initialized = false, {
+  initialized: false,
   /**
   	* @param {Object} [config] Configuration object.
   */
@@ -1653,6 +1651,7 @@ Ext.define('Deft.promise.Promise', {
           resolvedCount = 0;
           updater = function(progress) {
             deferred.update(progress);
+            return progress;
           };
           resolver = function(index, value) {
             resolvedValues[index] = value;
@@ -1661,14 +1660,17 @@ Ext.define('Deft.promise.Promise', {
               complete();
               deferred.resolve(resolvedValues);
             }
+            return value;
           };
           rejecter = function(error) {
             complete();
             deferred.reject(error);
+            return error;
           };
           canceller = function(reason) {
             complete();
             deferred.cancel(reason);
+            return reason;
           };
           complete = function() {
             return updater = resolver = rejecter = canceller = Ext.emptyFn;
@@ -1715,18 +1717,22 @@ Ext.define('Deft.promise.Promise', {
           deferred = Ext.create('Deft.promise.Deferred');
           updater = function(progress) {
             deferred.update(progress);
+            return progress;
           };
           resolver = function(value) {
             complete();
             deferred.resolve(value);
+            return value;
           };
           rejecter = function(error) {
             complete();
             deferred.reject(error);
+            return error;
           };
           canceller = function(reason) {
             complete();
-            return deferred.cancel(reason);
+            deferred.cancel(reason);
+            return reason;
           };
           complete = function() {
             return updater = resolver = rejecter = canceller = Ext.emptyFn;
@@ -1869,8 +1875,10 @@ Ext.define('Deft.promise.Promise', {
       return previousValue;
     }
   },
-  constructor: function(deferred) {
-    this.deferred = deferred;
+  id: null,
+  constructor: function(config) {
+    this.id = config.id;
+    this.deferred = config.deferred;
     return this;
   },
   /**
@@ -1907,6 +1915,16 @@ Ext.define('Deft.promise.Promise', {
 
   getState: function() {
     return this.deferred.getState();
+  },
+  /**
+  	* Returns a text representation of this {@link Deft.promise.Promise}, including its optional id.
+  */
+
+  toString: function() {
+    if (this.id != null) {
+      return "Promise " + this.id;
+    }
+    return "Promise";
   }
 }, function() {
   if (Array.prototype.reduce != null) {
@@ -1924,8 +1942,13 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Ext.define('Deft.promise.Deferred', {
   alternateClassName: ['Deft.Deferred'],
-  requires: ['Deft.promise.Promise'],
-  constructor: function() {
+  requires: ['Deft.log.Logger', 'Deft.promise.Promise'],
+  id: null,
+  constructor: function(config) {
+    if (config == null) {
+      config = {};
+    }
+    this.id = config.id;
     this.state = 'pending';
     this.progress = void 0;
     this.value = void 0;
@@ -1933,7 +1956,10 @@ Ext.define('Deft.promise.Deferred', {
     this.successCallbacks = [];
     this.failureCallbacks = [];
     this.cancelCallbacks = [];
-    this.promise = Ext.create('Deft.Promise', this);
+    this.promise = Ext.create('Deft.Promise', {
+      id: this.id ? "of " + this.id : null,
+      deferred: this
+    });
     return this;
   },
   /**
@@ -1941,7 +1967,7 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   then: function(callbacks) {
-    var callback, cancelCallback, deferred, failureCallback, progressCallback, scope, successCallback, wrapCallback, wrapProgressCallback, _i, _len, _ref;
+    var callback, cancelCallback, deferred, failureCallback, progressCallback, scope, successCallback, _i, _len, _ref;
     if (Ext.isObject(callbacks)) {
       successCallback = callbacks.success, failureCallback = callbacks.failure, progressCallback = callbacks.progress, cancelCallback = callbacks.cancel, scope = callbacks.scope;
     } else {
@@ -1952,45 +1978,18 @@ Ext.define('Deft.promise.Deferred', {
       callback = _ref[_i];
       if (!(Ext.isFunction(callback) || callback === null || callback === void 0)) {
         Ext.Error.raise({
-          msg: 'Error while configuring callback: a non-function specified.'
+          msg: "Error while registering callback with " + this + ": a non-function specified."
         });
       }
     }
-    deferred = Ext.create('Deft.promise.Deferred');
-    wrapCallback = function(callback, action) {
-      return function(value) {
-        var result;
-        if (Ext.isFunction(callback)) {
-          try {
-            result = callback.call(scope, value);
-            if (result instanceof Ext.ClassManager.get('Deft.promise.Promise') || result instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
-              result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
-            } else {
-              deferred.resolve(result);
-            }
-          } catch (error) {
-            deferred.reject(error);
-          }
-        } else {
-          deferred[action](value);
-        }
-      };
-    };
-    this.register(wrapCallback(successCallback, 'resolve'), this.successCallbacks, 'resolved', this.value);
-    this.register(wrapCallback(failureCallback, 'reject'), this.failureCallbacks, 'rejected', this.value);
-    this.register(wrapCallback(cancelCallback, 'cancel'), this.cancelCallbacks, 'cancelled', this.value);
-    wrapProgressCallback = function(callback) {
-      return function(value) {
-        var result;
-        if (Ext.isFunction(callback)) {
-          result = callback.call(scope, value);
-          deferred.update(result);
-        } else {
-          deferred.update(value);
-        }
-      };
-    };
-    this.register(wrapProgressCallback(progressCallback), this.progressCallbacks, 'pending', this.progress);
+    deferred = Ext.create('Deft.promise.Deferred', {
+      id: "transformed result of " + this
+    });
+    this.register(this.wrapCallback(deferred, successCallback, scope, 'success', 'resolve'), this.successCallbacks, 'resolved', this.value);
+    this.register(this.wrapCallback(deferred, failureCallback, scope, 'failure', 'reject'), this.failureCallbacks, 'rejected', this.value);
+    this.register(this.wrapCallback(deferred, cancelCallback, scope, 'cancel', 'cancel'), this.cancelCallbacks, 'cancelled', this.value);
+    this.register(this.wrapProgressCallback(deferred, progressCallback, scope), this.progressCallbacks, 'pending', this.progress);
+    Deft.Logger.log("Returning " + (deferred.getPromise()) + ".");
     return deferred.getPromise();
   },
   /**
@@ -2028,13 +2027,14 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   update: function(progress) {
+    Deft.Logger.log("" + this + " updated with progress: " + progress);
     if (this.state === 'pending') {
       this.progress = progress;
       this.notify(this.progressCallbacks, progress);
     } else {
       if (this.state !== 'cancelled') {
         Ext.Error.raise({
-          msg: 'Error: this Deferred has already been completed and cannot be modified.'
+          msg: "Error: this " + this + " has already been completed and cannot be modified."
         });
       }
     }
@@ -2044,6 +2044,7 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   resolve: function(value) {
+    Deft.Logger.log("" + this + " resolved with value: " + value);
     this.complete('resolved', value, this.successCallbacks);
   },
   /**
@@ -2051,6 +2052,7 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   reject: function(error) {
+    Deft.Logger.log("" + this + " rejected with error: " + error);
     this.complete('rejected', error, this.failureCallbacks);
   },
   /**
@@ -2058,6 +2060,7 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   cancel: function(reason) {
+    Deft.Logger.log("" + this + " cancelled with reason: " + reason);
     this.complete('cancelled', reason, this.cancelCallbacks);
   },
   /**
@@ -2073,6 +2076,82 @@ Ext.define('Deft.promise.Deferred', {
 
   getState: function() {
     return this.state;
+  },
+  /**
+  	* Returns a text representation of this {@link Deft.promise.Deferred}, including its optional id.
+  */
+
+  toString: function() {
+    if (this.id != null) {
+      return "Deferred " + this.id;
+    }
+    return "Deferred";
+  },
+  /**
+  	* Wraps a success, failure or cancel callback.
+  	* @private
+  */
+
+  wrapCallback: function(deferred, callback, scope, callbackType, action) {
+    var self;
+    self = this;
+    if (callback != null) {
+      Deft.Logger.log("Registering " + callbackType + " callback for " + self + ".");
+    }
+    return function(value) {
+      var result;
+      if (Ext.isFunction(callback)) {
+        try {
+          Deft.Logger.log("Calling " + callbackType + " callback registered for " + self + ".");
+          result = callback.call(scope, value);
+          if (result instanceof Ext.ClassManager.get('Deft.promise.Promise') || result instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
+            Deft.Logger.log("" + (deferred.getPromise()) + " will be completed based on the " + result + " returned by the " + callbackType + " callback.");
+            result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
+          } else {
+            Deft.Logger.log("" + (deferred.getPromise()) + " resolved with the value returned by the " + callbackType + " callback: " + result + ".");
+            deferred.resolve(result);
+          }
+        } catch (error) {
+          if (Ext.Array.contains(['RangeError', 'ReferenceError', 'SyntaxError', 'TypeError'], error.name)) {
+            Deft.Logger.error("Error: " + callbackType + " callback for " + self + " threw: " + (error.stack != null ? error.stack : error));
+          } else {
+            Deft.Logger.log("" + (deferred.getPromise()) + " rejected with the Error returned by the " + callbackType + " callback: " + error);
+          }
+          deferred.reject(error);
+        }
+      } else {
+        Deft.Logger.log("" + (deferred.getPromise()) + " resolved with the value: " + value + ".");
+        deferred[action](value);
+      }
+    };
+  },
+  /**
+  	* Wraps a success, failure or cancel callback.
+  	* @private
+  */
+
+  wrapProgressCallback: function(deferred, callback, scope) {
+    var self;
+    self = this;
+    if (callback != null) {
+      Deft.Logger.log("Registering progress callback for " + self + ".");
+    }
+    return function(value) {
+      var result;
+      if (Ext.isFunction(callback)) {
+        try {
+          Deft.Logger.log("Calling progress callback registered for " + self + ".");
+          result = callback.call(scope, value);
+          Deft.Logger.log("" + (deferred.getPromise()) + " updated with progress returned by the progress callback: " + result + ".");
+          deferred.update(result);
+        } catch (error) {
+          Deft.Logger.error("Error: progress callback registered for " + self + " threw: " + (error.stack != null ? error.stack : error));
+        }
+      } else {
+        Deft.Logger.log("" + (deferred.getPromise()) + " updated with progress: " + value);
+        deferred.update(value);
+      }
+    };
   },
   /**
   	* Register a callback for this {@link Deft.promise.Deferred} for the specified callbacks and state, immediately notifying with the specified value (if applicable).
@@ -2107,7 +2186,7 @@ Ext.define('Deft.promise.Deferred', {
     } else {
       if (this.state !== 'cancelled') {
         Ext.Error.raise({
-          msg: 'Error: this Deferred has already been completed and cannot be modified.'
+          msg: "Error: this " + this + " has already been completed and cannot be modified."
         });
       }
     }

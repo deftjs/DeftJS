@@ -919,7 +919,7 @@ describe('Deft.promise.Promise', function() {
     });
   });
   describe('any()', function() {
-    describe('with an Array containing a single value', function() {
+    describe('with an Array containing a single value of any type', function() {
       var itShouldResolveForValue, value, values, _i, _len;
       itShouldResolveForValue = function(value) {
         it("should return an immediately resolved Promise when an Array containing '" + value + "' is specified", function() {
@@ -935,153 +935,39 @@ describe('Deft.promise.Promise', function() {
         itShouldResolveForValue.call(this, value);
       }
     });
-    describe('with an Array containing a single Deferred', function() {
-      it('should return a resolved Promise when an Array containing a single resolved Deferred is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.resolve('expected value');
-        promise = Deft.promise.Promise.any([deferred]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toResolveWith('expected value');
+    describe('with a variety of combinations of values, Deferreds and Promises specified', function() {
+      it('should return a resolved Promise when an Array containing any combination of pending Deferreds and/or pending Promises and a value is specified', function() {
+        var combination, parameters, permutation, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+        _ref = generateCombinations(parameters).concat([]);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination.concat('expected result'));
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            promise = Deft.promise.Promise.any(permutation);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise).toResolveWith('expected result');
+          }
+        }
+        _ref2 = generateCombinations(parameters).concat([]);
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _ref3 = generatePermutations(combination.concat('expected result'));
+          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+            permutation = _ref3[_l];
+            promise = Deft.promise.Promise.any(permutation);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise).toResolveWith('expected result');
+          }
+        }
       });
-      it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Deferred is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.reject('error message');
-        promise = Deft.promise.Promise.any([deferred]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toRejectWith('error message');
-      });
-      it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Deferred is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.update('progress');
-        promise = Deft.promise.Promise.any([deferred]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toUpdateWith('progress');
-      });
-      it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Deferred is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.cancel('reason');
-        promise = Deft.promise.Promise.any([deferred]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toCancelWith('reason');
-      });
-      it('should return a Promise that resolves when an Array containing a single Deferred is specified and that Deferred is resolved', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.any([deferred]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.resolve('expected value');
-        expect(promise).toResolveWith('expected value');
-      });
-      it('should return a Promise that rejects when an Array containing a single Deferred is specified and that Deferred is rejected', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.any([deferred]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.reject('error message');
-        expect(promise).toRejectWith('error message');
-      });
-      it('should return a Promise that updates when an Array containing a single Deferred is specified and that Deferred is updated', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.any([deferred]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.update('progress');
-        expect(promise).toUpdateWith('progress');
-      });
-      return it('should return a Promise that cancels when an Array containing a single Deferred is specified and that Deferred is cancelled', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.any([deferred]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.cancel('reason');
-        expect(promise).toCancelWith('reason');
-      });
-    });
-    describe('with an Array containing a single Promise', function() {
-      it('should return a resolved Promise when an Array containing a single resolved Promise is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.resolve('expected value');
-        promise = Deft.promise.Promise.any([deferred.getPromise()]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toResolveWith('expected value');
-      });
-      it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Promise is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.reject('error message');
-        promise = Deft.promise.Promise.any([deferred.getPromise()]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toRejectWith('error message');
-      });
-      it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Promise is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.update('progress');
-        promise = Deft.promise.Promise.any([deferred.getPromise()]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toUpdateWith('progress');
-      });
-      it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Promise is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.cancel('reason');
-        promise = Deft.promise.Promise.any([deferred.getPromise()]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toCancelWith('reason');
-      });
-      it('should return a Promise that resolves when an Array containing a single Promise is specified and that Promise is resolved', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.any([deferred.getPromise()]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.resolve('expected value');
-        expect(promise).toResolveWith('expected value');
-      });
-      it('should return a Promise that rejects when an Array containing a single Promise is specified and that Promise is rejected', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.any([deferred.getPromise()]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.reject('error message');
-        expect(promise).toRejectWith('error message');
-      });
-      it('should return a Promise that updates when an Array containing a single Promise is specified and that Promise is updated', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.any([deferred.getPromise()]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.update('progress');
-        expect(promise).toUpdateWith('progress');
-      });
-      it('should return a Promise that cancels when an Array containing a single Promise is specified and that Promise is cancelled', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.any([deferred.getPromise()]);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.cancel('reason');
-        expect(promise).toCancelWith('reason');
-      });
-    });
-    describe('with multiple items specified', function() {
       it('should return a resolved Promise when an Array containing any combination of pending Deferreds and/or pending Promises and a resolved Deferred or Promise is specified', function() {
         var combination, parameters, permutation, promise, resolvedDeferred, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
         parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
         resolvedDeferred = Ext.create('Deft.promise.Deferred');
         resolvedDeferred.resolve('expected result');
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(resolvedDeferred));
@@ -1092,7 +978,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toResolveWith('expected result');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _ref3 = generatePermutations(combination.concat(resolvedDeferred.getPromise()));
@@ -1109,7 +995,7 @@ describe('Deft.promise.Promise', function() {
         parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
         rejectedDeferred = Ext.create('Deft.promise.Deferred');
         rejectedDeferred.reject('error message');
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(rejectedDeferred));
@@ -1120,7 +1006,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toRejectWith('error message');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         _results = [];
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
@@ -1144,7 +1030,7 @@ describe('Deft.promise.Promise', function() {
         parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
         updatedDeferred = Ext.create('Deft.promise.Deferred');
         updatedDeferred.update('progress');
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(updatedDeferred));
@@ -1155,7 +1041,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toUpdateWith('progress');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         _results = [];
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
@@ -1179,7 +1065,7 @@ describe('Deft.promise.Promise', function() {
         parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
         cancelledDeferred = Ext.create('Deft.promise.Deferred');
         cancelledDeferred.cancel('reason');
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(cancelledDeferred));
@@ -1190,7 +1076,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toCancelWith('reason');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         _results = [];
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
@@ -1213,7 +1099,7 @@ describe('Deft.promise.Promise', function() {
         var combination, parameters, pendingDeferred, permutation, placeholder, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
         parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
         placeholder = {};
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(placeholder));
@@ -1228,7 +1114,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toResolveWith('expected value');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _ref3 = generatePermutations(combination.concat(placeholder));
@@ -1248,7 +1134,7 @@ describe('Deft.promise.Promise', function() {
         var combination, parameters, pendingDeferred, permutation, placeholder, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
         parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
         placeholder = {};
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(placeholder));
@@ -1263,7 +1149,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toRejectWith('error message');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _ref3 = generatePermutations(combination.concat(placeholder));
@@ -1283,7 +1169,7 @@ describe('Deft.promise.Promise', function() {
         var combination, parameters, pendingDeferred, permutation, placeholder, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
         parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
         placeholder = {};
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(placeholder));
@@ -1298,7 +1184,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toUpdateWith('progress');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _ref3 = generatePermutations(combination.concat(placeholder));
@@ -1318,7 +1204,7 @@ describe('Deft.promise.Promise', function() {
         var combination, parameters, pendingDeferred, permutation, placeholder, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
         parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
         placeholder = {};
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(placeholder));
@@ -1333,7 +1219,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toCancelWith('reason');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _ref3 = generatePermutations(combination.concat(placeholder));
@@ -1586,16 +1472,9 @@ describe('Deft.promise.Promise', function() {
       }
       return _results;
     };
-    describe('with an Array of values specified', function() {
-      it('should map input values of any type to corresponding output values using a mapping function', function() {
-        var promise, values;
-        values = [void 0, null, false, 0, 1, 'expected value', [], {}];
-        promise = Deft.promise.Promise.map(values, identityFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        return expect(promise).toResolveWith(values);
-      });
-      return it('should map input values to corresponding output values using a mapping function', function() {
-        var combination, parameters, permutation, promise, _i, _len, _ref, _results;
+    describe('with an Array of values and a mapping function specified', function() {
+      it('should return a resolved Promise with the mapped values', function() {
+        var combination, expectedMappedValues, mapFunction, parameters, permutation, promise, values, _i, _len, _ref, _results;
         parameters = [
           {
             input: 1,
@@ -1618,157 +1497,618 @@ describe('Deft.promise.Promise', function() {
             _results1 = [];
             for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
               permutation = _ref1[_j];
-              promise = Deft.promise.Promise.map(getInputParameters(permutation), doubleFunction);
+              values = getInputParameters(permutation);
+              expectedMappedValues = getOutputParameters(permutation);
+              mapFunction = function(value, index, array) {
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                return doubleFunction(value);
+              };
+              promise = Deft.promise.Promise.map(values, mapFunction);
               expect(promise).toBeInstanceOf('Deft.promise.Promise');
-              _results1.push(expect(promise).toResolveWith(getOutputParameters(permutation)));
+              _results1.push(expect(promise).toResolveWith(expectedMappedValues));
             }
             return _results1;
           })());
         }
         return _results;
       });
-    });
-    describe('with an Array containing a single Deferred', function() {
-      it('should return a resolved Promise when an Array containing a single resolved Deferred is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.resolve(1);
-        promise = Deft.promise.Promise.map([deferred], doubleFunction);
+      it('should return a resolved Promise with the mapped values for any valid input value type', function() {
+        var mapFunction, promise, values;
+        values = [void 0, null, false, 0, 1, 'expected value', [], {}];
+        mapFunction = function(value, index, array) {
+          expect(array).toBe(values);
+          expect(value).toBe(array[index]);
+          return identityFunction(value);
+        };
+        promise = Deft.promise.Promise.map(values, mapFunction);
         expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toResolveWith([2]);
-      });
-      it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Deferred is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.reject('error message');
-        promise = Deft.promise.Promise.map([deferred], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toRejectWith('error message');
-      });
-      it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Deferred is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.update('progress');
-        promise = Deft.promise.Promise.map([deferred], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toUpdateWith('progress');
-      });
-      it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Deferred is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.cancel('reason');
-        promise = Deft.promise.Promise.map([deferred], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toCancelWith('reason');
-      });
-      it('should return a Promise that resolves when an Array containing a single Deferred is specified and that Deferred is resolved', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.map([deferred], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.resolve(1);
-        expect(promise).toResolveWith([2]);
-      });
-      it('should return a Promise that rejects when an Array containing a single Deferred is specified and that Deferred is rejected', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.map([deferred], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.reject('error message');
-        expect(promise).toRejectWith('error message');
-      });
-      it('should return a Promise that updates when an Array containing a single Deferred is specified and that Deferred is updated', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.map([deferred], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.update('progress');
-        expect(promise).toUpdateWith('progress');
-      });
-      return it('should return a Promise that cancels when an Array containing a single Deferred is specified and that Deferred is cancelled', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.map([deferred], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.cancel('reason');
-        expect(promise).toCancelWith('reason');
+        return expect(promise).toResolveWith(values);
       });
     });
-    describe('with an Array containing a single Promise', function() {
-      it('should return a resolved Promise when an Array containing a single resolved Promise is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.resolve(1);
-        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toResolveWith([2]);
+    describe('with an Array of values and a mapping function that returns a Deferred or Promise specified', function() {
+      it('should return a resolved Promise with the resolved mapped values if the mapping function returns resolved Deferreds or Promises', function() {
+        var combination, deferredMapFunction, expectedMappedValues, parameters, permutation, promise, values, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: 2,
+            output: 4
+          }, {
+            input: 3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination);
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            values = getInputParameters(permutation);
+            expectedMappedValues = getOutputParameters(permutation);
+            deferredMapFunction = function(value, index, array) {
+              var deferred;
+              expect(array).toBe(values);
+              expect(value).toBe(array[index]);
+              deferred = Ext.create('Deft.promise.Deferred');
+              deferred.resolve(doubleFunction(value));
+              return deferred;
+            };
+            promise = Deft.promise.Promise.map(values, deferredMapFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise).toResolveWith(expectedMappedValues);
+          }
+        }
+        _ref2 = generateCombinations(parameters);
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          combination = _ref2[_k];
+          _ref3 = generatePermutations(combination);
+          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+            permutation = _ref3[_l];
+            values = getInputParameters(permutation);
+            expectedMappedValues = getOutputParameters(permutation);
+            deferredMapFunction = function(value, index, array) {
+              var deferred;
+              expect(array).toBe(values);
+              expect(value).toBe(array[index]);
+              deferred = Ext.create('Deft.promise.Deferred');
+              deferred.resolve(doubleFunction(value));
+              return deferred.getPromise();
+            };
+            promise = Deft.promise.Promise.map(values, deferredMapFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise).toResolveWith(expectedMappedValues);
+          }
+        }
       });
-      it('should return a rejected Promise completed with the originating error when an Array containing a single rejected Promise is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.reject('error message');
-        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toRejectWith('error message');
+      it('should return a rejected Promise with the associated error message if the mapping function returns a rejected Deferred or Promise', function() {
+        var combination, deferredMapFunction, parameters, permutation, promise, rejectedIndex, values, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: 2,
+            output: 4
+          }, {
+            input: 3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination);
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            for (rejectedIndex = _k = 0, _ref2 = permutation.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; rejectedIndex = 0 <= _ref2 ? ++_k : --_k) {
+              values = getInputParameters(permutation);
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                if (index === rejectedIndex) {
+                  deferred.reject('error message');
+                } else {
+                  deferred.resolve(doubleFunction(value));
+                }
+                return deferred;
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise).toRejectWith('error message');
+            }
+          }
+        }
+        _ref3 = generateCombinations(parameters);
+        for (_l = 0, _len2 = _ref3.length; _l < _len2; _l++) {
+          combination = _ref3[_l];
+          _ref4 = generatePermutations(combination);
+          for (_m = 0, _len3 = _ref4.length; _m < _len3; _m++) {
+            permutation = _ref4[_m];
+            for (rejectedIndex = _n = 0, _ref5 = permutation.length; 0 <= _ref5 ? _n < _ref5 : _n > _ref5; rejectedIndex = 0 <= _ref5 ? ++_n : --_n) {
+              values = getInputParameters(permutation);
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                if (index === rejectedIndex) {
+                  deferred.reject('error message');
+                } else {
+                  deferred.resolve(doubleFunction(value));
+                }
+                return deferred.getPromise();
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise).toRejectWith('error message');
+            }
+          }
+        }
       });
-      it('should return a pending (and immediately updated) Promise when an Array containing a single pending (and updated) Promise is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.update('progress');
-        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toUpdateWith('progress');
+      it('should return a pending (and immediately updated) Promise with the associated progress update if the mapping function returns a pending (and updated) Deferred or Promise', function() {
+        var combination, deferredMapFunction, parameters, permutation, promise, updatedIndex, values, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: 2,
+            output: 4
+          }, {
+            input: 3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination);
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            for (updatedIndex = _k = 0, _ref2 = permutation.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; updatedIndex = 0 <= _ref2 ? ++_k : --_k) {
+              values = getInputParameters(permutation);
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                if (index === updatedIndex) {
+                  deferred.update('progress');
+                } else {
+                  deferred.resolve(doubleFunction(value));
+                }
+                return deferred;
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise).toUpdateWith('progress');
+            }
+          }
+        }
+        _ref3 = generateCombinations(parameters);
+        for (_l = 0, _len2 = _ref3.length; _l < _len2; _l++) {
+          combination = _ref3[_l];
+          _ref4 = generatePermutations(combination);
+          for (_m = 0, _len3 = _ref4.length; _m < _len3; _m++) {
+            permutation = _ref4[_m];
+            for (updatedIndex = _n = 0, _ref5 = permutation.length; 0 <= _ref5 ? _n < _ref5 : _n > _ref5; updatedIndex = 0 <= _ref5 ? ++_n : --_n) {
+              values = getInputParameters(permutation);
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                if (index === updatedIndex) {
+                  deferred.update('progress');
+                } else {
+                  deferred.resolve(doubleFunction(value));
+                }
+                return deferred.getPromise();
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise).toUpdateWith('progress');
+            }
+          }
+        }
       });
-      it('should return a cancelled Promise completed with the originating reason when an Array containing a single cancelled Promise is specified', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        deferred.cancel('reason');
-        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise).toCancelWith('reason');
+      it('should return a cancelled Promise with the associated reason if the mapping function returns a cancelled Deferred or Promise', function() {
+        var canceledIndex, combination, deferredMapFunction, parameters, permutation, promise, values, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: 2,
+            output: 4
+          }, {
+            input: 3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination);
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            for (canceledIndex = _k = 0, _ref2 = permutation.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; canceledIndex = 0 <= _ref2 ? ++_k : --_k) {
+              values = getInputParameters(permutation);
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                if (index === canceledIndex) {
+                  deferred.cancel('reason');
+                } else {
+                  deferred.resolve(doubleFunction(value));
+                }
+                return deferred;
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise).toCancelWith('reason');
+            }
+          }
+        }
+        _ref3 = generateCombinations(parameters);
+        for (_l = 0, _len2 = _ref3.length; _l < _len2; _l++) {
+          combination = _ref3[_l];
+          _ref4 = generatePermutations(combination);
+          for (_m = 0, _len3 = _ref4.length; _m < _len3; _m++) {
+            permutation = _ref4[_m];
+            for (canceledIndex = _n = 0, _ref5 = permutation.length; 0 <= _ref5 ? _n < _ref5 : _n > _ref5; canceledIndex = 0 <= _ref5 ? ++_n : --_n) {
+              values = getInputParameters(permutation);
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                if (index === canceledIndex) {
+                  deferred.cancel('reason');
+                } else {
+                  deferred.resolve(doubleFunction(value));
+                }
+                return deferred.getPromise();
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise).toCancelWith('reason');
+            }
+          }
+        }
       });
-      it('should return a Promise that resolves when an Array containing a single Promise is specified and that Promise is resolved', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.resolve(1);
-        expect(promise).toResolveWith([2]);
+      it('should return a pending Promise that resolves with the resolved mapped values when all of the pending Deferreds or Promises returned by the mapping function resolve', function() {
+        var combination, deferredMapFunction, deferredMapFunctionOperation, deferredMapFunctionOperations, expectedMappedValues, parameters, permutation, promise, values, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3;
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: 2,
+            output: 4
+          }, {
+            input: 3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination);
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            values = getInputParameters(permutation);
+            expectedMappedValues = getOutputParameters(permutation);
+            deferredMapFunctionOperations = [];
+            deferredMapFunction = function(value, index, array) {
+              var deferred;
+              expect(array).toBe(values);
+              expect(value).toBe(array[index]);
+              deferred = Ext.create('Deft.promise.Deferred');
+              deferredMapFunctionOperations.push(function() {
+                deferred.resolve(doubleFunction(value));
+              });
+              return deferred;
+            };
+            promise = Deft.promise.Promise.map(values, deferredMapFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            for (_k = 0, _len2 = deferredMapFunctionOperations.length; _k < _len2; _k++) {
+              deferredMapFunctionOperation = deferredMapFunctionOperations[_k];
+              deferredMapFunctionOperation();
+            }
+            expect(promise).toResolveWith(expectedMappedValues);
+          }
+        }
+        _ref2 = generateCombinations(parameters);
+        for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
+          combination = _ref2[_l];
+          _ref3 = generatePermutations(combination);
+          for (_m = 0, _len4 = _ref3.length; _m < _len4; _m++) {
+            permutation = _ref3[_m];
+            values = getInputParameters(permutation);
+            expectedMappedValues = getOutputParameters(permutation);
+            deferredMapFunctionOperations = [];
+            deferredMapFunction = function(value, index, array) {
+              var deferred;
+              expect(array).toBe(values);
+              expect(value).toBe(array[index]);
+              deferred = Ext.create('Deft.promise.Deferred');
+              deferredMapFunctionOperations.push(function() {
+                deferred.resolve(doubleFunction(value));
+              });
+              return deferred.getPromise();
+            };
+            promise = Deft.promise.Promise.map(values, deferredMapFunction);
+            expect(promise).toBeInstanceOf('Deft.promise.Promise');
+            expect(promise.getState()).toBe('pending');
+            for (_n = 0, _len5 = deferredMapFunctionOperations.length; _n < _len5; _n++) {
+              deferredMapFunctionOperation = deferredMapFunctionOperations[_n];
+              deferredMapFunctionOperation();
+            }
+            expect(promise).toResolveWith(expectedMappedValues);
+          }
+        }
       });
-      it('should return a Promise that rejects when an Array containing a single Promise is specified and that Promise is rejected', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.reject('error message');
-        expect(promise).toRejectWith('error message');
+      it('should return a pending Promise that rejects when any of the pending Deferreds or Promises returned by the mapping function rejects', function() {
+        var combination, deferredMapFunction, deferredMapFunctionOperation, deferredMapFunctionOperations, parameters, permutation, promise, rejectedIndex, values, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _o, _p, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: 2,
+            output: 4
+          }, {
+            input: 3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination);
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            for (rejectedIndex = _k = 0, _ref2 = permutation.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; rejectedIndex = 0 <= _ref2 ? ++_k : --_k) {
+              values = getInputParameters(permutation);
+              deferredMapFunctionOperations = [];
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                deferredMapFunctionOperations.push(function() {
+                  if (index === rejectedIndex) {
+                    deferred.reject('error message');
+                  } else {
+                    deferred.resolve(doubleFunction(value));
+                  }
+                });
+                return deferred;
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise.getState()).toBe('pending');
+              for (_l = 0, _len2 = deferredMapFunctionOperations.length; _l < _len2; _l++) {
+                deferredMapFunctionOperation = deferredMapFunctionOperations[_l];
+                deferredMapFunctionOperation();
+              }
+              expect(promise).toRejectWith('error message');
+            }
+          }
+        }
+        _ref3 = generateCombinations(parameters);
+        for (_m = 0, _len3 = _ref3.length; _m < _len3; _m++) {
+          combination = _ref3[_m];
+          _ref4 = generatePermutations(combination);
+          for (_n = 0, _len4 = _ref4.length; _n < _len4; _n++) {
+            permutation = _ref4[_n];
+            for (rejectedIndex = _o = 0, _ref5 = permutation.length; 0 <= _ref5 ? _o < _ref5 : _o > _ref5; rejectedIndex = 0 <= _ref5 ? ++_o : --_o) {
+              values = getInputParameters(permutation);
+              deferredMapFunctionOperations = [];
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                deferredMapFunctionOperations.push(function() {
+                  if (index === rejectedIndex) {
+                    deferred.reject('error message');
+                  } else {
+                    deferred.resolve(doubleFunction(value));
+                  }
+                });
+                return deferred.getPromise();
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise.getState()).toBe('pending');
+              for (_p = 0, _len5 = deferredMapFunctionOperations.length; _p < _len5; _p++) {
+                deferredMapFunctionOperation = deferredMapFunctionOperations[_p];
+                deferredMapFunctionOperation();
+              }
+              expect(promise).toRejectWith('error message');
+            }
+          }
+        }
       });
-      it('should return a Promise that updates when an Array containing a single Promise is specified and that Promise is updated', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.update('progress');
-        expect(promise).toUpdateWith('progress');
+      it('should return a pending Promise that updates when any of the pending Deferreds or Promises returned by the mapping function updates', function() {
+        var combination, deferredMapFunction, deferredMapFunctionOperation, deferredMapFunctionOperations, parameters, permutation, promise, updatedIndex, values, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _o, _p, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: 2,
+            output: 4
+          }, {
+            input: 3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination);
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            for (updatedIndex = _k = 0, _ref2 = permutation.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; updatedIndex = 0 <= _ref2 ? ++_k : --_k) {
+              values = getInputParameters(permutation);
+              deferredMapFunctionOperations = [];
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                deferredMapFunctionOperations.push(function() {
+                  if (index === updatedIndex) {
+                    deferred.update('progress');
+                  } else {
+                    deferred.resolve(doubleFunction(value));
+                  }
+                });
+                return deferred;
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise.getState()).toBe('pending');
+              for (_l = 0, _len2 = deferredMapFunctionOperations.length; _l < _len2; _l++) {
+                deferredMapFunctionOperation = deferredMapFunctionOperations[_l];
+                deferredMapFunctionOperation();
+              }
+              expect(promise).toUpdateWith('progress');
+            }
+          }
+        }
+        _ref3 = generateCombinations(parameters);
+        for (_m = 0, _len3 = _ref3.length; _m < _len3; _m++) {
+          combination = _ref3[_m];
+          _ref4 = generatePermutations(combination);
+          for (_n = 0, _len4 = _ref4.length; _n < _len4; _n++) {
+            permutation = _ref4[_n];
+            for (updatedIndex = _o = 0, _ref5 = permutation.length; 0 <= _ref5 ? _o < _ref5 : _o > _ref5; updatedIndex = 0 <= _ref5 ? ++_o : --_o) {
+              values = getInputParameters(permutation);
+              deferredMapFunctionOperations = [];
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                deferredMapFunctionOperations.push(function() {
+                  if (index === updatedIndex) {
+                    deferred.update('progress');
+                  } else {
+                    deferred.resolve(doubleFunction(value));
+                  }
+                });
+                return deferred.getPromise();
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise.getState()).toBe('pending');
+              for (_p = 0, _len5 = deferredMapFunctionOperations.length; _p < _len5; _p++) {
+                deferredMapFunctionOperation = deferredMapFunctionOperations[_p];
+                deferredMapFunctionOperation();
+              }
+              expect(promise).toUpdateWith('progress');
+            }
+          }
+        }
       });
-      return it('should return a Promise that cancels when an Array containing a single Promise is specified and that Promise is cancelled', function() {
-        var deferred, promise;
-        deferred = Ext.create('Deft.promise.Deferred');
-        promise = Deft.promise.Promise.map([deferred.getPromise()], doubleFunction);
-        expect(promise).toBeInstanceOf('Deft.promise.Promise');
-        expect(promise.getState()).toBe('pending');
-        deferred.cancel('reason');
-        expect(promise).toCancelWith('reason');
+      it('should return a pending Promise that cancels when any of the pending Deferreds or Promises returned by the mapping function cancels', function() {
+        var canceledIndex, combination, deferredMapFunction, deferredMapFunctionOperation, deferredMapFunctionOperations, parameters, permutation, promise, values, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _o, _p, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+        parameters = [
+          {
+            input: 1,
+            output: 2
+          }, {
+            input: 2,
+            output: 4
+          }, {
+            input: 3,
+            output: 6
+          }
+        ];
+        _ref = generateCombinations(parameters);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          combination = _ref[_i];
+          _ref1 = generatePermutations(combination);
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            permutation = _ref1[_j];
+            for (canceledIndex = _k = 0, _ref2 = permutation.length; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; canceledIndex = 0 <= _ref2 ? ++_k : --_k) {
+              values = getInputParameters(permutation);
+              deferredMapFunctionOperations = [];
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                deferredMapFunctionOperations.push(function() {
+                  if (index === canceledIndex) {
+                    deferred.cancel('reason');
+                  } else {
+                    deferred.resolve(doubleFunction(value));
+                  }
+                });
+                return deferred;
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise.getState()).toBe('pending');
+              for (_l = 0, _len2 = deferredMapFunctionOperations.length; _l < _len2; _l++) {
+                deferredMapFunctionOperation = deferredMapFunctionOperations[_l];
+                deferredMapFunctionOperation();
+              }
+              expect(promise).toCancelWith('reason');
+            }
+          }
+        }
+        _ref3 = generateCombinations(parameters);
+        for (_m = 0, _len3 = _ref3.length; _m < _len3; _m++) {
+          combination = _ref3[_m];
+          _ref4 = generatePermutations(combination);
+          for (_n = 0, _len4 = _ref4.length; _n < _len4; _n++) {
+            permutation = _ref4[_n];
+            for (canceledIndex = _o = 0, _ref5 = permutation.length; 0 <= _ref5 ? _o < _ref5 : _o > _ref5; canceledIndex = 0 <= _ref5 ? ++_o : --_o) {
+              values = getInputParameters(permutation);
+              deferredMapFunctionOperations = [];
+              deferredMapFunction = function(value, index, array) {
+                var deferred;
+                expect(array).toBe(values);
+                expect(value).toBe(array[index]);
+                deferred = Ext.create('Deft.promise.Deferred');
+                deferredMapFunctionOperations.push(function() {
+                  if (index === canceledIndex) {
+                    deferred.cancel('reason');
+                  } else {
+                    deferred.resolve(doubleFunction(value));
+                  }
+                });
+                return deferred.getPromise();
+              };
+              promise = Deft.promise.Promise.map(values, deferredMapFunction);
+              expect(promise).toBeInstanceOf('Deft.promise.Promise');
+              expect(promise.getState()).toBe('pending');
+              for (_p = 0, _len5 = deferredMapFunctionOperations.length; _p < _len5; _p++) {
+                deferredMapFunctionOperation = deferredMapFunctionOperations[_p];
+                deferredMapFunctionOperation();
+              }
+              expect(promise).toCancelWith('reason');
+            }
+          }
+        }
       });
     });
-    return describe('with multiple items specified', function() {
+    return describe('with a variety of combinations of values, Deferreds and Promises and a mapping function specified', function() {
       getInputParameters = function(parameters) {
         var inputs, parameter, _i, _len, _results;
         _results = [];
@@ -1843,7 +2183,7 @@ describe('Deft.promise.Promise', function() {
           input: rejectedDeferred,
           output: 'error message'
         };
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(rejectedDeferredParameter));
@@ -1858,7 +2198,7 @@ describe('Deft.promise.Promise', function() {
           input: rejectedDeferred.getPromise(),
           output: 'error message'
         };
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         _results = [];
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
@@ -1902,7 +2242,7 @@ describe('Deft.promise.Promise', function() {
           input: updatedDeferred,
           output: 'progress'
         };
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(updatedDeferredParameter));
@@ -1917,7 +2257,7 @@ describe('Deft.promise.Promise', function() {
           input: updatedDeferred.getPromise(),
           output: 'progress'
         };
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         _results = [];
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
@@ -1961,7 +2301,7 @@ describe('Deft.promise.Promise', function() {
           input: cancelledDeferred,
           output: 'reason'
         };
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(cancelledDeferredParameter));
@@ -1976,7 +2316,7 @@ describe('Deft.promise.Promise', function() {
           input: cancelledDeferred.getPromise(),
           output: 'reason'
         };
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         _results = [];
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
@@ -2015,7 +2355,7 @@ describe('Deft.promise.Promise', function() {
           }
         ];
         placeholder = {};
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(placeholder));
@@ -2034,7 +2374,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toResolveWith(getOutputParameters(permutation));
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _ref3 = generatePermutations(combination.concat(placeholder));
@@ -2074,7 +2414,7 @@ describe('Deft.promise.Promise', function() {
           }
         ];
         placeholder = {};
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(placeholder));
@@ -2093,7 +2433,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toRejectWith('error message');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _ref3 = generatePermutations(combination.concat(placeholder));
@@ -2133,7 +2473,7 @@ describe('Deft.promise.Promise', function() {
           }
         ];
         placeholder = {};
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(placeholder));
@@ -2152,7 +2492,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toUpdateWith('progress');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _ref3 = generatePermutations(combination.concat(placeholder));
@@ -2192,7 +2532,7 @@ describe('Deft.promise.Promise', function() {
           }
         ];
         placeholder = {};
-        _ref = generateCombinations(parameters);
+        _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
           _ref1 = generatePermutations(combination.concat(placeholder));
@@ -2211,7 +2551,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toCancelWith('reason');
           }
         }
-        _ref2 = generateCombinations(parameters);
+        _ref2 = generateCombinations(parameters).concat([]);
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _ref3 = generatePermutations(combination.concat(placeholder));
