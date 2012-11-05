@@ -12,7 +12,7 @@ Ext.define( 'Deft.mvc.Application',
 	###*
 	* Indicates whether this Application instance has been initialized.
 	###
-	initialized = false
+	initialized: false
 	
 	###*
 	* @param {Object} [config] Configuration object.

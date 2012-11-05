@@ -8,15 +8,13 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * A lightweight Application template class.
 */
 
-var initialized;
-
 Ext.define('Deft.mvc.Application', {
-  alternateClassName: ['Deft.Application']
+  alternateClassName: ['Deft.Application'],
   /**
   	* Indicates whether this Application instance has been initialized.
   */
 
-}, initialized = false, {
+  initialized: false,
   /**
   	* @param {Object} [config] Configuration object.
   */
