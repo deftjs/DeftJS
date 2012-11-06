@@ -80,7 +80,7 @@ describe( 'Deft.promise.Promise', ->
 				
 				return @actual.getState() is 'resolved' and wasSpyCalledWith( successCallback, value ) and not wasSpyCalled( failureCallback ) and not wasSpyCalled( progressCallback ) and not wasSpyCalled( cancelCallback )
 			
-			toRejectWith: ( message ) ->
+			toRejectWith: ( error ) ->
 				successCallback  = jasmine.createSpy( 'success callback' )
 				failureCallback  = jasmine.createSpy( 'failure callback' )
 				progressCallback = jasmine.createSpy( 'progress callback' )
@@ -93,7 +93,7 @@ describe( 'Deft.promise.Promise', ->
 					cancel: cancelCallback
 				)
 				
-				return @actual.getState() is 'rejected' and not wasSpyCalled( successCallback ) and wasSpyCalledWith( failureCallback, message ) and not wasSpyCalled( progressCallback ) and not wasSpyCalled( cancelCallback )
+				return @actual.getState() is 'rejected' and not wasSpyCalled( successCallback ) and wasSpyCalledWith( failureCallback, error ) and not wasSpyCalled( progressCallback ) and not wasSpyCalled( cancelCallback )
 			
 			toUpdateWith: ( progress ) ->
 				successCallback  = jasmine.createSpy( 'success callback' )
@@ -1070,8 +1070,13 @@ describe( 'Deft.promise.Promise', ->
 		
 		describe( 'with a variety of combinations of values, Deferreds and Promises specified', ->
 			
-			it( 'should return a resolved Promise when an Array containing any combination of pending Deferreds and/or pending Promises and a value is specified', ->
-				parameters = [ Ext.create( 'Deft.promise.Deferred' ), Ext.create( 'Deft.promise.Deferred' ).getPromise() ]
+			it( 'should return a resolved Promise when an Array containing any combination of pending, rejected and/or cancelled Deferreds and/or Promises, and a value is specified', ->
+				pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred.reject( 'error message' )
+				cancelledDeferred = Ext.create( 'Deft.promise.Deferred' )
+				cancelledDeferred.cancel( 'reason' )
+				parameters = [ pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise() ]
 				
 				for combination in generateCombinations( parameters ).concat( [] )
 					for permutation in generatePermutations( combination.concat( 'expected result' ) )
@@ -1090,8 +1095,13 @@ describe( 'Deft.promise.Promise', ->
 				return
 			)
 			
-			it( 'should return a resolved Promise when an Array containing any combination of pending Deferreds and/or pending Promises and a resolved Deferred or Promise is specified', ->
-				parameters = [ Ext.create( 'Deft.promise.Deferred' ), Ext.create( 'Deft.promise.Deferred' ).getPromise() ]
+			it( 'should return a resolved Promise when an Array containing any combination of pending, rejected and/or cancelled Deferreds and/or Promises, and a resolved Deferred or Promise is specified', ->
+				pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred.reject( 'error message' )
+				cancelledDeferred = Ext.create( 'Deft.promise.Deferred' )
+				cancelledDeferred.cancel( 'reason' )
+				parameters = [ pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise() ]
 				resolvedDeferred = Ext.create( 'Deft.promise.Deferred' )
 				resolvedDeferred.resolve( 'expected result' )
 				
@@ -1112,28 +1122,35 @@ describe( 'Deft.promise.Promise', ->
 				return
 			)
 			
-			it( 'should return a rejected Promise when an Array containing any combination of pending Deferreds, and/or pending Promises, and a rejected Deferred or Promise is specified', ->
-				parameters = [ Ext.create( 'Deft.promise.Deferred' ), Ext.create( 'Deft.promise.Deferred' ).getPromise() ]
+			it( 'should return a rejected Promise when an Array containing any combination of rejected and/or cancelled Deferreds and/or Promises is specified', ->
 				rejectedDeferred = Ext.create( 'Deft.promise.Deferred' )
 				rejectedDeferred.reject( 'error message' )
+				cancelledDeferred = Ext.create( 'Deft.promise.Deferred' )
+				cancelledDeferred.cancel( 'reason' )
+				parameters = [ rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise() ]
 				
-				for combination in generateCombinations( parameters ).concat( [] )
-					for permutation in generatePermutations( combination.concat( rejectedDeferred ) )
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination )
 						promise = Deft.promise.Promise.any( permutation )
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise ).toRejectWith( 'error message' )
+						expect( promise ).toRejectWith( new Error( 'No Promises were resolved.' ) )
 				
-				for combination in generateCombinations( parameters ).concat( [] )
-					for permutation in generatePermutations( combination.concat( rejectedDeferred.getPromise() ) )
+				for combination in generateCombinations( parameters )
+					for permutation in generatePermutations( combination )
 						promise = Deft.promise.Promise.any( permutation )
 						
 						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise ).toRejectWith( 'error message' )
+						expect( promise ).toRejectWith( new Error( 'No Promises were resolved.' ) )
 			)
 			
-			it( 'should return a pending (and immediately updated) Promise when an Array containing any combination of pending Deferreds, and/or pending Promises, and pending (and updated) Deferred or Promise is specified', ->
-				parameters = [ Ext.create( 'Deft.promise.Deferred' ), Ext.create( 'Deft.promise.Deferred' ).getPromise() ]
+			it( 'should return a pending (and immediately updated) Promise when an Array containing any combination of pending, rejected and/or cancelled Deferreds and/or Promises, and a pending (and updated) Deferred or Promise is specified', ->
+				pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred.reject( 'error message' )
+				cancelledDeferred = Ext.create( 'Deft.promise.Deferred' )
+				cancelledDeferred.cancel( 'reason' )
+				parameters = [ pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise() ]
 				updatedDeferred = Ext.create( 'Deft.promise.Deferred' )
 				updatedDeferred.update( 'progress' )
 				
@@ -1152,28 +1169,13 @@ describe( 'Deft.promise.Promise', ->
 						expect( promise ).toUpdateWith( 'progress' )
 			)
 			
-			it( 'should return a cancelled Promise when an Array containing any combination of pending Deferreds, and/or pending Promises, and a cancelled Deferred or Promise is specified', ->
-				parameters = [ Ext.create( 'Deft.promise.Deferred' ), Ext.create( 'Deft.promise.Deferred' ).getPromise() ]
+			it( 'should return a resolved Promise when an Array containing any combination of pending, rejected and/or cancelled Deferreds and/or Promises, and a pending Deferred or Promise is specified that is later resolved', ->
+				pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred.reject( 'error message' )
 				cancelledDeferred = Ext.create( 'Deft.promise.Deferred' )
 				cancelledDeferred.cancel( 'reason' )
-				
-				for combination in generateCombinations( parameters ).concat( [] )
-					for permutation in generatePermutations( combination.concat( cancelledDeferred ) )
-						promise = Deft.promise.Promise.any( permutation )
-						
-						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise ).toCancelWith( 'reason' )
-				
-				for combination in generateCombinations( parameters ).concat( [] )
-					for permutation in generatePermutations( combination.concat( cancelledDeferred.getPromise() ) )
-						promise = Deft.promise.Promise.any( permutation )
-						
-						expect( promise ).toBeInstanceOf( 'Deft.promise.Promise' )
-						expect( promise ).toCancelWith( 'reason' )
-			)
-			
-			it( 'should return a resolved Promise when an Array containing any combination of pending Deferreds and/or pending Promises, and a pending Deferred or Promise is specified that is later resolved', ->
-				parameters = [ Ext.create( 'Deft.promise.Deferred' ), Ext.create( 'Deft.promise.Deferred' ).getPromise() ]
+				parameters = [ pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise() ]
 				placeholder = {}
 				
 				for combination in generateCombinations( parameters ).concat( [] )
@@ -1209,8 +1211,12 @@ describe( 'Deft.promise.Promise', ->
 				return
 			)
 			
-			it( 'should return a rejected Promise when an Array containing any combination of pending Deferreds and/or pending Promises, and a pending Deferred or Promise is specified that is later rejected', ->
-				parameters = [ Ext.create( 'Deft.promise.Deferred' ), Ext.create( 'Deft.promise.Deferred' ).getPromise() ]
+			it( 'should return a rejected Promise when an Array containing any combination of rejected and/or cancelled Deferreds and/or Promises, and a pending Deferred or Promise is specified that is later rejected', ->
+				rejectedDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred.reject( 'error message' )
+				cancelledDeferred = Ext.create( 'Deft.promise.Deferred' )
+				cancelledDeferred.cancel( 'reason' )
+				parameters = [ rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise() ]
 				placeholder = {}
 				
 				for combination in generateCombinations( parameters ).concat( [] )
@@ -1226,7 +1232,7 @@ describe( 'Deft.promise.Promise', ->
 						
 						pendingDeferred.reject( 'error message' )
 						
-						expect( promise ).toRejectWith( 'error message' )
+						expect( promise ).toRejectWith( new Error( 'No Promises were resolved.' ) )
 				
 				for combination in generateCombinations( parameters ).concat( [] )
 					for permutation in generatePermutations( combination.concat( placeholder ) )
@@ -1241,13 +1247,18 @@ describe( 'Deft.promise.Promise', ->
 						
 						pendingDeferred.reject( 'error message' )
 						
-						expect( promise ).toRejectWith( 'error message' )
+						expect( promise ).toRejectWith( new Error( 'No Promises were resolved.' ) )
 				
 				return
 			)
 			
-			it( 'should return a pending (and later updated) when an Array containing any combination of pending Deferreds and/or pending Promises, and a pending Deferred or Promise is specified that is later updated', ->
-				parameters = [ Ext.create( 'Deft.promise.Deferred' ), Ext.create( 'Deft.promise.Deferred' ).getPromise() ]
+			it( 'should return a pending (and later updated) when an Array containing any combination of pending, rejected and/or Deferreds and/or Promises, and a pending Deferred or Promise is specified that is later updated', ->
+				pendingDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred.reject( 'error message' )
+				cancelledDeferred = Ext.create( 'Deft.promise.Deferred' )
+				cancelledDeferred.cancel( 'reason' )
+				parameters = [ pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise() ]
 				placeholder = {}
 				
 				for combination in generateCombinations( parameters ).concat( [] )
@@ -1283,8 +1294,12 @@ describe( 'Deft.promise.Promise', ->
 				return
 			)
 			
-			it( 'should return a cancelled Promise when an Array containing any combination of pending Deferreds and/or pending Promises, and a pending Deferred or Promise is specified that is later cancelled', ->
-				parameters = [ Ext.create( 'Deft.promise.Deferred' ), Ext.create( 'Deft.promise.Deferred' ).getPromise() ]
+			it( 'should return a rejected Promise when an Array containing any combination of rejected and/or cancelled Deferreds and/or Promises, and a pending Deferred or Promise is specified that is later cancelled', ->
+				rejectedDeferred = Ext.create( 'Deft.promise.Deferred' )
+				rejectedDeferred.reject( 'error message' )
+				cancelledDeferred = Ext.create( 'Deft.promise.Deferred' )
+				cancelledDeferred.cancel( 'reason' )
+				parameters = [ rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise() ]
 				placeholder = {}
 				
 				for combination in generateCombinations( parameters ).concat( [] )
@@ -1300,7 +1315,7 @@ describe( 'Deft.promise.Promise', ->
 						
 						pendingDeferred.cancel( 'reason' )
 						
-						expect( promise ).toCancelWith( 'reason' )
+						expect( promise ).toRejectWith( new Error( 'No Promises were resolved.' ) )
 				
 				for combination in generateCombinations( parameters ).concat( [] )
 					for permutation in generatePermutations( combination.concat( placeholder ) )
@@ -1315,7 +1330,7 @@ describe( 'Deft.promise.Promise', ->
 						
 						pendingDeferred.cancel( 'reason' )
 						
-						expect( promise ).toCancelWith( 'reason' )
+						expect( promise ).toRejectWith( new Error( 'No Promises were resolved.' ) )
 				
 				return
 			)

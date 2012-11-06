@@ -86,7 +86,7 @@ describe('Deft.promise.Promise', function() {
         });
         return this.actual.getState() === 'resolved' && wasSpyCalledWith(successCallback, value) && !wasSpyCalled(failureCallback) && !wasSpyCalled(progressCallback) && !wasSpyCalled(cancelCallback);
       },
-      toRejectWith: function(message) {
+      toRejectWith: function(error) {
         var cancelCallback, failureCallback, progressCallback, successCallback;
         successCallback = jasmine.createSpy('success callback');
         failureCallback = jasmine.createSpy('failure callback');
@@ -98,7 +98,7 @@ describe('Deft.promise.Promise', function() {
           progress: progressCallback,
           cancel: cancelCallback
         });
-        return this.actual.getState() === 'rejected' && !wasSpyCalled(successCallback) && wasSpyCalledWith(failureCallback, message) && !wasSpyCalled(progressCallback) && !wasSpyCalled(cancelCallback);
+        return this.actual.getState() === 'rejected' && !wasSpyCalled(successCallback) && wasSpyCalledWith(failureCallback, error) && !wasSpyCalled(progressCallback) && !wasSpyCalled(cancelCallback);
       },
       toUpdateWith: function(progress) {
         var cancelCallback, failureCallback, progressCallback, successCallback;
@@ -936,9 +936,14 @@ describe('Deft.promise.Promise', function() {
       }
     });
     describe('with a variety of combinations of values, Deferreds and Promises specified', function() {
-      it('should return a resolved Promise when an Array containing any combination of pending Deferreds and/or pending Promises and a value is specified', function() {
-        var combination, parameters, permutation, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
-        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+      it('should return a resolved Promise when an Array containing any combination of pending, rejected and/or cancelled Deferreds and/or Promises, and a value is specified', function() {
+        var cancelledDeferred, combination, parameters, pendingDeferred, permutation, promise, rejectedDeferred, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        pendingDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred.reject('error message');
+        cancelledDeferred = Ext.create('Deft.promise.Deferred');
+        cancelledDeferred.cancel('reason');
+        parameters = [pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise()];
         _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
@@ -962,9 +967,14 @@ describe('Deft.promise.Promise', function() {
           }
         }
       });
-      it('should return a resolved Promise when an Array containing any combination of pending Deferreds and/or pending Promises and a resolved Deferred or Promise is specified', function() {
-        var combination, parameters, permutation, promise, resolvedDeferred, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
-        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+      it('should return a resolved Promise when an Array containing any combination of pending, rejected and/or cancelled Deferreds and/or Promises, and a resolved Deferred or Promise is specified', function() {
+        var cancelledDeferred, combination, parameters, pendingDeferred, permutation, promise, rejectedDeferred, resolvedDeferred, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        pendingDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred.reject('error message');
+        cancelledDeferred = Ext.create('Deft.promise.Deferred');
+        cancelledDeferred.cancel('reason');
+        parameters = [pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise()];
         resolvedDeferred = Ext.create('Deft.promise.Deferred');
         resolvedDeferred.resolve('expected result');
         _ref = generateCombinations(parameters).concat([]);
@@ -990,44 +1000,51 @@ describe('Deft.promise.Promise', function() {
           }
         }
       });
-      it('should return a rejected Promise when an Array containing any combination of pending Deferreds, and/or pending Promises, and a rejected Deferred or Promise is specified', function() {
-        var combination, parameters, permutation, promise, rejectedDeferred, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
-        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+      it('should return a rejected Promise when an Array containing any combination of rejected and/or cancelled Deferreds and/or Promises is specified', function() {
+        var cancelledDeferred, combination, parameters, permutation, promise, rejectedDeferred, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
         rejectedDeferred = Ext.create('Deft.promise.Deferred');
         rejectedDeferred.reject('error message');
-        _ref = generateCombinations(parameters).concat([]);
+        cancelledDeferred = Ext.create('Deft.promise.Deferred');
+        cancelledDeferred.cancel('reason');
+        parameters = [rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise()];
+        _ref = generateCombinations(parameters);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           combination = _ref[_i];
-          _ref1 = generatePermutations(combination.concat(rejectedDeferred));
+          _ref1 = generatePermutations(combination);
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             permutation = _ref1[_j];
             promise = Deft.promise.Promise.any(permutation);
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
-            expect(promise).toRejectWith('error message');
+            expect(promise).toRejectWith(new Error('No Promises were resolved.'));
           }
         }
-        _ref2 = generateCombinations(parameters).concat([]);
+        _ref2 = generateCombinations(parameters);
         _results = [];
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           combination = _ref2[_k];
           _results.push((function() {
             var _l, _len3, _ref3, _results1;
-            _ref3 = generatePermutations(combination.concat(rejectedDeferred.getPromise()));
+            _ref3 = generatePermutations(combination);
             _results1 = [];
             for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
               permutation = _ref3[_l];
               promise = Deft.promise.Promise.any(permutation);
               expect(promise).toBeInstanceOf('Deft.promise.Promise');
-              _results1.push(expect(promise).toRejectWith('error message'));
+              _results1.push(expect(promise).toRejectWith(new Error('No Promises were resolved.')));
             }
             return _results1;
           })());
         }
         return _results;
       });
-      it('should return a pending (and immediately updated) Promise when an Array containing any combination of pending Deferreds, and/or pending Promises, and pending (and updated) Deferred or Promise is specified', function() {
-        var combination, parameters, permutation, promise, updatedDeferred, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
-        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+      it('should return a pending (and immediately updated) Promise when an Array containing any combination of pending, rejected and/or cancelled Deferreds and/or Promises, and a pending (and updated) Deferred or Promise is specified', function() {
+        var cancelledDeferred, combination, parameters, pendingDeferred, permutation, promise, rejectedDeferred, updatedDeferred, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
+        pendingDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred.reject('error message');
+        cancelledDeferred = Ext.create('Deft.promise.Deferred');
+        cancelledDeferred.cancel('reason');
+        parameters = [pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise()];
         updatedDeferred = Ext.create('Deft.promise.Deferred');
         updatedDeferred.update('progress');
         _ref = generateCombinations(parameters).concat([]);
@@ -1060,44 +1077,14 @@ describe('Deft.promise.Promise', function() {
         }
         return _results;
       });
-      it('should return a cancelled Promise when an Array containing any combination of pending Deferreds, and/or pending Promises, and a cancelled Deferred or Promise is specified', function() {
-        var cancelledDeferred, combination, parameters, permutation, promise, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
-        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+      it('should return a resolved Promise when an Array containing any combination of pending, rejected and/or cancelled Deferreds and/or Promises, and a pending Deferred or Promise is specified that is later resolved', function() {
+        var cancelledDeferred, combination, parameters, pendingDeferred, permutation, placeholder, promise, rejectedDeferred, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        pendingDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred.reject('error message');
         cancelledDeferred = Ext.create('Deft.promise.Deferred');
         cancelledDeferred.cancel('reason');
-        _ref = generateCombinations(parameters).concat([]);
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          combination = _ref[_i];
-          _ref1 = generatePermutations(combination.concat(cancelledDeferred));
-          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            permutation = _ref1[_j];
-            promise = Deft.promise.Promise.any(permutation);
-            expect(promise).toBeInstanceOf('Deft.promise.Promise');
-            expect(promise).toCancelWith('reason');
-          }
-        }
-        _ref2 = generateCombinations(parameters).concat([]);
-        _results = [];
-        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-          combination = _ref2[_k];
-          _results.push((function() {
-            var _l, _len3, _ref3, _results1;
-            _ref3 = generatePermutations(combination.concat(cancelledDeferred.getPromise()));
-            _results1 = [];
-            for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
-              permutation = _ref3[_l];
-              promise = Deft.promise.Promise.any(permutation);
-              expect(promise).toBeInstanceOf('Deft.promise.Promise');
-              _results1.push(expect(promise).toCancelWith('reason'));
-            }
-            return _results1;
-          })());
-        }
-        return _results;
-      });
-      it('should return a resolved Promise when an Array containing any combination of pending Deferreds and/or pending Promises, and a pending Deferred or Promise is specified that is later resolved', function() {
-        var combination, parameters, pendingDeferred, permutation, placeholder, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
-        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+        parameters = [pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise()];
         placeholder = {};
         _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1130,9 +1117,13 @@ describe('Deft.promise.Promise', function() {
           }
         }
       });
-      it('should return a rejected Promise when an Array containing any combination of pending Deferreds and/or pending Promises, and a pending Deferred or Promise is specified that is later rejected', function() {
-        var combination, parameters, pendingDeferred, permutation, placeholder, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
-        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+      it('should return a rejected Promise when an Array containing any combination of rejected and/or cancelled Deferreds and/or Promises, and a pending Deferred or Promise is specified that is later rejected', function() {
+        var cancelledDeferred, combination, parameters, pendingDeferred, permutation, placeholder, promise, rejectedDeferred, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        rejectedDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred.reject('error message');
+        cancelledDeferred = Ext.create('Deft.promise.Deferred');
+        cancelledDeferred.cancel('reason');
+        parameters = [rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise()];
         placeholder = {};
         _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1146,7 +1137,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
             pendingDeferred.reject('error message');
-            expect(promise).toRejectWith('error message');
+            expect(promise).toRejectWith(new Error('No Promises were resolved.'));
           }
         }
         _ref2 = generateCombinations(parameters).concat([]);
@@ -1161,13 +1152,18 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
             pendingDeferred.reject('error message');
-            expect(promise).toRejectWith('error message');
+            expect(promise).toRejectWith(new Error('No Promises were resolved.'));
           }
         }
       });
-      it('should return a pending (and later updated) when an Array containing any combination of pending Deferreds and/or pending Promises, and a pending Deferred or Promise is specified that is later updated', function() {
-        var combination, parameters, pendingDeferred, permutation, placeholder, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
-        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+      it('should return a pending (and later updated) when an Array containing any combination of pending, rejected and/or Deferreds and/or Promises, and a pending Deferred or Promise is specified that is later updated', function() {
+        var cancelledDeferred, combination, parameters, pendingDeferred, permutation, placeholder, promise, rejectedDeferred, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        pendingDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred.reject('error message');
+        cancelledDeferred = Ext.create('Deft.promise.Deferred');
+        cancelledDeferred.cancel('reason');
+        parameters = [pendingDeferred, pendingDeferred.getPromise(), rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise()];
         placeholder = {};
         _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1200,9 +1196,13 @@ describe('Deft.promise.Promise', function() {
           }
         }
       });
-      it('should return a cancelled Promise when an Array containing any combination of pending Deferreds and/or pending Promises, and a pending Deferred or Promise is specified that is later cancelled', function() {
-        var combination, parameters, pendingDeferred, permutation, placeholder, promise, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
-        parameters = [Ext.create('Deft.promise.Deferred'), Ext.create('Deft.promise.Deferred').getPromise()];
+      it('should return a rejected Promise when an Array containing any combination of rejected and/or cancelled Deferreds and/or Promises, and a pending Deferred or Promise is specified that is later cancelled', function() {
+        var cancelledDeferred, combination, parameters, pendingDeferred, permutation, placeholder, promise, rejectedDeferred, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+        rejectedDeferred = Ext.create('Deft.promise.Deferred');
+        rejectedDeferred.reject('error message');
+        cancelledDeferred = Ext.create('Deft.promise.Deferred');
+        cancelledDeferred.cancel('reason');
+        parameters = [rejectedDeferred, rejectedDeferred.getPromise(), cancelledDeferred, cancelledDeferred.getPromise()];
         placeholder = {};
         _ref = generateCombinations(parameters).concat([]);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1216,7 +1216,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
             pendingDeferred.cancel('reason');
-            expect(promise).toCancelWith('reason');
+            expect(promise).toRejectWith(new Error('No Promises were resolved.'));
           }
         }
         _ref2 = generateCombinations(parameters).concat([]);
@@ -1231,7 +1231,7 @@ describe('Deft.promise.Promise', function() {
             expect(promise).toBeInstanceOf('Deft.promise.Promise');
             expect(promise.getState()).toBe('pending');
             pendingDeferred.cancel('reason');
-            expect(promise).toCancelWith('reason');
+            expect(promise).toRejectWith(new Error('No Promises were resolved.'));
           }
         }
       });

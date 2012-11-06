@@ -2,7 +2,7 @@
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
-Promise.when(), all(), any(), map() and reduce() methods adapted from:
+Promise.when(), all(), any(), some(), map() and reduce() methods adapted from:
 [when.js](https://github.com/cujojs/when)
 Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
@@ -97,47 +97,72 @@ Ext.define( 'Deft.promise.Promise',
 		
 		
 		###*
-		* Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
-		* The resolution value will be the resolution value of the triggering `promiseOrValue`.
+		* Initiates a competitive race, returning a new {@link Deft.promise.Promise} that will resolve when any one of the supplied `promisesOrValues`
+		* have resolved, or will reject when all `promisesOrValues` have rejected or cancelled.
+		* The resolution value will the first value of `promisesOrValues` to resolve.
 		###
 		any: ( promisesOrValues ) ->
-			return @when( promisesOrValues ).then( 
+			return @some( promisesOrValues, 1 ).then( success: ( values ) -> return values[ 0 ] )
+		
+		###*
+		* Initiates a competitive race, returning a new {@link Deft.promise.Promise} that will resolve when `howMany` of the supplied `promisesOrValues`
+		* have resolved, or will reject when it becomes impossible for `howMany` to resolve.
+		* The resolution value will be an Array of the first `howMany` values of `promisesOrValues` to resolve.
+		###
+		some: ( promisesOrValues, howMany ) ->
+			return @when( promisesOrValues ).then(
 				success: ( promisesOrValues ) ->
+					values = []
+					remainingToResolve = howMany
+					remainingToReject = ( promisesOrValues.length - remainingToResolve ) + 1
+					
 					deferred = Ext.create( 'Deft.promise.Deferred' )
 					
-					updater = ( progress ) ->
-						deferred.update( progress )
-						return progress
-					resolver = ( value ) ->
-						complete()
-						deferred.resolve( value )
-						return value
-					rejecter = ( error ) ->
-						complete()
-						deferred.reject( error )
-						return error
-					canceller = ( reason ) ->
-						complete()
-						deferred.cancel( reason )
-						return reason
-					
-					complete = ->
-						updater = resolver = rejecter = canceller = Ext.emptyFn
-					
-					successFunction  = ( value ) -> resolver( value )
-					failureFunction  = ( value ) -> rejecter( value )
-					progressFunction = ( value ) -> updater( value )
-					cancelFunction   = ( value ) -> canceller( value )
-					
-					for promiseOrValue, index in promisesOrValues
-						if index of promisesOrValues
-							@when( promiseOrValue )
-								.then( 
-									success: successFunction
-									failure: failureFunction
-									progress: progressFunction
-									cancel: cancelFunction
-								)
+					if promisesOrValues.length < howMany
+						deferred.reject( new Error( 'Too few Promises or values were supplied to obtain the requested number of resolved values.' ) )
+					else
+						errorMessage = if howMany is 1 then 'No Promises were resolved.' else 'Too few Promises were resolved.'
+						
+						updater = ( progress ) ->
+							deferred.update( progress )
+							return progress
+						resolver = ( value ) ->
+							values.push( value )
+							remainingToResolve--
+							if remainingToResolve is 0
+								complete()
+								deferred.resolve( values )
+							return value
+						rejecter = ( error ) ->
+							remainingToReject--
+							if remainingToReject is 0
+								complete()
+								deferred.reject( new Error( errorMessage ) )
+							return error
+						canceller = ( reason ) ->
+							remainingToReject--
+							if remainingToReject is 0
+								complete()
+								deferred.reject( new Error( errorMessage ) )
+							return reason
+						
+						complete = ->
+							updater = resolver = rejecter = canceller = Ext.emptyFn
+						
+						successFunction  = ( value ) -> resolver( value )
+						failureFunction  = ( value ) -> rejecter( value )
+						progressFunction = ( value ) -> updater( value )
+						cancelFunction   = ( value ) -> canceller( value )
+						
+						for promiseOrValue, index in promisesOrValues
+							if index of promisesOrValues
+								@when( promiseOrValue )
+									.then( 
+										success: successFunction
+										failure: failureFunction
+										progress: progressFunction
+										cancel: cancelFunction
+									)
 					
 					return deferred.getPromise()
 				scope: @

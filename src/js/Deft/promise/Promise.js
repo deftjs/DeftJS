@@ -3,7 +3,7 @@
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
-Promise.when(), all(), any(), map() and reduce() methods adapted from:
+Promise.when(), all(), any(), some(), map() and reduce() methods adapted from:
 [when.js](https://github.com/cujojs/when)
 Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
@@ -110,58 +110,90 @@ Ext.define('Deft.promise.Promise', {
       });
     },
     /**
-    		* Returns a new {@link Deft.promise.Promise} that will only resolve once any one of the the specified `promisesOrValues` has resolved.
-    		* The resolution value will be the resolution value of the triggering `promiseOrValue`.
+    		* Initiates a competitive race, returning a new {@link Deft.promise.Promise} that will resolve when any one of the supplied `promisesOrValues`
+    		* have resolved, or will reject when all `promisesOrValues` have rejected or cancelled.
+    		* The resolution value will the first value of `promisesOrValues` to resolve.
     */
 
     any: function(promisesOrValues) {
+      return this.some(promisesOrValues, 1).then({
+        success: function(values) {
+          return values[0];
+        }
+      });
+    },
+    /**
+    		* Initiates a competitive race, returning a new {@link Deft.promise.Promise} that will resolve when `howMany` of the supplied `promisesOrValues`
+    		* have resolved, or will reject when it becomes impossible for `howMany` to resolve.
+    		* The resolution value will be an Array of the first `howMany` values of `promisesOrValues` to resolve.
+    */
+
+    some: function(promisesOrValues, howMany) {
       return this.when(promisesOrValues).then({
         success: function(promisesOrValues) {
-          var cancelFunction, canceller, complete, deferred, failureFunction, index, progressFunction, promiseOrValue, rejecter, resolver, successFunction, updater, _i, _len;
+          var cancelFunction, canceller, complete, deferred, errorMessage, failureFunction, index, progressFunction, promiseOrValue, rejecter, remainingToReject, remainingToResolve, resolver, successFunction, updater, values, _i, _len;
+          values = [];
+          remainingToResolve = howMany;
+          remainingToReject = (promisesOrValues.length - remainingToResolve) + 1;
           deferred = Ext.create('Deft.promise.Deferred');
-          updater = function(progress) {
-            deferred.update(progress);
-            return progress;
-          };
-          resolver = function(value) {
-            complete();
-            deferred.resolve(value);
-            return value;
-          };
-          rejecter = function(error) {
-            complete();
-            deferred.reject(error);
-            return error;
-          };
-          canceller = function(reason) {
-            complete();
-            deferred.cancel(reason);
-            return reason;
-          };
-          complete = function() {
-            return updater = resolver = rejecter = canceller = Ext.emptyFn;
-          };
-          successFunction = function(value) {
-            return resolver(value);
-          };
-          failureFunction = function(value) {
-            return rejecter(value);
-          };
-          progressFunction = function(value) {
-            return updater(value);
-          };
-          cancelFunction = function(value) {
-            return canceller(value);
-          };
-          for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
-            promiseOrValue = promisesOrValues[index];
-            if (index in promisesOrValues) {
-              this.when(promiseOrValue).then({
-                success: successFunction,
-                failure: failureFunction,
-                progress: progressFunction,
-                cancel: cancelFunction
-              });
+          if (promisesOrValues.length < howMany) {
+            deferred.reject(new Error('Too few Promises or values were supplied to obtain the requested number of resolved values.'));
+          } else {
+            errorMessage = howMany === 1 ? 'No Promises were resolved.' : 'Too few Promises were resolved.';
+            updater = function(progress) {
+              deferred.update(progress);
+              return progress;
+            };
+            resolver = function(value) {
+              values.push(value);
+              remainingToResolve--;
+              if (remainingToResolve === 0) {
+                complete();
+                deferred.resolve(values);
+              }
+              return value;
+            };
+            rejecter = function(error) {
+              remainingToReject--;
+              if (remainingToReject === 0) {
+                complete();
+                deferred.reject(new Error(errorMessage));
+              }
+              return error;
+            };
+            canceller = function(reason) {
+              remainingToReject--;
+              if (remainingToReject === 0) {
+                complete();
+                deferred.reject(new Error(errorMessage));
+              }
+              return reason;
+            };
+            complete = function() {
+              return updater = resolver = rejecter = canceller = Ext.emptyFn;
+            };
+            successFunction = function(value) {
+              return resolver(value);
+            };
+            failureFunction = function(value) {
+              return rejecter(value);
+            };
+            progressFunction = function(value) {
+              return updater(value);
+            };
+            cancelFunction = function(value) {
+              return canceller(value);
+            };
+            for (index = _i = 0, _len = promisesOrValues.length; _i < _len; index = ++_i) {
+              promiseOrValue = promisesOrValues[index];
+              if (index in promisesOrValues) {
+                this.when(promiseOrValue).then({
+                  success: successFunction,
+                  failure: failureFunction,
+                  progress: progressFunction,
+                  cancel: cancelFunction
+                });
+              }
             }
           }
           return deferred.getPromise();
