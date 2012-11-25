@@ -710,13 +710,12 @@ Ext.define('Deft.mixin.Injectable', {
       });
     });
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
-      var _ref1;
       Deft.Class.hookOnClassCreated(hooks, function(Class) {
         Class.override({
           constructor: createInjectionInterceptor()
         });
       });
-      if ((_ref1 = data.inject) == null) {
+      if (data.inject == null) {
         data.inject = {};
       }
       Ext.applyIf(data.inject, Class.superclass.inject);
@@ -1494,7 +1493,37 @@ Ext.define('Deft.mvc.Application', {
   	* Initialize the Application
   */
 
-  init: function() {}
+  init: function() {
+    var injectorConfig;
+    this.beforeInit();
+    injectorConfig = this.buildInjectorConfig();
+    if (injectorConfig != null) {
+      Deft.Injector.configure(injectorConfig);
+    }
+    return this.afterInit();
+  },
+  /**
+  * @protected
+  * Returns the configuration object to pass to Deft.Injector.configure(). Override in subclasses to alter the Injector configuration before returning the config object.
+  * @param {Object} injectorConfig
+  * @return {Object} The Injector configuration object.
+  */
+
+  buildInjectorConfig: function(injectorConfig) {
+    return injectorConfig;
+  },
+  /**
+  * @protected
+  * Runs at the start of the init() method. Override in subclasses if needed.
+  */
+
+  beforeInit: function() {},
+  /**
+  * @protected
+  * Runs at the end of the init() method. Override in subclasses. Useful to create initial Viewport, start Jasmine tests, etc.
+  */
+
+  afterInit: function() {}
 });
 /*
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
