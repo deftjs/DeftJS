@@ -24,7 +24,7 @@
 			<arg line="-cb -o js coffee" />
 		</exec>
 		
-		<exec dir="src" executable="${coffeeExecutable}">
+		<exec dir="spec" executable="${coffeeExecutable}">
 			<arg line="-cb -o js coffee" />
 		</exec>
 		
