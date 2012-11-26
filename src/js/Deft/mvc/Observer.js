@@ -5,6 +5,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
+* @private
 * Used by Deft.mvc.ViewController to handle events fired from injected objects.
 */
 
