@@ -504,7 +504,107 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-* A lightweight IoC container for dependency injection.
+A lightweight IoC container for dependency injection.
+
+## <u>[Basic Configuration](https://github.com/deftjs/DeftJS/wiki/Basic-Application-and-IoC-Configuration)</u>
+
+    // Common configuration, using dependency provider name and class.
+    Deft.Injector.configure({
+      companyStore: "DeftQuickStart.store.CompanyStore",
+      companyService: "DeftQuickStart.store.CompanyService"
+    });
+
+In the IoC configuration above, we have created two **dependency providers**, one named `companyStore` and one named `companyService`. By default, DeftJS uses lazy instantiation to create singleton instances of the `CompanyStore` and `CompanyService` classes. This means that a singleton won't be created until an object in your application specifies one of these dependency providers as an injected dependency.
+
+## <u>[Singleton vs. Prototype Dependency Providers](https://github.com/deftjs/DeftJS/wiki/Singleton-vs.-Prototype-Dependency-Providers)</u>
+
+By default, the dependency providers set up with the DeftJS `Injector` are singletons. This means that only one instance of that dependency will be created, and the same instance will be injected into all objects that request that dependency.
+
+For cases where this is not desired, you can create non-singleton (prototype) dependency providers like this:
+
+    Deft.Injector.configure({
+      editHistory: {
+        className: "MyApp.util.EditHistory",
+        singleton: false
+      }
+    });
+
+## <u>[Lazy vs. Eager Dependency Creation](https://github.com/deftjs/DeftJS/wiki/Eager-vs.-Lazy-Instantiation)</u>
+
+By default, dependency providers are created **lazily**. This means that the dependency will not be created by DeftJS until another object is created which specifies that dependency as an injection.
+
+In cases where lazy instantiation is not desired, you can set up a dependency provider to be created immediately upon application startup by using the `eager` configuration:
+
+    Deft.Injector.configure({
+      notificationService: {
+        className: "MyApp.service.NotificationService",
+        eager: true
+      }
+    });
+
+> **NOTE: Only singleton dependency providers can be eagerly instantiated.** This means that specifying `singleton: false` and `eager: true` for a dependency provider won't work. The reason may be obvious: DeftJS can't do anything with a prototype object that is eagerly created, since by definition each injection of a prototype dependency must be a new instance!
+
+## <u>[Constructor Parameters](https://github.com/deftjs/DeftJS/wiki/Constructor-Parameters)</u>
+
+If needed, constructor parameters can be specified for a dependency provider. These parameters will be passed into the constructor of the target object when it is created. Constructor parameters can be configured in the following way:
+
+    Deft.Injector.configure({
+      contactStore: {
+        className: 'MyApp.store.ContactStore',
+
+        // Specify an array of params to pass into ContactStore constructor
+        parameters: [{
+          proxy: {
+            type: 'ajax',
+            url: '/contacts.json',
+            reader: {
+              type: 'json',
+              root: 'contacts'
+            }
+          }
+        }]
+      }
+    });
+
+## <u>[Constructor Parameters](https://github.com/deftjs/DeftJS/wiki/Factory-Functions)</u>
+
+A dependency provider can also specify a function to use to create the object that will be injected:
+
+    Deft.Injector.configure({
+
+      contactStore: {
+        fn: function() {
+          if (useMocks) {
+            return Ext.create("MyApp.mock.store.ContactStore");
+          } else {
+            return Ext.create("MyApp.store.ContactStore");
+          }
+        },
+        eager: true
+      },
+
+      contactManager: {
+        // The factory function will be passed a single argument:
+        // The object instance that the new object will be injected into
+        fn: function(instance) {
+          if (instance.session.getIsAdmin()) {
+            return Ext.create("MyApp.manager.admin.ContactManager");
+          } else {
+            return Ext.create("MyApp.manager.user.ContactManager");
+          }
+        },
+        singleton: false
+      }
+
+    });
+
+When the Injector is called to resolve dependencies for these identifiers, the factory function is called and the dependency is resolved with the return value.
+
+As shown above, a lazily instantiated factory function can optionally accept a parameter, corresponding to the instance for which the Injector is currently injecting dependencies.
+
+Factory function dependency providers can be configured as singletons or prototypes and can be eagerly or lazily instantiated.
+
+> **NOTE: Only singleton factory functions can be eagerly instantiated.** This means that specifying `singleton: false` and `eager: true` for a dependency provider won't work. The reason may be obvious: DeftJS can't do anything with a prototype object that is eagerly created, since by definition each injection of a prototype dependency must be a new instance!
 */
 
 Ext.define('Deft.ioc.Injector', {
@@ -729,6 +829,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
+* @private
 * Used by Deft.mvc.ViewController to handle events fired from injected objects.
 */
 
@@ -1040,6 +1141,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
+* @private
 * Models a component selector used by Deft.mvc.ViewController to locate view components and attach event listeners.
 */
 
@@ -1144,13 +1246,116 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-* A lightweight MVC view controller.
-*
-*     Ext.define("MyApp.view.MyTabPanel", {
-*       extend: "Ext.tab.Panel",
-*       controller: 'MyApp.controller.MyTabPanelController',
-*       ...
-*     });
+A lightweight MVC view controller. Full usage instructions in the [DeftJS documentation](https://github.com/deftjs/DeftJS/wiki/ViewController).
+
+First, specify a ViewController to attach to a view:
+
+    Ext.define("DeftQuickStart.view.MyTabPanel", {
+      extend: "Ext.tab.Panel",
+      controller: "DeftQuickStart.controller.MainController",
+      ...
+    });
+
+Next, define the ViewController:
+
+    Ext.define("DeftQuickStart.controller.MainController", {
+      extend: "Deft.mvc.ViewController",
+
+      init: function() {
+        return this.callParent(arguments);
+      }
+
+    });
+
+## Inject dependencies using the <u>[`inject` property](https://github.com/deftjs/DeftJS/wiki/Injecting-Dependencies)</u>:
+
+    Ext.define("DeftQuickStart.controller.MainController", {
+      extend: "Deft.mvc.ViewController",
+      inject: ["companyStore"],
+
+      config: {
+        companyStore: null
+      },
+
+      init: function() {
+        return this.callParent(arguments);
+      }
+
+    });
+
+## Define <u>[references to view components](https://github.com/deftjs/DeftJS/wiki/Accessing-Views)</u> and <u>[add view listeners](https://github.com/deftjs/DeftJS/wiki/Handling-View-Events)</u> with the `control` property:
+
+    Ext.define("DeftQuickStart.controller.MainController", {
+      extend: "Deft.mvc.ViewController",
+
+      control: {
+
+        // Most common configuration, using an itemId and listener
+        manufacturingFilter: {
+          change: "onFilterChange"
+        },
+
+        // Reference only, with no listeners
+        serviceIndustryFilter: true,
+
+        // Configuration using selector, listeners, and event listener options
+        salesFilter: {
+          selector: "toolbar > checkbox",
+          listeners: {
+            change: {
+              fn: "onFilterChange",
+              buffer: 50,
+              single: true
+            }
+          }
+        }
+      },
+
+      init: function() {
+        return this.callParent(arguments);
+      }
+
+      // Event handlers or other methods here...
+
+    });
+
+## Dynamically monitor view to attach listeners to added components with <u>[live selectors](https://github.com/deftjs/DeftJS/wiki/ViewController-Live-Selectors)</u>:
+
+    control: {
+      manufacturingFilter: {
+        live: true,
+        listeners: {
+          change: "onFilterChange"
+        }
+      }
+    };
+
+## Observe events on injected objects with the <u>[`observe` property](https://github.com/deftjs/DeftJS/wiki/ViewController-Observe-Configuration)</u>:
+
+    Ext.define("DeftQuickStart.controller.MainController", {
+      extend: "Deft.mvc.ViewController",
+      inject: ["companyStore"],
+
+      config: {
+        companyStore: null
+      },
+
+      observe: {
+        // Observe companyStore for the update event
+        companyStore: {
+          update: "onCompanyStoreUpdateEvent"
+        }
+      },
+
+      init: function() {
+        return this.callParent(arguments);
+      },
+
+      onCompanyStoreUpdateEvent: function(store, model, operation, fieldNames) {
+        // Do something when store fires update event
+      }
+
+    });
 */
 
 Ext.define('Deft.mvc.ViewController', {

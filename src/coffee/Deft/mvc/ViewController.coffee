@@ -4,13 +4,117 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
 ###*
-* A lightweight MVC view controller.
-*
-*     Ext.define("MyApp.view.MyTabPanel", {
-*       extend: "Ext.tab.Panel",
-*       controller: 'MyApp.controller.MyTabPanelController',
-*       ...
-*     });
+A lightweight MVC view controller. Full usage instructions in the [DeftJS documentation](https://github.com/deftjs/DeftJS/wiki/ViewController).
+
+First, specify a ViewController to attach to a view:
+
+    Ext.define("DeftQuickStart.view.MyTabPanel", {
+      extend: "Ext.tab.Panel",
+      controller: "DeftQuickStart.controller.MainController",
+      ...
+    });
+
+Next, define the ViewController:
+
+    Ext.define("DeftQuickStart.controller.MainController", {
+      extend: "Deft.mvc.ViewController",
+
+      init: function() {
+        return this.callParent(arguments);
+      }
+
+    });
+
+## Inject dependencies using the <u>[`inject` property](https://github.com/deftjs/DeftJS/wiki/Injecting-Dependencies)</u>:
+
+    Ext.define("DeftQuickStart.controller.MainController", {
+      extend: "Deft.mvc.ViewController",
+      inject: ["companyStore"],
+
+      config: {
+        companyStore: null
+      },
+
+      init: function() {
+        return this.callParent(arguments);
+      }
+
+    });
+
+## Define <u>[references to view components](https://github.com/deftjs/DeftJS/wiki/Accessing-Views)</u> and <u>[add view listeners](https://github.com/deftjs/DeftJS/wiki/Handling-View-Events)</u> with the `control` property:
+
+    Ext.define("DeftQuickStart.controller.MainController", {
+      extend: "Deft.mvc.ViewController",
+
+      control: {
+
+        // Most common configuration, using an itemId and listener
+        manufacturingFilter: {
+          change: "onFilterChange"
+        },
+
+        // Reference only, with no listeners
+        serviceIndustryFilter: true,
+
+        // Configuration using selector, listeners, and event listener options
+        salesFilter: {
+          selector: "toolbar > checkbox",
+          listeners: {
+            change: {
+              fn: "onFilterChange",
+              buffer: 50,
+              single: true
+            }
+          }
+        }
+      },
+
+      init: function() {
+        return this.callParent(arguments);
+      }
+
+      // Event handlers or other methods here...
+
+    });
+
+## Dynamically monitor view to attach listeners to added components with <u>[live selectors](https://github.com/deftjs/DeftJS/wiki/ViewController-Live-Selectors)</u>:
+
+    control: {
+      manufacturingFilter: {
+        live: true,
+        listeners: {
+          change: "onFilterChange"
+        }
+      }
+    };
+
+## Observe events on injected objects with the <u>[`observe` property](https://github.com/deftjs/DeftJS/wiki/ViewController-Observe-Configuration)</u>:
+
+    Ext.define("DeftQuickStart.controller.MainController", {
+      extend: "Deft.mvc.ViewController",
+      inject: ["companyStore"],
+
+      config: {
+        companyStore: null
+      },
+
+      observe: {
+        // Observe companyStore for the update event
+        companyStore: {
+          update: "onCompanyStoreUpdateEvent"
+        }
+      },
+
+      init: function() {
+        return this.callParent(arguments);
+      },
+
+      onCompanyStoreUpdateEvent: function(store, model, operation, fieldNames) {
+        // Do something when store fires update event
+      }
+
+    });
+
 ###
 Ext.define( 'Deft.mvc.ViewController',
 	alternateClassName: [ 'Deft.ViewController' ]
@@ -63,7 +167,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		else
 			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Container.' )
 		return
-	
+
 	###*
 	* Initialize the ViewController
 	###
