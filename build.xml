@@ -46,6 +46,7 @@
 				<file name="Deft/ioc/DependencyProvider.js" />
 				<file name="Deft/ioc/Injector.js" />
 				<file name="Deft/mixin/Injectable.js" />
+                <file name="Deft/util/Object.js" />
 				<file name="Deft/mvc/Observer.js" />
 				<file name="Deft/mvc/ComponentSelectorListener.js" />
 				<file name="Deft/mvc/ComponentSelector.js" />
