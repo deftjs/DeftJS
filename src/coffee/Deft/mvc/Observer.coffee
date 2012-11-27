@@ -112,14 +112,15 @@ Ext.define( 'Deft.mvc.Observer',
 					scope = host
 
 					# If the handler is a configuration object, parse it and use those values to create the Observer.
-					if( Ext.isObject( handler ) )
-						eventName = handler.event if handler?.event
-						handler = handler.fn if handler?.fn
-						scope = handler.scope if handler?.scope
+					options = Ext.isObject( handler ) ? handler : null
+					if( options )
+						eventName = Deft.Object.extract( options, 'event' ) if options.event
+						handler = Deft.Object.extract( options, 'fn' ) if options.fn
+						scope = Deft.Object.extract( options, 'scope' ) if options.scope
 
 					references = @locateReferences( host, target, handler )
 					if references
-						references.target.on( eventName, references.handler, host )
+						references.target.on( eventName, references.handler, scope, options )
 						@listeners.push( { targetName: target, target: references.target, event: eventName, handler: references.handler, scope: scope } )
 						Deft.Logger.log( "Created observer on '#{ target }' for event '#{ eventName }'." )
 					else
