@@ -10,7 +10,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mvc.Observer', {
-  requires: ['Deft.core.Class', 'Ext.util.Observable'],
+  requires: ['Deft.core.Class', 'Ext.util.Observable', 'Deft.util.Function'],
   statics: {
     /**
     		* Merges child and parent observers into a single object. This differs from a normal object merge because
@@ -21,7 +21,7 @@ Ext.define('Deft.mvc.Observer', {
     */
 
     mergeObserve: function(originalParentObserve, originalChildObserve) {
-      var childEvent, childEvents, childHandler, childHandlerArray, childObserve, childTarget, handlerConfig, newChildEvents, newParentEvents, parentEvent, parentEvents, parentHandler, parentHandlerArray, parentObserve, parentTarget, thisChildEvent, thisParentEvent, _i, _j, _len, _len1, _ref, _ref1;
+      var childEvent, childEvents, childHandler, childHandlerArray, childObserve, childTarget, eventOptionNames, handlerConfig, newChildEvents, newParentEvents, parentEvent, parentEvents, parentHandler, parentHandlerArray, parentObserve, parentTarget, thisChildEvent, thisEventOptionName, thisParentEvent, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1;
       if (!Ext.isObject(originalParentObserve)) {
         parentObserve = {};
       } else {
@@ -32,6 +32,7 @@ Ext.define('Deft.mvc.Observer', {
       } else {
         childObserve = Ext.clone(originalChildObserve);
       }
+      eventOptionNames = ["buffer", "single", "delay", "element", "target", "destroyable"];
       for (parentTarget in parentObserve) {
         parentEvents = parentObserve[parentTarget];
         if (Ext.isArray(parentEvents)) {
@@ -42,11 +43,17 @@ Ext.define('Deft.mvc.Observer', {
               Ext.apply(newParentEvents, thisParentEvent);
             } else {
               handlerConfig = {};
-              if (thisParentEvent != null ? thisParentEvent.fn : void 0) {
+              if ((thisParentEvent != null ? thisParentEvent.fn : void 0) != null) {
                 handlerConfig.fn = thisParentEvent.fn;
               }
-              if (thisParentEvent != null ? thisParentEvent.scope : void 0) {
+              if ((thisParentEvent != null ? thisParentEvent.scope : void 0) != null) {
                 handlerConfig.scope = thisParentEvent.scope;
+              }
+              for (_j = 0, _len1 = eventOptionNames.length; _j < _len1; _j++) {
+                thisEventOptionName = eventOptionNames[_j];
+                if ((thisParentEvent != null ? thisParentEvent[thisEventOptionName] : void 0) != null) {
+                  handlerConfig[thisEventOptionName] = thisParentEvent[thisEventOptionName];
+                }
               }
               newParentEvents[thisParentEvent.event] = [handlerConfig];
             }
@@ -58,17 +65,23 @@ Ext.define('Deft.mvc.Observer', {
         childEvents = childObserve[childTarget];
         if (Ext.isArray(childEvents)) {
           newChildEvents = {};
-          for (_j = 0, _len1 = childEvents.length; _j < _len1; _j++) {
-            thisChildEvent = childEvents[_j];
+          for (_k = 0, _len2 = childEvents.length; _k < _len2; _k++) {
+            thisChildEvent = childEvents[_k];
             if (Ext.Object.getSize(thisChildEvent) === 1) {
               Ext.apply(newChildEvents, thisChildEvent);
             } else {
               handlerConfig = {};
-              if (thisChildEvent != null ? thisChildEvent.fn : void 0) {
+              if ((thisChildEvent != null ? thisChildEvent.fn : void 0) != null) {
                 handlerConfig.fn = thisChildEvent.fn;
               }
-              if (thisChildEvent != null ? thisChildEvent.scope : void 0) {
+              if ((thisChildEvent != null ? thisChildEvent.scope : void 0) != null) {
                 handlerConfig.scope = thisChildEvent.scope;
+              }
+              for (_l = 0, _len3 = eventOptionNames.length; _l < _len3; _l++) {
+                thisEventOptionName = eventOptionNames[_l];
+                if ((thisChildEvent != null ? thisChildEvent[thisEventOptionName] : void 0) != null) {
+                  handlerConfig[thisEventOptionName] = thisChildEvent[thisEventOptionName];
+                }
               }
               newChildEvents[thisChildEvent.event] = [handlerConfig];
             }
@@ -114,7 +127,7 @@ Ext.define('Deft.mvc.Observer', {
   */
 
   constructor: function(config) {
-    var eventName, events, handler, handlerArray, host, references, scope, target, _i, _len;
+    var eventName, events, handler, handlerArray, host, options, references, scope, target, _i, _len;
     this.listeners = [];
     host = config != null ? config.host : void 0;
     target = config != null ? config.target : void 0;
@@ -128,20 +141,22 @@ Ext.define('Deft.mvc.Observer', {
         for (_i = 0, _len = handlerArray.length; _i < _len; _i++) {
           handler = handlerArray[_i];
           scope = host;
+          options = null;
           if (Ext.isObject(handler)) {
-            if (handler != null ? handler.event : void 0) {
-              eventName = handler.event;
+            options = Ext.clone(handler);
+            if (options != null ? options.event : void 0) {
+              eventName = Deft.util.Function.extract(options, "event");
             }
-            if (handler != null ? handler.fn : void 0) {
-              handler = handler.fn;
+            if (options != null ? options.fn : void 0) {
+              handler = Deft.util.Function.extract(options, "fn");
             }
-            if (handler != null ? handler.scope : void 0) {
-              scope = handler.scope;
+            if (options != null ? options.scope : void 0) {
+              scope = Deft.util.Function.extract(options, "scope");
             }
           }
           references = this.locateReferences(host, target, handler);
           if (references) {
-            references.target.on(eventName, references.handler, host);
+            references.target.on(eventName, references.handler, scope, options);
             this.listeners.push({
               targetName: target,
               target: references.target,

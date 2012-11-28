@@ -9,8 +9,9 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 Ext.define( 'Deft.mvc.Observer',
 	requires: [
-    'Deft.core.Class'
+		'Deft.core.Class'
 		'Ext.util.Observable'
+		'Deft.util.Function'
 	]
 
 	statics:
@@ -35,6 +36,9 @@ Ext.define( 'Deft.mvc.Observer',
 			else
 				childObserve = Ext.clone( originalChildObserve )
 
+			# List of available event options to look for and use if they are specified
+			eventOptionNames = [ "buffer", "single", "delay", "element", "target", "destroyable" ]
+
 			# Convert any observers that use an array of configuration objects into object keys for event name, and array of configuration objects
 			for parentTarget, parentEvents of parentObserve
 				if( Ext.isArray( parentEvents ) )
@@ -45,8 +49,13 @@ Ext.define( 'Deft.mvc.Observer',
 							Ext.apply( newParentEvents, thisParentEvent )
 						else
 							handlerConfig = {}
-							handlerConfig.fn = thisParentEvent.fn if thisParentEvent?.fn
-							handlerConfig.scope = thisParentEvent.scope if thisParentEvent?.scope
+							handlerConfig.fn = thisParentEvent.fn if thisParentEvent?.fn?
+							handlerConfig.scope = thisParentEvent.scope if thisParentEvent?.scope?
+
+							# Add any passed event options
+							for thisEventOptionName in eventOptionNames
+								handlerConfig[ thisEventOptionName ] = thisParentEvent[ thisEventOptionName ] if thisParentEvent?[ thisEventOptionName ]?
+
 							newParentEvents[ thisParentEvent.event ] = [ handlerConfig ]
 
 					parentObserve[ parentTarget ] = newParentEvents
@@ -60,8 +69,13 @@ Ext.define( 'Deft.mvc.Observer',
 							Ext.apply( newChildEvents, thisChildEvent )
 						else
 							handlerConfig = {}
-							handlerConfig.fn = thisChildEvent.fn if thisChildEvent?.fn
-							handlerConfig.scope = thisChildEvent.scope if thisChildEvent?.scope
+							handlerConfig.fn = thisChildEvent.fn if thisChildEvent?.fn?
+							handlerConfig.scope = thisChildEvent.scope if thisChildEvent?.scope?
+
+							# Add any passed event options
+							for thisEventOptionName in eventOptionNames
+								handlerConfig[ thisEventOptionName ] = thisChildEvent[ thisEventOptionName ] if thisChildEvent?[ thisEventOptionName ]?
+
 							newChildEvents[ thisChildEvent.event ] = [ handlerConfig ]
 
 					childObserve[ childTarget ] = newChildEvents
@@ -111,19 +125,24 @@ Ext.define( 'Deft.mvc.Observer',
 					# Default scope is the object hosting the Observer.
 					scope = host
 
+					# Default options is null
+					options = null
+
 					# If the handler is a configuration object, parse it and use those values to create the Observer.
 					if( Ext.isObject( handler ) )
-						eventName = handler.event if handler?.event
-						handler = handler.fn if handler?.fn
-						scope = handler.scope if handler?.scope
+						options = Ext.clone( handler )
+						eventName = Deft.util.Function.extract( options, "event" ) if options?.event
+						handler = Deft.util.Function.extract( options, "fn" ) if options?.fn
+						scope = Deft.util.Function.extract( options, "scope" ) if options?.scope
 
 					references = @locateReferences( host, target, handler )
 					if references
-						references.target.on( eventName, references.handler, host )
+						references.target.on( eventName, references.handler, scope, options )
 						@listeners.push( { targetName: target, target: references.target, event: eventName, handler: references.handler, scope: scope } )
 						Deft.Logger.log( "Created observer on '#{ target }' for event '#{ eventName }'." )
 					else
 						Deft.Logger.warn( "Could not create observer on '#{ target }' for event '#{ eventName }'." )
+
 		else
 			Deft.Logger.warn( "Could not create observers on '#{ target }' because '#{ target }' is not an Ext.util.Observable" )
 

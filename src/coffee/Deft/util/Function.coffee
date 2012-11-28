@@ -29,4 +29,12 @@ Ext.define( 'Deft.util.Function',
 				key = if Ext.isFunction( hashFn ) then hashFn.apply( scope, arguments ) else value
 				memo[ key ] = fn.apply( scope, arguments ) unless key of memo
 				return memo[ key ]
+
+    ###*
+		* Retrieves the value for the specified object key and removes the pair from the object.
+		###
+		extract: ( object, key ) ->
+			value = object[key]
+			delete object[key]
+			return value
 )
