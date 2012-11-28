@@ -40,45 +40,29 @@ Ext.define( 'Deft.mvc.Observer',
 			eventOptionNames = [ "buffer", "single", "delay", "element", "target", "destroyable" ]
 
 			# Convert any observers that use an array of configuration objects into object keys for event name, and array of configuration objects
-			for parentTarget, parentEvents of parentObserve
-				if( Ext.isArray( parentEvents ) )
-					newParentEvents = {}
-					for thisParentEvent in parentEvents
-						# Object with only one key means this is just an event name/handler pair, not a config object.
-						if( Ext.Object.getSize( thisParentEvent ) is 1 )
-							Ext.apply( newParentEvents, thisParentEvent )
-						else
-							handlerConfig = {}
-							handlerConfig.fn = thisParentEvent.fn if thisParentEvent?.fn?
-							handlerConfig.scope = thisParentEvent.scope if thisParentEvent?.scope?
+			convertConfigArray = ( observeConfig ) ->
+				for observeTarget, observeEvents of observeConfig
+					if( Ext.isArray( observeEvents ) )
+						newObserveEvents = {}
+						for thisObserveEvent in observeEvents
+							# Object with only one key means this is just an event name/handler pair, not a config object.
+							if( Ext.Object.getSize( thisObserveEvent ) is 1 )
+								Ext.apply( newObserveEvents, thisObserveEvent )
+							else
+								handlerConfig = {}
+								handlerConfig.fn = thisObserveEvent.fn if thisObserveEvent?.fn?
+								handlerConfig.scope = thisObserveEvent.scope if thisObserveEvent?.scope?
 
-							# Add any passed event options
-							for thisEventOptionName in eventOptionNames
-								handlerConfig[ thisEventOptionName ] = thisParentEvent[ thisEventOptionName ] if thisParentEvent?[ thisEventOptionName ]?
+								# Add any passed event options
+								for thisEventOptionName in eventOptionNames
+									handlerConfig[ thisEventOptionName ] = thisObserveEvent[ thisEventOptionName ] if thisObserveEvent?[ thisEventOptionName ]?
 
-							newParentEvents[ thisParentEvent.event ] = [ handlerConfig ]
+								newObserveEvents[ thisObserveEvent.event ] = [ handlerConfig ]
 
-					parentObserve[ parentTarget ] = newParentEvents
+						observeConfig[ observeTarget ] = newObserveEvents
 
-			for childTarget, childEvents of childObserve
-				if( Ext.isArray( childEvents ) )
-					newChildEvents = {}
-					for thisChildEvent in childEvents
-						# Object with only one key means this is just an event name/handler pair, not a config object.
-						if( Ext.Object.getSize( thisChildEvent ) is 1 )
-							Ext.apply( newChildEvents, thisChildEvent )
-						else
-							handlerConfig = {}
-							handlerConfig.fn = thisChildEvent.fn if thisChildEvent?.fn?
-							handlerConfig.scope = thisChildEvent.scope if thisChildEvent?.scope?
-
-							# Add any passed event options
-							for thisEventOptionName in eventOptionNames
-								handlerConfig[ thisEventOptionName ] = thisChildEvent[ thisEventOptionName ] if thisChildEvent?[ thisEventOptionName ]?
-
-							newChildEvents[ thisChildEvent.event ] = [ handlerConfig ]
-
-					childObserve[ childTarget ] = newChildEvents
+			convertConfigArray( parentObserve )
+			convertConfigArray( childObserve )
 
 			# Ensure that all child handler elements are arrays, then copy any targets not present in parent into parent and remove from child.
 			for childTarget, childEvents of childObserve
