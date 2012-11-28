@@ -4,6 +4,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
 ###*
+* @private
 * Models a component selector used by Deft.mvc.ViewController to locate view components and attach event listeners.
 ###
 Ext.define( 'Deft.mvc.ComponentSelector',
