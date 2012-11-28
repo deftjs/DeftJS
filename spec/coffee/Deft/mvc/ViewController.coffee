@@ -2060,6 +2060,111 @@ describe( 'Deft.mvc.ViewController', ->
 			waitsFor( ( -> exampleInstance.storeReaderHandler.wasCalled ), "Nested store.proxy.reader handler was not called.", 1000 )
 			store.getProxy().getReader().fireEvent( 'exception', storeReaderEventData )
 		)
+
+		it( 'should create observers using a mix of nested properties, config objects, standard event/handler pairs, and event options', ->
+
+			parentEventData = { value1: true, value2: false }
+			childEventData = { valueA: true, valueB: false }
+			childEventData2 = { valueC: true, valueD: false }
+			storeEventData = { value3: true, value4: false }
+			storeReaderEventData = { value5: true, value6: false }
+
+			Ext.define( 'ExampleClass',
+				extend: 'Deft.mvc.ViewController'
+
+				config:
+					messageBus: null
+					store: null
+
+				observe:
+					messageBus:
+						parentMessage: "parentMessageHandler"
+					'store.proxy': [
+						event: "metachange"
+						fn: "storeProxyHandler"
+						buffer: 50
+						single: true
+						destroyable: true
+					]
+
+				parentMessageHandler: ( data ) ->
+					expect( data ).toEqual( parentEventData )
+
+				storeProxyHandler: ( data, eventOptions ) ->
+					expect( data ).toEqual( storeEventData )
+					expect( eventOptions.buffer ).toBe( 50 )
+					expect( eventOptions.single ).toBe( true )
+					expect( eventOptions.destroyable ).toBe( true )
+			)
+
+			Ext.define( 'ExampleSubClass',
+				extend: 'ExampleClass'
+
+				observe:
+					'store.proxy.reader': [
+						event: "exception"
+						fn: "storeReaderHandler"
+					]
+					messageBus: [
+						event: "parentMessage"
+						fn: "childMessageHandlerForParentEvent"
+					,
+						event: "childMessage"
+						fn: "childMessageHandler"
+						buffer: 50
+						single: true
+						destroyable: true
+					,
+						childMessage2: "childMessageHandler2"
+					]
+
+				childMessageHandlerForParentEvent: ( data ) ->
+					expect( data ).toEqual( parentEventData )
+
+				childMessageHandler: ( data, eventOptions ) ->
+					expect( data ).toEqual( childEventData )
+					expect( eventOptions.buffer ).toBe( 50 )
+					expect( eventOptions.single ).toBe( true )
+					expect( eventOptions.destroyable ).toBe( true )
+
+				childMessageHandler2: ( data ) ->
+					expect( data ).toEqual( childEventData2 )
+
+				storeReaderHandler: ( data ) ->
+					expect( data ).toEqual( storeReaderEventData )
+			)
+
+			spyOn( ExampleClass.prototype, 'parentMessageHandler' ).andCallThrough()
+			spyOn( ExampleClass.prototype, 'storeProxyHandler' ).andCallThrough()
+			spyOn( ExampleSubClass.prototype, 'storeReaderHandler' ).andCallThrough()
+			spyOn( ExampleSubClass.prototype, 'childMessageHandlerForParentEvent' ).andCallThrough()
+			spyOn( ExampleSubClass.prototype, 'childMessageHandler' ).andCallThrough()
+			spyOn( ExampleSubClass.prototype, 'childMessageHandler2' ).andCallThrough()
+
+			messageBus = Ext.create( 'Ext.util.Observable' )
+			store = Ext.create( 'Ext.data.ArrayStore' )
+
+			exampleInstance = Ext.create( 'ExampleSubClass',
+				messageBus: messageBus
+				store: store
+			)
+
+			waitsFor( ( -> exampleInstance.parentMessageHandler.wasCalled and exampleInstance.childMessageHandlerForParentEvent.wasCalled ), "Parent and child message handlers were not called.", 1000 )
+			messageBus.fireEvent( 'parentMessage', parentEventData )
+
+			waitsFor( ( -> exampleInstance.childMessageHandler.wasCalled ), "Child-only message handler was not called.", 1000 )
+			messageBus.fireEvent( 'childMessage', childEventData )
+
+			waitsFor( ( -> exampleInstance.childMessageHandler2.wasCalled ), "Second child-only message handler was not called.", 1000 )
+			messageBus.fireEvent( 'childMessage2', childEventData2 )
+
+			waitsFor( ( -> exampleInstance.storeProxyHandler.wasCalled ), "Nested store.proxy handler was not called.", 1000 )
+			store.getProxy().fireEvent( 'metachange', storeEventData )
+
+			waitsFor( ( -> exampleInstance.storeReaderHandler.wasCalled ), "Nested store.proxy.reader handler was not called.", 1000 )
+			store.getProxy().getReader().fireEvent( 'exception', storeReaderEventData )
+		)
+
 	)
 
 	describe( 'Destruction and clean-up', ->
