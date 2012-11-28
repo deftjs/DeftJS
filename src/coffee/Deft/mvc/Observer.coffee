@@ -9,8 +9,9 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 Ext.define( 'Deft.mvc.Observer',
 	requires: [
-    'Deft.core.Class'
+		'Deft.core.Class'
 		'Ext.util.Observable'
+		'Deft.util.Function'
 	]
 
 	statics:
@@ -35,36 +36,33 @@ Ext.define( 'Deft.mvc.Observer',
 			else
 				childObserve = Ext.clone( originalChildObserve )
 
+			# List of available event options to look for and use if they are specified
+			eventOptionNames = [ "buffer", "single", "delay", "element", "target", "destroyable" ]
+
 			# Convert any observers that use an array of configuration objects into object keys for event name, and array of configuration objects
-			for parentTarget, parentEvents of parentObserve
-				if( Ext.isArray( parentEvents ) )
-					newParentEvents = {}
-					for thisParentEvent in parentEvents
-						# Object with only one key means this is just an event name/handler pair, not a config object.
-						if( Ext.Object.getSize( thisParentEvent ) is 1 )
-							Ext.apply( newParentEvents, thisParentEvent )
-						else
-							handlerConfig = {}
-							handlerConfig.fn = thisParentEvent.fn if thisParentEvent?.fn
-							handlerConfig.scope = thisParentEvent.scope if thisParentEvent?.scope
-							newParentEvents[ thisParentEvent.event ] = [ handlerConfig ]
+			convertConfigArray = ( observeConfig ) ->
+				for observeTarget, observeEvents of observeConfig
+					if( Ext.isArray( observeEvents ) )
+						newObserveEvents = {}
+						for thisObserveEvent in observeEvents
+							# Object with only one key means this is just an event name/handler pair, not a config object.
+							if( Ext.Object.getSize( thisObserveEvent ) is 1 )
+								Ext.apply( newObserveEvents, thisObserveEvent )
+							else
+								handlerConfig = {}
+								handlerConfig.fn = thisObserveEvent.fn if thisObserveEvent?.fn?
+								handlerConfig.scope = thisObserveEvent.scope if thisObserveEvent?.scope?
 
-					parentObserve[ parentTarget ] = newParentEvents
+								# Add any passed event options
+								for thisEventOptionName in eventOptionNames
+									handlerConfig[ thisEventOptionName ] = thisObserveEvent[ thisEventOptionName ] if thisObserveEvent?[ thisEventOptionName ]?
 
-			for childTarget, childEvents of childObserve
-				if( Ext.isArray( childEvents ) )
-					newChildEvents = {}
-					for thisChildEvent in childEvents
-						# Object with only one key means this is just an event name/handler pair, not a config object.
-						if( Ext.Object.getSize( thisChildEvent ) is 1 )
-							Ext.apply( newChildEvents, thisChildEvent )
-						else
-							handlerConfig = {}
-							handlerConfig.fn = thisChildEvent.fn if thisChildEvent?.fn
-							handlerConfig.scope = thisChildEvent.scope if thisChildEvent?.scope
-							newChildEvents[ thisChildEvent.event ] = [ handlerConfig ]
+								newObserveEvents[ thisObserveEvent.event ] = [ handlerConfig ]
 
-					childObserve[ childTarget ] = newChildEvents
+						observeConfig[ observeTarget ] = newObserveEvents
+
+			convertConfigArray( parentObserve )
+			convertConfigArray( childObserve )
 
 			# Ensure that all child handler elements are arrays, then copy any targets not present in parent into parent and remove from child.
 			for childTarget, childEvents of childObserve
@@ -111,19 +109,24 @@ Ext.define( 'Deft.mvc.Observer',
 					# Default scope is the object hosting the Observer.
 					scope = host
 
+					# Default options is null
+					options = null
+
 					# If the handler is a configuration object, parse it and use those values to create the Observer.
 					if( Ext.isObject( handler ) )
-						eventName = handler.event if handler?.event
-						handler = handler.fn if handler?.fn
-						scope = handler.scope if handler?.scope
+						options = Ext.clone( handler )
+						eventName = Deft.util.Function.extract( options, "event" ) if options?.event
+						handler = Deft.util.Function.extract( options, "fn" ) if options?.fn
+						scope = Deft.util.Function.extract( options, "scope" ) if options?.scope
 
 					references = @locateReferences( host, target, handler )
 					if references
-						references.target.on( eventName, references.handler, host )
+						references.target.on( eventName, references.handler, scope, options )
 						@listeners.push( { targetName: target, target: references.target, event: eventName, handler: references.handler, scope: scope } )
 						Deft.Logger.log( "Created observer on '#{ target }' for event '#{ eventName }'." )
 					else
 						Deft.Logger.warn( "Could not create observer on '#{ target }' for event '#{ eventName }'." )
+
 		else
 			Deft.Logger.warn( "Could not create observers on '#{ target }' because '#{ target }' is not an Ext.util.Observable" )
 
