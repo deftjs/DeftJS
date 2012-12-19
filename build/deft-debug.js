@@ -75,6 +75,44 @@ Ext.define('Deft.core.Class', {
     }
   }
 });
+
+Ext.define('Deft.core.Component', {
+  override: 'Ext.Component',
+  alternateClassName: ['Deft.Component'],
+  setParent: function(newParent) {
+    var oldParent, result;
+    if (Ext.getVersion('touch') != null) {
+      oldParent = this.getParent();
+      result = this.callParent(arguments);
+      if (oldParent === null && newParent !== null) {
+        this.fireEvent('added', this, newParent);
+      } else if (oldParent !== null && newParent !== null) {
+        this.fireEvent('removed', this, oldParent);
+        this.fireEvent('added', this, newParent);
+      } else if (oldParent !== null && newParent === null) {
+        this.fireEvent('removed', this, oldParent);
+      }
+      return result;
+    } else {
+      return this.callParent(arguments);
+    }
+  },
+  isDescendantOf: function(container) {
+    var ancestor;
+    if (Ext.getVersion('touch') != null) {
+      ancestor = this.getParent();
+      while (ancestor != null) {
+        if (ancestor === container) {
+          return true;
+        }
+        ancestor = ancestor.getParent();
+      }
+      return false;
+    } else {
+      return this.callParent(arguments);
+    }
+  }
+});
 /**
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
@@ -333,36 +371,6 @@ Ext.define('Deft.event.LiveEventBus', {
     }
   }
 }, function() {
-  if (Ext.getVersion('touch') != null) {
-    Ext.define('Deft.Component', {
-      override: 'Ext.Component',
-      setParent: function(newParent) {
-        var oldParent, result;
-        oldParent = this.getParent();
-        result = this.callParent(arguments);
-        if (oldParent === null && newParent !== null) {
-          this.fireEvent('added', this, newParent);
-        } else if (oldParent !== null && newParent !== null) {
-          this.fireEvent('removed', this, oldParent);
-          this.fireEvent('added', this, newParent);
-        } else if (oldParent !== null && newParent === null) {
-          this.fireEvent('removed', this, oldParent);
-        }
-        return result;
-      },
-      isDescendantOf: function(container) {
-        var ancestor;
-        ancestor = this.getParent();
-        while (ancestor != null) {
-          if (ancestor === container) {
-            return true;
-          }
-          ancestor = ancestor.getParent();
-        }
-        return false;
-      }
-    });
-  }
   Ext.Function.interceptAfter(Ext.ComponentManager, 'register', function(component) {
     Deft.event.LiveEventBus.register(component);
   });
