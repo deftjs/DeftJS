@@ -64,12 +64,12 @@ describe('Deft.mvc.ViewController', function() {
       viewController.controlView(view);
       expect(viewController.getView()).toBe(view);
     });
-    return it('should throw an error if created and configured with a non-Ext.Container as the view', function() {
+    return it('should throw an error if created and configured with a non-Ext.Component as the view', function() {
       expect(function() {
         return Ext.create('Deft.mvc.ViewController', {
           view: new Object()
         });
-      }).toThrow(new Error("Error constructing ViewController: the configured 'view' is not an Ext.Container."));
+      }).toThrow(new Error("Error constructing ViewController: the configured 'view' is not an Ext.Component."));
     });
   });
   describe('Creation of getters and event listeners using the \'control\' property', function() {

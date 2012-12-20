@@ -10,9 +10,9 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mixin.Controllable', {
-  requires: ['Ext.Container', 'Deft.core.Class', 'Deft.log.Logger'],
+  requires: ['Ext.Component', 'Deft.core.Class', 'Deft.log.Logger'],
   /**
-  	@private
+  @private
   */
 
   onClassMixedIn: function(targetClass) {
@@ -27,24 +27,29 @@ Ext.define('Deft.mixin.Controllable', {
         if (config == null) {
           config = {};
         }
-        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
-          try {
-            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
-          } catch (error) {
-            Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
-            throw error;
-          }
-          if (this.getController === void 0) {
-            this.getController = function() {
-              return controller;
-            };
-          }
-          this.$controlled = true;
-          this.callOverridden(arguments);
-          controller.controlView(this);
-          return this;
+        if (this.$controlled) {
+          return this.callOverridden(arguments);
         }
-        return this.callOverridden(arguments);
+        if (!(this instanceof Ext.ClassManager.get('Ext.Component'))) {
+          Ext.Error.raise({
+            msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
+          });
+        }
+        try {
+          controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
+        } catch (error) {
+          Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+          throw error;
+        }
+        if (this.getController === void 0) {
+          this.getController = function() {
+            return controller;
+          };
+        }
+        this.$controlled = true;
+        this.callOverridden(arguments);
+        controller.controlView(this);
+        return this;
       };
     };
   } else {
@@ -54,24 +59,29 @@ Ext.define('Deft.mixin.Controllable', {
         if (config == null) {
           config = {};
         }
-        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
-          try {
-            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
-          } catch (error) {
-            Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
-            throw error;
-          }
-          if (this.getController === void 0) {
-            this.getController = function() {
-              return controller;
-            };
-          }
-          this.$controlled = true;
-          this.callParent(arguments);
-          controller.controlView(this);
-          return this;
+        if (this.$controlled) {
+          return this.callParent(arguments);
         }
-        return this.callParent(arguments);
+        if (!(this instanceof Ext.ClassManager.get('Ext.Component'))) {
+          Ext.Error.raise({
+            msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
+          });
+        }
+        try {
+          controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
+        } catch (error) {
+          Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+          throw error;
+        }
+        if (this.getController === void 0) {
+          this.getController = function() {
+            return controller;
+          };
+        }
+        this.$controlled = true;
+        this.callParent(arguments);
+        controller.controlView(this);
+        return this;
       };
     };
   }
