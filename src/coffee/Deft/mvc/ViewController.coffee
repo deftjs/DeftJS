@@ -219,7 +219,6 @@ Ext.define( 'Deft.mvc.ViewController',
       @addComponentReference( id, selector, live )
       @addComponentSelector( selector, listeners, live )
     
-    @createLateObservers()
     @init()
     return
   
@@ -339,27 +338,17 @@ Ext.define( 'Deft.mvc.ViewController',
   createObservers: ->
     @registeredObservers = {}
     for target, events of @observe
-      @addObserver( target, events, @registeredObservers )
+      @addObserver( target, events )
     
     return
   
-  ###*
-  * @protected
-  ###
-  createLateObservers: ->
-    @registeredLateObservers = {}
-    for target, events of @observeLate
-      @addObserver( target, events, @registeredLateObservers )
-    
-    return
-    
-  addObserver: ( target, events, observerContainer = @registeredObservers ) ->
+  addObserver: ( target, events ) ->
     observer = Ext.create( 'Deft.mvc.Observer',
       host: @
       target: target
       events: events
     )
-    observerContainer[ target ] = observer
+    @registeredObservers[ target ] = observer
   
   ###*
   * @protected
@@ -368,10 +357,6 @@ Ext.define( 'Deft.mvc.ViewController',
     for target, observer of @registeredObservers
       observer.destroy()
       delete @registeredObservers[ target ]
-      
-    for target, observer of @registeredLateObservers
-      observer.destroy()
-      delete @registeredLateObservers[ target ]
     
     return
 , ->
@@ -386,20 +371,6 @@ Ext.define( 'Deft.mvc.ViewController',
         # If the Class extends ViewController at some point in its inheritance chain, merge the parent and child class observers.
         if Class.superclass and Class.superclass?.observe and Deft.Class.extendsClass( 'Deft.mvc.ViewController', Class )
           data.observe = Deft.mvc.Observer.mergeObserve( Class.superclass.observe, data.observe )
-        return
-      )
-      return
-    'before'
-    'extend'
-  )
-  Deft.Class.registerPreprocessor(
-    'observeLate'
-    ( Class, data, hooks, callback ) ->
-      # Process any classes that extend this class.
-      Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
-        # If the Class extends ViewController at some point in its inheritance chain, merge the parent and child class observers.
-        if Class.superclass and Class.superclass?.observe and Deft.Class.extendsClass( 'Deft.mvc.ViewController', Class )
-          data.observeLate = Deft.mvc.Observer.mergeObserve( Class.superclass.observeLate, data.observeLate )
         return
       )
       return

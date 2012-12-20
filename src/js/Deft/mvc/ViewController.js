@@ -239,7 +239,6 @@ Ext.define('Deft.mvc.ViewController', {
       this.addComponentReference(id, selector, live);
       this.addComponentSelector(selector, listeners, live);
     }
-    this.createLateObservers();
     this.init();
   },
   /**
@@ -386,70 +385,40 @@ Ext.define('Deft.mvc.ViewController', {
     _ref = this.observe;
     for (target in _ref) {
       events = _ref[target];
-      this.addObserver(target, events, this.registeredObservers);
+      this.addObserver(target, events);
     }
   },
-  /**
-  * @protected
-  */
-
-  createLateObservers: function() {
-    var events, target, _ref;
-    this.registeredLateObservers = {};
-    _ref = this.observeLate;
-    for (target in _ref) {
-      events = _ref[target];
-      this.addObserver(target, events, this.registeredLateObservers);
-    }
-  },
-  addObserver: function(target, events, observerContainer) {
+  addObserver: function(target, events) {
     var observer;
-    if (observerContainer == null) {
-      observerContainer = this.registeredObservers;
-    }
     observer = Ext.create('Deft.mvc.Observer', {
       host: this,
       target: target,
       events: events
     });
-    return observerContainer[target] = observer;
+    return this.registeredObservers[target] = observer;
   },
   /**
   * @protected
   */
 
   removeObservers: function() {
-    var observer, target, _ref, _ref1;
+    var observer, target, _ref;
     _ref = this.registeredObservers;
     for (target in _ref) {
       observer = _ref[target];
       observer.destroy();
       delete this.registeredObservers[target];
     }
-    _ref1 = this.registeredLateObservers;
-    for (target in _ref1) {
-      observer = _ref1[target];
-      observer.destroy();
-      delete this.registeredLateObservers[target];
-    }
   }
 }, function() {
   /**
   * Preprocessor to handle merging of 'observe' objects on parent and child classes.
   */
-  Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
+  return Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
       var _ref;
       if (Class.superclass && ((_ref = Class.superclass) != null ? _ref.observe : void 0) && Deft.Class.extendsClass('Deft.mvc.ViewController', Class)) {
         data.observe = Deft.mvc.Observer.mergeObserve(Class.superclass.observe, data.observe);
-      }
-    });
-  }, 'before', 'extend');
-  return Deft.Class.registerPreprocessor('observeLate', function(Class, data, hooks, callback) {
-    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
-      var _ref;
-      if (Class.superclass && ((_ref = Class.superclass) != null ? _ref.observe : void 0) && Deft.Class.extendsClass('Deft.mvc.ViewController', Class)) {
-        data.observeLate = Deft.mvc.Observer.mergeObserve(Class.superclass.observeLate, data.observeLate);
       }
     });
   }, 'before', 'extend');
