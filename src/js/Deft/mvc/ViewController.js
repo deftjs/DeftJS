@@ -239,7 +239,7 @@ Ext.define('Deft.mvc.ViewController', {
       this.addComponentReference(id, selector, live);
       this.addComponentSelector(selector, listeners, live);
     }
-    this.createLateObservers();
+    this.bindLateObservers();
     this.init();
   },
   /**
@@ -393,13 +393,14 @@ Ext.define('Deft.mvc.ViewController', {
   * @protected
   */
 
-  createLateObservers: function() {
-    var events, target, _ref;
-    this.registeredLateObservers = {};
-    _ref = this.observeLate;
-    for (target in _ref) {
-      events = _ref[target];
-      this.addObserver(target, events, this.registeredLateObservers);
+  bindLateObservers: function(observerContainer) {
+    var observer, target;
+    if (observerContainer == null) {
+      observerContainer = this.registeredObservers;
+    }
+    for (target in observerContainer) {
+      observer = observerContainer[target];
+      observer.bindLateHandlers();
     }
   },
   addObserver: function(target, events, observerContainer) {

@@ -93,45 +93,85 @@ Ext.define( 'Deft.mvc.Observer',
 	###
 	constructor: ( config ) ->
 		@listeners = []
-
+		@lateBinds = []
+    		
 		host = config?.host
 		target = config?.target
 		events = config?.events
 
 		if host and target and ( @isPropertyChain( target ) or @isTargetObservable( host, target ) )
-
 			for eventName, handlerArray of events
-
-				# If a ViewController has no subclasses, the onExtended() preprocessor won't fire, so transform any string handlers into arrays.
-				handlerArray = handlerArray.replace( ' ', '' ).split( ',' ) if Ext.isString( handlerArray )
-				for handler in handlerArray
-
-					# Default scope is the object hosting the Observer.
-					scope = host
-
-					# Default options is null
-					options = null
-
-					# If the handler is a configuration object, parse it and use those values to create the Observer.
-					if( Ext.isObject( handler ) )
-						options = Ext.clone( handler )
-						eventName = Deft.util.Function.extract( options, "event" ) if options?.event
-						handler = Deft.util.Function.extract( options, "fn" ) if options?.fn
-						scope = Deft.util.Function.extract( options, "scope" ) if options?.scope
-
-					references = @locateReferences( host, target, handler )
-					if references
-						references.target.on( eventName, references.handler, scope, options )
-						@listeners.push( { targetName: target, target: references.target, event: eventName, handler: references.handler, scope: scope } )
-						Deft.Logger.log( "Created observer on '#{ target }' for event '#{ eventName }'." )
-					else
-						Deft.Logger.warn( "Could not create observer on '#{ target }' for event '#{ eventName }'." )
-
+				@createHandler( host, target, eventName, handlerArray )
 		else
 			Deft.Logger.warn( "Could not create observers on '#{ target }' because '#{ target }' is not an Ext.util.Observable" )
 
 		return @
 
+  ###*
+  * Creates the handlers for a given host, target and eventName
+  ###
+	createHandler: ( host, target, eventName, handlerArray ) ->
+		# If a ViewController has no subclasses, the onExtended() preprocessor won't fire, so transform any string handlers into arrays.
+		handlerArray = handlerArray.replace( ' ', '' ).split( ',' ) if Ext.isString( handlerArray )
+
+		# Permits to iterate an object and not only strings 
+		handlerArray = [ handlerArray ] if( Ext.isObject( handlerArray ) )
+
+		for handler in handlerArray
+			# Do the handler have to be binded after the view render ?
+			lateBinding = false
+		
+			# Default scope is the object hosting the Observer.
+			scope = host
+
+			# Default options is null
+			options = null
+		
+			# If the handler is a configuration object, parse it and use those values to create the Observer.
+			if( Ext.isObject( handler ) )
+				options = Ext.clone( handler )
+				lateBinding = Deft.util.Function.extract( options, "lateBinding" ) if options?.lateBinding
+				eventName = Deft.util.Function.extract( options, "event" ) if options?.event
+				handler = Deft.util.Function.extract( options, "fn" ) if options?.fn
+				scope = Deft.util.Function.extract( options, "scope" ) if options?.scope
+			
+			bindParameters =
+				eventName: eventName
+				handler : handler
+				scope : scope
+				host : host
+				target : target
+				options : options
+
+			if lateBinding is true
+				@lateBinds.push( bindParameters )
+			else
+				@bindHandler( bindParameters )
+		return @
+	
+	###*
+	* Binds an event handler given its bind parameters
+	###
+	bindHandler: ( bindParameters ) ->
+		references = @locateReferences( bindParameters.host, bindParameters.target, bindParameters.handler )
+		if references
+			references.target.on( bindParameters.eventName, references.handler, bindParameters.scope, bindParameters.options )
+			@listeners.push( { targetName: bindParameters.target, target: references.target, event: bindParameters.eventName, handler: references.handler, scope: bindParameters.scope } )
+			Deft.Logger.log( "Created observer on '#{ bindParameters.target }' for event '#{ bindParameters.eventName }'." )
+		else
+			Deft.Logger.warn( "Could not create observer on '#{ bindParameters.target }' for event '#{ bindParameters.eventName }'." )
+
+		return @
+
+	###*
+	*
+	###
+	bindLateHandlers: ->
+		for bindParameters in @lateBinds
+			@bindHandler( bindParameters )
+		return @
+  
+  
 	###*
 	* Returns true if the passed host has a target that is Observable.
 	* Checks for an isObservable=true property, observable mixin, or if the class extends Observable.

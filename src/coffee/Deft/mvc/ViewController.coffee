@@ -219,7 +219,7 @@ Ext.define( 'Deft.mvc.ViewController',
       @addComponentReference( id, selector, live )
       @addComponentSelector( selector, listeners, live )
     
-    @createLateObservers()
+    @bindLateObservers()
     @init()
     return
   
@@ -346,10 +346,9 @@ Ext.define( 'Deft.mvc.ViewController',
   ###*
   * @protected
   ###
-  createLateObservers: ->
-    @registeredLateObservers = {}
-    for target, events of @observeLate
-      @addObserver( target, events, @registeredLateObservers )
+  bindLateObservers: (observerContainer = @registeredObservers) ->
+    for target, observer of observerContainer
+      observer.bindLateHandlers()
     
     return
     

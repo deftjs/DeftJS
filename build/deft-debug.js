@@ -950,51 +950,102 @@ Ext.define('Deft.mvc.Observer', {
   */
 
   constructor: function(config) {
-    var eventName, events, handler, handlerArray, host, options, references, scope, target, _i, _len;
+    var eventName, events, handlerArray, host, target;
     this.listeners = [];
+    this.lateBinds = [];
     host = config != null ? config.host : void 0;
     target = config != null ? config.target : void 0;
     events = config != null ? config.events : void 0;
     if (host && target && (this.isPropertyChain(target) || this.isTargetObservable(host, target))) {
       for (eventName in events) {
         handlerArray = events[eventName];
-        if (Ext.isString(handlerArray)) {
-          handlerArray = handlerArray.replace(' ', '').split(',');
-        }
-        for (_i = 0, _len = handlerArray.length; _i < _len; _i++) {
-          handler = handlerArray[_i];
-          scope = host;
-          options = null;
-          if (Ext.isObject(handler)) {
-            options = Ext.clone(handler);
-            if (options != null ? options.event : void 0) {
-              eventName = Deft.util.Function.extract(options, "event");
-            }
-            if (options != null ? options.fn : void 0) {
-              handler = Deft.util.Function.extract(options, "fn");
-            }
-            if (options != null ? options.scope : void 0) {
-              scope = Deft.util.Function.extract(options, "scope");
-            }
-          }
-          references = this.locateReferences(host, target, handler);
-          if (references) {
-            references.target.on(eventName, references.handler, scope, options);
-            this.listeners.push({
-              targetName: target,
-              target: references.target,
-              event: eventName,
-              handler: references.handler,
-              scope: scope
-            });
-            Deft.Logger.log("Created observer on '" + target + "' for event '" + eventName + "'.");
-          } else {
-            Deft.Logger.warn("Could not create observer on '" + target + "' for event '" + eventName + "'.");
-          }
-        }
+        this.createHandler(host, target, eventName, handlerArray);
       }
     } else {
       Deft.Logger.warn("Could not create observers on '" + target + "' because '" + target + "' is not an Ext.util.Observable");
+    }
+    return this;
+    /**
+    * Creates the handlers for a given host, target and eventName
+    */
+
+  },
+  createHandler: function(host, target, eventName, handlerArray) {
+    var bindParameters, handler, lateBinding, options, scope, _i, _len;
+    if (Ext.isString(handlerArray)) {
+      handlerArray = handlerArray.replace(' ', '').split(',');
+    }
+    if (Ext.isObject(handlerArray)) {
+      handlerArray = [handlerArray];
+    }
+    for (_i = 0, _len = handlerArray.length; _i < _len; _i++) {
+      handler = handlerArray[_i];
+      lateBinding = false;
+      scope = host;
+      options = null;
+      if (Ext.isObject(handler)) {
+        options = Ext.clone(handler);
+        if (options != null ? options.lateBinding : void 0) {
+          lateBinding = Deft.util.Function.extract(options, "lateBinding");
+        }
+        if (options != null ? options.event : void 0) {
+          eventName = Deft.util.Function.extract(options, "event");
+        }
+        if (options != null ? options.fn : void 0) {
+          handler = Deft.util.Function.extract(options, "fn");
+        }
+        if (options != null ? options.scope : void 0) {
+          scope = Deft.util.Function.extract(options, "scope");
+        }
+      }
+      bindParameters = {
+        eventName: eventName,
+        handler: handler,
+        scope: scope,
+        host: host,
+        target: target,
+        options: options
+      };
+      if (lateBinding === true) {
+        this.lateBinds.push(bindParameters);
+      } else {
+        this.bindHandler(bindParameters);
+      }
+    }
+    return this;
+  },
+  /**
+  	* Binds an event handler given its bind parameters
+  */
+
+  bindHandler: function(bindParameters) {
+    var references;
+    references = this.locateReferences(bindParameters.host, bindParameters.target, bindParameters.handler);
+    if (references) {
+      references.target.on(bindParameters.eventName, references.handler, bindParameters.scope, bindParameters.options);
+      this.listeners.push({
+        targetName: bindParameters.target,
+        target: references.target,
+        event: bindParameters.eventName,
+        handler: references.handler,
+        scope: bindParameters.scope
+      });
+      Deft.Logger.log("Created observer on '" + bindParameters.target + "' for event '" + bindParameters.eventName + "'.");
+    } else {
+      Deft.Logger.warn("Could not create observer on '" + bindParameters.target + "' for event '" + bindParameters.eventName + "'.");
+    }
+    return this;
+  },
+  /**
+  	*
+  */
+
+  bindLateHandlers: function() {
+    var bindParameters, _i, _len, _ref;
+    _ref = this.lateBinds;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      bindParameters = _ref[_i];
+      this.bindHandler(bindParameters);
     }
     return this;
   },
@@ -1494,7 +1545,7 @@ Ext.define('Deft.mvc.ViewController', {
       this.addComponentReference(id, selector, live);
       this.addComponentSelector(selector, listeners, live);
     }
-    this.createLateObservers();
+    this.bindLateObservers();
     this.init();
   },
   /**
@@ -1648,13 +1699,14 @@ Ext.define('Deft.mvc.ViewController', {
   * @protected
   */
 
-  createLateObservers: function() {
-    var events, target, _ref;
-    this.registeredLateObservers = {};
-    _ref = this.observeLate;
-    for (target in _ref) {
-      events = _ref[target];
-      this.addObserver(target, events, this.registeredLateObservers);
+  bindLateObservers: function(observerContainer) {
+    var observer, target;
+    if (observerContainer == null) {
+      observerContainer = this.registeredObservers;
+    }
+    for (target in observerContainer) {
+      observer = observerContainer[target];
+      observer.bindLateHandlers();
     }
   },
   addObserver: function(target, events, observerContainer) {
@@ -1766,83 +1818,54 @@ Ext.define('Deft.mixin.Controllable', {
     Deft.Logger.deprecate('Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.');
   }
 }, function() {
-  var createControllerInterceptor;
+  var callParentMethod, createControllerInterceptor;
+  createControllerInterceptor = function(method) {
+    return function(config) {
+      var controller;
+      if (config == null) {
+        config = {};
+      }
+      if (this.$controlled) {
+        return this.callOverridden(arguments);
+      }
+      if (!(this instanceof Ext.ClassManager.get('Ext.Component'))) {
+        Ext.Error.raise({
+          msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
+        });
+      }
+      try {
+        controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
+      } catch (error) {
+        Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
+        throw error;
+      }
+      if (this.getController === void 0) {
+        this.getController = function() {
+          return controller;
+        };
+      }
+      this.$controlled = true;
+      this[method](arguments);
+      controller.controlView(this);
+      return this;
+    };
+  };
   if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
-    createControllerInterceptor = function() {
-      return function(config) {
-        var controller;
-        if (config == null) {
-          config = {};
-        }
-        if (this.$controlled) {
-          return this.callOverridden(arguments);
-        }
-        if (!(this instanceof Ext.ClassManager.get('Ext.Component'))) {
-          Ext.Error.raise({
-            msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
-          });
-        }
-        try {
-          controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
-        } catch (error) {
-          Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
-          throw error;
-        }
-        if (this.getController === void 0) {
-          this.getController = function() {
-            return controller;
-          };
-        }
-        this.$controlled = true;
-        this.callOverridden(arguments);
-        controller.controlView(this);
-        return this;
-      };
-    };
+    callParentMethod = 'callOverridden';
   } else {
-    createControllerInterceptor = function() {
-      return function(config) {
-        var controller;
-        if (config == null) {
-          config = {};
-        }
-        if (this.$controlled) {
-          return this.callParent(arguments);
-        }
-        if (!(this instanceof Ext.ClassManager.get('Ext.Component'))) {
-          Ext.Error.raise({
-            msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
-          });
-        }
-        try {
-          controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
-        } catch (error) {
-          Deft.Logger.warn("Error initializing view controller: an error occurred while creating an instance of the specified controller: '" + this.controller + "'.");
-          throw error;
-        }
-        if (this.getController === void 0) {
-          this.getController = function() {
-            return controller;
-          };
-        }
-        this.$controlled = true;
-        this.callParent(arguments);
-        controller.controlView(this);
-        return this;
-      };
-    };
+    callParentMethod = 'callParent';
   }
   Deft.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
     var self;
     Deft.Class.hookOnClassCreated(hooks, function(Class) {
       Class.override({
-        constructor: createControllerInterceptor()
+        constructor: createControllerInterceptor(callParentMethod)
       });
     });
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
       Deft.Class.hookOnClassCreated(hooks, function(Class) {
         Class.override({
-          constructor: createControllerInterceptor()
+          constructor: createControllerInterceptor(callParentMethod)
         });
       });
     });
