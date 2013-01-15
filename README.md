@@ -21,6 +21,35 @@ DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks t
 * **Reusability**
 	* Enables business layer code reuse between Ext JS and Sencha Touch applications.
 
+# Features
+
+## IoC Container
+
+* Provides class annotation-driven dependency injection.
+* Maps dependencies by user-defined identifiers.
+* Resolves dependencies by class instance, factory function or value.
+* Supports singleton and prototype resolution of class instance and factory function dependencies.
+* Offers eager and lazy instantiation of dependencies.
+* Injects dependencies into Ext JS class configs and properties before the class constructor is executed.
+
+## MVC with ViewControllers
+
+* Provides class annotation-driven association between a given view and its ViewController.
+* Clarifies the role of the controller - i.e. controlling a view and delegating work to injected business services (service classes, Stores, etc.). ([Martin Fowler's description of a Passive View using a controller.](http://martinfowler.com/eaaDev/PassiveScreen.html))
+* Supports multiple independent instances of a given view, each with their own ViewController instance.
+* Reduces memory usage by automatically creating and destroying view controllers in tandem with their associated views.
+* Supports concise configuration for referencing view components and registering event listeners with view controller methods.
+* Integrates with the view destruction lifecycle to allow the view controller to potentially cancel removal and destruction.
+* Simplifies clean-up by automatically removing view and view component references and event listeners.
+
+## Promises and Deferreds
+
+* Provides an elegant way to represent a ‘future value’ resulting from an asynchronous operation.
+* Offers a consistent, readable API for registering success, failure, cancellation or progress callbacks.
+* Allows chaining of transformation and processing of future values.
+* Simplifies processing of a set of future values via utility functions including all(), any(), map() and reduce().
+* Implements the [CommonJS Promises/A specification](http://wiki.commonjs.org/wiki/Promises/A).	
+	
 # Documentation Wiki
 
 Full documentation on the features and usage of DeftJS is available in the [Wiki](https://github.com/deftjs/DeftJS/wiki).
