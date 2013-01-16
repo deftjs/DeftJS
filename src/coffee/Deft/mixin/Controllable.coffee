@@ -9,7 +9,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 Ext.define( 'Deft.mixin.Controllable',
 	requires: [
-		'Ext.Container'
+		'Ext.Component'
 		
 		'Deft.core.Class'
 		'Deft.log.Logger'
@@ -27,7 +27,7 @@ Ext.define( 'Deft.mixin.Controllable',
 			# Ext JS 4.0
 			createControllerInterceptor = ->
 				return ( config = {} ) ->
-					if @ instanceof Ext.ClassManager.get( 'Ext.Container' ) and not @$controlled
+					if @ instanceof Ext.ClassManager.get( 'Ext.Component' ) and not @$controlled
 						try
 							controller = Ext.create( @controller, config.controllerConfig || @controllerConfig || {} )
 						catch error
@@ -52,7 +52,7 @@ Ext.define( 'Deft.mixin.Controllable',
 			# Sencha Touch 2.0+, Ext JS 4.1+
 			createControllerInterceptor = ->
 				return ( config = {} ) ->
-					if @ instanceof Ext.ClassManager.get( 'Ext.Container' ) and not @$controlled
+					if @ instanceof Ext.ClassManager.get( 'Ext.Component' ) and not @$controlled
 						try
 							controller = Ext.create( @controller, config.controllerConfig || @controllerConfig || {} )
 						catch error

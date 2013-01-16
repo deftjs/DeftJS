@@ -10,7 +10,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 Ext.define('Deft.mixin.Controllable', {
-  requires: ['Ext.Container', 'Deft.core.Class', 'Deft.log.Logger'],
+  requires: ['Ext.Component', 'Deft.core.Class', 'Deft.log.Logger'],
   /**
   	@private
   */
@@ -27,7 +27,7 @@ Ext.define('Deft.mixin.Controllable', {
         if (config == null) {
           config = {};
         }
-        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
+        if (this instanceof Ext.ClassManager.get('Ext.Component') && !this.$controlled) {
           try {
             controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
           } catch (error) {
@@ -54,7 +54,7 @@ Ext.define('Deft.mixin.Controllable', {
         if (config == null) {
           config = {};
         }
-        if (this instanceof Ext.ClassManager.get('Ext.Container') && !this.$controlled) {
+        if (this instanceof Ext.ClassManager.get('Ext.Component') && !this.$controlled) {
           try {
             controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
           } catch (error) {

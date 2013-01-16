@@ -147,7 +147,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	* @protected
 	###
 	controlView: ( view ) ->
-		if view instanceof Ext.ClassManager.get( 'Ext.Container' )
+		if view instanceof Ext.ClassManager.get( 'Ext.Component' )
 			@setView( view )
 			@registeredComponentReferences = {}
 			@registeredComponentSelectors = {}
@@ -165,7 +165,7 @@ Ext.define( 'Deft.mvc.ViewController',
 				else
 					@getView().on( 'initialize', @onViewInitialize, @, single: true )
 		else
-			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Container.' )
+			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
 		return
 
 	###*

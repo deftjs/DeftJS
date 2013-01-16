@@ -11,8 +11,13 @@ Jasmine test suite for Deft.mvc.ViewController
 describe('Deft.mvc.ViewController', function() {
   var hasListener;
   hasListener = function(observable, eventName) {
+    var _ref, _ref1;
     if (Ext.getVersion('extjs') != null) {
-      return observable.events[eventName].listeners.length !== 0;
+      if (observable.hasListener(eventName) || ((_ref = observable.events[eventName]) != null ? (_ref1 = _ref.listeners) != null ? _ref1.length : void 0 : void 0) !== 0) {
+        return true;
+      } else {
+        return false;
+      }
     } else {
       return observable.hasListener(eventName);
     }
@@ -64,12 +69,12 @@ describe('Deft.mvc.ViewController', function() {
       viewController.controlView(view);
       expect(viewController.getView()).toBe(view);
     });
-    return it('should throw an error if created and configured with a non-Ext.Container as the view', function() {
+    return it('should throw an error if created and configured with a non-Ext.Component as the view', function() {
       expect(function() {
         return Ext.create('Deft.mvc.ViewController', {
           view: new Object()
         });
-      }).toThrow(new Error("Error constructing ViewController: the configured 'view' is not an Ext.Container."));
+      }).toThrow(new Error("Error constructing ViewController: the configured 'view' is not an Ext.Component."));
     });
   });
   describe('Creation of getters and event listeners using the \'control\' property', function() {
@@ -77,6 +82,7 @@ describe('Deft.mvc.ViewController', function() {
       Ext.define('ExampleComponent', {
         extend: 'Ext.Component',
         alias: 'widget.example',
+        renderTo: 'componentTestArea',
         initComponent: function(config) {
           this.addEvents({
             exampleevent: true
@@ -134,6 +140,32 @@ describe('Deft.mvc.ViewController', function() {
         return expect(this).toBe(viewController);
       });
       view = Ext.create('ExampleView');
+      viewController = Ext.create('ExampleViewController', {
+        view: view
+      });
+      expect(viewController.getView()).toBe(view);
+      expect(hasListener(view, 'exampleevent')).toBe(true);
+      view.fireExampleEvent('expected value');
+      expect(viewController.onExampleViewExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(view, 'expected value', {});
+      expect(viewController.onExampleViewExampleEvent.callCount).toBe(1);
+    });
+    it('should attach view controller scoped event listeners to events for a component view', function() {
+      var view, viewController;
+      Ext.define('ExampleViewController', {
+        extend: 'Deft.mvc.ViewController',
+        control: {
+          view: {
+            exampleevent: 'onExampleViewExampleEvent'
+          }
+        },
+        onExampleViewExampleEvent: function(event) {
+          debugger;
+        }
+      });
+      spyOn(ExampleViewController.prototype, 'onExampleViewExampleEvent').andCallFake(function() {
+        return expect(this).toBe(viewController);
+      });
+      view = Ext.create('ExampleComponent');
       viewController = Ext.create('ExampleViewController', {
         view: view
       });

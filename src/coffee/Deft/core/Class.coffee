@@ -1,3 +1,12 @@
+###
+Load dependent Sencha classes to allow use of debug versions of Sencha libraries.
+###
+Ext.syncRequire([
+	"Ext.Component"
+	"Ext.ComponentManager"
+	"Ext.ComponentQuery"
+])
+
 ###*
 * DeftJS Class-related static utility methods.
 * @private
