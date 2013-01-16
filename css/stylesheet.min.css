@@ -34,6 +34,8 @@ a.button:active{color:#fff;text-shadow:-1px -1px 0 rgba(0, 0, 0, 0.3);background
 a.button.icon span{padding-left:22px;}
 a.button.icon.download span{background:url(../image/icon/download-dark.png) no-repeat 0 -2px;}
 a.button.icon.download:hover span{background:url(../image/icon/download-light.png) no-repeat 0 -2px;}
-a.button.icon.google span{background:url(../image/icon/google.png) no-repeat 0 -2px;}
+a.button.icon.docs span{background: url(../image/icon/docs-icon.png) no-repeat 0 0px;}
+a.button.icon.google span{background: url(../image/icon/comment-icon.png) no-repeat 0 0px;}
 a.button.icon.github span{background:url(../image/icon/github.png) no-repeat 0 -2px;}
+.twitter-follow-button{margin-left: -8px;}
 pre.example-code.prettyprint{border:0;padding:20px 15px 0px 15px;font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,"Courier New",monospace;font-size:14px;}
