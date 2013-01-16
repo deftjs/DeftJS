@@ -5,17 +5,10 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
-/*
-Load dependent Sencha classes to allow use of debug versions of Sencha libraries.
-*/
-
-Ext.syncRequire(["Ext.Component", "Ext.ComponentManager", "Ext.ComponentQuery"]);
-
 /**
 * DeftJS Class-related static utility methods.
 * @private
 */
-
 
 Ext.define('Deft.core.Class', {
   alternateClassName: ['Deft.Class'],
