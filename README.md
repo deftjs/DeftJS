@@ -64,6 +64,7 @@ The best place to ask for help is on the [DeftJS Google Group](https://groups.go
 
 # Version History
 
+* 0.8.0 - Moved from mixins to class preprocessors. Added: Promises API, ViewController Observer feature, Deft.Application class, hundreds of Jasmine tests, improved logging, JSDuck documentation, and numerous other improvements.
 * 0.6.7 - Controllable now automatically adds a `getController()` accessor to view. Fixes reported issue with Deferreds completed with 'undefined' values.
 * 0.6.6 - Fixes to improve error handling and reporting; especially those associated with nonexistent classes and classes that were not Ext.require()-ed.
 * 0.6.5 - Enhanced IoC container to support classes defined as singletons using the Sencha class system.
