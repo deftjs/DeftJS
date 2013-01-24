@@ -1,5 +1,5 @@
 /*!
-DeftJS 0.8.0
+DeftJS 0.8.1-pre
 
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
@@ -1494,7 +1494,7 @@ Ext.define('Deft.mvc.ViewController', {
 
   onViewBeforeDestroy: function() {
     if (this.destroy()) {
-      this.getView().un('beforedestroy', this.onBeforeDestroy, this);
+      this.getView().un('beforedestroy', this.onViewBeforeDestroy, this);
       return true;
     }
     return false;

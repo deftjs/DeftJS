@@ -247,7 +247,7 @@ Ext.define('Deft.mvc.ViewController', {
 
   onViewBeforeDestroy: function() {
     if (this.destroy()) {
-      this.getView().un('beforedestroy', this.onBeforeDestroy, this);
+      this.getView().un('beforedestroy', this.onViewBeforeDestroy, this);
       return true;
     }
     return false;
