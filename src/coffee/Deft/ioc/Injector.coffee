@@ -119,6 +119,7 @@ Ext.define( 'Deft.ioc.Injector',
 	
 	constructor: ->
 		@providers = {}
+		@injectionStack = []
 		return @
 	
 	###*
@@ -191,6 +192,18 @@ Ext.define( 'Deft.ioc.Injector',
 	Inject dependencies (by their identifiers) into the target object instance.
 	###
 	inject: ( identifiers, targetInstance, targetInstanceIsInitialized = true ) ->
+
+		targetClass = Ext.getClassName( targetInstance )
+
+		# Maintain a set of classes processed during this injection pass. If we hit a circular dependency, throw an error.
+		if( Ext.Array.contains( @injectionStack, targetClass ) )
+			stackMessage = @injectionStack.join( " -> " )
+			@injectionStack = []
+			Ext.Error.raise( msg: "Error resolving dependencies for '#{ targetClass }'. A circular dependency exists in its injections: #{ stackMessage } -> *#{ targetClass }*" )
+			return null
+
+		@injectionStack.push( targetClass )
+
 		injectConfig = {}
 		identifiers = [ identifiers ] if Ext.isString( identifiers )
 		Ext.Object.each( 
@@ -208,6 +221,8 @@ Ext.define( 'Deft.ioc.Injector',
 				return
 			@
 		)
+
+		@injectionStack = []
 		
 		# Ext JS and Sencha Touch do not provide a consistent mechanism (across the target framework versions) for detecting whether initConfig() has been executed.
 		# Consequently, we rely on an optional method parameter to determine this state instead.

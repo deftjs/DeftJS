@@ -623,6 +623,7 @@ Ext.define('Deft.ioc.Injector', {
   singleton: true,
   constructor: function() {
     this.providers = {};
+    this.injectionStack = [];
     return this;
   },
   /**
@@ -695,10 +696,20 @@ Ext.define('Deft.ioc.Injector', {
   */
 
   inject: function(identifiers, targetInstance, targetInstanceIsInitialized) {
-    var injectConfig, name, originalInitConfigFunction, setterFunctionName, value;
+    var injectConfig, name, originalInitConfigFunction, setterFunctionName, stackMessage, targetClass, value;
     if (targetInstanceIsInitialized == null) {
       targetInstanceIsInitialized = true;
     }
+    targetClass = Ext.getClassName(targetInstance);
+    if (Ext.Array.contains(this.injectionStack, targetClass)) {
+      stackMessage = this.injectionStack.join(" -> ");
+      this.injectionStack = [];
+      Ext.Error.raise({
+        msg: "Error resolving dependencies for '" + targetClass + "'. A circular dependency exists in its injections: " + stackMessage + " -> *" + targetClass + "*"
+      });
+      return null;
+    }
+    this.injectionStack.push(targetClass);
     injectConfig = {};
     if (Ext.isString(identifiers)) {
       identifiers = [identifiers];
@@ -716,6 +727,7 @@ Ext.define('Deft.ioc.Injector', {
         targetInstance[targetProperty] = resolvedValue;
       }
     }, this);
+    this.injectionStack = [];
     if (targetInstanceIsInitialized) {
       for (name in injectConfig) {
         value = injectConfig[name];
