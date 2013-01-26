@@ -2198,6 +2198,22 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.promise.Deferred', {
   alternateClassName: ['Deft.Deferred'],
   requires: ['Deft.log.Logger', 'Deft.promise.Promise'],
+  statics: {
+    /**
+    		* Enables logging for Promises. Defaults to true.
+    */
+
+    enableLogging: true,
+    /**
+    		* Adds a log message if {Deft.promise.Deferred.enableLogging} is set to true.
+    */
+
+    logMessage: function(message) {
+      if (Deft.promise.Deferred.enableLogging) {
+        return Deft.Logger.log(message);
+      }
+    }
+  },
   id: null,
   constructor: function(config) {
     if (config == null) {
@@ -2244,7 +2260,7 @@ Ext.define('Deft.promise.Deferred', {
     this.register(this.wrapCallback(deferred, failureCallback, scope, 'failure', 'reject'), this.failureCallbacks, 'rejected', this.value);
     this.register(this.wrapCallback(deferred, cancelCallback, scope, 'cancel', 'cancel'), this.cancelCallbacks, 'cancelled', this.value);
     this.register(this.wrapProgressCallback(deferred, progressCallback, scope), this.progressCallbacks, 'pending', this.progress);
-    Deft.Logger.log("Returning " + (deferred.getPromise()) + ".");
+    Deft.promise.Deferred.logMessage("Returning " + (deferred.getPromise()) + ".");
     return deferred.getPromise();
   },
   /**
@@ -2282,7 +2298,7 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   update: function(progress) {
-    Deft.Logger.log("" + this + " updated with progress: " + progress);
+    Deft.promise.Deferred.logMessage("" + this + " updated with progress: " + progress);
     if (this.state === 'pending') {
       this.progress = progress;
       this.notify(this.progressCallbacks, progress);
@@ -2299,7 +2315,7 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   resolve: function(value) {
-    Deft.Logger.log("" + this + " resolved with value: " + value);
+    Deft.promise.Deferred.logMessage("" + this + " resolved with value: " + value);
     this.complete('resolved', value, this.successCallbacks);
   },
   /**
@@ -2307,7 +2323,7 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   reject: function(error) {
-    Deft.Logger.log("" + this + " rejected with error: " + error);
+    Deft.promise.Deferred.logMessage("" + this + " rejected with error: " + error);
     this.complete('rejected', error, this.failureCallbacks);
   },
   /**
@@ -2315,7 +2331,7 @@ Ext.define('Deft.promise.Deferred', {
   */
 
   cancel: function(reason) {
-    Deft.Logger.log("" + this + " cancelled with reason: " + reason);
+    Deft.promise.Deferred.logMessage("" + this + " cancelled with reason: " + reason);
     this.complete('cancelled', reason, this.cancelCallbacks);
   },
   /**
@@ -2351,31 +2367,31 @@ Ext.define('Deft.promise.Deferred', {
     var self;
     self = this;
     if (callback != null) {
-      Deft.Logger.log("Registering " + callbackType + " callback for " + self + ".");
+      Deft.promise.Deferred.logMessage("Registering " + callbackType + " callback for " + self + ".");
     }
     return function(value) {
       var result;
       if (Ext.isFunction(callback)) {
         try {
-          Deft.Logger.log("Calling " + callbackType + " callback registered for " + self + ".");
+          Deft.promise.Deferred.logMessage("Calling " + callbackType + " callback registered for " + self + ".");
           result = callback.call(scope, value);
           if (result instanceof Ext.ClassManager.get('Deft.promise.Promise') || result instanceof Ext.ClassManager.get('Deft.promise.Deferred')) {
-            Deft.Logger.log("" + (deferred.getPromise()) + " will be completed based on the " + result + " returned by the " + callbackType + " callback.");
+            Deft.promise.Deferred.logMessage("" + (deferred.getPromise()) + " will be completed based on the " + result + " returned by the " + callbackType + " callback.");
             result.then(Ext.bind(deferred.resolve, deferred), Ext.bind(deferred.reject, deferred), Ext.bind(deferred.update, deferred), Ext.bind(deferred.cancel, deferred));
           } else {
-            Deft.Logger.log("" + (deferred.getPromise()) + " resolved with the value returned by the " + callbackType + " callback: " + result + ".");
+            Deft.promise.Deferred.logMessage("" + (deferred.getPromise()) + " resolved with the value returned by the " + callbackType + " callback: " + result + ".");
             deferred.resolve(result);
           }
         } catch (error) {
           if (Ext.Array.contains(['RangeError', 'ReferenceError', 'SyntaxError', 'TypeError'], error.name)) {
             Deft.Logger.error("Error: " + callbackType + " callback for " + self + " threw: " + (error.stack != null ? error.stack : error));
           } else {
-            Deft.Logger.log("" + (deferred.getPromise()) + " rejected with the Error returned by the " + callbackType + " callback: " + error);
+            Deft.promise.Deferred.logMessage("" + (deferred.getPromise()) + " rejected with the Error returned by the " + callbackType + " callback: " + error);
           }
           deferred.reject(error);
         }
       } else {
-        Deft.Logger.log("" + (deferred.getPromise()) + " resolved with the value: " + value + ".");
+        Deft.promise.Deferred.logMessage("" + (deferred.getPromise()) + " resolved with the value: " + value + ".");
         deferred[action](value);
       }
     };
@@ -2389,21 +2405,21 @@ Ext.define('Deft.promise.Deferred', {
     var self;
     self = this;
     if (callback != null) {
-      Deft.Logger.log("Registering progress callback for " + self + ".");
+      Deft.promise.Deferred.logMessage("Registering progress callback for " + self + ".");
     }
     return function(value) {
       var result;
       if (Ext.isFunction(callback)) {
         try {
-          Deft.Logger.log("Calling progress callback registered for " + self + ".");
+          Deft.promise.Deferred.logMessage("Calling progress callback registered for " + self + ".");
           result = callback.call(scope, value);
-          Deft.Logger.log("" + (deferred.getPromise()) + " updated with progress returned by the progress callback: " + result + ".");
+          Deft.promise.Deferred.logMessage("" + (deferred.getPromise()) + " updated with progress returned by the progress callback: " + result + ".");
           deferred.update(result);
         } catch (error) {
           Deft.Logger.error("Error: progress callback registered for " + self + " threw: " + (error.stack != null ? error.stack : error));
         }
       } else {
-        Deft.Logger.log("" + (deferred.getPromise()) + " updated with progress: " + value);
+        Deft.promise.Deferred.logMessage("" + (deferred.getPromise()) + " updated with progress: " + value);
         deferred.update(value);
       }
     };
