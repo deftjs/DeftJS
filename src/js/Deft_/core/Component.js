@@ -3,25 +3,6 @@
 Ext.define('Deft.core.Component', {
   override: 'Ext.Component',
   alternateClassName: ['Deft.Component'],
-  constructor: (function() {
-    if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
-      return function(config) {
-        if (config !== void 0 && !this.$injected && (config.inject != null)) {
-          Deft.Injector.inject(config.inject, this, false);
-          this.$injected = true;
-        }
-        return this.callOverridden(arguments);
-      };
-    } else {
-      return function(config) {
-        if (config !== void 0 && !this.$injected && (config.inject != null)) {
-          Deft.Injector.inject(config.inject, this, false);
-          this.$injected = true;
-        }
-        return this.callParent(arguments);
-      };
-    }
-  })(),
   setParent: function(newParent) {
     var oldParent, result;
     if (Ext.getVersion('touch') != null) {

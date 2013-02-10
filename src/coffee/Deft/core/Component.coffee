@@ -1,7 +1,21 @@
 Ext.define( 'Deft.core.Component',
   override: 'Ext.Component'
   alternateClassName: [ 'Deft.Component' ]
-    
+  
+  constructor : do () ->
+    if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
+      return ( config ) -> 
+        if( config isnt undefined and not @$injected and config.inject? )
+          Deft.Injector.inject( config.inject, @, false )
+          @$injected = true
+        return @callOverridden( arguments )
+    else
+      return ( config ) ->
+        if( config isnt undefined and not @$injected and config.inject? )
+          Deft.Injector.inject( config.inject, @, false )
+          @$injected = true
+        return @callParent( arguments )
+  	  	
   setParent: ( newParent ) ->
     if Ext.getVersion( 'touch' )?
       oldParent = @getParent()

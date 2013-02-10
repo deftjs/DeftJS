@@ -17,12 +17,8 @@ Ext.define( 'Deft.event.LiveEventListener',
 		Ext.apply( @, config )
 		
 		@components = []
-		components = Ext.ComponentQuery.query( @selector, @container )
-		for component in components
-			@components.push( component )
-			component.on( @eventName, @fn, @scope, @options )
 		return
-	
+			
 	destroy: ->
 		for component in @components
 			component.un( @eventName, @fn, @scope )
@@ -30,10 +26,12 @@ Ext.define( 'Deft.event.LiveEventListener',
 		return
 	
 	# Register a candidate component as a source of 'live' events (typically called when a component is added to a container).
-	register: ( component ) ->
+	register: ( component, container, pos, eOpts ) ->
 		if @matches( component )
 			@components.push( component )
 			component.on( @eventName, @fn, @scope, @options )
+			if( @eventName is 'added' )
+				@fn.apply( @scope or window, arguments )
 		return
 	
 	# Unregister a candidate component as a source of 'live' events (typically called when a component is removed from a container).
@@ -48,9 +46,7 @@ Ext.define( 'Deft.event.LiveEventListener',
 	matches: ( component ) ->
 		if @selector is null and @container is component
 			return true
-		if @container is null and Ext.Array.contains( Ext.ComponentQuery.query( @selector ), component )
+		if @container is null and component.is( @selector )
 			return true
-		if component.isDescendantOf( @container ) and Ext.Array.contains( @container.query( @selector ), component )
-			return true
-		return false
+		return component.is( @selector ) and component.isDescendantOf( @container )
 )

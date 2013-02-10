@@ -140,6 +140,9 @@ Ext.define('Deft.mvc.ViewController', {
       this.controlView(config.view);
     }
     this.initConfig(config);
+    if (Ext.Object.getSize(this.observe) > 0) {
+      this.createObservers();
+    }
     return this;
   },
   /**
@@ -151,7 +154,23 @@ Ext.define('Deft.mvc.ViewController', {
       this.setView(view);
       this.registeredComponentReferences = {};
       this.registeredComponentSelectors = {};
-      this.onViewInitialize();
+      if (Ext.getVersion('extjs') != null) {
+        if (this.getView().rendered) {
+          this.onViewInitialize();
+        } else {
+          this.getView().on('afterrender', this.onViewInitialize, this, {
+            single: true
+          });
+        }
+      } else {
+        if (this.getView().initialized) {
+          this.onViewInitialize();
+        } else {
+          this.getView().on('initialize', this.onViewInitialize, this, {
+            single: true
+          });
+        }
+      }
     } else {
       Ext.Error.raise({
         msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
@@ -184,6 +203,17 @@ Ext.define('Deft.mvc.ViewController', {
 
   onViewInitialize: function() {
     var config, id, listeners, live, originalViewDestroyFunction, selector, self, _ref;
+    if (Ext.getVersion('extjs') != null) {
+      this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
+    } else {
+      self = this;
+      originalViewDestroyFunction = this.getView().destroy;
+      this.getView().destroy = function() {
+        if (self.destroy()) {
+          originalViewDestroyFunction.call(this);
+        }
+      };
+    }
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
@@ -206,38 +236,11 @@ Ext.define('Deft.mvc.ViewController', {
         }
       }
       live = (config.live != null) && config.live;
-      live = true;
       this.addComponentReference(id, selector, live);
       this.addComponentSelector(selector, listeners, live);
     }
-    if (Ext.Object.getSize(this.observe) > 0) {
-      this.createObservers();
-    }
-    if (Ext.getVersion('extjs') != null) {
-      this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
-      if (this.getView().rendered) {
-        this.init();
-      } else {
-        this.getView().on('afterrender', this.init, this, {
-          single: true
-        });
-      }
-    } else {
-      self = this;
-      originalViewDestroyFunction = this.getView().destroy;
-      this.getView().destroy = function() {
-        if (self.destroy()) {
-          originalViewDestroyFunction.call(this);
-        }
-      };
-      if (this.getView().initialized) {
-        this.init();
-      } else {
-        this.getView().on('initialize', this.init, this, {
-          single: true
-        });
-      }
-    }
+    this.bindLateObservers();
+    this.init();
   },
   /**
   	* @private
@@ -245,7 +248,7 @@ Ext.define('Deft.mvc.ViewController', {
 
   onViewBeforeDestroy: function() {
     if (this.destroy()) {
-      this.getView().un('beforedestroy', this.onViewBeforeDestroy, this);
+      this.getView().un('beforedestroy', this.onBeforeDestroy, this);
       return true;
     }
     return false;
@@ -386,6 +389,20 @@ Ext.define('Deft.mvc.ViewController', {
       this.addObserver(target, events, this.registeredObservers);
     }
   },
+  /**
+  	* @protected
+  */
+
+  bindLateObservers: function(observerContainer) {
+    var observer, target;
+    if (observerContainer == null) {
+      observerContainer = this.registeredObservers;
+    }
+    for (target in observerContainer) {
+      observer = observerContainer[target];
+      observer.bindLateHandlers();
+    }
+  },
   addObserver: function(target, events, observerContainer) {
     var observer;
     if (observerContainer == null) {
@@ -403,12 +420,18 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   removeObservers: function() {
-    var observer, target, _ref;
+    var observer, target, _ref, _ref1;
     _ref = this.registeredObservers;
     for (target in _ref) {
       observer = _ref[target];
       observer.destroy();
       delete this.registeredObservers[target];
+    }
+    _ref1 = this.registeredLateObservers;
+    for (target in _ref1) {
+      observer = _ref1[target];
+      observer.destroy();
+      delete this.registeredLateObservers[target];
     }
   }
 }, function() {

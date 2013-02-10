@@ -26,7 +26,7 @@ Ext.define( 'Deft.mixin.Controllable',
     createControllerInterceptor = ( method ) ->
       return ( config = {} ) ->
         if @$controlled
-          return @callOverridden(arguments) 
+          return @[method]( arguments ) 
 
         if not (@ instanceof Ext.ClassManager.get( 'Ext.Component' ))
           Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
@@ -42,11 +42,16 @@ Ext.define( 'Deft.mixin.Controllable',
           @getController = ->
             return controller
             
+        oldInitComponent = @initComponent
+        @initComponent = () ->
+        	controller.controlView( @ )
+        	oldInitComponent.apply( @, arguments)
+            
         @$controlled = true
             
         @[method]( arguments )
             
-        controller.controlView( @ )
+        #controller.controlView( @ )
             
         return @
 

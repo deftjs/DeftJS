@@ -79,6 +79,25 @@ Ext.define('Deft.core.Class', {
 Ext.define('Deft.core.Component', {
   override: 'Ext.Component',
   alternateClassName: ['Deft.Component'],
+  constructor: (function() {
+    if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
+      return function(config) {
+        if (config !== void 0 && !this.$injected && (config.inject != null)) {
+          Deft.Injector.inject(config.inject, this, false);
+          this.$injected = true;
+        }
+        return this.callOverridden(arguments);
+      };
+    } else {
+      return function(config) {
+        if (config !== void 0 && !this.$injected && (config.inject != null)) {
+          Deft.Injector.inject(config.inject, this, false);
+          this.$injected = true;
+        }
+        return this.callParent(arguments);
+      };
+    }
+  })(),
   setParent: function(newParent) {
     var oldParent, result;
     if (Ext.getVersion('touch') != null) {
@@ -238,15 +257,8 @@ Ext.define('Deft.event.LiveEventListener', {
   alternateClassName: ['Deft.LiveEventListener'],
   requires: ['Ext.ComponentQuery'],
   constructor: function(config) {
-    var component, components, _i, _len;
     Ext.apply(this, config);
     this.components = [];
-    components = Ext.ComponentQuery.query(this.selector, this.container);
-    for (_i = 0, _len = components.length; _i < _len; _i++) {
-      component = components[_i];
-      this.components.push(component);
-      component.on(this.eventName, this.fn, this.scope, this.options);
-    }
   },
   destroy: function() {
     var component, _i, _len, _ref;
@@ -257,10 +269,13 @@ Ext.define('Deft.event.LiveEventListener', {
     }
     this.components = null;
   },
-  register: function(component) {
+  register: function(component, container, pos, eOpts) {
     if (this.matches(component)) {
       this.components.push(component);
       component.on(this.eventName, this.fn, this.scope, this.options);
+      if (this.eventName === 'added') {
+        this.fn.apply(this.scope || window, arguments);
+      }
     }
   },
   unregister: function(component) {
@@ -275,13 +290,10 @@ Ext.define('Deft.event.LiveEventListener', {
     if (this.selector === null && this.container === component) {
       return true;
     }
-    if (this.container === null && Ext.Array.contains(Ext.ComponentQuery.query(this.selector), component)) {
+    if (this.container === null && component.is(this.selector)) {
       return true;
     }
-    if (component.isDescendantOf(this.container) && Ext.Array.contains(this.container.query(this.selector), component)) {
-      return true;
-    }
-    return false;
+    return component.is(this.selector) && component.isDescendantOf(this.container);
   }
 });
 /*
@@ -354,12 +366,12 @@ Ext.define('Deft.event.LiveEventBus', {
     component.un('added', this.onComponentAdded, this);
     component.un('removed', this.onComponentRemoved, this);
   },
-  onComponentAdded: function(component, container, eOpts) {
+  onComponentAdded: function(component, container, pos, eOpts) {
     var listener, _i, _len, _ref;
     _ref = this.listeners;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       listener = _ref[_i];
-      listener.register(component);
+      listener.register.apply(listener, arguments);
     }
   },
   onComponentRemoved: function(component, container, eOpts) {
@@ -952,7 +964,6 @@ Ext.define('Deft.mvc.Observer', {
   constructor: function(config) {
     var eventName, events, handlerArray, host, target;
     this.listeners = [];
-    this.lateBinds = [];
     host = config != null ? config.host : void 0;
     target = config != null ? config.target : void 0;
     events = config != null ? config.events : void 0;
@@ -971,7 +982,7 @@ Ext.define('Deft.mvc.Observer', {
 
   },
   createHandler: function(host, target, eventName, handlerArray) {
-    var bindParameters, handler, lateBinding, options, scope, _i, _len;
+    var bindParameters, handler, options, scope, _i, _len;
     if (Ext.isString(handlerArray)) {
       handlerArray = handlerArray.replace(' ', '').split(',');
     }
@@ -980,14 +991,10 @@ Ext.define('Deft.mvc.Observer', {
     }
     for (_i = 0, _len = handlerArray.length; _i < _len; _i++) {
       handler = handlerArray[_i];
-      lateBinding = false;
       scope = host;
       options = null;
       if (Ext.isObject(handler)) {
         options = Ext.clone(handler);
-        if (options != null ? options.lateBinding : void 0) {
-          lateBinding = Deft.util.Function.extract(options, "lateBinding");
-        }
         if (options != null ? options.event : void 0) {
           eventName = Deft.util.Function.extract(options, "event");
         }
@@ -1006,11 +1013,7 @@ Ext.define('Deft.mvc.Observer', {
         target: target,
         options: options
       };
-      if (lateBinding === true) {
-        this.lateBinds.push(bindParameters);
-      } else {
-        this.bindHandler(bindParameters);
-      }
+      this.bindHandler(bindParameters);
     }
     return this;
   },
@@ -1033,19 +1036,6 @@ Ext.define('Deft.mvc.Observer', {
       Deft.Logger.log("Created observer on '" + bindParameters.target + "' for event '" + bindParameters.eventName + "'.");
     } else {
       Deft.Logger.warn("Could not create observer on '" + bindParameters.target + "' for event '" + bindParameters.eventName + "'.");
-    }
-    return this;
-  },
-  /**
-  	*
-  */
-
-  bindLateHandlers: function() {
-    var bindParameters, _i, _len, _ref;
-    _ref = this.lateBinds;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      bindParameters = _ref[_i];
-      this.bindHandler(bindParameters);
     }
     return this;
   },
@@ -1315,112 +1305,112 @@ A lightweight MVC view controller. Full usage instructions in the [DeftJS docume
 
 First, specify a ViewController to attach to a view:
 
-    Ext.define("DeftQuickStart.view.MyTabPanel", {
-      extend: "Ext.tab.Panel",
-      controller: "DeftQuickStart.controller.MainController",
-      ...
-    });
+		Ext.define("DeftQuickStart.view.MyTabPanel", {
+			extend: "Ext.tab.Panel",
+			controller: "DeftQuickStart.controller.MainController",
+			...
+		});
 
 Next, define the ViewController:
 
-    Ext.define("DeftQuickStart.controller.MainController", {
-      extend: "Deft.mvc.ViewController",
+		Ext.define("DeftQuickStart.controller.MainController", {
+			extend: "Deft.mvc.ViewController",
 
-      init: function() {
-        return this.callParent(arguments);
-      }
+			init: function() {
+				return this.callParent(arguments);
+			}
 
-    });
+		});
 
 ## Inject dependencies using the <u>[`inject` property](https://github.com/deftjs/DeftJS/wiki/Injecting-Dependencies)</u>:
 
-    Ext.define("DeftQuickStart.controller.MainController", {
-      extend: "Deft.mvc.ViewController",
-      inject: ["companyStore"],
+		Ext.define("DeftQuickStart.controller.MainController", {
+			extend: "Deft.mvc.ViewController",
+			inject: ["companyStore"],
 
-      config: {
-        companyStore: null
-      },
+			config: {
+				companyStore: null
+			},
 
-      init: function() {
-        return this.callParent(arguments);
-      }
+			init: function() {
+				return this.callParent(arguments);
+			}
 
-    });
+		});
 
 ## Define <u>[references to view components](https://github.com/deftjs/DeftJS/wiki/Accessing-Views)</u> and <u>[add view listeners](https://github.com/deftjs/DeftJS/wiki/Handling-View-Events)</u> with the `control` property:
 
-    Ext.define("DeftQuickStart.controller.MainController", {
-      extend: "Deft.mvc.ViewController",
+		Ext.define("DeftQuickStart.controller.MainController", {
+			extend: "Deft.mvc.ViewController",
 
-      control: {
+			control: {
 
-        // Most common configuration, using an itemId and listener
-        manufacturingFilter: {
-          change: "onFilterChange"
-        },
+				// Most common configuration, using an itemId and listener
+				manufacturingFilter: {
+					change: "onFilterChange"
+				},
 
-        // Reference only, with no listeners
-        serviceIndustryFilter: true,
+				// Reference only, with no listeners
+				serviceIndustryFilter: true,
 
-        // Configuration using selector, listeners, and event listener options
-        salesFilter: {
-          selector: "toolbar > checkbox",
-          listeners: {
-            change: {
-              fn: "onFilterChange",
-              buffer: 50,
-              single: true
-            }
-          }
-        }
-      },
+				// Configuration using selector, listeners, and event listener options
+				salesFilter: {
+					selector: "toolbar > checkbox",
+					listeners: {
+						change: {
+							fn: "onFilterChange",
+							buffer: 50,
+							single: true
+						}
+					}
+				}
+			},
 
-      init: function() {
-        return this.callParent(arguments);
-      }
+			init: function() {
+				return this.callParent(arguments);
+			}
 
-      // Event handlers or other methods here...
+			// Event handlers or other methods here...
 
-    });
+		});
 
 ## Dynamically monitor view to attach listeners to added components with <u>[live selectors](https://github.com/deftjs/DeftJS/wiki/ViewController-Live-Selectors)</u>:
 
-    control: {
-      manufacturingFilter: {
-        live: true,
-        listeners: {
-          change: "onFilterChange"
-        }
-      }
-    };
+		control: {
+			manufacturingFilter: {
+				live: true,
+				listeners: {
+					change: "onFilterChange"
+				}
+			}
+		};
 
 ## Observe events on injected objects with the <u>[`observe` property](https://github.com/deftjs/DeftJS/wiki/ViewController-Observe-Configuration)</u>:
 
-    Ext.define("DeftQuickStart.controller.MainController", {
-      extend: "Deft.mvc.ViewController",
-      inject: ["companyStore"],
+		Ext.define("DeftQuickStart.controller.MainController", {
+			extend: "Deft.mvc.ViewController",
+			inject: ["companyStore"],
 
-      config: {
-        companyStore: null
-      },
+			config: {
+				companyStore: null
+			},
 
-      observe: {
-        // Observe companyStore for the update event
-        companyStore: {
-          update: "onCompanyStoreUpdateEvent"
-        }
-      },
+			observe: {
+				// Observe companyStore for the update event
+				companyStore: {
+					update: "onCompanyStoreUpdateEvent"
+				}
+			},
 
-      init: function() {
-        return this.callParent(arguments);
-      },
+			init: function() {
+				return this.callParent(arguments);
+			},
 
-      onCompanyStoreUpdateEvent: function(store, model, operation, fieldNames) {
-        // Do something when store fires update event
-      }
+			onCompanyStoreUpdateEvent: function(store, model, operation, fieldNames) {
+				// Do something when store fires update event
+			}
 
-    });
+		});
 */
 
 Ext.define('Deft.mvc.ViewController', {
@@ -1428,13 +1418,13 @@ Ext.define('Deft.mvc.ViewController', {
   requires: ['Deft.core.Class', 'Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mvc.Observer'],
   config: {
     /**
-    * View controlled by this ViewController.
+    		* View controlled by this ViewController.
     */
 
     view: null
   },
   /**
-  * Observers automatically created and removed by this ViewController.
+  	* Observers automatically created and removed by this ViewController.
   */
 
   observe: {},
@@ -1446,13 +1436,10 @@ Ext.define('Deft.mvc.ViewController', {
       this.controlView(config.view);
     }
     this.initConfig(config);
-    if (Ext.Object.getSize(this.observe) > 0) {
-      this.createObservers();
-    }
     return this;
   },
   /**
-  * @protected
+  	* @protected
   */
 
   controlView: function(view) {
@@ -1460,23 +1447,7 @@ Ext.define('Deft.mvc.ViewController', {
       this.setView(view);
       this.registeredComponentReferences = {};
       this.registeredComponentSelectors = {};
-      if (Ext.getVersion('extjs') != null) {
-        if (this.getView().rendered) {
-          this.onViewInitialize();
-        } else {
-          this.getView().on('afterrender', this.onViewInitialize, this, {
-            single: true
-          });
-        }
-      } else {
-        if (this.getView().initialized) {
-          this.onViewInitialize();
-        } else {
-          this.getView().on('initialize', this.onViewInitialize, this, {
-            single: true
-          });
-        }
-      }
+      this.onViewInitialize();
     } else {
       Ext.Error.raise({
         msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
@@ -1484,12 +1455,12 @@ Ext.define('Deft.mvc.ViewController', {
     }
   },
   /**
-  * Initialize the ViewController
+  	* Initialize the ViewController
   */
 
   init: function() {},
   /**
-  * Destroy the ViewController
+  	* Destroy the ViewController
   */
 
   destroy: function() {
@@ -1504,22 +1475,11 @@ Ext.define('Deft.mvc.ViewController', {
     return true;
   },
   /**
-  * @private
+  	* @private
   */
 
   onViewInitialize: function() {
     var config, id, listeners, live, originalViewDestroyFunction, selector, self, _ref;
-    if (Ext.getVersion('extjs') != null) {
-      this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
-    } else {
-      self = this;
-      originalViewDestroyFunction = this.getView().destroy;
-      this.getView().destroy = function() {
-        if (self.destroy()) {
-          originalViewDestroyFunction.call(this);
-        }
-      };
-    }
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
@@ -1542,25 +1502,52 @@ Ext.define('Deft.mvc.ViewController', {
         }
       }
       live = (config.live != null) && config.live;
+      live = true;
       this.addComponentReference(id, selector, live);
       this.addComponentSelector(selector, listeners, live);
     }
-    this.bindLateObservers();
-    this.init();
+    if (Ext.Object.getSize(this.observe) > 0) {
+      this.createObservers();
+    }
+    if (Ext.getVersion('extjs') != null) {
+      this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
+      if (this.getView().rendered) {
+        this.init();
+      } else {
+        this.getView().on('afterrender', this.init, this, {
+          single: true
+        });
+      }
+    } else {
+      self = this;
+      originalViewDestroyFunction = this.getView().destroy;
+      this.getView().destroy = function() {
+        if (self.destroy()) {
+          originalViewDestroyFunction.call(this);
+        }
+      };
+      if (this.getView().initialized) {
+        this.init();
+      } else {
+        this.getView().on('initialize', this.init, this, {
+          single: true
+        });
+      }
+    }
   },
   /**
-  * @private
+  	* @private
   */
 
   onViewBeforeDestroy: function() {
     if (this.destroy()) {
-      this.getView().un('beforedestroy', this.onBeforeDestroy, this);
+      this.getView().un('beforedestroy', this.onViewBeforeDestroy, this);
       return true;
     }
     return false;
   },
   /**
-  * Add a component accessor method the ViewController for the specified view-relative selector.
+  	* Add a component accessor method the ViewController for the specified view-relative selector.
   */
 
   addComponentReference: function(id, selector, live) {
@@ -1596,7 +1583,7 @@ Ext.define('Deft.mvc.ViewController', {
     this.registeredComponentReferences[id] = true;
   },
   /**
-  * Remove a component accessor method the ViewController for the specified view-relative selector.
+  	* Remove a component accessor method the ViewController for the specified view-relative selector.
   */
 
   removeComponentReference: function(id) {
@@ -1616,7 +1603,7 @@ Ext.define('Deft.mvc.ViewController', {
     delete this.registeredComponentReferences[id];
   },
   /**
-  * Get the component(s) corresponding to the specified view-relative selector.
+  	* Get the component(s) corresponding to the specified view-relative selector.
   */
 
   getViewComponent: function(selector) {
@@ -1635,7 +1622,7 @@ Ext.define('Deft.mvc.ViewController', {
     }
   },
   /**
-  * Add a component selector with the specified listeners for the specified view-relative selector.
+  	* Add a component selector with the specified listeners for the specified view-relative selector.
   */
 
   addComponentSelector: function(selector, listeners, live) {
@@ -1660,7 +1647,7 @@ Ext.define('Deft.mvc.ViewController', {
     this.registeredComponentSelectors[selector] = componentSelector;
   },
   /**
-  * Remove a component selector with the specified listeners for the specified view-relative selector.
+  	* Remove a component selector with the specified listeners for the specified view-relative selector.
   */
 
   removeComponentSelector: function(selector) {
@@ -1676,14 +1663,14 @@ Ext.define('Deft.mvc.ViewController', {
     delete this.registeredComponentSelectors[selector];
   },
   /**
-  * Get the component selectorcorresponding to the specified view-relative selector.
+  	* Get the component selectorcorresponding to the specified view-relative selector.
   */
 
   getComponentSelector: function(selector) {
     return this.registeredComponentSelectors[selector];
   },
   /**
-  * @protected
+  	* @protected
   */
 
   createObservers: function() {
@@ -1693,20 +1680,6 @@ Ext.define('Deft.mvc.ViewController', {
     for (target in _ref) {
       events = _ref[target];
       this.addObserver(target, events, this.registeredObservers);
-    }
-  },
-  /**
-  * @protected
-  */
-
-  bindLateObservers: function(observerContainer) {
-    var observer, target;
-    if (observerContainer == null) {
-      observerContainer = this.registeredObservers;
-    }
-    for (target in observerContainer) {
-      observer = observerContainer[target];
-      observer.bindLateHandlers();
     }
   },
   addObserver: function(target, events, observerContainer) {
@@ -1722,41 +1695,27 @@ Ext.define('Deft.mvc.ViewController', {
     return observerContainer[target] = observer;
   },
   /**
-  * @protected
+  	* @protected
   */
 
   removeObservers: function() {
-    var observer, target, _ref, _ref1;
+    var observer, target, _ref;
     _ref = this.registeredObservers;
     for (target in _ref) {
       observer = _ref[target];
       observer.destroy();
       delete this.registeredObservers[target];
     }
-    _ref1 = this.registeredLateObservers;
-    for (target in _ref1) {
-      observer = _ref1[target];
-      observer.destroy();
-      delete this.registeredLateObservers[target];
-    }
   }
 }, function() {
   /**
-  * Preprocessor to handle merging of 'observe' objects on parent and child classes.
+  	* Preprocessor to handle merging of 'observe' objects on parent and child classes.
   */
-  Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
+  return Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
       var _ref;
       if (Class.superclass && ((_ref = Class.superclass) != null ? _ref.observe : void 0) && Deft.Class.extendsClass('Deft.mvc.ViewController', Class)) {
         data.observe = Deft.mvc.Observer.mergeObserve(Class.superclass.observe, data.observe);
-      }
-    });
-  }, 'before', 'extend');
-  return Deft.Class.registerPreprocessor('observeLate', function(Class, data, hooks, callback) {
-    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
-      var _ref;
-      if (Class.superclass && ((_ref = Class.superclass) != null ? _ref.observe : void 0) && Deft.Class.extendsClass('Deft.mvc.ViewController', Class)) {
-        data.observeLate = Deft.mvc.Observer.mergeObserve(Class.superclass.observeLate, data.observeLate);
       }
     });
   }, 'before', 'extend');
@@ -1821,12 +1780,12 @@ Ext.define('Deft.mixin.Controllable', {
   var callParentMethod, createControllerInterceptor;
   createControllerInterceptor = function(method) {
     return function(config) {
-      var controller;
+      var controller, oldInitComponent;
       if (config == null) {
         config = {};
       }
       if (this.$controlled) {
-        return this.callOverridden(arguments);
+        return this[method](arguments);
       }
       if (!(this instanceof Ext.ClassManager.get('Ext.Component'))) {
         Ext.Error.raise({
@@ -1844,9 +1803,13 @@ Ext.define('Deft.mixin.Controllable', {
           return controller;
         };
       }
+      oldInitComponent = this.initComponent;
+      this.initComponent = function() {
+        controller.controlView(this);
+        return oldInitComponent.apply(this, arguments);
+      };
       this.$controlled = true;
       this[method](arguments);
-      controller.controlView(this);
       return this;
     };
   };

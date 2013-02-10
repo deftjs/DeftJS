@@ -73,9 +73,9 @@ Ext.define( 'Deft.event.LiveEventBus',
 		return
 	
 	# @private
-	onComponentAdded: ( component, container, eOpts ) ->
+	onComponentAdded: ( component, container, pos, eOpts ) ->
 		for listener in @listeners
-			listener.register( component )
+			listener.register.apply( listener, arguments )
 		return
 	
 	# @private

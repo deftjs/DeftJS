@@ -13,8 +13,15 @@ Ext.define('Deft.event.LiveEventListener', {
   alternateClassName: ['Deft.LiveEventListener'],
   requires: ['Ext.ComponentQuery'],
   constructor: function(config) {
+    var component, components, _i, _len;
     Ext.apply(this, config);
     this.components = [];
+    components = Ext.ComponentQuery.query(this.selector, this.container);
+    for (_i = 0, _len = components.length; _i < _len; _i++) {
+      component = components[_i];
+      this.components.push(component);
+      component.on(this.eventName, this.fn, this.scope, this.options);
+    }
   },
   destroy: function() {
     var component, _i, _len, _ref;
@@ -25,13 +32,10 @@ Ext.define('Deft.event.LiveEventListener', {
     }
     this.components = null;
   },
-  register: function(component, container, pos, eOpts) {
+  register: function(component) {
     if (this.matches(component)) {
       this.components.push(component);
       component.on(this.eventName, this.fn, this.scope, this.options);
-      if (this.eventName === 'added') {
-        this.fn.apply(this.scope || window, arguments);
-      }
     }
   },
   unregister: function(component) {
@@ -46,9 +50,12 @@ Ext.define('Deft.event.LiveEventListener', {
     if (this.selector === null && this.container === component) {
       return true;
     }
-    if (this.container === null && component.is(this.selector)) {
+    if (this.container === null && Ext.Array.contains(Ext.ComponentQuery.query(this.selector), component)) {
       return true;
     }
-    return component.is(this.selector) && component.isDescendantOf(this.container);
+    if (component.isDescendantOf(this.container) && Ext.Array.contains(this.container.query(this.selector), component)) {
+      return true;
+    }
+    return false;
   }
 });

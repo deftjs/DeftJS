@@ -93,7 +93,6 @@ Ext.define( 'Deft.mvc.Observer',
 	###
 	constructor: ( config ) ->
 		@listeners = []
-		@lateBinds = []
     		
 		host = config?.host
 		target = config?.target
@@ -118,9 +117,6 @@ Ext.define( 'Deft.mvc.Observer',
 		handlerArray = [ handlerArray ] if( Ext.isObject( handlerArray ) )
 
 		for handler in handlerArray
-			# Do the handler have to be binded after the view render ?
-			lateBinding = false
-		
 			# Default scope is the object hosting the Observer.
 			scope = host
 
@@ -130,7 +126,6 @@ Ext.define( 'Deft.mvc.Observer',
 			# If the handler is a configuration object, parse it and use those values to create the Observer.
 			if( Ext.isObject( handler ) )
 				options = Ext.clone( handler )
-				lateBinding = Deft.util.Function.extract( options, "lateBinding" ) if options?.lateBinding
 				eventName = Deft.util.Function.extract( options, "event" ) if options?.event
 				handler = Deft.util.Function.extract( options, "fn" ) if options?.fn
 				scope = Deft.util.Function.extract( options, "scope" ) if options?.scope
@@ -143,10 +138,7 @@ Ext.define( 'Deft.mvc.Observer',
 				target : target
 				options : options
 
-			if lateBinding is true
-				@lateBinds.push( bindParameters )
-			else
-				@bindHandler( bindParameters )
+			@bindHandler( bindParameters )
 		return @
 	
 	###*
@@ -163,15 +155,6 @@ Ext.define( 'Deft.mvc.Observer',
 
 		return @
 
-	###*
-	*
-	###
-	bindLateHandlers: ->
-		for bindParameters in @lateBinds
-			@bindHandler( bindParameters )
-		return @
-  
-  
 	###*
 	* Returns true if the passed host has a target that is Observable.
 	* Checks for an isObservable=true property, observable mixin, or if the class extends Observable.

@@ -110,6 +110,7 @@ Ext.define('Deft.mvc.Observer', {
   constructor: function(config) {
     var eventName, events, handlerArray, host, target;
     this.listeners = [];
+    this.lateBinds = [];
     host = config != null ? config.host : void 0;
     target = config != null ? config.target : void 0;
     events = config != null ? config.events : void 0;
@@ -128,7 +129,7 @@ Ext.define('Deft.mvc.Observer', {
 
   },
   createHandler: function(host, target, eventName, handlerArray) {
-    var bindParameters, handler, options, scope, _i, _len;
+    var bindParameters, handler, lateBinding, options, scope, _i, _len;
     if (Ext.isString(handlerArray)) {
       handlerArray = handlerArray.replace(' ', '').split(',');
     }
@@ -137,10 +138,14 @@ Ext.define('Deft.mvc.Observer', {
     }
     for (_i = 0, _len = handlerArray.length; _i < _len; _i++) {
       handler = handlerArray[_i];
+      lateBinding = false;
       scope = host;
       options = null;
       if (Ext.isObject(handler)) {
         options = Ext.clone(handler);
+        if (options != null ? options.lateBinding : void 0) {
+          lateBinding = Deft.util.Function.extract(options, "lateBinding");
+        }
         if (options != null ? options.event : void 0) {
           eventName = Deft.util.Function.extract(options, "event");
         }
@@ -159,7 +164,11 @@ Ext.define('Deft.mvc.Observer', {
         target: target,
         options: options
       };
-      this.bindHandler(bindParameters);
+      if (lateBinding === true) {
+        this.lateBinds.push(bindParameters);
+      } else {
+        this.bindHandler(bindParameters);
+      }
     }
     return this;
   },
@@ -182,6 +191,19 @@ Ext.define('Deft.mvc.Observer', {
       Deft.Logger.log("Created observer on '" + bindParameters.target + "' for event '" + bindParameters.eventName + "'.");
     } else {
       Deft.Logger.warn("Could not create observer on '" + bindParameters.target + "' for event '" + bindParameters.eventName + "'.");
+    }
+    return this;
+  },
+  /**
+  	*
+  */
+
+  bindLateHandlers: function() {
+    var bindParameters, _i, _len, _ref;
+    _ref = this.lateBinds;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      bindParameters = _ref[_i];
+      this.bindHandler(bindParameters);
     }
     return this;
   },
