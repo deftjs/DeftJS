@@ -17,31 +17,33 @@ Ext.define( 'Deft.event.LiveEventBus',
 	singleton: true
 	
 	constructor: ->
-		@listeners = []
+		@listeners = {}
 		return
 		
 	destroy: ->
-		for listener in @listeners
-			listener.destroy()
+		for selector, listeners of @listeners
+			for listener in listeners
+				listener.destroy()
 		@listeners = null
 		return
 	
 	addListener: ( container, selector, eventName, fn, scope, options ) ->
 		listener = Ext.create( 'Deft.event.LiveEventListener', 
+			selector : selector
 			container: container
-			selector: selector
 			eventName: eventName
 			fn: fn
 			scope: scope
 			options: options
 		)
-		@listeners.push( listener )
+		@listeners[selector] = @listeners[selector] || []
+		@listeners[selector].push( listener )
 		return
 	
 	removeListener: ( container, selector, eventName, fn, scope ) ->
 		listener = @findListener( container, selector, eventName, fn, scope )
 		if listener?
-			Ext.Array.remove( @listeners, listener )
+			Ext.Array.remove( @listeners[selector], listener )
 			listener.destroy()
 		return
 	
@@ -53,10 +55,13 @@ Ext.define( 'Deft.event.LiveEventBus',
 	
 	# @private
 	findListener: ( container, selector, eventName, fn, scope ) ->
-		for listener in @listeners
+		if @listeners[selector] is undefined
+			return null
+			
+		for listener in @listeners[selector]
 			# NOTE: Evaluating here rather than refactoring as a `Deft.event.LiveEventListener` method in order to reduce the number of function calls executed (for performance reasons).
 			# TODO: Optimize via an index by selector, eventName (and maybe container id?).
-			if listener.container is container and listener.selector is selector and listener.eventName is eventName and listener.fn is fn and listener.scope is scope
+			if listener.container is container and listener.eventName is eventName and listener.fn is fn and listener.scope is scope
 				return listener
 		return null
 	
@@ -64,24 +69,36 @@ Ext.define( 'Deft.event.LiveEventBus',
 	register: ( component ) ->
 		component.on( 'added', @onComponentAdded, @ )
 		component.on( 'removed', @onComponentRemoved, @ )
+		
+		if(@listeners[null])
+			for listener in @listeners[null]
+				listener.register.apply( listener, arguments )
 		return
 	
 	# @private
 	unregister: ( component ) ->
 		component.un( 'added', @onComponentAdded, @ )
 		component.un( 'removed', @onComponentRemoved, @ )
+		
+		if(@listeners[null])
+			for listener in @listeners[null]
+				listener.unregister( component )
 		return
 	
 	# @private
 	onComponentAdded: ( component, container, pos, eOpts ) ->
-		for listener in @listeners
-			listener.register.apply( listener, arguments )
+		for selector, listeners of @listeners
+			if(selector isnt null and component.is(selector))
+				for listener in listeners
+					listener.register.apply( listener, arguments )
 		return
 	
 	# @private
 	onComponentRemoved: ( component, container, eOpts ) ->
-		for listener in @listeners
-			listener.unregister( component )
+		for selector, listeners of @listeners
+			if(selector isnt null and component.is(selector))
+				for listener in listeners
+					listener.unregister( component )
 		return
 ,
 	->

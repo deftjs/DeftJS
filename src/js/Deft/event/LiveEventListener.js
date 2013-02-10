@@ -29,7 +29,7 @@ Ext.define('Deft.event.LiveEventListener', {
     if (this.matches(component)) {
       this.components.push(component);
       component.on(this.eventName, this.fn, this.scope, this.options);
-      if (this.eventName === 'added') {
+      if (this.eventName === 'added' && this.selector !== null) {
         this.fn.apply(this.scope || window, arguments);
       }
     }
@@ -43,12 +43,12 @@ Ext.define('Deft.event.LiveEventListener', {
     }
   },
   matches: function(component) {
-    if (this.selector === null && this.container === component) {
+    if (this.selector === null) {
+      return component === this.container;
+    }
+    if (this.container === null) {
       return true;
     }
-    if (this.container === null && component.is(this.selector)) {
-      return true;
-    }
-    return component.is(this.selector) && component.isDescendantOf(this.container);
+    return component.isDescendantOf(this.container);
   }
 });

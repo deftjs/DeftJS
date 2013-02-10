@@ -51,8 +51,6 @@ Ext.define( 'Deft.mixin.Controllable',
             
         @[method]( arguments )
             
-        #controller.controlView( @ )
-            
         return @
 
     if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )

@@ -273,7 +273,7 @@ Ext.define('Deft.event.LiveEventListener', {
     if (this.matches(component)) {
       this.components.push(component);
       component.on(this.eventName, this.fn, this.scope, this.options);
-      if (this.eventName === 'added') {
+      if (this.eventName === 'added' && this.selector !== null) {
         this.fn.apply(this.scope || window, arguments);
       }
     }
@@ -287,13 +287,13 @@ Ext.define('Deft.event.LiveEventListener', {
     }
   },
   matches: function(component) {
-    if (this.selector === null && this.container === component) {
+    if (this.selector === null) {
+      return component === this.container;
+    }
+    if (this.container === null) {
       return true;
     }
-    if (this.container === null && component.is(this.selector)) {
-      return true;
-    }
-    return component.is(this.selector) && component.isDescendantOf(this.container);
+    return component.isDescendantOf(this.container);
   }
 });
 /*
@@ -310,34 +310,38 @@ Ext.define('Deft.event.LiveEventBus', {
   requires: ['Ext.Component', 'Ext.ComponentManager', 'Deft.event.LiveEventListener'],
   singleton: true,
   constructor: function() {
-    this.listeners = [];
+    this.listeners = {};
   },
   destroy: function() {
-    var listener, _i, _len, _ref;
+    var listener, listeners, selector, _i, _len, _ref;
     _ref = this.listeners;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      listener = _ref[_i];
-      listener.destroy();
+    for (selector in _ref) {
+      listeners = _ref[selector];
+      for (_i = 0, _len = listeners.length; _i < _len; _i++) {
+        listener = listeners[_i];
+        listener.destroy();
+      }
     }
     this.listeners = null;
   },
   addListener: function(container, selector, eventName, fn, scope, options) {
     var listener;
     listener = Ext.create('Deft.event.LiveEventListener', {
-      container: container,
       selector: selector,
+      container: container,
       eventName: eventName,
       fn: fn,
       scope: scope,
       options: options
     });
-    this.listeners.push(listener);
+    this.listeners[selector] = this.listeners[selector] || [];
+    this.listeners[selector].push(listener);
   },
   removeListener: function(container, selector, eventName, fn, scope) {
     var listener;
     listener = this.findListener(container, selector, eventName, fn, scope);
     if (listener != null) {
-      Ext.Array.remove(this.listeners, listener);
+      Ext.Array.remove(this.listeners[selector], listener);
       listener.destroy();
     }
   },
@@ -349,37 +353,66 @@ Ext.define('Deft.event.LiveEventBus', {
   },
   findListener: function(container, selector, eventName, fn, scope) {
     var listener, _i, _len, _ref;
-    _ref = this.listeners;
+    if (this.listeners[selector] === void 0) {
+      return null;
+    }
+    _ref = this.listeners[selector];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       listener = _ref[_i];
-      if (listener.container === container && listener.selector === selector && listener.eventName === eventName && listener.fn === fn && listener.scope === scope) {
+      if (listener.container === container && listener.eventName === eventName && listener.fn === fn && listener.scope === scope) {
         return listener;
       }
     }
     return null;
   },
   register: function(component) {
+    var listener, _i, _len, _ref;
     component.on('added', this.onComponentAdded, this);
     component.on('removed', this.onComponentRemoved, this);
+    if (this.listeners[null]) {
+      _ref = this.listeners[null];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        listener = _ref[_i];
+        listener.register.apply(listener, arguments);
+      }
+    }
   },
   unregister: function(component) {
+    var listener, _i, _len, _ref;
     component.un('added', this.onComponentAdded, this);
     component.un('removed', this.onComponentRemoved, this);
+    if (this.listeners[null]) {
+      _ref = this.listeners[null];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        listener = _ref[_i];
+        listener.unregister(component);
+      }
+    }
   },
   onComponentAdded: function(component, container, pos, eOpts) {
-    var listener, _i, _len, _ref;
+    var listener, listeners, selector, _i, _len, _ref;
     _ref = this.listeners;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      listener = _ref[_i];
-      listener.register.apply(listener, arguments);
+    for (selector in _ref) {
+      listeners = _ref[selector];
+      if (selector !== null && component.is(selector)) {
+        for (_i = 0, _len = listeners.length; _i < _len; _i++) {
+          listener = listeners[_i];
+          listener.register.apply(listener, arguments);
+        }
+      }
     }
   },
   onComponentRemoved: function(component, container, eOpts) {
-    var listener, _i, _len, _ref;
+    var listener, listeners, selector, _i, _len, _ref;
     _ref = this.listeners;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      listener = _ref[_i];
-      listener.unregister(component);
+    for (selector in _ref) {
+      listeners = _ref[selector];
+      if (selector !== null && component.is(selector)) {
+        for (_i = 0, _len = listeners.length; _i < _len; _i++) {
+          listener = listeners[_i];
+          listener.unregister(component);
+        }
+      }
     }
   }
 }, function() {

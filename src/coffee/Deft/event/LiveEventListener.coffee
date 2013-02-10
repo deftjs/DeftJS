@@ -30,7 +30,7 @@ Ext.define( 'Deft.event.LiveEventListener',
 		if @matches( component )
 			@components.push( component )
 			component.on( @eventName, @fn, @scope, @options )
-			if( @eventName is 'added' )
+			if( @eventName is 'added' and @selector isnt null )
 				@fn.apply( @scope or window, arguments )
 		return
 	
@@ -44,9 +44,9 @@ Ext.define( 'Deft.event.LiveEventListener',
 	
 	# @private
 	matches: ( component ) ->
-		if @selector is null and @container is component
+		if @selector is null
+			return component is @container
+		if @container is null
 			return true
-		if @container is null and component.is( @selector )
-			return true
-		return component.is( @selector ) and component.isDescendantOf( @container )
+		return component.isDescendantOf( @container )
 )
