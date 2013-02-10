@@ -17,9 +17,6 @@ Ext.define( 'Deft.mvc.ComponentSelector',
 	constructor: ( config ) ->
 		Ext.apply( @, config )
 		
-		if not @live
-			@components = if @selector? then Ext.ComponentQuery.query( @selector, @view ) else [ @view ]
-		
 		@selectorListeners = []
 		
 		if Ext.isObject( @listeners )
@@ -60,7 +57,7 @@ Ext.define( 'Deft.mvc.ComponentSelector',
 		if @findListener( eventName, fn, scope )?
 			Ext.Error.raise( msg: "Error adding '#{ eventName }' listener: an existing listener for the specified function was already registered for '#{ @selector }." )
 		
-		Deft.Logger.log( "Adding '#{ eventName }' listener to '#{ @selector }'." )
+		Deft.Logger.log( "Adding '#{ eventName }' listener to '#{ @selector or 'view' }'." )
 		selectorListener = Ext.create( 'Deft.mvc.ComponentSelectorListener',
 			componentSelector: @
 			eventName: eventName

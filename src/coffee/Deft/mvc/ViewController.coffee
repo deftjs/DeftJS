@@ -189,11 +189,10 @@ Ext.define( 'Deft.mvc.ViewController',
 			if Ext.isObject( config.listeners )
 				listeners = config.listeners
 			else
-				listeners = config unless config.selector? or config.live?
-			live = config.live? and config.live
-			live = true
-			@addComponentReference( id, selector, live )
-			@addComponentSelector( selector, listeners, live )
+				listeners = config unless config.selector?
+				
+			@addComponentReference( id, selector )
+			@addComponentSelector( selector, listeners )
 		
 		if Ext.Object.getSize( @observe ) > 0 then @createObservers()
 		
@@ -231,9 +230,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	* Add a component accessor method the ViewController for the specified view-relative selector.
 	###
-	addComponentReference: ( id, selector, live = false ) ->
-		Deft.Logger.log( "Adding '#{ id }' component reference for selector: '#{ selector }'." )
-		
+	addComponentReference: ( id, selector ) ->
 		if @registeredComponentReferences[ id ]?
 			Ext.Error.raise( msg: "Error adding component reference: an existing component reference was already registered as '#{ id }'." )
 		
@@ -241,16 +238,11 @@ Ext.define( 'Deft.mvc.ViewController',
 		if id isnt 'view'
 			getterName = 'get' + Ext.String.capitalize( id )
 			unless @[ getterName ]?
-				if live
-					@[ getterName ] = Ext.Function.pass( @getViewComponent, [ selector ], @ )
-				else
-					matches = @getViewComponent( selector )
-					unless matches?
-						Ext.Error.raise( msg: "Error locating component: no component(s) found matching '#{ selector }'." )
-					@[ getterName ] = -> matches
+				Deft.Logger.log( "Adding '#{ id }' component reference for selector: '#{ selector }'." )
+				@[ getterName ] = Ext.Function.pass( @getViewComponent, [ selector ], @ )
 				@[ getterName ].generated = true
-		
-		@registeredComponentReferences[ id ] = true
+				@registeredComponentReferences[ id ] = true
+
 		return
 	
 	###*
@@ -290,8 +282,8 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	* Add a component selector with the specified listeners for the specified view-relative selector.
 	###
-	addComponentSelector: ( selector, listeners, live = false ) ->
-		Deft.Logger.log( "Adding component selector for: '#{ selector }'." )
+	addComponentSelector: ( selector, listeners ) ->
+		Deft.Logger.log( "Adding component selector for: '#{ selector or 'view' }'." )
 		
 		existingComponentSelector = @getComponentSelector( selector )
 		if existingComponentSelector?
@@ -302,7 +294,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			selector: selector
 			listeners: listeners
 			scope: @
-			live: live
+			live: true
 		)
 		@registeredComponentSelectors[ selector ] = componentSelector
 		
