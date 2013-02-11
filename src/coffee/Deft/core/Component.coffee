@@ -33,6 +33,9 @@ Ext.define( 'Deft.core.Component',
       return result
     else
       return @callParent( arguments )
+
+  is: ( selector ) ->
+    return Ext.ComponentQuery.is( @, selector )
         
   isDescendantOf: ( container ) ->
     if Ext.getVersion( 'touch' )?

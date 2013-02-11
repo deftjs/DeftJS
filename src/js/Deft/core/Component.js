@@ -40,6 +40,9 @@ Ext.define('Deft.core.Component', {
       return this.callParent(arguments);
     }
   },
+  is: function(selector) {
+    return Ext.ComponentQuery.is(this, selector);
+  },
   isDescendantOf: function(container) {
     var ancestor;
     if (Ext.getVersion('touch') != null) {

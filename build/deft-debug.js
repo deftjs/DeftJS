@@ -116,6 +116,9 @@ Ext.define('Deft.core.Component', {
       return this.callParent(arguments);
     }
   },
+  is: function(selector) {
+    return Ext.ComponentQuery.is(this, selector);
+  },
   isDescendantOf: function(container) {
     var ancestor;
     if (Ext.getVersion('touch') != null) {
@@ -294,7 +297,7 @@ Ext.define('Deft.event.LiveEventListener', {
       _ref = this.liveHandlers[event];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         handler = _ref[_i];
-        if (handler.observable.matches(this) && handler.fire.apply(handler, Array.prototype.slice.call(arguments, 1)) === false) {
+        if (handler.observable.matches(this) && handler.fireEvent.apply(handler, arguments) === false) {
           return false;
         }
       }
@@ -313,8 +316,9 @@ Ext.define('Deft.event.LiveEventListener', {
     if (component.liveHandlers[this.eventName] === void 0) {
       component.liveHandlers[this.eventName] = [];
     }
-    event = new Ext.util.Event(this, this.eventName);
-    event.addListener(this.handle, this, this.options);
+    event = Ext.create('Ext.util.Observable');
+    event.observable = this;
+    event.addListener(this.eventName, this.handle, this, this.options);
     component.on(this.eventName, Ext.emptyFn, this, this.options);
     component.liveHandlers[this.eventName].push(event);
     if (this.eventName === 'added' && this.selector !== null) {

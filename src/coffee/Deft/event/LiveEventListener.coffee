@@ -48,7 +48,7 @@ Ext.define( 'Deft.event.LiveEventListener',
 				return
 
 			for handler in @liveHandlers[ event ]
-				if handler.observable.matches( @ ) and handler.fire.apply( handler, Array.prototype.slice.call(arguments, 1)) is false
+				if handler.observable.matches( @ ) and handler.fireEvent.apply( handler, arguments) is false
 					return false
 		return
 	
@@ -67,8 +67,10 @@ Ext.define( 'Deft.event.LiveEventListener',
 		if component.liveHandlers[@eventName] is undefined
 			component.liveHandlers[@eventName] = []
 		
-		event = new Ext.util.Event(@, @eventName)
-		event.addListener(@handle, @, @options)
+		event = Ext.create('Ext.util.Observable')
+		event.observable = @
+		event.addListener(@eventName, @handle, @, @options)
+		
 		#Some events don't fire without this, maybe there is a better solution... component.HasListeners.prototype[@eventName] = 1
 		component.on( @eventName, Ext.emptyFn, @, @options )
 		
