@@ -68,12 +68,15 @@ Ext.define('Deft.event.LiveEventBus', {
     }
     return null;
   },
-  register: function(component) {
+  register: function(component, selector) {
     var listener, _i, _len, _ref;
+    if (selector == null) {
+      selector = null;
+    }
     component.on('added', this.onComponentAdded, this);
     component.on('removed', this.onComponentRemoved, this);
-    if (this.listeners[null]) {
-      _ref = this.listeners[null];
+    if (this.listeners[selector]) {
+      _ref = this.listeners[selector];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         listener = _ref[_i];
         listener.register.apply(listener, arguments);

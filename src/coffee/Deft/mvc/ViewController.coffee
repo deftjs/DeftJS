@@ -137,9 +137,10 @@ Ext.define( 'Deft.mvc.ViewController',
 	observe: {}
 	
 	constructor: ( config = {} ) ->
+		@initConfig( config ) # Ensure any config values are set before creating observers.
 		if config.view
 			@controlView( config.view )
-		@initConfig( config ) # Ensure any config values are set before creating observers.
+		if Ext.Object.getSize( @observe ) > 0 then @createObservers()
 		return @
 	
 	###*
@@ -176,6 +177,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	* @private
 	###
 	onViewInitialize: ->
+		rendered = @getView().rendered or @getView().initialized
 		for id, config of @control
 			selector = null
 			if id isnt 'view'
@@ -189,12 +191,23 @@ Ext.define( 'Deft.mvc.ViewController',
 			if Ext.isObject( config.listeners )
 				listeners = config.listeners
 			else
-				listeners = config unless config.selector?
+			#TODO: config.live remains for backward compatibility
+				listeners = config unless config.selector? or config.live?
 				
 			@addComponentReference( id, selector )
 			@addComponentSelector( selector, listeners )
+			
+			if rendered is true
+				getterName = 'get' + Ext.String.capitalize( id )
+				elements = @[ getterName ]()
+				if ! Ext.isArray( elements )
+					elements = [ elements ]
+
+				for element in elements
+					if element isnt null
+						Deft.LiveEventBus.register( element, selector )
 		
-		if Ext.Object.getSize( @observe ) > 0 then @createObservers()
+		if Ext.Object.getSize( @observe ) > 0 then @createViewObservers()
 		
 		if Ext.getVersion( 'extjs' )?
 			# Ext JS
@@ -316,7 +329,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		return
 	
 	###*
-	* Get the component selectorcorresponding to the specified view-relative selector.
+	* Get the component selector corresponding to the specified view-relative selector.
 	###
 	getComponentSelector: ( selector ) ->
 		return @registeredComponentSelectors[ selector ]
@@ -327,7 +340,19 @@ Ext.define( 'Deft.mvc.ViewController',
 	createObservers: ->
 		@registeredObservers = {}
 		for target, events of @observe
-			@addObserver( target, events, @registeredObservers )
+			#TODO: find a better way...
+			if not(target is "view" or target.substring(0, 5) is "view.")
+				@addObserver( target, events, @registeredObservers )
+		return
+
+	###*
+	* @protected
+	###
+	createViewObservers: ->
+		for target, events of @observe
+			#TODO: find a better way...
+			if target is "view" or target.substring(0, 5) is "view."
+				@addObserver( target, events, @registeredObservers )
 		
 		return
 			

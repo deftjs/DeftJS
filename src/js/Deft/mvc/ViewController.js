@@ -136,10 +136,13 @@ Ext.define('Deft.mvc.ViewController', {
     if (config == null) {
       config = {};
     }
+    this.initConfig(config);
     if (config.view) {
       this.controlView(config.view);
     }
-    this.initConfig(config);
+    if (Ext.Object.getSize(this.observe) > 0) {
+      this.createObservers();
+    }
     return this;
   },
   /**
@@ -183,7 +186,8 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   onViewInitialize: function() {
-    var config, id, listeners, originalViewDestroyFunction, selector, self, _ref;
+    var config, element, elements, getterName, id, listeners, originalViewDestroyFunction, rendered, selector, self, _i, _len, _ref;
+    rendered = this.getView().rendered || this.getView().initialized;
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
@@ -201,15 +205,28 @@ Ext.define('Deft.mvc.ViewController', {
       if (Ext.isObject(config.listeners)) {
         listeners = config.listeners;
       } else {
-        if (config.selector == null) {
+        if (!((config.selector != null) || (config.live != null))) {
           listeners = config;
         }
       }
       this.addComponentReference(id, selector);
       this.addComponentSelector(selector, listeners);
+      if (rendered === true) {
+        getterName = 'get' + Ext.String.capitalize(id);
+        elements = this[getterName]();
+        if (!Ext.isArray(elements)) {
+          elements = [elements];
+        }
+        for (_i = 0, _len = elements.length; _i < _len; _i++) {
+          element = elements[_i];
+          if (element !== null) {
+            Deft.LiveEventBus.register(element, selector);
+          }
+        }
+      }
     }
     if (Ext.Object.getSize(this.observe) > 0) {
-      this.createObservers();
+      this.createViewObservers();
     }
     if (Ext.getVersion('extjs') != null) {
       this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
@@ -347,7 +364,7 @@ Ext.define('Deft.mvc.ViewController', {
     delete this.registeredComponentSelectors[selector];
   },
   /**
-  	* Get the component selectorcorresponding to the specified view-relative selector.
+  	* Get the component selector corresponding to the specified view-relative selector.
   */
 
   getComponentSelector: function(selector) {
@@ -363,7 +380,23 @@ Ext.define('Deft.mvc.ViewController', {
     _ref = this.observe;
     for (target in _ref) {
       events = _ref[target];
-      this.addObserver(target, events, this.registeredObservers);
+      if (!(target === "view" || target.substring(0, 5) === "view.")) {
+        this.addObserver(target, events, this.registeredObservers);
+      }
+    }
+  },
+  /**
+  	* @protected
+  */
+
+  createViewObservers: function() {
+    var events, target, _ref;
+    _ref = this.observe;
+    for (target in _ref) {
+      events = _ref[target];
+      if (target === "view" || target.substring(0, 5) === "view.") {
+        this.addObserver(target, events, this.registeredObservers);
+      }
     }
   },
   addObserver: function(target, events, observerContainer) {

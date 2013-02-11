@@ -15,7 +15,7 @@ Ext.define( 'Deft.core.Component',
           Deft.Injector.inject( config.inject, @, false )
           @$injected = true
         return @callParent( arguments )
-  	  	
+  
   setParent: ( newParent ) ->
     if Ext.getVersion( 'touch' )?
       oldParent = @getParent()

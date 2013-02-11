@@ -256,8 +256,15 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.event.LiveEventListener', {
   alternateClassName: ['Deft.LiveEventListener'],
   requires: ['Ext.ComponentQuery'],
+  mixins: {
+    observable: 'Ext.util.Observable'
+  },
   constructor: function(config) {
     Ext.apply(this, config);
+    if (this.options === null) {
+      this.options = {};
+    }
+    this.mixins.observable.constructor.call(this);
     this.components = [];
   },
   destroy: function() {
@@ -269,20 +276,56 @@ Ext.define('Deft.event.LiveEventListener', {
     }
     this.components = null;
   },
-  register: function(component, container, pos, eOpts) {
-    if (this.matches(component)) {
-      this.components.push(component);
-      component.on(this.eventName, this.fn, this.scope, this.options);
-      if (this.eventName === 'added' && this.selector !== null) {
-        this.fn.apply(this.scope || window, arguments);
+  overrideComponent: function(component) {
+    var oldFireEvent;
+    if (component.liveHandlers !== void 0) {
+      return;
+    }
+    component.liveHandlers = {};
+    oldFireEvent = component.fireEvent;
+    component.fireEvent = function(event) {
+      var handler, _i, _len, _ref;
+      if (oldFireEvent.apply(this, arguments) === false) {
+        return false;
       }
+      if (this.liveHandlers[event] === void 0) {
+        return;
+      }
+      _ref = this.liveHandlers[event];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        handler = _ref[_i];
+        if (handler.observable.matches(this) && handler.fire.apply(handler, Array.prototype.slice.call(arguments, 1)) === false) {
+          return false;
+        }
+      }
+    };
+  },
+  handle: function() {
+    return this.fn.apply(this.scope, arguments);
+  },
+  register: function(component, container, pos, eOpts) {
+    var event;
+    if (this.selector === null && component !== this.container) {
+      return;
+    }
+    this.components.push(component);
+    this.overrideComponent(component);
+    if (component.liveHandlers[this.eventName] === void 0) {
+      component.liveHandlers[this.eventName] = [];
+    }
+    event = new Ext.util.Event(this, this.eventName);
+    event.addListener(this.handle, this, this.options);
+    component.on(this.eventName, Ext.emptyFn, this, this.options);
+    component.liveHandlers[this.eventName].push(event);
+    if (this.eventName === 'added' && this.selector !== null) {
+      this.fn.apply(this.scope || window, arguments);
     }
   },
   unregister: function(component) {
     var index;
     index = Ext.Array.indexOf(this.components, component);
     if (index !== -1) {
-      component.un(this.eventName, this.fn, this.scope);
+      Ext.Array.remove(component.liveHandlers[this.eventName], this);
       Ext.Array.erase(this.components, index, 1);
     }
   },
@@ -365,12 +408,15 @@ Ext.define('Deft.event.LiveEventBus', {
     }
     return null;
   },
-  register: function(component) {
+  register: function(component, selector) {
     var listener, _i, _len, _ref;
+    if (selector == null) {
+      selector = null;
+    }
     component.on('added', this.onComponentAdded, this);
     component.on('removed', this.onComponentRemoved, this);
-    if (this.listeners[null]) {
-      _ref = this.listeners[null];
+    if (this.listeners[selector]) {
+      _ref = this.listeners[selector];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         listener = _ref[_i];
         listener.register.apply(listener, arguments);
@@ -1462,10 +1508,13 @@ Ext.define('Deft.mvc.ViewController', {
     if (config == null) {
       config = {};
     }
+    this.initConfig(config);
     if (config.view) {
       this.controlView(config.view);
     }
-    this.initConfig(config);
+    if (Ext.Object.getSize(this.observe) > 0) {
+      this.createObservers();
+    }
     return this;
   },
   /**
@@ -1509,7 +1558,8 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   onViewInitialize: function() {
-    var config, id, listeners, originalViewDestroyFunction, selector, self, _ref;
+    var config, element, elements, getterName, id, listeners, originalViewDestroyFunction, rendered, selector, self, _i, _len, _ref;
+    rendered = this.getView().rendered || this.getView().initialized;
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
@@ -1527,15 +1577,28 @@ Ext.define('Deft.mvc.ViewController', {
       if (Ext.isObject(config.listeners)) {
         listeners = config.listeners;
       } else {
-        if (config.selector == null) {
+        if (!((config.selector != null) || (config.live != null))) {
           listeners = config;
         }
       }
       this.addComponentReference(id, selector);
       this.addComponentSelector(selector, listeners);
+      if (rendered === true) {
+        getterName = 'get' + Ext.String.capitalize(id);
+        elements = this[getterName]();
+        if (!Ext.isArray(elements)) {
+          elements = [elements];
+        }
+        for (_i = 0, _len = elements.length; _i < _len; _i++) {
+          element = elements[_i];
+          if (element !== null) {
+            Deft.LiveEventBus.register(element, selector);
+          }
+        }
+      }
     }
     if (Ext.Object.getSize(this.observe) > 0) {
-      this.createObservers();
+      this.createViewObservers();
     }
     if (Ext.getVersion('extjs') != null) {
       this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
@@ -1673,7 +1736,7 @@ Ext.define('Deft.mvc.ViewController', {
     delete this.registeredComponentSelectors[selector];
   },
   /**
-  	* Get the component selectorcorresponding to the specified view-relative selector.
+  	* Get the component selector corresponding to the specified view-relative selector.
   */
 
   getComponentSelector: function(selector) {
@@ -1689,7 +1752,23 @@ Ext.define('Deft.mvc.ViewController', {
     _ref = this.observe;
     for (target in _ref) {
       events = _ref[target];
-      this.addObserver(target, events, this.registeredObservers);
+      if (!(target === "view" || target.substring(0, 5) === "view.")) {
+        this.addObserver(target, events, this.registeredObservers);
+      }
+    }
+  },
+  /**
+  	* @protected
+  */
+
+  createViewObservers: function() {
+    var events, target, _ref;
+    _ref = this.observe;
+    for (target in _ref) {
+      events = _ref[target];
+      if (target === "view" || target.substring(0, 5) === "view.") {
+        this.addObserver(target, events, this.registeredObservers);
+      }
     }
   },
   addObserver: function(target, events, observerContainer) {

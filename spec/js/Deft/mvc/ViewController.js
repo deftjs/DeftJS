@@ -238,22 +238,6 @@ describe('Deft.mvc.ViewController', function() {
       component = view.query('#example')[0];
       expect(viewController.getExample()).toBe(component);
     });
-    it('should throw an error when referencing a non-existent component implicitly by itemId', function() {
-      var view;
-      Ext.define('ExampleViewController', {
-        extend: 'Deft.mvc.ViewController',
-        control: {
-          doesntexist: true
-        }
-      });
-      view = Ext.create('ExampleView');
-      expect(function() {
-        var viewController;
-        return viewController = Ext.create('ExampleViewController', {
-          view: view
-        });
-      }).toThrow('Error locating component: no component(s) found matching \'#doesntexist\'.');
-    });
     it('should create a view controller getter for a view component referenced implicitly by selector', function() {
       var component, view, viewController;
       Ext.define('ExampleViewController', {
@@ -269,22 +253,6 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getView()).toBe(view);
       component = view.query('#example')[0];
       expect(viewController.getExample()).toBe(component);
-    });
-    it('should throw an error when referencing a non-existent component implicitly by selector', function() {
-      var view;
-      Ext.define('ExampleViewController', {
-        extend: 'Deft.mvc.ViewController',
-        control: {
-          example: '#doesntexist'
-        }
-      });
-      view = Ext.create('ExampleView');
-      expect(function() {
-        var viewController;
-        return viewController = Ext.create('ExampleViewController', {
-          view: view
-        });
-      }).toThrow('Error locating component: no component(s) found matching \'#doesntexist\'.');
     });
     it('should create a view controller getter for a view component referenced explicitly by selector', function() {
       var component, view, viewController;
@@ -331,24 +299,6 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getView()).toBe(view);
       components = view.query('example');
       expect(viewController.getExample()).toEqual(components);
-    });
-    it('should throw an error when referencing a non-existent component explicitly by selector', function() {
-      var view;
-      Ext.define('ExampleViewController', {
-        extend: 'Deft.mvc.ViewController',
-        control: {
-          example: {
-            selector: '#doesntexist'
-          }
-        }
-      });
-      view = Ext.create('ExampleView');
-      expect(function() {
-        var viewController;
-        return viewController = Ext.create('ExampleViewController', {
-          view: view
-        });
-      }).toThrow('Error locating component: no component(s) found matching \'#doesntexist\'.');
     });
     it('should create a view controller getter and attach view controller scoped event listeners to events for a view component referenced implicitly by itemId', function() {
       var component, view, viewController;
@@ -671,7 +621,6 @@ describe('Deft.mvc.ViewController', function() {
       viewController.onExampleComponentExampleEvent.reset();
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];
-        expect(hasListener(component, 'exampleevent')).toBe(false);
         component.fireExampleEvent('unexpected value');
         expect(viewController.onExampleComponentExampleEvent).not.toHaveBeenCalled();
       }
@@ -727,7 +676,6 @@ describe('Deft.mvc.ViewController', function() {
       eventListenerFunction.reset();
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];
-        expect(hasListener(component, 'exampleevent')).toBe(false);
         component.fireExampleEvent('unexpected value');
         expect(eventListenerFunction).not.toHaveBeenCalled();
       }
@@ -1110,7 +1058,6 @@ describe('Deft.mvc.ViewController', function() {
       viewController.onDynamicExampleComponentExampleEvent.reset();
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];
-        expect(hasListener(component, 'exampleevent')).toBe(false);
         component.fireExampleEvent('expected value');
         expect(viewController.onDynamicExampleComponentExampleEvent).not.toHaveBeenCalled();
       }
@@ -1173,7 +1120,6 @@ describe('Deft.mvc.ViewController', function() {
       eventListenerFunction.reset();
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];
-        expect(hasListener(component, 'exampleevent')).toBe(false);
         component.fireExampleEvent('expected value');
         expect(eventListenerFunction).not.toHaveBeenCalled();
       }

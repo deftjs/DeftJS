@@ -66,12 +66,11 @@ Ext.define( 'Deft.event.LiveEventBus',
 		return null
 	
 	# @private
-	register: ( component ) ->
+	register: ( component, selector = null ) ->
 		component.on( 'added', @onComponentAdded, @ )
 		component.on( 'removed', @onComponentRemoved, @ )
-		
-		if(@listeners[null])
-			for listener in @listeners[null]
+		if(@listeners[selector])
+			for listener in @listeners[selector]
 				listener.register.apply( listener, arguments )
 		return
 	
