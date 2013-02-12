@@ -11,7 +11,10 @@ describe( 'Deft.mvc.ViewController', ->
 	hasListener = ( observable, eventName ) ->
 		if Ext.getVersion( 'extjs' )?
 			# Ext JS's implementation of `Ext.util.Observable::hasListener()` returns inaccurate information after `Ext.util.Observable::clearListeners()` is called.
-			return observable.events[ eventName ].listeners.length isnt 0
+			if( observable.hasListener( eventName ) or observable.events[ eventName ]?.listeners?.length isnt 0 )
+				return true
+			else
+				return false
 		else
 			return observable.hasListener( eventName )
 
@@ -99,6 +102,8 @@ describe( 'Deft.mvc.ViewController', ->
 				extend: 'Ext.Component'
 				alias: 'widget.example'
 
+				renderTo: 'componentTestArea'
+
 				initComponent: ( config ) ->
 					@addEvents(
 						exampleevent: true
@@ -172,6 +177,38 @@ describe( 'Deft.mvc.ViewController', ->
 			view = Ext.create( 'ExampleView' )
 
 			viewController = Ext.create( 'ExampleViewController', 
+				view: view
+			)
+			expect( viewController.getView() ).toBe( view )
+
+			expect( hasListener( view, 'exampleevent' ) ).toBe( true )
+			view.fireExampleEvent( 'expected value' )
+			expect( viewController.onExampleViewExampleEvent ).toHaveMostRecentlyBeenCalledWithAtLeast( view, 'expected value', {} )
+			expect( viewController.onExampleViewExampleEvent.callCount ).toBe( 1 )
+
+			return
+		)
+
+		it( 'should attach view controller scoped event listeners to events for a component view', ->
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEvent'
+
+				onExampleViewExampleEvent: ( event ) ->
+					debugger
+					return
+			)
+
+			spyOn( ExampleViewController.prototype, 'onExampleViewExampleEvent' ).andCallFake( ->
+				expect( @ ).toBe( viewController )
+			)
+
+			view = Ext.create( 'ExampleComponent' )
+
+			viewController = Ext.create( 'ExampleViewController',
 				view: view
 			)
 			expect( viewController.getView() ).toBe( view )

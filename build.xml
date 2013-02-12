@@ -1,17 +1,17 @@
 <project name="DeftJS" default="build">
-	
+
 	<property file="build.properties" />
-	
+
 	<target name="clean" description="Remove artifacts in build directory from previous builds.">
 		<delete dir="build" />
 	</target>
-	
+
 	<target name="init" description="Initialize build directory.">
 		<mkdir dir="build" />
 	</target>
-	
+
 	<target name="build" depends="init" description="Builds debug and deployment versions of the framework.">
-		
+
 		<echo message="Compiling CoffeeScript..." />
 		<condition property="coffeeExecutable" value="coffee.cmd">
 			<os family="windows"/>
@@ -19,15 +19,15 @@
 		<condition property="coffeeExecutable" value="coffee">
 			<os family="unix"/>
 		</condition>
-		
+
 		<exec dir="src" executable="${coffeeExecutable}">
 			<arg line="-cb -o js coffee" />
 		</exec>
-		
+
 		<exec dir="spec" executable="${coffeeExecutable}">
 			<arg line="-cb -o js coffee" />
 		</exec>
-		
+
 		<echo message="Concatenating JavaScript files..." />
 		<concat destfile="build/${deftjs.filename.debug}" encoding="UTF-8" outputencoding="UTF-8">
 			<header>${deftjs.copyright.notice}</header>
@@ -58,7 +58,7 @@
 				<file name="Deft/promise/Chain.js" />
 			</filelist>
 		</concat>
-		
+
 		<echo message="Minifying concatenated JavaScript file..." />
 		<condition property="yuiCompressorExecutable" value="yuicompressor.cmd">
 			<os family="windows"/>
@@ -66,45 +66,45 @@
 		<condition property="yuiCompressorExecutable" value="yuicompressor">
 			<os family="unix"/>
 		</condition>
-		
+
 		<exec dir="build" executable="${yuiCompressorExecutable}">
 			<arg line="${deftjs.filename.debug} -o ${deftjs.filename.deploy} --charset utf-8" />
 		</exec>
-		
+
 		<!-- Convert EOL characters to match local OS conventions. -->
 		<fixcrlf srcdir="src/js" includes="**/*.js" />
 		<fixcrlf srcdir="build" includes="**/*.js" />
 
-        <!-- TODO: Once vetted, comment this in to trigger doc generation during build. For now, docs task can be run independently. -->
-        <!-- <antcall target="docs" /> -->
+		<!-- TODO: Once vetted, comment this in to trigger doc generation during build. For now, docs task can be run independently. -->
+		<!-- <antcall target="docs" /> -->
 
 		<echo message="Done." />
-		
+
 	</target>
 
-    <target name="docs" description="Generates JSDuck API documentation.">
+	<target name="docs" description="Generates JSDuck API documentation.">
 
-        <condition property="jsDuckExecutable" value="jsduck.exe">
-            <os family="windows"/>
-        </condition>
-        <!-- JSDuck on *nix requires a Ruby gem to be installed. See https://github.com/senchalabs/jsduck -->
-        <condition property="jsDuckExecutable" value="jsduck">
-            <os family="unix"/>
-        </condition>
+		<condition property="jsDuckExecutable" value="jsduck.exe">
+			<os family="windows"/>
+		</condition>
+		<!-- JSDuck on *nix requires a Ruby gem to be installed. See https://github.com/senchalabs/jsduck -->
+		<condition property="jsDuckExecutable" value="jsduck">
+			<os family="unix"/>
+		</condition>
 
-        <delete includeemptydirs="true" failonerror="false">
-            <fileset dir="./docs" />
-        </delete>
+		<delete includeemptydirs="true" failonerror="false">
+			<fileset dir="./docs" />
+		</delete>
 
-        <!-- For some reason, deleting and re-adding the docs folder often causes a write error. A slight delay usually avoids this. -->
-        <sleep seconds="2"/>
+		<!-- For some reason, deleting and re-adding the docs folder often causes a write error. A slight delay usually avoids this. -->
+		<sleep seconds="2"/>
 
-        <echo message="Generating API documentation..." />
-        <exec executable="tools/${jsDuckExecutable}" timeout="20000" failonerror="false">
-            <arg line='--warnings=-all --ext-namespaces=Ext --output=docs --ignore-global --title="DeftJS - API Documentation" src/js' />
-            <arg line='--head-html="&lt;style type=text/css&gt;.class-categories .section .left-column{float:left;width:350px;margin-left:20px} .class-categories .section .middle-column{float:left;width:350px} .class-categories .section .right-column{float:left;width:350px}&lt;/style&gt;"' />
-        </exec>
+		<echo message="Generating API documentation..." />
+		<exec executable="tools/${jsDuckExecutable}" timeout="20000" failonerror="false">
+			<arg line='--warnings=-all --ext-namespaces=Ext --output=docs --ignore-global --title="DeftJS - API Documentation" src/js' />
+			<arg line='--head-html="&lt;style type=text/css&gt;.class-categories .section .left-column{float:left;width:350px;margin-left:20px} .class-categories .section .middle-column{float:left;width:350px} .class-categories .section .right-column{float:left;width:350px}&lt;/style&gt;"' />
+		</exec>
 
-    </target>
+	</target>
 
 </project>
