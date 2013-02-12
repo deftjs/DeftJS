@@ -69,6 +69,8 @@ Ext.define( 'Deft.event.LiveEventBus',
 	register: ( component, selector = null ) ->
 		component.on( 'added', @onComponentAdded, @ )
 		component.on( 'removed', @onComponentRemoved, @ )
+		
+		# This registers the listeners for existing views (as they already fired the add event) 
 		if(@listeners[selector])
 			for listener in @listeners[selector]
 				listener.register.apply( listener, arguments )
@@ -79,6 +81,7 @@ Ext.define( 'Deft.event.LiveEventBus',
 		component.un( 'added', @onComponentAdded, @ )
 		component.un( 'removed', @onComponentRemoved, @ )
 		
+		# Eliminates the listener for the controlled view
 		if(@listeners[null])
 			for listener in @listeners[null]
 				listener.unregister( component )
@@ -89,7 +92,7 @@ Ext.define( 'Deft.event.LiveEventBus',
 		for selector, listeners of @listeners
 			if(selector isnt null and component.is(selector))
 				for listener in listeners
-					listener.register.apply( listener, arguments )
+					listener.register( component )
 		return
 	
 	# @private

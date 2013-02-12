@@ -57,7 +57,7 @@ Ext.define( 'Deft.event.LiveEventListener',
 		
 	
 	# Register a candidate component as a source of 'live' events (typically called when a component is added to a container).
-	register: ( component, container, pos, eOpts ) ->
+	register: ( component ) ->
 		if @selector is null and component isnt @container
 			return
 		
@@ -71,19 +71,17 @@ Ext.define( 'Deft.event.LiveEventListener',
 		event.observable = @
 		event.addListener(@eventName, @handle, @, @options)
 		
-		#Some events don't fire without this, maybe there is a better solution... component.HasListeners.prototype[@eventName] = 1
+		#TODO: Some events don't fire without this, maybe there is a better solution, but test are failing... component.HasListeners.prototype[@eventName] = 1
 		component.on( @eventName, Ext.emptyFn, @, @options )
 		
 		component.liveHandlers[@eventName].push( event )
-		
-		if( @eventName is 'added' and @selector isnt null )
-			@fn.apply( @scope or window, arguments )
 		return
 
 	# Unregister a candidate component as a source of 'live' events (typically called when a component is removed from a container).
 	unregister: ( component ) ->
 		index = Ext.Array.indexOf( @components, component )
 		if index isnt -1
+			component.un( @eventName, Ext.emptyFn, @, @options )
 			Ext.Array.remove( component.liveHandlers[ @eventName ], @ )
 			Ext.Array.erase( @components, index, 1 )
 		return

@@ -103,7 +103,7 @@ Ext.define('Deft.event.LiveEventBus', {
       if (selector !== null && component.is(selector)) {
         for (_i = 0, _len = listeners.length; _i < _len; _i++) {
           listener = listeners[_i];
-          listener.register.apply(listener, arguments);
+          listener.register(component);
         }
       }
     }

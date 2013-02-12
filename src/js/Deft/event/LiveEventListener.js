@@ -59,7 +59,7 @@ Ext.define('Deft.event.LiveEventListener', {
   handle: function() {
     return this.fn.apply(this.scope, arguments);
   },
-  register: function(component, container, pos, eOpts) {
+  register: function(component) {
     var event;
     if (this.selector === null && component !== this.container) {
       return;
@@ -74,14 +74,12 @@ Ext.define('Deft.event.LiveEventListener', {
     event.addListener(this.eventName, this.handle, this, this.options);
     component.on(this.eventName, Ext.emptyFn, this, this.options);
     component.liveHandlers[this.eventName].push(event);
-    if (this.eventName === 'added' && this.selector !== null) {
-      this.fn.apply(this.scope || window, arguments);
-    }
   },
   unregister: function(component) {
     var index;
     index = Ext.Array.indexOf(this.components, component);
     if (index !== -1) {
+      component.un(this.eventName, Ext.emptyFn, this, this.options);
       Ext.Array.remove(component.liveHandlers[this.eventName], this);
       Ext.Array.erase(this.components, index, 1);
     }
