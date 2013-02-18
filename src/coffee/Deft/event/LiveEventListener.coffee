@@ -28,7 +28,7 @@ Ext.define( 'Deft.event.LiveEventListener',
 			
 	destroy: ->
 		for component in @components
-			component.un( @eventName, @fn, @scope )
+			@unregister( component, true )
 		@components = null
 		return
 	
@@ -58,9 +58,10 @@ Ext.define( 'Deft.event.LiveEventListener',
 	
 	# Register a candidate component as a source of 'live' events (typically called when a component is added to a container).
 	register: ( component ) ->
-		if @selector is null and component isnt @container
+		index = Ext.Array.indexOf( @components, component )
+		if @selector is null and component isnt @container or index isnt -1
 			return
-		
+			
 		@components.push( component )
 		@overrideComponent( component )
 
@@ -78,12 +79,13 @@ Ext.define( 'Deft.event.LiveEventListener',
 		return
 
 	# Unregister a candidate component as a source of 'live' events (typically called when a component is removed from a container).
-	unregister: ( component ) ->
+	unregister: ( component, destroying = false ) ->
 		index = Ext.Array.indexOf( @components, component )
 		if index isnt -1
 			component.un( @eventName, Ext.emptyFn, @, @options )
 			Ext.Array.remove( component.liveHandlers[ @eventName ], @ )
-			Ext.Array.erase( @components, index, 1 )
+			if destroying is false
+				Ext.Array.erase( @components, index, 1 )
 		return
 	
 	# @private

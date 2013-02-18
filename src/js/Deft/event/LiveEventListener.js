@@ -28,7 +28,7 @@ Ext.define('Deft.event.LiveEventListener', {
     _ref = this.components;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       component = _ref[_i];
-      component.un(this.eventName, this.fn, this.scope);
+      this.unregister(component, true);
     }
     this.components = null;
   },
@@ -60,8 +60,9 @@ Ext.define('Deft.event.LiveEventListener', {
     return this.fn.apply(this.scope, arguments);
   },
   register: function(component) {
-    var event;
-    if (this.selector === null && component !== this.container) {
+    var event, index;
+    index = Ext.Array.indexOf(this.components, component);
+    if (this.selector === null && component !== this.container || index !== -1) {
       return;
     }
     this.components.push(component);
@@ -75,13 +76,18 @@ Ext.define('Deft.event.LiveEventListener', {
     component.on(this.eventName, Ext.emptyFn, this, this.options);
     component.liveHandlers[this.eventName].push(event);
   },
-  unregister: function(component) {
+  unregister: function(component, destroying) {
     var index;
+    if (destroying == null) {
+      destroying = false;
+    }
     index = Ext.Array.indexOf(this.components, component);
     if (index !== -1) {
       component.un(this.eventName, Ext.emptyFn, this, this.options);
       Ext.Array.remove(component.liveHandlers[this.eventName], this);
-      Ext.Array.erase(this.components, index, 1);
+      if (destroying === false) {
+        Ext.Array.erase(this.components, index, 1);
+      }
     }
   },
   matches: function(component) {
