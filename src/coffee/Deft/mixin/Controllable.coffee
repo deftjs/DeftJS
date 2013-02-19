@@ -42,10 +42,7 @@ Ext.define( 'Deft.mixin.Controllable',
           @getController = ->
             return controller
             
-        oldInitComponent = @initComponent
-        @initComponent = () ->
-        	controller.controlView( @ )
-        	oldInitComponent.apply( @, arguments )
+        controller.controlView( @ )
             
         @$controlled = true
             

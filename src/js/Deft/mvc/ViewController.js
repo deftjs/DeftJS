@@ -132,6 +132,40 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   observe: {},
+  /**
+  	* Controls automatically created and removed by this ViewController.
+  */
+
+  control: {},
+  /**
+  	* @private
+  */
+
+  $control: (function() {
+    var config;
+    if (Ext.getVersion('extjs')) {
+      return config = {
+        view: {
+          beforedestroy: {
+            fn: "onViewBeforeDestroy"
+          },
+          afterrender: {
+            single: true,
+            fn: "init"
+          }
+        }
+      };
+    } else {
+      return config = {
+        view: {
+          intiialize: {
+            single: true,
+            fn: "init"
+          }
+        }
+      };
+    }
+  })(),
   constructor: function(config) {
     if (config == null) {
       config = {};
@@ -172,6 +206,7 @@ Ext.define('Deft.mvc.ViewController', {
 
   destroy: function() {
     var id, selector;
+    this.cleanupDefaultViewListeners();
     for (id in this.registeredComponentReferences) {
       this.removeComponentReference(id);
     }
@@ -185,9 +220,36 @@ Ext.define('Deft.mvc.ViewController', {
   	* @private
   */
 
+  setupDefaultViewListeners: function() {
+    var componentSelector;
+    componentSelector = Ext.create('Deft.mvc.ComponentSelector', {
+      view: this.getView(),
+      selector: null,
+      listeners: this.$control.view,
+      scope: this,
+      live: true
+    });
+    this.registeredComponentSelectors['$default'] = componentSelector;
+    if (!this.control.view) {
+      return this.control.view = {};
+    }
+  },
+  /**
+  	* @private
+  */
+
+  cleanupDefaultViewListeners: function() {
+    this.registeredComponentSelectors['$default'].destroy();
+    return delete this.registeredComponentSelectors['$default'];
+  },
+  /**
+  	* @private
+  */
+
   onViewInitialize: function() {
     var config, element, elements, getterName, id, listeners, originalViewDestroyFunction, rendered, selector, self, _i, _len, _ref;
     rendered = this.getView().rendered || this.getView().initialized;
+    this.setupDefaultViewListeners();
     _ref = this.control;
     for (id in _ref) {
       config = _ref[id];
@@ -229,13 +291,8 @@ Ext.define('Deft.mvc.ViewController', {
       this.createViewObservers();
     }
     if (Ext.getVersion('extjs') != null) {
-      this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
       if (this.getView().rendered) {
         this.init();
-      } else {
-        this.getView().on('afterrender', this.init, this, {
-          single: true
-        });
       }
     } else {
       self = this;
@@ -247,10 +304,6 @@ Ext.define('Deft.mvc.ViewController', {
       };
       if (this.getView().initialized) {
         this.init();
-      } else {
-        this.getView().on('initialize', this.init, this, {
-          single: true
-        });
       }
     }
   },
@@ -259,11 +312,7 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   onViewBeforeDestroy: function() {
-    if (this.destroy()) {
-      this.getView().un('beforedestroy', this.onViewBeforeDestroy, this);
-      return true;
-    }
-    return false;
+    return this.destroy();
   },
   /**
   	* Add a component accessor method the ViewController for the specified view-relative selector.

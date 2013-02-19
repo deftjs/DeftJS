@@ -135,6 +135,31 @@ Ext.define( 'Deft.mvc.ViewController',
 	* Observers automatically created and removed by this ViewController.
 	###
 	observe: {}
+
+	###*
+	* Controls automatically created and removed by this ViewController.
+	###
+	control: {}
+	
+	###*
+	* @private
+	###
+	$control: do() ->
+		if Ext.getVersion( 'extjs' )
+			config =
+				view :
+					beforedestroy :
+						fn: "onViewBeforeDestroy"
+					afterrender:
+						single: true
+						fn: "init"
+		else
+			config =
+				view:
+					intiialize:
+						single: true,
+						fn: "init"
+	
 	
 	constructor: ( config = {} ) ->
 		@initConfig( config ) # Ensure any config values are set before creating observers.
@@ -166,6 +191,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	* Destroy the ViewController
 	###
 	destroy: ->
+		@cleanupDefaultViewListeners()
 		for id of @registeredComponentReferences
 			@removeComponentReference( id )
 		for selector of @registeredComponentSelectors
@@ -176,8 +202,34 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	* @private
 	###
+	setupDefaultViewListeners : ->
+		componentSelector = Ext.create( 'Deft.mvc.ComponentSelector',
+			view: @getView()
+			selector: null
+			listeners: @$control.view
+			scope: @
+			live: true
+		)
+		@registeredComponentSelectors[ '$default' ] = componentSelector
+		
+		if not @control.view
+			@control.view = {}
+					
+	###*
+	* @private
+	###
+	cleanupDefaultViewListeners : ->
+		@registeredComponentSelectors[ '$default' ].destroy()
+		delete @registeredComponentSelectors[ '$default' ]
+		
+	###*
+	* @private
+	###
 	onViewInitialize: ->
 		rendered = @getView().rendered or @getView().initialized
+		
+		@setupDefaultViewListeners()
+		
 		for id, config of @control
 			selector = null
 			if id isnt 'view'
@@ -211,11 +263,8 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		if Ext.getVersion( 'extjs' )?
 			# Ext JS
-			@getView().on( 'beforedestroy', @onViewBeforeDestroy, @ )
 			if @getView().rendered
 				@init()
-			else
-				@getView().on( 'afterrender', @init, @, single: true )
 		else
 			# Sencha Touch
 			self = this
@@ -226,8 +275,6 @@ Ext.define( 'Deft.mvc.ViewController',
 				return
 			if @getView().initialized
 				@init()
-			else
-				@getView().on( 'initialize', @init, @, single: true )
 		
 		return
 	
@@ -235,10 +282,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	* @private
 	###
 	onViewBeforeDestroy: ->
-		if @destroy()
-			@getView().un( 'beforedestroy', @onViewBeforeDestroy, @ )
-			return true
-		return false
+		return @destroy()
 	
 	###*
 	* Add a component accessor method the ViewController for the specified view-relative selector.

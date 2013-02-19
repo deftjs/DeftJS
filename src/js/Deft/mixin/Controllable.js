@@ -22,7 +22,7 @@ Ext.define('Deft.mixin.Controllable', {
   var callParentMethod, createControllerInterceptor;
   createControllerInterceptor = function(method) {
     return function(config) {
-      var controller, oldInitComponent;
+      var controller;
       if (config == null) {
         config = {};
       }
@@ -45,11 +45,7 @@ Ext.define('Deft.mixin.Controllable', {
           return controller;
         };
       }
-      oldInitComponent = this.initComponent;
-      this.initComponent = function() {
-        controller.controlView(this);
-        return oldInitComponent.apply(this, arguments);
-      };
+      controller.controlView(this);
       this.$controlled = true;
       this[method](arguments);
       return this;
