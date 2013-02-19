@@ -1807,6 +1807,63 @@ describe( 'Deft.ioc.Injector', ->
 				constructor: ( config ) ->
 					return @callParent( arguments )
 			)
+
+			Ext.define( 'InjectableCircularDependencyClass1',
+				extend: 'SimpleClass'
+				inject: [ "simpleClass", "injectableCircularDependencyClass2" ]
+
+				constructor: ( config ) ->
+					return @callParent( arguments )
+			)
+
+			Ext.define( 'InjectableCircularDependencyClass2',
+				extend: 'SimpleClass'
+				inject: [ "injectableCircularDependencyClass3", "simpleClass" ]
+
+				constructor: ( config ) ->
+					return @callParent( arguments )
+			)
+
+			Ext.define( 'InjectableCircularDependencyClass3Parent',
+				extend: 'SimpleClass'
+				inject: [ "injectableCircularDependencyClass1" ]
+
+				constructor: ( config ) ->
+					return @callParent( arguments )
+			)
+
+			Ext.define( 'InjectableCircularDependencyClass3',
+				extend: 'InjectableCircularDependencyClass3Parent'
+				inject: [ "simpleClass" ]
+
+				constructor: ( config ) ->
+					return @callParent( arguments )
+			)
+
+			it( 'should throw an error when injecting configured circular dependencies into properties for a given class instance', ->
+				Deft.Injector.configure(
+					simpleClass: "SimpleClass"
+					injectableCircularDependencyClass1: "InjectableCircularDependencyClass1"
+					injectableCircularDependencyClass2: "InjectableCircularDependencyClass2"
+					injectableCircularDependencyClass3: "InjectableCircularDependencyClass3"
+				)
+
+				Ext.define( 'InjectableTargetClassForCircularDependencies',
+					extend: 'SimpleClass'
+					mixins: [ 'Deft.mixin.Injectable' ]
+					inject: [ 'simpleClass', 'injectableCircularDependencyClass1' ]
+
+					constructor: ( config ) ->
+						return @callParent( arguments )
+				)
+
+				try
+					injectableSimpleClassForCircularDependencies = Ext.create( 'InjectableTargetClassForCircularDependencies' )
+				catch error
+					expect( error.message.lastIndexOf( "circular dependency" ) ).toBeGreaterThan( -1 )
+
+				return
+			)
 			
 			it( 'should inject configured dependencies into properties for a given class instance', ->
 				simpleClassInstance = Ext.create( 'SimpleClass' )

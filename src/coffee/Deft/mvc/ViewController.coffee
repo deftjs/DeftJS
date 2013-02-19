@@ -227,7 +227,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	###
 	onViewBeforeDestroy: ->
 		if @destroy()
-			@getView().un( 'beforedestroy', @onBeforeDestroy, @ )
+			@getView().un( 'beforedestroy', @onViewBeforeDestroy, @ )
 			return true
 		return false
 	
