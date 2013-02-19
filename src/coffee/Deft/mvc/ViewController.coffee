@@ -152,13 +152,13 @@ Ext.define( 'Deft.mvc.ViewController',
 						fn: "onViewBeforeDestroy"
 					afterrender:
 						single: true
-						fn: "init"
+						fn: "onViewInitialize"
 		else
 			config =
 				view:
 					intiialize:
 						single: true,
-						fn: "init"
+						fn: "onViewInitialize"
 	
 	
 	constructor: ( config = {} ) ->
@@ -176,7 +176,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			@setView( view )
 			@registeredComponentReferences = {}
 			@registeredComponentSelectors = {}
-			@onViewInitialize()
+			@initializeView()
 		else
 			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
 		return
@@ -214,6 +214,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		if not @control.view
 			@control.view = {}
+		return
 					
 	###*
 	* @private
@@ -221,11 +222,20 @@ Ext.define( 'Deft.mvc.ViewController',
 	cleanupDefaultViewListeners : ->
 		@registeredComponentSelectors[ '$default' ].destroy()
 		delete @registeredComponentSelectors[ '$default' ]
-		
+		return
+	
 	###*
 	* @private
 	###
 	onViewInitialize: ->
+		if Ext.Object.getSize( @observe ) > 0 then @createViewObservers()
+		init()
+		return
+			
+	###*
+	* @private
+	###
+	initializeView: ->
 		rendered = @getView().rendered or @getView().initialized
 		
 		@setupDefaultViewListeners()
@@ -259,12 +269,10 @@ Ext.define( 'Deft.mvc.ViewController',
 					if element isnt null
 						Deft.LiveEventBus.register( element, selector )
 		
-		if Ext.Object.getSize( @observe ) > 0 then @createViewObservers()
-		
 		if Ext.getVersion( 'extjs' )?
 			# Ext JS
 			if @getView().rendered
-				@init()
+				@onViewInitialize()
 		else
 			# Sencha Touch
 			self = this
@@ -274,7 +282,7 @@ Ext.define( 'Deft.mvc.ViewController',
 					originalViewDestroyFunction.call( @ )
 				return
 			if @getView().initialized
-				@init()
+				@onViewInitialize()
 		
 		return
 	

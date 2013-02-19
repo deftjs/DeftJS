@@ -1543,7 +1543,7 @@ Ext.define('Deft.mvc.ViewController', {
           },
           afterrender: {
             single: true,
-            fn: "init"
+            fn: "onViewInitialize"
           }
         }
       };
@@ -1552,7 +1552,7 @@ Ext.define('Deft.mvc.ViewController', {
         view: {
           intiialize: {
             single: true,
-            fn: "init"
+            fn: "onViewInitialize"
           }
         }
       };
@@ -1580,7 +1580,7 @@ Ext.define('Deft.mvc.ViewController', {
       this.setView(view);
       this.registeredComponentReferences = {};
       this.registeredComponentSelectors = {};
-      this.onViewInitialize();
+      this.initializeView();
     } else {
       Ext.Error.raise({
         msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
@@ -1623,7 +1623,7 @@ Ext.define('Deft.mvc.ViewController', {
     });
     this.registeredComponentSelectors['$default'] = componentSelector;
     if (!this.control.view) {
-      return this.control.view = {};
+      this.control.view = {};
     }
   },
   /**
@@ -1632,13 +1632,23 @@ Ext.define('Deft.mvc.ViewController', {
 
   cleanupDefaultViewListeners: function() {
     this.registeredComponentSelectors['$default'].destroy();
-    return delete this.registeredComponentSelectors['$default'];
+    delete this.registeredComponentSelectors['$default'];
   },
   /**
   	* @private
   */
 
   onViewInitialize: function() {
+    if (Ext.Object.getSize(this.observe) > 0) {
+      this.createViewObservers();
+    }
+    init();
+  },
+  /**
+  	* @private
+  */
+
+  initializeView: function() {
     var config, element, elements, getterName, id, listeners, originalViewDestroyFunction, rendered, selector, self, _i, _len, _ref;
     rendered = this.getView().rendered || this.getView().initialized;
     this.setupDefaultViewListeners();
@@ -1679,12 +1689,9 @@ Ext.define('Deft.mvc.ViewController', {
         }
       }
     }
-    if (Ext.Object.getSize(this.observe) > 0) {
-      this.createViewObservers();
-    }
     if (Ext.getVersion('extjs') != null) {
       if (this.getView().rendered) {
-        this.init();
+        this.onViewInitialize();
       }
     } else {
       self = this;
@@ -1695,7 +1702,7 @@ Ext.define('Deft.mvc.ViewController', {
         }
       };
       if (this.getView().initialized) {
-        this.init();
+        this.onViewInitialize();
       }
     }
   },
