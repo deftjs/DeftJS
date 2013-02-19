@@ -5,7 +5,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 ###*
 * A mixin that marks a class as participating in dependency injection. Used in conjunction with Deft.ioc.Injector.
-* @deprecated 0.8 Injections are now done automatically using class preprocessors.
+* @deprecated 0.8 Deft.mixin.Injectable has been deprecated and can now be omitted - simply use the \'inject\' class annotation on its own.
 ###
 Ext.define( 'Deft.mixin.Injectable',
 	requires: [ 
