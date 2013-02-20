@@ -229,7 +229,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	###
 	onViewInitialize: ->
 		if Ext.Object.getSize( @observe ) > 0 then @createViewObservers()
-		init()
+		@init()
 		return
 			
 	###*

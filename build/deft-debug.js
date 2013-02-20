@@ -1642,7 +1642,7 @@ Ext.define('Deft.mvc.ViewController', {
     if (Ext.Object.getSize(this.observe) > 0) {
       this.createViewObservers();
     }
-    init();
+    this.init();
   },
   /**
   	* @private
