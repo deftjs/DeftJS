@@ -653,6 +653,7 @@ describe('Deft.mvc.ViewController', function() {
       viewController.onExampleComponentExampleEvent.reset();
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];
+        expect(hasListener(component, 'exampleevent')).toBe(false);
         component.fireExampleEvent('unexpected value');
         expect(viewController.onExampleComponentExampleEvent).not.toHaveBeenCalled();
       }
@@ -708,6 +709,7 @@ describe('Deft.mvc.ViewController', function() {
       eventListenerFunction.reset();
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];
+        expect(hasListener(component, 'exampleevent')).toBe(false);
         component.fireExampleEvent('unexpected value');
         expect(eventListenerFunction).not.toHaveBeenCalled();
       }
@@ -1090,6 +1092,7 @@ describe('Deft.mvc.ViewController', function() {
       viewController.onDynamicExampleComponentExampleEvent.reset();
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];
+        expect(hasListener(component, 'exampleevent')).toBe(false);
         component.fireExampleEvent('expected value');
         expect(viewController.onDynamicExampleComponentExampleEvent).not.toHaveBeenCalled();
       }
@@ -1152,6 +1155,7 @@ describe('Deft.mvc.ViewController', function() {
       eventListenerFunction.reset();
       for (_j = 0, _len1 = components.length; _j < _len1; _j++) {
         component = components[_j];
+        expect(hasListener(component, 'exampleevent')).toBe(false);
         component.fireExampleEvent('expected value');
         expect(eventListenerFunction).not.toHaveBeenCalled();
       }

@@ -158,7 +158,7 @@ Ext.define('Deft.mvc.ViewController', {
     } else {
       return config = {
         view: {
-          intiialize: {
+          initialize: {
             single: true,
             fn: "onViewInitialize"
           }
@@ -250,7 +250,6 @@ Ext.define('Deft.mvc.ViewController', {
     if (Ext.Object.getSize(this.observe) > 0) {
       this.createViewObservers();
     }
-    init();
   },
   /**
   	* @private

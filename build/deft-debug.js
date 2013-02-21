@@ -1550,7 +1550,7 @@ Ext.define('Deft.mvc.ViewController', {
     } else {
       return config = {
         view: {
-          intiialize: {
+          initialize: {
             single: true,
             fn: "onViewInitialize"
           }
@@ -1642,7 +1642,6 @@ Ext.define('Deft.mvc.ViewController', {
     if (Ext.Object.getSize(this.observe) > 0) {
       this.createViewObservers();
     }
-    init();
   },
   /**
   	* @private
@@ -1935,7 +1934,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.mixin.Controllable', {
   requires: ['Ext.Component', 'Deft.core.Class', 'Deft.log.Logger'],
   /**
-  @private
+  	@private
   */
 
   onClassMixedIn: function(targetClass) {
