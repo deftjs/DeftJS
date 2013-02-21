@@ -14,6 +14,9 @@ Ext.define('Deft.mvc.ComponentSelector', {
   constructor: function(config) {
     var eventName, fn, listener, options, scope, _ref;
     Ext.apply(this, config);
+    if (!this.live) {
+      this.components = this.selector != null ? Ext.ComponentQuery.query(this.selector, this.view) : [this.view];
+    }
     this.selectorListeners = [];
     if (Ext.isObject(this.listeners)) {
       _ref = this.listeners;
@@ -66,7 +69,7 @@ Ext.define('Deft.mvc.ComponentSelector', {
         msg: "Error adding '" + eventName + "' listener: an existing listener for the specified function was already registered for '" + this.selector + "."
       });
     }
-    Deft.Logger.log("Adding '" + eventName + "' listener to '" + (this.selector || 'view') + "'.");
+    Deft.Logger.log("Adding '" + eventName + "' listener to '" + this.selector + "'.");
     selectorListener = Ext.create('Deft.mvc.ComponentSelectorListener', {
       componentSelector: this,
       eventName: eventName,

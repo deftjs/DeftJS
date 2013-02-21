@@ -45,9 +45,9 @@ Ext.define('Deft.mixin.Controllable', {
           return controller;
         };
       }
-      controller.controlView(this);
       this.$controlled = true;
       this[method](arguments);
+      controller.controlView(this);
       return this;
     };
   };

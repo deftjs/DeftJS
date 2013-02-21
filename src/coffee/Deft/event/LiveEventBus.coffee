@@ -17,31 +17,33 @@ Ext.define( 'Deft.event.LiveEventBus',
 	singleton: true
 	
 	constructor: ->
-		@listeners = []
+		@listeners = {}
 		return
 		
 	destroy: ->
-		for listener in @listeners
-			listener.destroy()
+		for selector, listeners of @listeners
+			for listener in listeners
+				listener.destroy()
 		@listeners = null
 		return
 	
 	addListener: ( container, selector, eventName, fn, scope, options ) ->
 		listener = Ext.create( 'Deft.event.LiveEventListener', 
+			selector : selector
 			container: container
-			selector: selector
 			eventName: eventName
 			fn: fn
 			scope: scope
 			options: options
 		)
-		@listeners.push( listener )
+		@listeners[selector] = @listeners[selector] || []
+		@listeners[selector].push( listener )
 		return
 	
 	removeListener: ( container, selector, eventName, fn, scope ) ->
 		listener = @findListener( container, selector, eventName, fn, scope )
 		if listener?
-			Ext.Array.remove( @listeners, listener )
+			Ext.Array.remove( @listeners[selector], listener )
 			listener.destroy()
 		return
 	
@@ -53,66 +55,55 @@ Ext.define( 'Deft.event.LiveEventBus',
 	
 	# @private
 	findListener: ( container, selector, eventName, fn, scope ) ->
-		for listener in @listeners
+		if @listeners[selector] is undefined
+			return null
+			
+		for listener in @listeners[selector]
 			# NOTE: Evaluating here rather than refactoring as a `Deft.event.LiveEventListener` method in order to reduce the number of function calls executed (for performance reasons).
 			# TODO: Optimize via an index by selector, eventName (and maybe container id?).
-			if listener.container is container and listener.selector is selector and listener.eventName is eventName and listener.fn is fn and listener.scope is scope
+			if listener.container is container and listener.eventName is eventName and listener.fn is fn and listener.scope is scope
 				return listener
 		return null
 	
 	# @private
-	register: ( component ) ->
+	register: ( component, selector = null ) ->
 		component.on( 'added', @onComponentAdded, @ )
 		component.on( 'removed', @onComponentRemoved, @ )
+		
+		# This registers the listeners for existing views (as they already fired the add event) 
+		if(@listeners[selector])
+			for listener in @listeners[selector]
+				listener.register.apply( listener, arguments )
 		return
 	
 	# @private
 	unregister: ( component ) ->
 		component.un( 'added', @onComponentAdded, @ )
 		component.un( 'removed', @onComponentRemoved, @ )
+		
+		# Eliminates the listener for the controlled view
+		if(@listeners[null])
+			for listener in @listeners[null]
+				listener.unregister( component )
 		return
 	
 	# @private
-	onComponentAdded: ( component, container, eOpts ) ->
-		for listener in @listeners
-			listener.register( component )
+	onComponentAdded: ( component, container, pos, eOpts ) ->
+		for selector, listeners of @listeners
+			if(selector isnt null and component.is(selector))
+				for listener in listeners
+					listener.register( component )
 		return
 	
 	# @private
 	onComponentRemoved: ( component, container, eOpts ) ->
-		for listener in @listeners
-			listener.unregister( component )
+		for selector, listeners of @listeners
+			if(selector isnt null and component.is(selector))
+				for listener in listeners
+					listener.unregister( component )
 		return
 ,
 	->
-		if Ext.getVersion( 'touch' )?
-			Ext.define( 'Deft.Component',
-				override: 'Ext.Component'
-				
-				setParent: ( newParent ) ->
-					oldParent = @getParent()
-					
-					result = @callParent( arguments )
-					
-					if oldParent is null and newParent isnt null
-						@fireEvent( 'added', @, newParent )
-					else if oldParent isnt null and newParent isnt null
-						@fireEvent( 'removed', @, oldParent )
-						@fireEvent( 'added', @, newParent )
-					else if oldParent isnt null and newParent is null
-						@fireEvent( 'removed', @, oldParent )
-					
-					return result
-				
-				isDescendantOf: ( container ) ->
-					ancestor = @getParent()
-					while ancestor?
-						if ancestor is container
-							return true
-						ancestor = ancestor.getParent()
-					return false
-			)
-		
 		Ext.Function.interceptAfter(
 			Ext.ComponentManager,
 			'register',
