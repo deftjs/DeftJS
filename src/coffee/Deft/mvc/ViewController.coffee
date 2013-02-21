@@ -156,7 +156,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		else
 			config =
 				view:
-					intiialize:
+					initialize:
 						single: true,
 						fn: "onViewInitialize"
 	
@@ -229,7 +229,6 @@ Ext.define( 'Deft.mvc.ViewController',
 	###
 	onViewInitialize: ->
 		if Ext.Object.getSize( @observe ) > 0 then @createViewObservers()
-		init()
 		return
 			
 	###*
