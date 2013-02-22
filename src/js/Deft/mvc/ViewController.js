@@ -247,6 +247,7 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   onViewInitialize: function() {
+    this.init();
     if (Ext.Object.getSize(this.observe) > 0) {
       this.createViewObservers();
     }
