@@ -720,10 +720,10 @@ Ext.define('Deft.ioc.Injector', {
       identifier = value;
       resolvedValue = this.resolve(identifier, targetInstance);
       if (targetProperty in targetInstance.config) {
-        Deft.Logger.log("Injecting '" + identifier + "' into '" + targetProperty + "' config.");
+        Deft.Logger.log("Injecting '" + identifier + "' into '" + targetClass + "." + targetProperty + "' config.");
         injectConfig[targetProperty] = resolvedValue;
       } else {
-        Deft.Logger.log("Injecting '" + identifier + "' into '" + targetProperty + "' property.");
+        Deft.Logger.log("Injecting '" + identifier + "' into '" + targetClass + "." + targetProperty + "' property.");
         targetInstance[targetProperty] = resolvedValue;
       }
     }, this);
