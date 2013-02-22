@@ -6,7 +6,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 /**
 * A mixin that creates and attaches the specified view controller(s) to the target view. Used in conjunction with Deft.mvc.ViewController.
-* @deprecated 0.8 ViewController attachemnt is now done automatically using class preprocessors.
+* @deprecated 0.8 Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.
 */
 
 Ext.define('Deft.mixin.Controllable', {

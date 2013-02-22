@@ -3,7 +3,6 @@ Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
-
 ###*
 * Common utility functions used by DeftJS.
 ###
@@ -29,8 +28,8 @@ Ext.define( 'Deft.util.Function',
 				key = if Ext.isFunction( hashFn ) then hashFn.apply( scope, arguments ) else value
 				memo[ key ] = fn.apply( scope, arguments ) unless key of memo
 				return memo[ key ]
-
-    ###*
+		
+		###*
 		* Retrieves the value for the specified object key and removes the pair from the object.
 		###
 		extract: ( object, key ) ->
