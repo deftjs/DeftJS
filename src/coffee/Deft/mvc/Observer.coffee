@@ -97,6 +97,7 @@ Ext.define( 'Deft.mvc.Observer',
 		host = config?.host
 		target = config?.target
 		events = config?.events
+		@scope = config?.scope
 
 		if host and target and ( @isPropertyChain( target ) or @isTargetObservable( host, target ) )
 			for eventName, handlerArray of events
@@ -118,7 +119,7 @@ Ext.define( 'Deft.mvc.Observer',
 
 		for handler in handlerArray
 			# Default scope is the object hosting the Observer.
-			scope = host
+			scope = @scope || host
 
 			# Default options is null
 			options = null
@@ -194,7 +195,7 @@ Ext.define( 'Deft.mvc.Observer',
 	* If necessary, recurse down a property chain to locate the final target object for the event listener.
 	###
 	locateReferences: ( host, target, handler ) ->
-		handlerHost = host
+		handlerHost = @scope || host
 
 		if @isPropertyChain( target )
 			propertyChain = @parsePropertyChain( host, target )

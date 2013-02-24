@@ -163,6 +163,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	
 	constructor: ( config = {} ) ->
 		@initConfig( config ) # Ensure any config values are set before creating observers.
+		@registeredObservers = {}
 		if config.view
 			@controlView( config.view )
 		if Ext.Object.getSize( @observe ) > 0 then @createObservers()
@@ -176,6 +177,9 @@ Ext.define( 'Deft.mvc.ViewController',
 			@setView( view )
 			@registeredComponentReferences = {}
 			@registeredComponentSelectors = {}
+			@initComponentSelectors = {}
+			@observeComponentSelectors = {}
+			
 			@initializeView()
 		else
 			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
@@ -192,8 +196,14 @@ Ext.define( 'Deft.mvc.ViewController',
 	###
 	destroy: ->
 		@cleanupDefaultViewListeners()
+		
+		for selector, listener of @observeComponentSelectors
+			listener.destroy()
+			delete @observeComponentSelectors[ selector ]
+			
 		for id of @registeredComponentReferences
 			@removeComponentReference( id )
+			
 		for selector of @registeredComponentSelectors
 			@removeComponentSelector( selector )
 		@removeObservers()
@@ -210,7 +220,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			scope: @
 			live: true
 		)
-		@registeredComponentSelectors[ '$default' ] = componentSelector
+		@initComponentSelectors[ null ] = componentSelector
 		
 		if not @control.view
 			@control.view = {}
@@ -219,9 +229,9 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	* @private
 	###
-	cleanupDefaultViewListeners : ->
-		@registeredComponentSelectors[ '$default' ].destroy()
-		delete @registeredComponentSelectors[ '$default' ]
+	cleanupDefaultViewListeners: ->
+		@initComponentSelectors[ null ].destroy()
+		delete @initComponentSelectors[ null ]
 		return
 	
 	###*
@@ -229,9 +239,54 @@ Ext.define( 'Deft.mvc.ViewController',
 	###
 	onViewInitialize: ->
 		@init()
-		if Ext.Object.getSize( @observe ) > 0 then @createViewObservers()
 		return
+	
+	###*
+	* @private
+	###
+	createViewObservers: ( view, eOpts ) ->
+		view.$observers = {}
+		@createObservers( eOpts.observe, view.$observers, view )
 			
+	###*
+	* @private
+	###
+	removeViewObservers: ( view ) ->
+		@removeObservers( view.$observers )
+
+	###*
+	* @private
+	###
+	addComponentObserver : ( selector, observe ) ->
+		if Ext.getVersion( 'extjs' )
+			componentSelector = Ext.create( 'Deft.mvc.ComponentSelector',
+				view: @getView()
+				selector: selector
+				listeners:
+					afterrender:
+						fn: 'createViewObservers'
+						observe : observe
+					removed : 
+						fn: 'removeViewObservers'
+				scope: @
+				live: true
+			)
+		else
+			componentSelector = Ext.create( 'Deft.mvc.ComponentSelector',
+				view: @getView()
+				selector: selector
+				listeners:
+					initialize:
+						fn: 'createViewObservers'
+						observe : observe
+					removed : 
+						fn: 'removeViewObservers'
+				scope: @
+				live: true
+			)
+			
+		@observeComponentSelectors[ selector ] = componentSelector
+
 	###*
 	* @private
 	###
@@ -249,15 +304,19 @@ Ext.define( 'Deft.mvc.ViewController',
 					selector = config.selector
 				else
 					selector = '#' + id
+
 			listeners = null
 			if Ext.isObject( config.listeners )
 				listeners = config.listeners
 			else
 			#TODO: config.live remains for backward compatibility
-				listeners = config unless config.selector? or config.live?
+				listeners = config unless config.selector? or config.live? or config.observe?
 				
 			@addComponentReference( id, selector )
 			@addComponentSelector( selector, listeners )
+			
+			if Ext.isObject( config.observe )
+				@addComponentObserver( selector, config.observe )
 			
 			if rendered is true
 				getterName = 'get' + Ext.String.capitalize( id )
@@ -278,9 +337,10 @@ Ext.define( 'Deft.mvc.ViewController',
 			self = this
 			originalViewDestroyFunction = @getView().destroy
 			@getView().destroy = ->
-				if self.destroy()
-					originalViewDestroyFunction.call( @ )
-				return
+				if self.destroy() isnt false
+					return originalViewDestroyFunction.call( @ )
+				return false
+				
 			if @getView().initialized
 				@onViewInitialize()
 		
@@ -389,40 +449,30 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	* @protected
 	###
-	createObservers: ->
-		@registeredObservers = {}
-		for target, events of @observe
-			#TODO: find a better way...
-			if not(target is "view" or target.substring(0, 5) is "view.")
-				@addObserver( target, events, @registeredObservers )
+	createObservers: ( observe = @observe, observerContainer = @registeredObservers, host = @ )->
+		for target, events of observe
+			@addObserver( target, events, observerContainer, host )
 		return
 
 	###*
 	* @protected
 	###
-	createViewObservers: ->
-		for target, events of @observe
-			#TODO: find a better way...
-			if target is "view" or target.substring(0, 5) is "view."
-				@addObserver( target, events, @registeredObservers )
-		
-		return
-			
-	addObserver: ( target, events, observerContainer = @registeredObservers ) ->
+	addObserver: ( target, events, observerContainer = @registeredObservers, host = @ ) ->
 		observer = Ext.create( 'Deft.mvc.Observer',
-			host: @
+			host: host
 			target: target
 			events: events
+			scope: @
 		)
 		observerContainer[ target ] = observer
 	
 	###*
 	* @protected
 	###
-	removeObservers: ->
-		for target, observer of @registeredObservers
+	removeObservers: ( observerContainer = @registeredObservers )->
+		for target, observer of observerContainer
 			observer.destroy()
-			delete @registeredObservers[ target ]
+			delete observerContainer[ target ]
 			
 		return
 , ->

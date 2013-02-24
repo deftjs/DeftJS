@@ -113,6 +113,7 @@ Ext.define('Deft.mvc.Observer', {
     host = config != null ? config.host : void 0;
     target = config != null ? config.target : void 0;
     events = config != null ? config.events : void 0;
+    this.scope = config != null ? config.scope : void 0;
     if (host && target && (this.isPropertyChain(target) || this.isTargetObservable(host, target))) {
       for (eventName in events) {
         handlerArray = events[eventName];
@@ -137,7 +138,7 @@ Ext.define('Deft.mvc.Observer', {
     }
     for (_i = 0, _len = handlerArray.length; _i < _len; _i++) {
       handler = handlerArray[_i];
-      scope = host;
+      scope = this.scope || host;
       options = null;
       if (Ext.isObject(handler)) {
         options = Ext.clone(handler);
@@ -234,7 +235,7 @@ Ext.define('Deft.mvc.Observer', {
 
   locateReferences: function(host, target, handler) {
     var handlerHost, propertyChain;
-    handlerHost = host;
+    handlerHost = this.scope || host;
     if (this.isPropertyChain(target)) {
       propertyChain = this.parsePropertyChain(host, target);
       if (!propertyChain) {
