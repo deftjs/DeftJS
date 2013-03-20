@@ -39,12 +39,12 @@ Ext.define('Deft.util.Function', {
           memo[key] = fn.apply(scope, arguments);
         }
         return memo[key];
-        /**
-        		* Retrieves the value for the specified object key and removes the pair from the object.
-        */
-
       };
     },
+    /**
+    		* Retrieves the value for the specified object key and removes the pair from the object.
+    */
+
     extract: function(object, key) {
       var value;
       value = object[key];

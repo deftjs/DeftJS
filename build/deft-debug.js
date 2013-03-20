@@ -81,7 +81,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-* Logger used by DeftJS. Output is shown in the console when using ext-dev/ext-all-dev.
+* Logger used by DeftJS. Output is displayed in the console when using ext-dev/ext-all-dev.
 * @private
 */
 
@@ -172,12 +172,12 @@ Ext.define('Deft.util.Function', {
           memo[key] = fn.apply(scope, arguments);
         }
         return memo[key];
-        /**
-        		* Retrieves the value for the specified object key and removes the pair from the object.
-        */
-
       };
     },
+    /**
+    		* Retrieves the value for the specified object key and removes the pair from the object.
+    */
+
     extract: function(object, key) {
       var value;
       value = object[key];
@@ -777,7 +777,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 /**
 * A mixin that marks a class as participating in dependency injection. Used in conjunction with Deft.ioc.Injector.
-* @deprecated 0.8 Injections are now done automatically using class preprocessors.
+* @deprecated 0.8 Deft.mixin.Injectable has been deprecated and can now be omitted - simply use the \'inject\' class annotation on its own.
 */
 
 Ext.define('Deft.mixin.Injectable', {
@@ -1688,7 +1688,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-* A lightweight Application template class.
+* A lightweight Application template class for use with Ext JS.
 */
 
 Ext.define('Deft.mvc.Application', {
@@ -1726,7 +1726,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 /**
 * A mixin that creates and attaches the specified view controller(s) to the target view. Used in conjunction with Deft.mvc.ViewController.
-* @deprecated 0.8 ViewController attachemnt is now done automatically using class preprocessors.
+* @deprecated 0.8 Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.
 */
 
 Ext.define('Deft.mixin.Controllable', {

@@ -5,7 +5,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-* Logger used by DeftJS. Output is shown in the console when using ext-dev/ext-all-dev.
+* Logger used by DeftJS. Output is displayed in the console when using ext-dev/ext-all-dev.
 * @private
 */
 

@@ -5,7 +5,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-* A lightweight Application template class.
+* A lightweight Application template class for use with Ext JS.
 */
 
 Ext.define('Deft.mvc.Application', {

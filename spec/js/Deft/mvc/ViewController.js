@@ -146,7 +146,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getView()).toBe(view);
       expect(hasListener(view, 'exampleevent')).toBe(true);
       view.fireExampleEvent('expected value');
-      expect(viewController.onExampleViewExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(view, 'expected value', {});
+      expect(viewController.onExampleViewExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(view, 'expected value');
       expect(viewController.onExampleViewExampleEvent.callCount).toBe(1);
     });
     it('should attach view controller scoped event listeners to events for a component view', function() {
@@ -172,7 +172,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getView()).toBe(view);
       expect(hasListener(view, 'exampleevent')).toBe(true);
       view.fireExampleEvent('expected value');
-      expect(viewController.onExampleViewExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(view, 'expected value', {});
+      expect(viewController.onExampleViewExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(view, 'expected value');
       expect(viewController.onExampleViewExampleEvent.callCount).toBe(1);
     });
     it('should attach view controller scoped event listeners (with options) to events for the view', function() {
@@ -405,7 +405,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getExample()).toBe(component);
       expect(hasListener(component, 'exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      expect(viewController.onExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value', {});
+      expect(viewController.onExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value');
       expect(viewController.onExampleComponentExampleEvent.callCount).toBe(1);
     });
     it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for a view component referenced implicitly by itemId', function() {
@@ -517,7 +517,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getExample()).toBe(component);
       expect(hasListener(component, 'exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      expect(viewController.onExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value', {});
+      expect(viewController.onExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value');
       expect(viewController.onExampleComponentExampleEvent.callCount).toBe(1);
     });
     it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for a view component referenced by selector', function() {
@@ -650,7 +650,7 @@ describe('Deft.mvc.ViewController', function() {
         component = components[_i];
         expect(hasListener(component, 'exampleevent')).toBe(true);
         component.fireExampleEvent('expected value');
-        expect(viewController.onExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value', {});
+        expect(viewController.onExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value');
       }
       expect(viewController.onExampleComponentExampleEvent.callCount).toBe(3);
     });
@@ -840,7 +840,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getDynamicExample()).toBe(component);
       expect(hasListener(component, 'exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      expect(viewController.onDynamicExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value', {});
+      expect(viewController.onDynamicExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value');
       expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(1);
     });
     it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for a dynamic view component referenced by a live selector implicitly by itemId', function() {
@@ -953,7 +953,7 @@ describe('Deft.mvc.ViewController', function() {
       expect(viewController.getDynamicExample()).toBe(component);
       expect(hasListener(component, 'exampleevent')).toBe(true);
       component.fireExampleEvent('expected value');
-      expect(viewController.onDynamicExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value', {});
+      expect(viewController.onDynamicExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value');
       expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(1);
     });
     it('should create a view controller getter and attach view controller scoped event listeners (with options) to events for a dynamic view component referenced by a live selector', function() {
@@ -1082,7 +1082,7 @@ describe('Deft.mvc.ViewController', function() {
         component = components[_i];
         expect(hasListener(component, 'exampleevent')).toBe(true);
         component.fireExampleEvent('expected value');
-        expect(viewController.onDynamicExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value', {});
+        expect(viewController.onDynamicExampleComponentExampleEvent).toHaveMostRecentlyBeenCalledWithAtLeast(component, 'expected value');
       }
       expect(viewController.onDynamicExampleComponentExampleEvent.callCount).toBe(3);
     });

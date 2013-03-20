@@ -30,12 +30,18 @@
 
 			var platform = getUrlVars()["platform"];
 			var version = getUrlVars()["version"];
+			var newcdn = getUrlVars()["newcdn"];
 			var senchaUrl = "http://cdn.sencha.io/";
 			var currentVersionMessage = "";
 
 			if ((typeof platform !== "undefined" && platform !== null) && (typeof version !== "undefined" && version !== null)) {
 				if (platform === "ext") {
-					senchaUrl += "ext-" + version + "/ext-all.js"; //add all-dev for debug
+					if( newcdn === "false" ) {
+						senchaUrl += "ext-" + version + "/ext-all.js"; //add all-dev for debug
+					}
+					else {
+						senchaUrl += "ext/gpl/" + version + "/ext-all.js"; //add all-dev for debug
+					}
 					currentVersionMessage = "Currently using: ExtJS " + version;
 				} else {
 					senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js";  //add all-debug for debug
@@ -92,13 +98,13 @@
 
 		<div class="platformLinks">
 			Choose Target Library:
-			<a href="SpecRunner.html?platform=ext&version=4.0.7-gpl">ExtJS 4.0.7</a> |
-			<a href="SpecRunner.html?platform=ext&version=4.1.0-gpl">ExtJS 4.1.0</a> |
-			<a href="SpecRunner.html?platform=ext&version=4.1.1a-gpl">ExtJS 4.1.1a</a> |
-			<a href="SpecRunner.html?platform=ext&version=4.2.0-beta">ExtJS 4.2.0</a> |
-			<a href="SpecRunner.html?platform=touch&version=2.0.1">Touch 2.0.1</a> |
-			<a href="SpecRunner.html?platform=touch&version=2.1.0">Touch 2.1.0</a> |
-			<a href="SpecRunner.html?platform=touch&version=2.1.1">Touch 2.1.1</a>
+			<a href="SpecRunner.html?platform=ext&version=4.0.7-gpl&newcdn=false">ExtJS 4.0.7</a> |
+			<a href="SpecRunner.html?platform=ext&version=4.1.0-gpl&newcdn=false">ExtJS 4.1.0</a> |
+			<a href="SpecRunner.html?platform=ext&version=4.1.1a-gpl&newcdn=false">ExtJS 4.1.1a</a> |
+			<a href="SpecRunner.html?platform=ext&version=4.2.0&newcdn=true">ExtJS 4.2.0</a> |
+			<a href="SpecRunner.html?platform=touch&version=2.0.1&newcdn=false">Touch 2.0.1</a> |
+			<a href="SpecRunner.html?platform=touch&version=2.1.0&newcdn=false">Touch 2.1.0</a> |
+			<a href="SpecRunner.html?platform=touch&version=2.1.1&newcdn=false">Touch 2.1.1</a>
 		</div>
 
 		<div class="currentVersion">
