@@ -32,6 +32,10 @@ Ext.define('Deft.event.LiveEventListener', {
     }
     this.components = null;
   },
+  /**
+  	* Overrides the fireEvent method, so the event is fired also in the custom live handlers
+  */
+
   overrideComponent: function(component) {
     var oldFireEvent;
     if (component.liveHandlers !== void 0) {

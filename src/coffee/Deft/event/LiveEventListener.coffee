@@ -32,15 +32,22 @@ Ext.define( 'Deft.event.LiveEventListener',
 		@components = null
 		return
 	
+	###*
+	* Overrides the fireEvent method, so the event is fired also in the custom live handlers
+	###
 	overrideComponent: ( component ) ->
+		# Return if the component has already been patched
 		if component.liveHandlers isnt undefined
 			return
 
 		component.liveHandlers = {}
 		
 		#TODO: define this in Deft.Component, EventBus overrides this method and doesn't call the parent method...
+		
+		# Keeps track of the original fireEvent method
 		oldFireEvent = component.fireEvent
 		component.fireEvent = ( event ) ->
+			# Return in case the event has returned false (as in ExtJS specs)
 			if(oldFireEvent.apply( @, arguments ) is false)
 				return false
 
@@ -48,17 +55,21 @@ Ext.define( 'Deft.event.LiveEventListener',
 				return
 
 			for handler in @liveHandlers[ event ]
+				# Fires the event only if the LiveEventListener is meant for this component (see matches method)
+				# Breaks the loop and returns false if an event is returning false  
 				if handler.observable.matches( @ ) and handler.fireEvent.apply( handler, arguments) is false
 					return false
 		return
 	
+	# Handles the fired event calling the LiveEventHandler's function
 	handle: ->
 		return @fn.apply(@scope, arguments)
 		
 	
-	# Register a candidate component as a source of 'live' events (typically called when a component is added to a container).
+	# Register a candidate component as a source of 'live' events
 	register: ( component ) ->
 		index = Ext.Array.indexOf( @components, component )
+		# Do nothing if the component has already been registered
 		if @selector is null and component isnt @container or index isnt -1
 			return
 			
@@ -68,6 +79,8 @@ Ext.define( 'Deft.event.LiveEventListener',
 		if component.liveHandlers[@eventName] is undefined
 			component.liveHandlers[@eventName] = []
 		
+		# This event is fired by component.fireEvent. 
+		# It's useful to handle options such as single, buffered, etc... 
 		event = Ext.create('Ext.util.Observable')
 		event.observable = @
 		event.addListener(@eventName, @handle, @, @options)
@@ -78,22 +91,28 @@ Ext.define( 'Deft.event.LiveEventListener',
 		component.liveHandlers[@eventName].push( event )
 		return
 
-	# Unregister a candidate component as a source of 'live' events (typically called when a component is removed from a container).
+	# Unregister a candidate component as a source of 'live' events
 	unregister: ( component, destroying = false ) ->
 		index = Ext.Array.indexOf( @components, component )
 		if index isnt -1
 			component.un( @eventName, Ext.emptyFn, @, @options )
 			Ext.Array.remove( component.liveHandlers[ @eventName ], @ )
+			# Avoids bugs looping into @components ( during destroy )
 			if destroying is false
 				Ext.Array.erase( @components, index, 1 )
 		return
 	
 	# @private
+	# This method decides if this LiveEventListener is meant for the current component
 	matches: ( component ) ->
+		# In case the selector is null, the component has to be the root container 
 		if @selector is null
 			return component is @container
+		
+		# Avoid bugs
 		if @container is null
 			return true
 		
+		# The event has to be fired if and only if the component is a descendant of the container
 		return component.isDescendantOf( @container )
 )

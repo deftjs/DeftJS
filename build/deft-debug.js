@@ -279,6 +279,10 @@ Ext.define('Deft.event.LiveEventListener', {
     }
     this.components = null;
   },
+  /**
+  	* Overrides the fireEvent method, so the event is fired also in the custom live handlers
+  */
+
   overrideComponent: function(component) {
     var oldFireEvent;
     if (component.liveHandlers !== void 0) {
@@ -1530,35 +1534,6 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   control: {},
-  /**
-  	* @private
-  */
-
-  $control: (function() {
-    var config;
-    if (Ext.getVersion('extjs')) {
-      return config = {
-        view: {
-          beforedestroy: {
-            fn: "onViewBeforeDestroy"
-          },
-          afterrender: {
-            single: true,
-            fn: "onViewInitialize"
-          }
-        }
-      };
-    } else {
-      return config = {
-        view: {
-          intiialize: {
-            single: true,
-            fn: "onViewInitialize"
-          }
-        }
-      };
-    }
-  })(),
   constructor: function(config) {
     if (config == null) {
       config = {};
@@ -1619,6 +1594,39 @@ Ext.define('Deft.mvc.ViewController', {
     return true;
   },
   /**
+  	* @private
+  */
+
+  $control: (function() {
+    var config;
+    if (Ext.getVersion('extjs')) {
+      return config = {
+        view: {
+          beforedestroy: {
+            fn: "onViewBeforeDestroy"
+          },
+          afterrender: {
+            single: true,
+            fn: "onViewInitialize"
+          }
+        }
+      };
+    } else {
+      return config = {
+        view: {
+          intiialize: {
+            single: true,
+            fn: "onViewInitialize"
+          }
+        }
+      };
+    }
+  })(),
+  /**
+  	* Sets up the default listeners for the controlled view.
+  	* For ExtJS the listeners are for the beforedestroy and afterrender events
+  	* For Sencha Touch initialize
+  	* See $control above
   	* @private
   */
 

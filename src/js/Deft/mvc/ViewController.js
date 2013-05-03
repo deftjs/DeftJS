@@ -137,35 +137,6 @@ Ext.define('Deft.mvc.ViewController', {
   */
 
   control: {},
-  /**
-  	* @private
-  */
-
-  $control: (function() {
-    var config;
-    if (Ext.getVersion('extjs')) {
-      return config = {
-        view: {
-          beforedestroy: {
-            fn: "onViewBeforeDestroy"
-          },
-          afterrender: {
-            single: true,
-            fn: "onViewInitialize"
-          }
-        }
-      };
-    } else {
-      return config = {
-        view: {
-          intiialize: {
-            single: true,
-            fn: "onViewInitialize"
-          }
-        }
-      };
-    }
-  })(),
   constructor: function(config) {
     if (config == null) {
       config = {};
@@ -226,6 +197,39 @@ Ext.define('Deft.mvc.ViewController', {
     return true;
   },
   /**
+  	* @private
+  */
+
+  $control: (function() {
+    var config;
+    if (Ext.getVersion('extjs')) {
+      return config = {
+        view: {
+          beforedestroy: {
+            fn: "onViewBeforeDestroy"
+          },
+          afterrender: {
+            single: true,
+            fn: "onViewInitialize"
+          }
+        }
+      };
+    } else {
+      return config = {
+        view: {
+          intiialize: {
+            single: true,
+            fn: "onViewInitialize"
+          }
+        }
+      };
+    }
+  })(),
+  /**
+  	* Sets up the default listeners for the controlled view.
+  	* For ExtJS the listeners are for the beforedestroy and afterrender events
+  	* For Sencha Touch initialize
+  	* See $control above
   	* @private
   */
 
