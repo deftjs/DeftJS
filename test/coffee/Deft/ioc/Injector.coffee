@@ -1,17 +1,14 @@
 ###
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Copyright (c) 2013 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
-###
-Jasmine test suite for Deft.ioc.Injector
-###
 describe( 'Deft.ioc.Injector', ->
-	
+
 	Ext.define( 'ExampleClass',
 		config:
 			parameter: null
-		
+
 		constructor: ( config ) ->
 			@initConfig( config )
 			return @
@@ -24,203 +21,207 @@ describe( 'Deft.ioc.Injector', ->
 			@initConfig( config )
 			return @
 	)
-	
-	beforeEach( ->
-		@addMatchers(
-			toBeInstanceOf: ( className ) ->
-				return @actual instanceof Ext.ClassManager.get( className )
-		)
-		
-		return
-	)
-	
+
 	describe( 'Configuration', ->
-		
+
 		describe( 'Configuration with a class name as a String', ->
-			
-			it( 'should be configurable with a class name as a String', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+			before(->
 				Deft.Injector.configure(
 					classNameAsString: 'ExampleClass'
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				return
+			)
+
+			specify( 'should be configurable with a class name as a String', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameAsString' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
+
 			describe( 'Resolution of a dependency configured with a class name as a String', ->
-				
-				it( "should resolve a dependency configured with a class name as a String with the corresponding singleton class instance", ->
+
+				specify( 'should resolve a dependency configured with a class name as a String with the corresponding singleton class instance', ->
 					expect(
 						classNameAsStringInstance = Deft.Injector.resolve( 'classNameAsString' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameAsString' )
-					).toBe( classNameAsStringInstance )
-					
+					).to.be.equal( classNameAsStringInstance )
+
 					return
 				)
-				
+
 				return
 			)
-			
+
 			return
 		)
-		
+
 		describe( 'Configuration with a class name', ->
-			
+
 			expectedClassNameEagerlyInstance = null
 			expectedClassNameAsSingletonEagerlyInstance = null
-			
-			it( 'should be configurable with a class name', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					className:
 						className: 'ExampleClass'
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'className' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name, eagerly', ->
-				constructorSpy = spyOn( ExampleClass.prototype, 'constructor' ).andCallFake( ->
-					expectedClassNameEagerlyInstance = @
-					return constructorSpy.originalValue.apply( @, arguments )
-				)
-				
+
+			specify( 'should be configurable with a class name, eagerly', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameEagerly:
 						className: 'ExampleClass'
 						eager: true
 				)
-				
-				expect( ExampleClass.prototype.constructor ).toHaveBeenCalled()
-				
-				expect(
-					expectedClassNameEagerlyInstance
-				).toBeInstanceOf( 'ExampleClass' )
-				
+
+				expectedClassNameEagerlyInstance = constructorSpy.thisValues[0]
+
+				expect( constructorSpy ).to.be.calledOnce
+
+				expect( expectedClassNameEagerlyInstance ).to.be.instanceof( ExampleClass )
+
 				expect(
 					Deft.Injector.canResolve( 'classNameEagerly' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name, (explicity) lazily', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name, (explicitly) lazily', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameLazily:
 						className: 'ExampleClass'
 						eager: false
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name, (explicitly) as a singleton', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name, (explicitly) as a singleton', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameAsSingleton:
 						className: 'ExampleClass'
 						singleton: true
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameAsSingleton' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name, (explicitly) as a singleton, eagerly', ->
-				constructorSpy = spyOn( ExampleClass.prototype, 'constructor' ).andCallFake( ->
-					expectedClassNameAsSingletonEagerlyInstance = @
-					return constructorSpy.originalValue.apply( @, arguments )
-				)
-				
+
+			specify( 'should be configurable with a class name, (explicitly) as a singleton, eagerly', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameAsSingletonEagerly:
 						className: 'ExampleClass'
 						singleton: true
 						eager: true
 				)
-				
-				expect( ExampleClass.prototype.constructor ).toHaveBeenCalled()
-				
-				expect(
-					expectedClassNameAsSingletonEagerlyInstance
-				).toBeInstanceOf( 'ExampleClass' )
-				
+
+				expectedClassNameAsSingletonEagerlyInstance = constructorSpy.thisValues[0]
+
+				expect( constructorSpy ).to.be.calledOnce
+
+				expect( expectedClassNameAsSingletonEagerlyInstance ).to.be.instanceof( ExampleClass )
+
 				expect(
 					Deft.Injector.canResolve( 'classNameAsSingletonEagerly' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name, (explicitly) as a singleton, (explicitly) lazily', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name, (explicitly) as a singleton, (explicitly) lazily', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor')
+
 				Deft.Injector.configure(
 					classNameAsSingletonLazily:
 						className: 'ExampleClass'
 						singleton: true
 						eager: false
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameAsSingletonLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name, as a prototype', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name, as a prototype', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameAsPrototype:
 						className: 'ExampleClass'
 						singleton: false
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameAsPrototype' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should not be configurable with a class name, as a prototype, eagerly', ->
+
+			specify( 'should not be configurable with a class name, as a prototype, eagerly', ->
 				expect( ->
 					Deft.Injector.configure(
 						classNameAsPrototypeEagerly:
@@ -228,245 +229,250 @@ describe( 'Deft.ioc.Injector', ->
 							singleton: false
 							eager: true
 					)
-					return
-				).toThrow( new Error( "Error while configuring 'classNameAsPrototypeEagerly': only singletons can be created eagerly." ) )
-				
+				).to.throw( Error, "Error while configuring 'classNameAsPrototypeEagerly': only singletons can be created eagerly." )
+
 				return
 			)
-			
-			it( 'should be configurable with a class name, as a prototype, (explicitly) lazily', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name, as a prototype, (explicitly) lazily', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameAsPrototypeLazily:
 						className: 'ExampleClass'
 						singleton: false
 						eager: false
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameAsPrototypeLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
+
 			describe( 'Resolution of a dependency configured with a class name', ->
-				
-				it( 'should resolve a dependency configured with a class name with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name with the corresponding singleton class instance', ->
 					expect(
 						classNameInstance = Deft.Injector.resolve( 'className' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						Deft.Injector.resolve( 'className' )
-					).toBe( classNameInstance )
-					
+					).to.be.equal( classNameInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name, eagerly, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name, eagerly, with the corresponding singleton class instance', ->
 					expect(
 						Deft.Injector.resolve( 'classNameEagerly' )
-					).toBe( expectedClassNameEagerlyInstance )
-					
+					).to.be.equal( expectedClassNameEagerlyInstance )
+
 					expect(
 						Deft.Injector.resolve( 'classNameEagerly' )
-					).toBe( expectedClassNameEagerlyInstance )
-					
+					).to.be.equal( expectedClassNameEagerlyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name, (explicitly) lazily, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name, (explicitly) lazily, with the corresponding singleton class instance', ->
 					expect(
 						classNameLazilyInstance = Deft.Injector.resolve( 'classNameLazily' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameLazily' )
-					).toBe( classNameLazilyInstance )
-					
+					).to.to.equal( classNameLazilyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name, (explicitly) as a singleton, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name, (explicitly) as a singleton, with the corresponding singleton class instance', ->
 					expect(
 						classNameAsSingletonInstance = Deft.Injector.resolve( 'classNameAsSingleton' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameAsSingleton' )
-					).toBe( classNameAsSingletonInstance )
-					
+					).to.be.equal( classNameAsSingletonInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name, (explicitly) as a singleton, eagerly, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name, (explicitly) as a singleton, eagerly, with the corresponding singleton class instance', ->
 					expect(
 						Deft.Injector.resolve( 'classNameAsSingletonEagerly' )
-					).toBe( expectedClassNameAsSingletonEagerlyInstance )
-					
+					).to.be.equal( expectedClassNameAsSingletonEagerlyInstance )
+
 					expect(
 						Deft.Injector.resolve( 'classNameAsSingletonEagerly' )
-					).toBe( expectedClassNameAsSingletonEagerlyInstance )
-					
+					).to.be.equal( expectedClassNameAsSingletonEagerlyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', ->
 					expect(
 						classNameAsSingletonLazilyInstance = Deft.Injector.resolve( 'classNameAsSingletonLazily' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameAsSingletonLazily' )
-					).toBe( classNameAsSingletonLazilyInstance )
-					
+					).to.be.equal( classNameAsSingletonLazilyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name, as a prototype, with the corresponding prototype class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name, as a prototype, with the corresponding prototype class instance', ->
 					classNameAsPrototypeInstance1 = Deft.Injector.resolve( 'classNameAsPrototype' )
 					classNameAsPrototypeInstance2 = Deft.Injector.resolve( 'classNameAsPrototype' )
-					
+
 					expect(
 						classNameAsPrototypeInstance1
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						classNameAsPrototypeInstance2
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						classNameAsPrototypeInstance1
-					).not.toBe( classNameAsPrototypeInstance2 )
-					
+					).not.to.be.equal( classNameAsPrototypeInstance2 )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name, as a prototype, (explicitly) lazily, with the corresponding prototype class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name, as a prototype, (explicitly) lazily, with the corresponding prototype class instance', ->
 					classNameAsPrototypeLazilyInstance1 = Deft.Injector.resolve( 'classNameAsPrototypeLazily' )
 					classNameAsPrototypeLazilyInstance2 = Deft.Injector.resolve( 'classNameAsPrototypeLazily' )
-					
+
 					expect(
 						classNameAsPrototypeLazilyInstance1
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						classNameAsPrototypeLazilyInstance2
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						classNameAsPrototypeLazilyInstance1
-					).not.toBe( classNameAsPrototypeLazilyInstance2 )
-					
+					).not.to.be.equal( classNameAsPrototypeLazilyInstance2 )
+
 					return
 				)
-				
+
 				return
 			)
-			
+
 			return
 		)
-		
+
 		describe( 'Configuration with a class name and constructor parameters', ->
-			
+
 			expectedClassNameWithParametersEagerlyInstance = null
 			expectedClassNameWithParametersAsSingletonEagerlyInstance = null
-			
-			it( 'should be configurable with a class name and constructor parameters', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name and constructor parameters', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameWithParameters:
 						className: 'ExampleClass'
 						parameters: [ { parameter: 'expected value' } ]
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameWithParameters' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name and constructor parameters, eagerly', ->
-				constructorSpy = spyOn( ExampleClass.prototype, 'constructor' ).andCallFake( ->
-					expectedClassNameWithParametersEagerlyInstance = @
-					return constructorSpy.originalValue.apply( @, arguments )
-				)
-				
+
+			specify( 'should be configurable with a class name and constructor parameters, eagerly', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameWithParametersEagerly:
 						className: 'ExampleClass'
 						parameters: [ { parameter: 'expected value' } ]
 						eager: true
 				)
-				
-				expect( ExampleClass.prototype.constructor ).toHaveBeenCalled()
-				
+
+				expectedClassNameWithParametersEagerlyInstance = constructorSpy.thisValues[0]
+
+				expect( constructorSpy ).to.be.called
+
 				expect(
 					expectedClassNameWithParametersEagerlyInstance
-				).toBeInstanceOf( 'ExampleClass' )
+				).to.be.instanceof( ExampleClass )
 				expect(
 					expectedClassNameWithParametersEagerlyInstance.getParameter()
-				).toEqual( 'expected value' )
-				
+				).to.be.equal( 'expected value' )
+
 				expect(
 					Deft.Injector.canResolve( 'classNameWithParametersEagerly' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name and constructor parameters, (explicitly) lazily', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name and constructor parameters, (explicitly) lazily', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameWithParametersLazily:
 						className: 'ExampleClass'
 						parameters: [ { parameter: 'expected value' } ]
 						eager: false
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameWithParametersLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name and constructor parameters, (explicitly) as a singleton', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name and constructor parameters, (explicitly) as a singleton', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameWithParametersAsSingleton:
 						className: 'ExampleClass'
 						parameters: [ { parameter: 'expected value' } ]
 						singleton: true
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameWithParametersAsSingleton' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name and constructor parameters, as a singleton, eagerly', ->
-				constructorSpy = spyOn( ExampleClass.prototype, 'constructor' ).andCallFake( ->
-					expectedClassNameWithParametersAsSingletonEagerlyInstance = @
-					return constructorSpy.originalValue.apply( @, arguments )
-				)
-				
+
+			specify( 'should be configurable with a class name and constructor parameters, as a singleton, eagerly', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameWithParametersAsSingletonEagerly:
 						className: 'ExampleClass'
@@ -474,26 +480,30 @@ describe( 'Deft.ioc.Injector', ->
 						singleton: true
 						eager: true
 				)
-				
-				expect( ExampleClass.prototype.constructor ).toHaveBeenCalled()
-				
+
+				expectedClassNameWithParametersAsSingletonEagerlyInstance = constructorSpy.thisValues[0]
+
+				expect( constructorSpy ).to.be.called
+
 				expect(
 					expectedClassNameWithParametersAsSingletonEagerlyInstance
-				).toBeInstanceOf( 'ExampleClass' )
+				).to.be.instanceof( ExampleClass )
 				expect(
 					expectedClassNameWithParametersAsSingletonEagerlyInstance.getParameter()
-				).toEqual( 'expected value' )
-				
+				).to.be.equal( 'expected value' )
+
 				expect(
 					Deft.Injector.canResolve( 'classNameWithParametersAsSingletonEagerly' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name and constructor parameters, (explicitly) as a singleton, (explicitly) lazily', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name and constructor parameters, (explicitly) as a singleton, (explicitly) lazily', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameWithParametersAsSingletonLazily:
 						className: 'ExampleClass'
@@ -501,36 +511,40 @@ describe( 'Deft.ioc.Injector', ->
 						singleton: true
 						eager: false
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameWithParametersAsSingletonLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should be configurable with a class name and constructor parameters, as a prototype', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name and constructor parameters, as a prototype', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameWithParametersAsPrototype:
 						className: 'ExampleClass'
 						parameters: [ { parameter: 'expected value' } ]
 						singleton: false
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameWithParametersAsPrototype' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
-			it( 'should not be configurable with a class name and constructor parameters, as a prototype, eagerly', ->
+
+			specify( 'should not be configurable with a class name and constructor parameters, as a prototype, eagerly', ->
 				expect( ->
 					Deft.Injector.configure(
 						classNameWithParametersAsPrototypeEagerly:
@@ -540,192 +554,194 @@ describe( 'Deft.ioc.Injector', ->
 							eager: true
 					)
 					return
-				).toThrow( new Error( "Error while configuring 'classNameWithParametersAsPrototypeEagerly': only singletons can be created eagerly." ) )
-				
+				).to.throw( Error, "Error while configuring 'classNameWithParametersAsPrototypeEagerly': only singletons can be created eagerly." )
+
 				return
 			)
-			
-			it( 'should be configurable with a class name and constructor parameters, as a prototype, (explicitly) lazily', ->
-				spyOn( ExampleClass.prototype, 'constructor' ).andCallThrough()
-				
+
+			specify( 'should be configurable with a class name and constructor parameters, as a prototype, (explicitly) lazily', ->
+				constructorSpy = sinon.spy( ExampleClass::, 'constructor' )
+
 				Deft.Injector.configure(
 					classNameWithParametersAsPrototypeLazily:
 						className: 'ExampleClass'
 						parameters: [ { parameter: 'expected value' } ]
 						singleton: false
 				)
-				
-				expect( ExampleClass.prototype.constructor ).not.toHaveBeenCalled()
-				
+
+				expect( constructorSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'classNameWithParametersAsPrototypeLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
+				ExampleClass::constructor.restore()
+
 				return
 			)
-			
+
 			describe( 'Resolution of a dependency configured with a class name and constructor parameters', ->
-				
-				it( 'should resolve a dependency configured with a class name and constructor parameters with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name and constructor parameters with the corresponding singleton class instance', ->
 					expect(
 						classNameWithParametersInstance = Deft.Injector.resolve( 'classNameWithParameters' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						classNameWithParametersInstance.getParameter()
-					).toEqual( 'expected value' )
-					
+					).to.be.equal( 'expected value' )
+
 					expect(
 						Deft.Injector.resolve( 'classNameWithParameters' )
-					).toBe( classNameWithParametersInstance )
-					
+					).to.be.equal( classNameWithParametersInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name and constructor parameters, eagerly, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name and constructor parameters, eagerly, with the corresponding singleton class instance', ->
 					expect(
 						Deft.Injector.resolve( 'classNameWithParametersEagerly' )
-					).toBe( expectedClassNameWithParametersEagerlyInstance )
-					
+					).to.be.equal( expectedClassNameWithParametersEagerlyInstance )
+
 					expect(
 						Deft.Injector.resolve( 'classNameWithParametersEagerly' )
-					).toBe( expectedClassNameWithParametersEagerlyInstance )
-					
+					).to.be.equal( expectedClassNameWithParametersEagerlyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name and constructor parameters, (explicitly) lazily, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name and constructor parameters, (explicitly) lazily, with the corresponding singleton class instance', ->
 					expect(
 						classNameWithParametersLazilyInstance = Deft.Injector.resolve( 'classNameWithParametersLazily' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						classNameWithParametersLazilyInstance.getParameter()
-					).toEqual( 'expected value' )
-					
+					).to.be.equal( 'expected value' )
+
 					expect(
 						Deft.Injector.resolve( 'classNameWithParametersLazily' )
-					).toBe( classNameWithParametersLazilyInstance )
-					
+					).to.be.equal( classNameWithParametersLazilyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name and constructor parameters, (explicitly) as a singleton, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name and constructor parameters, (explicitly) as a singleton, with the corresponding singleton class instance', ->
 					expect(
 						classNameWithParametersAsSingletonInstance = Deft.Injector.resolve( 'classNameWithParametersAsSingleton' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						classNameWithParametersAsSingletonInstance.getParameter()
-					).toEqual( 'expected value' )
-					
+					).to.be.equal( 'expected value' )
+
 					expect(
 						Deft.Injector.resolve( 'classNameWithParametersAsSingleton' )
-					).toBe( classNameWithParametersAsSingletonInstance )
-					
+					).to.be.equal( classNameWithParametersAsSingletonInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name and constructor parameters, (explicitly) as a singleton, eagerly, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name and constructor parameters, (explicitly) as a singleton, eagerly, with the corresponding singleton class instance', ->
 					expect(
 						Deft.Injector.resolve( 'classNameWithParametersAsSingletonEagerly' )
-					).toBe( expectedClassNameWithParametersAsSingletonEagerlyInstance )
-					
+					).to.be.equal( expectedClassNameWithParametersAsSingletonEagerlyInstance )
+
 					expect(
 						Deft.Injector.resolve( 'classNameWithParametersAsSingletonEagerly' )
-					).toBe( expectedClassNameWithParametersAsSingletonEagerlyInstance )
-					
+					).to.be.equal( expectedClassNameWithParametersAsSingletonEagerlyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name and constructor parameters, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name and constructor parameters, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', ->
 					expect(
 						classNameWithParametersAsSingletonLazilyInstance = Deft.Injector.resolve( 'classNameWithParametersAsSingletonLazily' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						classNameWithParametersAsSingletonLazilyInstance.getParameter()
-					).toEqual( 'expected value' )
-					
+					).to.be.equal( 'expected value' )
+
 					expect(
 						Deft.Injector.resolve( 'classNameWithParametersAsSingletonLazily' )
-					).toBe( classNameWithParametersAsSingletonLazilyInstance )
-					
+					).to.be.equal( classNameWithParametersAsSingletonLazilyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name and constructor parameters, as a prototype, with the corresponding prototype class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name and constructor parameters, as a prototype, with the corresponding prototype class instance', ->
 					classNameWithParametersAsPrototypeInstance1 = Deft.Injector.resolve( 'classNameWithParametersAsPrototype' )
 					classNameWithParametersAsPrototypeInstance2 = Deft.Injector.resolve( 'classNameWithParametersAsPrototype' )
-					
+
 					expect(
 						classNameWithParametersAsPrototypeInstance1
-					).toBeInstanceOf( 'ExampleClass' )
+					).to.be.instanceof( ExampleClass )
 					expect(
 						classNameWithParametersAsPrototypeInstance1.getParameter()
-					).toEqual( 'expected value' )
-					
+					).to.be.equal( 'expected value' )
+
 					expect(
 						classNameWithParametersAsPrototypeInstance2
-					).toBeInstanceOf( 'ExampleClass' )
+					).to.be.instanceof( ExampleClass )
 					expect(
 						classNameWithParametersAsPrototypeInstance2.getParameter()
-					).toEqual( 'expected value' )
-					
+					).to.be.equal( 'expected value' )
+
 					expect(
 						classNameWithParametersAsPrototypeInstance1
-					).not.toBe( classNameWithParametersAsPrototypeInstance2 )
-					
+					).not.to.be.equal( classNameWithParametersAsPrototypeInstance2 )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name and constructor parameters, as a prototype, (explicitly) lazily, with the corresponding prototype class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name and constructor parameters, as a prototype, (explicitly) lazily, with the corresponding prototype class instance', ->
 					classNameWithParametersAsPrototypeLazilyInstance1 = Deft.Injector.resolve( 'classNameWithParametersAsPrototypeLazily' )
 					classNameWithParametersAsPrototypeLazilyInstance2 = Deft.Injector.resolve( 'classNameWithParametersAsPrototypeLazily' )
-					
+
 					expect(
 						classNameWithParametersAsPrototypeLazilyInstance1
-					).toBeInstanceOf( 'ExampleClass' )
+					).to.be.instanceof( ExampleClass )
 					expect(
 						classNameWithParametersAsPrototypeLazilyInstance1.getParameter()
-					).toEqual( 'expected value' )
-					
+					).to.be.equal( 'expected value' )
+
 					expect(
 						classNameWithParametersAsPrototypeLazilyInstance2
-					).toBeInstanceOf( 'ExampleClass' )
+					).to.be.instanceof( ExampleClass )
 					expect(
 						classNameWithParametersAsPrototypeLazilyInstance2.getParameter()
-					).toEqual( 'expected value' )
-					
+					).to.be.equal( 'expected value' )
+
 					expect(
 						classNameWithParametersAsPrototypeLazilyInstance1
-					).not.toBe( classNameWithParametersAsPrototypeLazilyInstance2 )
-					
+					).not.to.be.equal( classNameWithParametersAsPrototypeLazilyInstance2 )
+
 					return
 				)
-				
+
 				return
 			)
-			
+
 			return
 		)
 
 		describe( 'Configuration with a class name for a singleton class', ->
-			
-			it( 'should be configurable with a class name for a singleton class', ->
+
+			specify( 'should be configurable with a class name for a singleton class', ->
 				Deft.Injector.configure(
 					classNameForSingletonClass:
 						className: 'ExampleSingletonClass'
 				)
-				
+
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClass' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should not be configurable with a class name for a singleton class and constructor parameters', ->
+
+			specify( 'should not be configurable with a class name for a singleton class and constructor parameters', ->
 				expect( ->
 					Deft.Injector.configure(
 						classNameForSingletonClassWithParameters:
@@ -733,84 +749,84 @@ describe( 'Deft.ioc.Injector', ->
 							parameters: [ { parameter: 'expected value' } ]
 					)
 					return
-				).toThrow( new Error( "Error while configuring rule for 'classNameForSingletonClassWithParameters': parameters cannot be applied to singleton classes. Consider removing 'singleton: true' from the class definition." ) )
-					
+				).to.throw( Error, "Error while configuring rule for 'classNameForSingletonClassWithParameters': parameters cannot be applied to singleton classes. Consider removing 'singleton: true' from the class definition." )
+
 				return
 			)
-			
-			it( 'should be configurable with a class name for a singleton class, eagerly', ->
+
+			specify( 'should be configurable with a class name for a singleton class, eagerly', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassEagerly:
 						className: 'ExampleSingletonClass'
 						eager: true
 				)
-				
+
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassEagerly' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a class name for a singleton class, (explicitly) lazily', ->
+
+			specify( 'should be configurable with a class name for a singleton class, (explicitly) lazily', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassLazily:
 						className: 'ExampleSingletonClass'
 						eager: false
 				)
-				
+
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton', ->
+
+			specify( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassAsSingleton:
 						className: 'ExampleSingletonClass'
 						singleton: true
 				)
-				
+
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassAsSingleton' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton, eagerly', ->
+
+			specify( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton, eagerly', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassAsSingletonEagerly:
 						className: 'ExampleSingletonClass'
 						singleton: true
 						eager: true
 				)
-				
+
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassAsSingletonEagerly' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily', ->
+
+			specify( 'should be configurable with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily', ->
 				Deft.Injector.configure(
 					classNameForSingletonClassAsSingletonLazily:
 						className: 'ExampleSingletonClass'
 						singleton: true
 						eager: false
 				)
-				
+
 				expect(
 					Deft.Injector.canResolve( 'classNameForSingletonClassAsSingletonLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should not be configurable with a class name for a singleton class, as a prototype', ->
+
+			specify( 'should not be configurable with a class name for a singleton class, as a prototype', ->
 				expect( ->
 					Deft.Injector.configure(
 						classNameForSingletonClassAsPrototype:
@@ -818,12 +834,12 @@ describe( 'Deft.ioc.Injector', ->
 							singleton: false
 					)
 					return
-				).toThrow( new Error( "Error while configuring rule for 'classNameForSingletonClassAsPrototype': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition." ) )
-					
+				).to.throw( Error, "Error while configuring rule for 'classNameForSingletonClassAsPrototype': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition." )
+
 				return
 			)
-			
-			it( 'should not be configurable with a class name for a singleton class, as a prototype, eagerly', ->
+
+			specify( 'should not be configurable with a class name for a singleton class, as a prototype, eagerly', ->
 				expect( ->
 					Deft.Injector.configure(
 						classNameForSingletonClassAsPrototypeEagerly:
@@ -832,12 +848,12 @@ describe( 'Deft.ioc.Injector', ->
 							eager: true
 					)
 					return
-				).toThrow( new Error( "Error while configuring 'classNameForSingletonClassAsPrototypeEagerly': only singletons can be created eagerly." ) )
-					
+				).to.throw( Error, "Error while configuring 'classNameForSingletonClassAsPrototypeEagerly': only singletons can be created eagerly." )
+
 				return
 			)
-			
-			it( 'should not be configurable with a class name for a singleton class, as a prototype, (explicitly) lazily', ->
+
+			specify( 'should not be configurable with a class name for a singleton class, as a prototype, (explicitly) lazily', ->
 				expect( ->
 					Deft.Injector.configure(
 						classNameForSingletonClassAsPrototypeLazily:
@@ -846,236 +862,238 @@ describe( 'Deft.ioc.Injector', ->
 							eager: false
 					)
 					return
-				).toThrow( new Error( "Error while configuring rule for 'classNameForSingletonClassAsPrototypeLazily': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition." ) )
-					
+				).to.throw( Error, "Error while configuring rule for 'classNameForSingletonClassAsPrototypeLazily': singleton classes cannot be configured for injection as a prototype. Consider removing 'singleton: true' from the class definition." )
+
 				return
 			)
-			
+
 			describe( 'Resolution of a dependency configured with a class name for a singleton class', ->
-				
-				it( 'should resolve a dependency configured with a class name for a singleton class with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name for a singleton class with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassInstance = Deft.Injector.resolve( 'classNameForSingletonClass' )
-					).toBe( ExampleSingletonClass )
-					
+					).to.be.equal( ExampleSingletonClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClass' )
-					).toBe( classNameForSingletonClassInstance )
-						
+					).to.be.equal( classNameForSingletonClassInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name for a singleton class, eagerly, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name for a singleton class, eagerly, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassEagerlyInstance = Deft.Injector.resolve( 'classNameForSingletonClassEagerly' )
-					).toBe( ExampleSingletonClass )
-					
+					).to.be.equal( ExampleSingletonClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassEagerly' )
-					).toBe( classNameForSingletonClassEagerlyInstance )
-						
+					).to.be.equal( classNameForSingletonClassEagerlyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) lazily, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) lazily, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassEagerlyInstance = Deft.Injector.resolve( 'classNameForSingletonClassLazily' )
-					).toBe( ExampleSingletonClass )
-					
+					).to.be.equal( ExampleSingletonClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassLazily' )
-					).toBe( classNameForSingletonClassEagerlyInstance )
-						
+					).to.be.equal( classNameForSingletonClassEagerlyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassAsSingletonInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingleton' )
-					).toBe( ExampleSingletonClass )
-					
+					).to.be.equal( ExampleSingletonClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassAsSingleton' )
-					).toBe( classNameForSingletonClassAsSingletonInstance )
-						
+					).to.be.equal( classNameForSingletonClassAsSingletonInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, eagerly, with the corresponding singleton class instance', ->
+
+				specify( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, eagerly, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassAsSingletonEagerlyInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonEagerly' )
-					).toBe( ExampleSingletonClass )
-					
+					).to.be.equal( ExampleSingletonClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonEagerly' )
-					).toBe( classNameForSingletonClassAsSingletonEagerlyInstance )
-						
+					).to.be.equal( classNameForSingletonClassAsSingletonEagerlyInstance )
+
 					return
 				)
-				
+
 				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassAsSingletonLazilyInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonLazily' )
-					).toBe( ExampleSingletonClass )
-					
+					).to.be.equal( ExampleSingletonClass )
+
 					expect(
 						Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonLazily' )
-					).toBe( classNameForSingletonClassAsSingletonLazilyInstance )
-						
+					).to.be.equal( classNameForSingletonClassAsSingletonLazilyInstance )
+
 					return
 				)
+
+				return
 			)
-			
+
 			return
 		)
-		
+
 		describe( 'Configuration with a factory function', ->
-			
+
 			factoryFunction = -> return Ext.create( 'ExampleClass' )
-			
+
 			expectedFnEagerlyInstance = null
 			expectedFnAsSingletonEagerlyInstance = null
-			
-			it( 'should be configurable with a factory function', ->
-				factoryFunctionSpy = jasmine.createSpy().andCallFake( factoryFunction )
-				
+
+			specify( 'should be configurable with a factory function', ->
+				factoryFunctionSpy = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fn:
 						fn: factoryFunctionSpy
 				)
-				
-				expect( factoryFunctionSpy ).not.toHaveBeenCalled()
-				
+
+				expect( factoryFunctionSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'fn' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a factory function, eagerly', ->
-				factoryFunctionSpy = jasmine.createSpy().andCallFake( ->
-					return expectedFnEagerlyInstance = factoryFunction.apply( @, arguments )
-				)
-				
+
+			specify( 'should be configurable with a factory function, eagerly', ->
+				factoryFunctionSpy = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fnEagerly:
 						fn: factoryFunctionSpy
 						eager: true
 				)
-				
-				expect( factoryFunctionSpy ).toHaveBeenCalled()
-				
+
+				expectedFnEagerlyInstance = factoryFunctionSpy.returnValues[0]
+
+				expect( factoryFunctionSpy ).to.be.calledOnce
+
 				expect(
 					expectedFnEagerlyInstance
-				).toBeInstanceOf( 'ExampleClass' )
-				
+				).to.be.instanceof( ExampleClass )
+
 				expect(
 					Deft.Injector.canResolve( 'fnEagerly' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a factory function, (explicitly) lazily', ->
-				factoryFunctionSpy = jasmine.createSpy().andCallFake( factoryFunction )
-				
+
+			specify( 'should be configurable with a factory function, (explicitly) lazily', ->
+				factoryFunctionSpy = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fnLazily:
 						fn: factoryFunctionSpy
 						eager: false
 				)
-				
-				expect( factoryFunctionSpy ).not.toHaveBeenCalled()
-				
+
+				expect( factoryFunctionSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'fnLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a factory function, (explicitly) as a singleton', ->
-				factoryFunctionSpy = jasmine.createSpy().andCallFake( factoryFunction )
-				
+
+			specify( 'should be configurable with a factory function, (explicitly) as a singleton', ->
+				factoryFunctionSpy = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fnAsSingleton:
 						fn: factoryFunctionSpy
 						singleton: true
 				)
-				
-				expect( factoryFunctionSpy ).not.toHaveBeenCalled()
-				
+
+				expect( factoryFunctionSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'fnAsSingleton' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a factory function, (explicitly) as a singleton, eagerly', ->
-				factoryFunctionSpy = jasmine.createSpy().andCallFake( ->
-					return expectedFnAsSingletonEagerlyInstance = factoryFunction.apply( @, arguments )
-				)
-				
+
+			specify( 'should be configurable with a factory function, (explicitly) as a singleton, eagerly', ->
+				factoryFunctionSpy = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fnAsSingletonEagerly:
 						fn: factoryFunctionSpy
 						singleton: true
 						eager: true
 				)
-				
-				expect( factoryFunctionSpy ).toHaveBeenCalled()
-				
+
+				expectedFnAsSingletonEagerlyInstance = factoryFunctionSpy.returnValues[0]
+
+				expect( factoryFunctionSpy ).to.be.called
+
 				expect(
 					expectedFnAsSingletonEagerlyInstance
-				).toBeInstanceOf( 'ExampleClass' )
-				
+				).to.be.instanceof( ExampleClass )
+
 				expect(
 					Deft.Injector.canResolve( 'fnAsSingletonEagerly' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a factory function, (explicitly) as a singleton, (explicitly) lazily', ->
-				factoryFunctionSpy = jasmine.createSpy().andCallFake( factoryFunction )
-				
+
+			specify( 'should be configurable with a factory function, (explicitly) as a singleton, (explicitly) lazily', ->
+				factoryFunctionSpy = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fnAsSingletonLazily:
 						fn: factoryFunctionSpy
 						singleton: true
 						eager: false
 				)
-				
-				expect( factoryFunctionSpy ).not.toHaveBeenCalled()
-				
+
+				expect( factoryFunctionSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'fnAsSingletonLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should be configurable with a factory function, as a prototype', ->
-				factoryFunctionSpy = jasmine.createSpy().andCallFake( factoryFunction )
-				
+
+			specify( 'should be configurable with a factory function, as a prototype', ->
+				factoryFunctionSpy = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fnAsPrototype:
 						fn: factoryFunctionSpy
 						singleton: false
 				)
-				
-				expect( factoryFunctionSpy ).not.toHaveBeenCalled()
-				
+
+				expect( factoryFunctionSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'fnAsPrototype' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
-			it( 'should not be configurable with a factory function, as a prototype, eagerly', ->
+
+			specify( 'should not be configurable with a factory function, as a prototype, eagerly', ->
 				expect( ->
 					Deft.Injector.configure(
 						fnAsPrototypeEagerly:
@@ -1084,179 +1102,179 @@ describe( 'Deft.ioc.Injector', ->
 							eager: true
 					)
 					return
-				).toThrow( new Error( "Error while configuring 'fnAsPrototypeEagerly': only singletons can be created eagerly." ) )
-				
+				).to.throw( Error, "Error while configuring 'fnAsPrototypeEagerly': only singletons can be created eagerly." )
+
 				return
 			)
-			
-			it( 'should be configurable with a factory function, as a prototype, (explicitly) lazily', ->
-				factoryFunctionSpy = jasmine.createSpy().andCallFake( factoryFunction )
-				
+
+			specify( 'should be configurable with a factory function, as a prototype, (explicitly) lazily', ->
+				factoryFunctionSpy = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fnAsPrototypeLazily:
 						fn: factoryFunctionSpy
 						singleton: false
 						eager: false
 				)
-				
-				expect( factoryFunctionSpy ).not.toHaveBeenCalled()
-				
+
+				expect( factoryFunctionSpy ).not.to.be.called
+
 				expect(
 					Deft.Injector.canResolve( 'fnAsPrototypeLazily' )
-				).toBe( true )
-				
+				).to.be.true
+
 				return
 			)
-			
+
 			describe( 'Resolution of a dependency configured with a factory function', ->
-				
-				it( 'should resolve a dependency configured with a factory function with the corresponding singleton return value', ->
+
+				specify( 'should resolve a dependency configured with a factory function with the corresponding singleton return value', ->
 					expect(
 						fnInstance = Deft.Injector.resolve( 'fn' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						Deft.Injector.resolve( 'fn' )
-					).toBe( fnInstance )
-					
+					).to.be.equal( fnInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a factory function, eagerly, with the corresponding singleton return value', ->
+
+				specify( 'should resolve a dependency configured with a factory function, eagerly, with the corresponding singleton return value', ->
 					expect(
 						Deft.Injector.resolve( 'fnEagerly' )
-					).toBe( expectedFnEagerlyInstance )
-					
+					).to.be.equal( expectedFnEagerlyInstance )
+
 					expect(
 						Deft.Injector.resolve( 'fnEagerly' )
-					).toBe( expectedFnEagerlyInstance )
-					
+					).to.be.equal( expectedFnEagerlyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a factory function, (explicitly) lazily, with the corresponding singleton return value', ->
+
+				specify( 'should resolve a dependency configured with a factory function, (explicitly) lazily, with the corresponding singleton return value', ->
 					expect(
 						fnLazilyInstance = Deft.Injector.resolve( 'fnLazily' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						Deft.Injector.resolve( 'fnLazily' )
-					).toBe( fnLazilyInstance )
-					
+					).to.be.equal( fnLazilyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a factory function, (explicitly) as a singleton, with the corresponding singleton return value', ->
+
+				specify( 'should resolve a dependency configured with a factory function, (explicitly) as a singleton, with the corresponding singleton return value', ->
 					expect(
 						fnAsSingletonInstance = Deft.Injector.resolve( 'fnAsSingleton' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						Deft.Injector.resolve( 'fnAsSingleton' )
-					).toBe( fnAsSingletonInstance )
-					
+					).to.be.equal( fnAsSingletonInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a factory function, (explicitly) as a singleton, eagerly, with the corresponding singleton return value', ->
+
+				specify( 'should resolve a dependency configured with a factory function, (explicitly) as a singleton, eagerly, with the corresponding singleton return value', ->
 					expect(
 						Deft.Injector.resolve( 'fnAsSingletonEagerly' )
-					).toBe( expectedFnAsSingletonEagerlyInstance )
-					
+					).to.be.equal( expectedFnAsSingletonEagerlyInstance )
+
 					expect(
 						Deft.Injector.resolve( 'fnAsSingletonEagerly' )
-					).toBe( expectedFnAsSingletonEagerlyInstance )
-					
+					).to.be.equal( expectedFnAsSingletonEagerlyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a factory function, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton return value', ->
+
+				specify( 'should resolve a dependency configured with a factory function, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton return value', ->
 					expect(
 						fnAsSingletonLazilyInstance = Deft.Injector.resolve( 'fnAsSingletonLazily' )
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						Deft.Injector.resolve( 'fnAsSingletonLazily' )
-					).toBe( fnAsSingletonLazilyInstance )
-					
+					).to.be.equal( fnAsSingletonLazilyInstance )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a factory function, as a prototype, with the corresponding prototype return value', ->
+
+				specify( 'should resolve a dependency configured with a factory function, as a prototype, with the corresponding prototype return value', ->
 					fnAsPrototypeInstance1 = Deft.Injector.resolve( 'fnAsPrototype' )
 					fnAsPrototypeInstance2 = Deft.Injector.resolve( 'fnAsPrototype' )
-					
+
 					expect(
 						fnAsPrototypeInstance1
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						fnAsPrototypeInstance2
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						fnAsPrototypeInstance1
-					).not.toBe( fnAsPrototypeInstance2 )
-					
+					).not.to.be.equal( fnAsPrototypeInstance2 )
+
 					return
 				)
-				
-				it( 'should resolve a dependency configured with a factory function, as a prototype, (explicitly) lazily, with the corresponding prototype return value', ->
+
+				specify( 'should resolve a dependency configured with a factory function, as a prototype, (explicitly) lazily, with the corresponding prototype return value', ->
 					fnAsPrototypeLazilyInstance1 = Deft.Injector.resolve( 'fnAsPrototypeLazily' )
 					fnAsPrototypeLazilyInstance2 = Deft.Injector.resolve( 'fnAsPrototypeLazily' )
-					
+
 					expect(
 						fnAsPrototypeLazilyInstance1
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						fnAsPrototypeLazilyInstance2
-					).toBeInstanceOf( 'ExampleClass' )
-					
+					).to.be.instanceof( ExampleClass )
+
 					expect(
 						fnAsPrototypeLazilyInstance1
-					).not.toBe( fnAsPrototypeLazilyInstance2 )
-					
+					).not.to.be.equal( fnAsPrototypeLazilyInstance2 )
+
 					return
 				)
-				
+
 				return
 			)
-			
+
 			return
 		)
-		
+
 		describeConfigurationByValueOfType = ( typeDescriptor ) ->
 			type = typeDescriptor.type
 			value = typeDescriptor.value
 			prefix = typeDescriptor.type.toLowerCase() + 'Value'
-			
+
 			describe( "Configuration with a #{ type } value", ->
-				
+
 				createIdentifiedConfiguration = ( identifier, configuration ) ->
 					identifiedConfiguration = {}
 					identifiedConfiguration[ identifier ] = configuration
 					return identifiedConfiguration
-					
-				it( "should be configurable with a #{ type } value", ->
+
+				specify( "should be configurable with a #{ type } value", ->
 					identifier = prefix
-					
+
 					Deft.Injector.configure(
 						createIdentifiedConfiguration( identifier,
 							value: value
 						)
 					)
-					
+
 					expect(
 						Deft.Injector.canResolve( identifier )
-					).toBe( true )
-					
+					).to.be.true
+
 					return
 				)
-				
-				it( "should not be configurable with a #{ type } value, eagerly", ->
+
+				specify( "should not be configurable with a #{ type } value, eagerly", ->
 					identifier = prefix + 'Eagerly'
-					
+
 					expect( ->
 						Deft.Injector.configure(
 							createIdentifiedConfiguration( identifier,
@@ -1265,48 +1283,48 @@ describe( 'Deft.ioc.Injector', ->
 							)
 						)
 						return
-					).toThrow( new Error( "Error while configuring '#{ identifier }': a 'value' cannot be created eagerly." ) )
-					
+					).to.throw( Error, "Error while configuring '#{ identifier }': a 'value' cannot be created eagerly." )
+
 					return
 				)
-				
-				it( "should be configurable with a #{ type } value, (explicitly) lazily", ->
+
+				specify( "should be configurable with a #{ type } value, (explicitly) lazily", ->
 					identifier = prefix + 'Lazily'
-					
+
 					Deft.Injector.configure(
 						createIdentifiedConfiguration( identifier,
 							value: value
 							eager: false
 						)
 					)
-					
+
 					expect(
 						Deft.Injector.canResolve( identifier )
-					).toBe( true )
-					
+					).to.be.true
+
 					return
 				)
-				
-				it( "should be configurable with a #{ type } value, (explicitly) as a singleton", ->
+
+				specify( "should be configurable with a #{ type } value, (explicitly) as a singleton", ->
 					identifier = prefix + 'AsSingleton'
-					
+
 					Deft.Injector.configure(
 						createIdentifiedConfiguration( identifier,
 							value: value
 							singleton: true
 						)
 					)
-					
+
 					expect(
 						Deft.Injector.canResolve( identifier )
-					).toBe( true )
-					
+					).to.be.true
+
 					return
 				)
-				
-				it( "should not be configurable with a #{ type } value, (explicitly) as a singleton, eagerly", ->
+
+				specify( "should not be configurable with a #{ type } value, (explicitly) as a singleton, eagerly", ->
 					identifier = prefix + 'AsSingletonEagerly'
-					
+
 					expect( ->
 						Deft.Injector.configure(
 							createIdentifiedConfiguration( identifier,
@@ -1316,14 +1334,14 @@ describe( 'Deft.ioc.Injector', ->
 							)
 						)
 						return
-					).toThrow( new Error( "Error while configuring '#{ identifier }': a 'value' cannot be created eagerly." ) )
-					
+					).to.throw( Error, "Error while configuring '#{ identifier }': a 'value' cannot be created eagerly." )
+
 					return
 				)
-				
-				it( "should be configurable with a #{ type } value, (explicitly) as a singleton, (explicitly) lazily", ->
+
+				specify( "should be configurable with a #{ type } value, (explicitly) as a singleton, (explicitly) lazily", ->
 					identifier = prefix + 'AsSingletonLazily'
-				
+
 					Deft.Injector.configure(
 						createIdentifiedConfiguration( identifier,
 							value: value
@@ -1331,17 +1349,17 @@ describe( 'Deft.ioc.Injector', ->
 							eager: false
 						)
 					)
-					
+
 					expect(
 						Deft.Injector.canResolve( identifier )
-					).toBe( true )
-					
+					).to.be.true
+
 					return
 				)
-				
-				it( "should not be configurable with a #{ type } value, as a prototype", ->
+
+				specify( "should not be configurable with a #{ type } value, as a prototype", ->
 					identifier = prefix + 'AsPrototype'
-					
+
 					expect( ->
 						Deft.Injector.configure(
 							createIdentifiedConfiguration( identifier,
@@ -1350,14 +1368,14 @@ describe( 'Deft.ioc.Injector', ->
 							)
 						)
 						return
-					).toThrow( new Error( "Error while configuring '#{ identifier }': a 'value' can only be configured as a singleton." ) )
-				
+					).to.throw( Error, "Error while configuring '#{ identifier }': a 'value' can only be configured as a singleton." )
+
 					return
 				)
-				
-				it( "should not be configurable with a #{ type } value, as a prototype, eagerly", ->
+
+				specify( "should not be configurable with a #{ type } value, as a prototype, eagerly", ->
 					identifier = prefix + 'AsPrototypeEagerly'
-					
+
 					expect( ->
 						Deft.Injector.configure(
 							createIdentifiedConfiguration( identifier,
@@ -1367,14 +1385,14 @@ describe( 'Deft.ioc.Injector', ->
 							)
 						)
 						return
-					).toThrow( new Error( "Error while configuring '#{ identifier }': a 'value' cannot be created eagerly." ) )
-					
+					).to.throw( Error, "Error while configuring '#{ identifier }': a 'value' cannot be created eagerly." )
+
 					return
 				)
-			
-				it( "should not be configurable with a #{ type } value, as a prototype, (explicitly) lazily", ->
+
+				specify( "should not be configurable with a #{ type } value, as a prototype, (explicitly) lazily", ->
 					identifier = prefix + 'AsPrototypeLazily'
-					
+
 					expect( ->
 						Deft.Injector.configure(
 							createIdentifiedConfiguration( identifier,
@@ -1384,61 +1402,61 @@ describe( 'Deft.ioc.Injector', ->
 							)
 						)
 						return
-					).toThrow( new Error( "Error while configuring '#{ identifier }': a 'value' can only be configured as a singleton." ) )
-					
+					).to.throw( Error, "Error while configuring '#{ identifier }': a 'value' can only be configured as a singleton." )
+
 					return
 				)
-				
+
 				describe( "Resolution of a dependency configured with a #{ type } value", ->
-				
-					it( "should resolve a dependency configured with a #{ type } value with the corresponding value", ->
+
+					specify( "should resolve a dependency configured with a #{ type } value with the corresponding value", ->
 						identifier = prefix
-						
+
 						expect(
 							Deft.Injector.resolve( identifier )
-						).toBe( value )
-						
+						).to.be.equal( value )
+
 						return
 					)
-					
-					it( "should resolve a dependency configured with a #{ type } value with the corresponding value, (explicitly) lazily", ->
+
+					specify( "should resolve a dependency configured with a #{ type } value with the corresponding value, (explicitly) lazily", ->
 						identifier = prefix + 'Lazily'
-						
+
 						expect(
 							Deft.Injector.resolve( identifier )
-						).toBe( value )
-						
+						).to.be.equal( value )
+
 						return
 					)
-					
-					it( "should resolve a dependency configured with a #{ type } value, (explicitly) as a singleton, with the corresponding value", ->
+
+					specify( "should resolve a dependency configured with a #{ type } value, (explicitly) as a singleton, with the corresponding value", ->
 						identifier = prefix + 'AsSingleton'
-						
+
 						expect(
 							Deft.Injector.resolve( identifier )
-						).toBe( value )
-						
+						).to.be.equal( value )
+
 						return
 					)
-					
-					it( "should resolve a dependency configured with a #{ type } value, (explicitly) as a singleton, (explicitly) lazily, with the corresponding value", ->
+
+					specify( "should resolve a dependency configured with a #{ type } value, (explicitly) as a singleton, (explicitly) lazily, with the corresponding value", ->
 						identifier = prefix + 'AsSingletonLazily'
-						
+
 						expect(
 							Deft.Injector.resolve( identifier )
-						).toBe( value )
-						
+						).to.be.equal( value )
+
 						return
 					)
-				
+
 					return
 				)
-				
+
 				return
 			)
-			
+
 			return
-		
+
 		typeDescriptors = [
 			{
 				type: 'Boolean'
@@ -1473,10 +1491,10 @@ describe( 'Deft.ioc.Injector', ->
 				value: ->
 			}
 		]
-		
+
 		for typeDescriptor in typeDescriptors
 			describeConfigurationByValueOfType.call( this, typeDescriptor )
-		
+
 		configuredIdentifiers = [
 			'classNameAsString'
 			'className'
@@ -1542,41 +1560,41 @@ describe( 'Deft.ioc.Injector', ->
 			'functionValueAsSingleton'
 			'functionValueAsSingletonLazily'
 		]
-		
+
 		describe( 'Resolution', ->
-			
-			it( 'should resolve a value for configured identifiers', ->
-				
+
+			specify( 'should resolve a value for configured identifiers', ->
+
 				for configuredIdentifier in configuredIdentifiers
 					expect(
 						Deft.Injector.resolve( configuredIdentifier )
-					).not.toBeNull()
-					
+					).not.to.be.null
+
 				return
 			)
-			
-			it( 'should throw an error if asked to resolve an unconfigured identifier', ->
+
+			specify( 'should throw an error if asked to resolve an unconfigured identifier', ->
 				expect( ->
 					Deft.Injector.resolve( 'unconfiguredIdentifier' )
 					return
-				).toThrow( new Error( "Error while resolving value to inject: no dependency provider found for 'unconfiguredIdentifier'." ) )
-				
+				).to.throw( Error, "Error while resolving value to inject: no dependency provider found for 'unconfiguredIdentifier'." )
+
 				return
 			)
-			
-			it( 'should pass the instance specified for resolution when lazily resolving a dependency with a factory function', ->
-				
+
+			specify( 'should pass the instance specified for resolution when lazily resolving a dependency with a factory function', ->
+
 				factoryFunction = -> return 'expected value'
-				
+
 				exampleClassInstance = Ext.create( 'ExampleClass' )
-				
-				fnResolvePassedInstanceFactoryFunction                  = jasmine.createSpy().andCallFake( factoryFunction )
-				fnResolvePassedInstanceLazilyFactoryFunction            = jasmine.createSpy().andCallFake( factoryFunction )
-				fnResolvePassedInstanceAsSingletonFactoryFunction       = jasmine.createSpy().andCallFake( factoryFunction )
-				fnResolvePassedInstanceAsSingletonLazilyFactoryFunction = jasmine.createSpy().andCallFake( factoryFunction )
-				fnResolvePassedInstanceAsPrototypeFactoryFunction       = jasmine.createSpy().andCallFake( factoryFunction )
-				fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction = jasmine.createSpy().andCallFake( factoryFunction )
-				
+
+				fnResolvePassedInstanceFactoryFunction                  = sinon.spy( factoryFunction )
+				fnResolvePassedInstanceLazilyFactoryFunction            = sinon.spy( factoryFunction )
+				fnResolvePassedInstanceAsSingletonFactoryFunction       = sinon.spy( factoryFunction )
+				fnResolvePassedInstanceAsSingletonLazilyFactoryFunction = sinon.spy( factoryFunction )
+				fnResolvePassedInstanceAsPrototypeFactoryFunction       = sinon.spy( factoryFunction )
+				fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fnResolvePassedInstance: {
 						fn: fnResolvePassedInstanceFactoryFunction
@@ -1604,7 +1622,7 @@ describe( 'Deft.ioc.Injector', ->
 						eager: false
 					}
 				)
-				
+
 				factoryFunctionIdentifiers = [
 					'fnResolvePassedInstance'
 					'fnResolvePassedInstanceLazily'
@@ -1613,31 +1631,31 @@ describe( 'Deft.ioc.Injector', ->
 					'fnResolvePassedInstanceAsPrototype'
 					'fnResolvePassedInstanceAsPrototypeLazily'
 				]
-				
+
 				for factoryFunctionIdentifier in factoryFunctionIdentifiers
 					Deft.Injector.resolve( factoryFunctionIdentifier, exampleClassInstance )
-				
-				expect( fnResolvePassedInstanceFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceLazilyFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceAsSingletonFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceAsSingletonLazilyFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceAsPrototypeFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				
+
+				expect( fnResolvePassedInstanceFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnResolvePassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnResolvePassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnResolvePassedInstanceAsSingletonLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnResolvePassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
+
 				return
 			)
-			
+
 			return
 		)
-		
+
 		describe( 'Injection', ->
-			
+
 			Ext.define( 'SimpleClass',
-			
+
 				constructor: ->
 					return @
 			)
-			
+
 			Ext.define( 'ComplexBaseClass',
 				config:
 					classNameAsString: null
@@ -1703,42 +1721,42 @@ describe( 'Deft.ioc.Injector', ->
 					functionValueLazily: null
 					functionValueAsSingleton: null
 					functionValueAsSingletonLazily: null
-				
+
 				constructor: ( config ) ->
 					@initConfig( config )
 					return @
 			)
-			
+
 			Ext.define( 'ComplexClass',
 				extend: 'ComplexBaseClass'
-				
+
 				constructor: ( config ) ->
 					return @callParent( arguments )
 			)
-			
+
 			Ext.define( 'InjectableSimpleClass',
 				extend: 'SimpleClass'
 				mixins: [ 'Deft.mixin.Injectable' ]
 				inject: configuredIdentifiers
-				
+
 				constructor: ( config ) ->
 					return @callParent( arguments )
 			)
-			
+
 			Ext.define( 'InjectableComplexClass',
 				extend: 'ComplexBaseClass'
 				mixins: [ 'Deft.mixin.Injectable' ]
 				inject: configuredIdentifiers
-				
+
 				constructor: ( config ) ->
 					return @callParent( arguments )
 			)
-			
+
 			Ext.define( 'InjectableComponentSubclass',
 				extend: 'Ext.Component'
 				mixins: [ 'Deft.mixin.Injectable' ]
 				inject: configuredIdentifiers
-				
+
 				config:
 					classNameAsString: null
 					className: null
@@ -1803,7 +1821,7 @@ describe( 'Deft.ioc.Injector', ->
 					functionValueLazily: null
 					functionValueAsSingleton: null
 					functionValueAsSingletonLazily: null
-				
+
 				constructor: ( config ) ->
 					return @callParent( arguments )
 			)
@@ -1840,7 +1858,7 @@ describe( 'Deft.ioc.Injector', ->
 					return @callParent( arguments )
 			)
 
-			it( 'should throw an error when injecting configured circular dependencies into properties for a given class instance', ->
+			specify( 'should throw an error when injecting configured circular dependencies into properties for a given class instance', ->
 				Deft.Injector.configure(
 					simpleClass: "SimpleClass"
 					injectableCircularDependencyClass1: "InjectableCircularDependencyClass1"
@@ -1860,176 +1878,176 @@ describe( 'Deft.ioc.Injector', ->
 				try
 					injectableSimpleClassForCircularDependencies = Ext.create( 'InjectableTargetClassForCircularDependencies' )
 				catch error
-					expect( error.message.lastIndexOf( "circular dependency" ) ).toBeGreaterThan( -1 )
+					expect( error.message.lastIndexOf( "circular dependency" ) ).to.be.greaterThan( -1 )
 
 				return
 			)
-			
-			it( 'should inject configured dependencies into properties for a given class instance', ->
+
+			specify( 'should inject configured dependencies into properties for a given class instance', ->
 				simpleClassInstance = Ext.create( 'SimpleClass' )
-				
+
 				Deft.Injector.inject( configuredIdentifiers, simpleClassInstance )
-				
+
 				for configuredIdentifier in configuredIdentifiers
 					expect(
 						simpleClassInstance[ configuredIdentifier ]
-					).toBeDefined()
-					
+					).to.exist
+
 					expect(
 						simpleClassInstance[ configuredIdentifier ]
-					).not.toBeNull()
-					
+					).not.to.be.null
+
 					resolvedValue = Deft.Injector.resolve( configuredIdentifier )
-					
+
 					if configuredIdentifier.indexOf( 'Prototype' ) is -1
 						expect(
 							simpleClassInstance[ configuredIdentifier ]
-						).toBe( resolvedValue )
+						).to.be.equal( resolvedValue )
 					else
 						expect(
 							simpleClassInstance[ configuredIdentifier ]
-						).toBeInstanceOf( Ext.ClassManager.getClass( resolvedValue ).getName() )
-				
+						).to.be.instanceof( Ext.ClassManager.getClass( resolvedValue ) )
+
 				return
 			)
-			
-			it( 'should inject configured dependencies into configs for a given class instance', ->
+
+			specify( 'should inject configured dependencies into configs for a given class instance', ->
 				complexClassInstance = Ext.create( 'ComplexClass' )
-				
+
 				Deft.Injector.inject( configuredIdentifiers, complexClassInstance )
-				
+
 				for configuredIdentifier in configuredIdentifiers
 					getterFunctionName = 'get' + Ext.String.capitalize( configuredIdentifier )
-					
+
 					expect(
 						complexClassInstance[ getterFunctionName ]()
-					).not.toBeNull()
-					
+					).not.to.be.null
+
 					resolvedValue = Deft.Injector.resolve( configuredIdentifier )
-					
+
 					if configuredIdentifier.indexOf( 'Prototype' ) is -1
 						expect(
 							complexClassInstance[ getterFunctionName ]()
-						).toBe( resolvedValue )
+						).to.be.equal( resolvedValue )
 					else
 						expect(
 							complexClassInstance[ getterFunctionName ]()
-						).toBeInstanceOf( Ext.ClassManager.getClass( resolvedValue ).getName() )
-					
+						).to.be.instanceof( Ext.ClassManager.getClass( resolvedValue ) )
+
 				return
 			)
-			
-			it( 'should automatically inject configured dependencies into properties for a given Injectable class instance', ->
+
+			specify( 'should automatically inject configured dependencies into properties for a given Injectable class instance', ->
 				simpleInjectableClassInstance = Ext.create( 'InjectableSimpleClass' )
-				
+
 				for configuredIdentifier in configuredIdentifiers
 					expect(
 						simpleInjectableClassInstance[ configuredIdentifier ]
-					).toBeDefined()
-					
+					).to.exist
+
 					expect(
 						simpleInjectableClassInstance[ configuredIdentifier ]
-					).not.toBeNull()
-					
+					).not.to.be.null
+
 					resolvedValue = Deft.Injector.resolve( configuredIdentifier )
-					
+
 					if configuredIdentifier.indexOf( 'Prototype' ) is -1
 						expect(
 							simpleInjectableClassInstance[ configuredIdentifier ]
-						).toBe( resolvedValue )
+						).to.be.equal( resolvedValue )
 					else
 						expect(
 							simpleInjectableClassInstance[ configuredIdentifier ]
-						).toBeInstanceOf( Ext.ClassManager.getClass( resolvedValue ).getName() )
-				
+						).to.be.instanceof( Ext.ClassManager.getClass( resolvedValue ) )
+
 				return
 			)
-			
-			it( 'should automatically inject configured dependencies into configs for a given Injectable class instance', ->
+
+			specify( 'should automatically inject configured dependencies into configs for a given Injectable class instance', ->
 				injectableComplexClassInstance = Ext.create( 'InjectableComplexClass' )
-				
+
 				for configuredIdentifier in configuredIdentifiers
 					getterFunctionName = 'get' + Ext.String.capitalize( configuredIdentifier )
-					
+
 					expect(
 						injectableComplexClassInstance[ getterFunctionName ]()
-					).not.toBeNull()
-					
+					).not.to.be.null
+
 					resolvedValue = Deft.Injector.resolve( configuredIdentifier )
-					
+
 					if configuredIdentifier.indexOf( 'Prototype' ) is -1
 						if configuredIdentifier.indexOf( 'objectValue' ) is -1
 							expect(
 								injectableComplexClassInstance[ getterFunctionName ]()
-							).toBe( resolvedValue )
+							).to.be.equal( resolvedValue )
 						else
 							# NOTE: Object configs are cloned/merged and will not be the exact same instance.
 							expect(
 								injectableComplexClassInstance[ getterFunctionName ]()
-							).not.toBeNull()
+							).not.to.be.null
 					else
 						expect(
 							injectableComplexClassInstance[ getterFunctionName ]()
-						).toBeInstanceOf( Ext.ClassManager.getClass( resolvedValue ).getName() )
-						
+						).to.be.instanceof( Ext.ClassManager.getClass( resolvedValue ) )
+
 				return
 			)
-			
-			
-			it( 'should automatically inject configured dependencies into configs for a given Injectable \`Ext.Component\` subclass instance', ->
+
+
+			specify( 'should automatically inject configured dependencies into configs for a given Injectable \`Ext.Component\` subclass instance', ->
 				injectableComponentSubclassInstance = Ext.create( 'InjectableComponentSubclass' )
-				
+
 				for configuredIdentifier in configuredIdentifiers
 					getterFunctionName = 'get' + Ext.String.capitalize( configuredIdentifier )
-					
+
 					expect(
 						injectableComponentSubclassInstance[ getterFunctionName ]()
-					).not.toBeNull()
-					
+					).not.to.be.null
+
 					resolvedValue = Deft.Injector.resolve( configuredIdentifier )
-					
+
 					if configuredIdentifier.indexOf( 'Prototype' ) is -1
 						if configuredIdentifier.indexOf( 'objectValue' ) is -1
 							expect(
 								injectableComponentSubclassInstance[ getterFunctionName ]()
-							).toBe( resolvedValue )
+							).to.be.equal( resolvedValue )
 						else
 							# NOTE: Object configs are cloned/merged and will not be the exact same instance.
 							expect(
 								injectableComponentSubclassInstance[ getterFunctionName ]()
-							).not.toBeNull()
+							).not.to.be.null
 					else
 						expect(
 							injectableComponentSubclassInstance[ getterFunctionName ]()
-						).toBeInstanceOf( Ext.ClassManager.getClass( resolvedValue ).getName() )
-						
+						).to.be.instanceof( Ext.ClassManager.getClass( resolvedValue ) )
+
 				return
 			)
-			
-			it( 'should throw an error if asked to inject an unconfigured identifier', ->
+
+			specify( 'should throw an error if asked to inject an unconfigured identifier', ->
 				simpleClassInstance = Ext.create( 'SimpleClass' )
-				
+
 				expect( ->
 					Deft.Injector.inject( 'unconfiguredIdentifier', simpleClassInstance )
 					return
-				).toThrow( new Error( "Error while resolving value to inject: no dependency provider found for 'unconfiguredIdentifier'." ) )
-				
+				).to.throw( Error, "Error while resolving value to inject: no dependency provider found for 'unconfiguredIdentifier'." )
+
 				return
 			)
-			
-			it( 'should pass the instance being injected when lazily resolving a dependency with a factory function', ->
-				
+
+			specify( 'should pass the instance being injected when lazily resolving a dependency with a factory function', ->
+
 				factoryFunction = -> return 'expected value'
-				
+
 				exampleClassInstance = Ext.create( 'ExampleClass' )
-				
-				fnInjectPassedInstanceFactoryFunction                  = jasmine.createSpy().andCallFake( factoryFunction )
-				fnInjectPassedInstanceLazilyFactoryFunction            = jasmine.createSpy().andCallFake( factoryFunction )
-				fnInjectPassedInstanceAsSingletonFactoryFunction       = jasmine.createSpy().andCallFake( factoryFunction )
-				fnInjectPassedInstanceAsSingletonLazilyFactoryFunction = jasmine.createSpy().andCallFake( factoryFunction )
-				fnInjectPassedInstanceAsPrototypeFactoryFunction       = jasmine.createSpy().andCallFake( factoryFunction )
-				fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction = jasmine.createSpy().andCallFake( factoryFunction )
-				
+
+				fnInjectPassedInstanceFactoryFunction                  = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceLazilyFactoryFunction            = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceAsSingletonFactoryFunction       = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceAsSingletonLazilyFactoryFunction = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceAsPrototypeFactoryFunction       = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction = sinon.spy( factoryFunction )
+
 				Deft.Injector.configure(
 					fnInjectPassedInstance: {
 						fn: fnInjectPassedInstanceFactoryFunction
@@ -2057,7 +2075,7 @@ describe( 'Deft.ioc.Injector', ->
 						eager: false
 					}
 				)
-				
+
 				factoryFunctionIdentifiers = [
 					'fnInjectPassedInstance'
 					'fnInjectPassedInstanceLazily'
@@ -2066,122 +2084,120 @@ describe( 'Deft.ioc.Injector', ->
 					'fnInjectPassedInstanceAsPrototype'
 					'fnInjectPassedInstanceAsPrototypeLazily'
 				]
-				
+
 				Deft.Injector.inject( factoryFunctionIdentifiers, exampleClassInstance )
-				
-				expect( fnInjectPassedInstanceFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceLazilyFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceAsSingletonFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceAsSingletonLazilyFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction ).toHaveBeenCalledWith( exampleClassInstance )
-				
+
+				expect( fnInjectPassedInstanceFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnInjectPassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsSingletonLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
+
 				return
 			)
-			
+
 			return
 		)
-		
+
 		describe( 'Runtime configuration changes', ->
-			
+
 			beforeEach( ->
 				Deft.Injector.reset()
-				
+
 				return
 			)
-			
-			it( 'should clear out configured identifiers when the reset method is called', ->
+
+			specify( 'should clear out configured identifiers when the reset method is called', ->
 				Deft.Injector.configure(
 					identifier:
 						value: 'expected value'
 				)
-				
+
 				expect(
 					Deft.Injector.resolve( 'identifier' )
-				).toEqual( 'expected value' )
-				
+				).to.be.equal( 'expected value' )
+
 				Deft.Injector.reset()
-				
+
 				expect( ->
 					Deft.Injector.resolve( 'identifier' )
 					return
-				).toThrow( new Error( "Error while resolving value to inject: no dependency provider found for 'identifier'." ) )
-				
+				).to.throw( Error, "Error while resolving value to inject: no dependency provider found for 'identifier'." )
+
 				return
 			)
-			
-			it( 'should aggregate providers across multiple calls to configure', ->
+
+			specify( 'should aggregate providers across multiple calls to configure', ->
 				Deft.Injector.configure(
 					identifier1:
 						value: 'value #1'
 				)
-				
+
 				Deft.Injector.configure(
 					identifier2:
 						value: 'value #2'
 				)
-				
+
 				expect(
 					Deft.Injector.resolve( 'identifier1' )
-				).toEqual( 'value #1' )
-				
+				).to.be.equal( 'value #1' )
+
 				expect(
 					Deft.Injector.resolve( 'identifier2' )
-				).toEqual( 'value #2' )
-				
+				).to.be.equal( 'value #2' )
+
 				return
 			)
-			
-			it( 'should resolve using the last provider to be configured for a given identifier (i.e. configuration for the same identifier overwrites the previous configuration)', ->
+
+			specify( 'should resolve using the last provider to be configured for a given identifier (i.e. configuration for the same identifier overwrites the previous configuration)', ->
 				Deft.Injector.configure(
 					existingIdentifier:
 						value: 'original value'
 				)
-				
+
 				expect(
 					Deft.Injector.resolve( 'existingIdentifier' )
-				).toEqual( 'original value' )
-				
+				).to.be.equal( 'original value' )
+
 				Deft.Injector.configure(
 					existingIdentifier:
 						value: 'new value'
 				)
-				
+
 				expect(
 					Deft.Injector.resolve( 'existingIdentifier' )
-				).toEqual( 'new value' )
-				
+				).to.be.equal( 'new value' )
+
 				return
 			)
-			
-			it( 'should instantiate eager providers when they are initially configured, and not reinstantiate them on subsequent calls to configure for other identifiers', ->
-				factoryFn = jasmine.createSpy( 'factory function' ).andCallFake( -> return 'expected value' )
-				
+
+			specify( 'should instantiate eager providers when they are initially configured, and not reinstantiate them on subsequent calls to configure for other identifiers', ->
+				factoryFn = sinon.spy( -> return 'expected value' )
+
 				Deft.Injector.configure(
 					eagerIdentifier:
 						fn: factoryFn
 						eager: true
 				)
-				
-				expect( factoryFn ).toHaveBeenCalled()
-				
-				factoryFn.reset()
-				
+
+				expect( factoryFn ).to.be.calledOnce
+
 				Deft.Injector.configure(
-					anyOtherIdentifier: 
+					anyOtherIdentifier:
 						value: 'value'
 				)
-				
-				expect( factoryFn ).not.toHaveBeenCalled()
-				
+
+				expect( factoryFn ).to.be.calledOnce
+
 				return
 			)
-			
+
 			return
 		)
-			
+
 		return
 	)
-	
+
 	return
 )
