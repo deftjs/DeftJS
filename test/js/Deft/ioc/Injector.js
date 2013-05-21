@@ -1477,7 +1477,3 @@ describe('Deft.ioc.Injector', function() {
     });
   });
 });
-
-/*
-//@ sourceMappingURL=Injector.map
-*/
