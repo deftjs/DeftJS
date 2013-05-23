@@ -929,7 +929,7 @@ describe( 'Deft.ioc.Injector', ->
 					return
 				)
 
-				it( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', ->
+				specify( 'should resolve a dependency configured with a class name for a singleton class, (explicitly) as a singleton, (explicitly) lazily, with the corresponding singleton class instance', ->
 					expect(
 						classNameForSingletonClassAsSingletonLazilyInstance = Deft.Injector.resolve( 'classNameForSingletonClassAsSingletonLazily' )
 					).to.be.equal( ExampleSingletonClass )
@@ -1586,7 +1586,12 @@ describe( 'Deft.ioc.Injector', ->
 
 				factoryFunction = -> return 'expected value'
 
-				exampleClassInstance = Ext.create( 'ExampleClass' )
+				exampleConfig =
+					prop1: 42
+					config:
+						example: true
+
+				exampleClassInstance = Ext.create( 'ExampleClass', exampleConfig )
 
 				fnResolvePassedInstanceFactoryFunction                  = sinon.spy( factoryFunction )
 				fnResolvePassedInstanceLazilyFactoryFunction            = sinon.spy( factoryFunction )
@@ -1635,12 +1640,21 @@ describe( 'Deft.ioc.Injector', ->
 				for factoryFunctionIdentifier in factoryFunctionIdentifiers
 					Deft.Injector.resolve( factoryFunctionIdentifier, exampleClassInstance )
 
-				expect( fnResolvePassedInstanceFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceAsSingletonLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnResolvePassedInstanceFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnResolvePassedInstanceLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnResolvePassedInstanceAsSingletonFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnResolvePassedInstanceAsSingletonLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnResolvePassedInstanceAsPrototypeFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+
+				# exampleConfig != the config object eventually passed to the constructor, it appears to have an extra property
+				# in the debugger. Attempts to use getInitialConfig also fail. Still investigating.
+				expect( fnResolvePassedInstanceFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
+				expect( fnResolvePassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
+				expect( fnResolvePassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
+				expect( fnResolvePassedInstanceAsSingletonLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
+				expect( fnResolvePassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
+				expect( fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
 
 				return
 			)
@@ -2035,11 +2049,89 @@ describe( 'Deft.ioc.Injector', ->
 				return
 			)
 
-			specify( 'should pass the instance being injected when lazily resolving a dependency with a factory function', ->
+			specify( 'should execute in the instance context and pass the constructor parameters of the instance being injected when lazily injecting a dependency with a factory function', ->
 
 				factoryFunction = -> return 'expected value'
 
-				exampleClassInstance = Ext.create( 'ExampleClass' )
+				Ext.define( 'ExampleClassWithInject',
+					inject: [
+						'fnInjectPassedInstance'
+						'fnInjectPassedInstanceLazily'
+						'fnInjectPassedInstanceAsSingleton'
+						'fnInjectPassedInstanceAsSingletonLazily'
+						'fnInjectPassedInstanceAsPrototype'
+						'fnInjectPassedInstanceAsPrototypeLazily'
+					]
+				)
+
+				fnInjectPassedInstanceFactoryFunction                  = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceLazilyFactoryFunction            = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceAsSingletonFactoryFunction       = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceAsSingletonLazilyFactoryFunction = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceAsPrototypeFactoryFunction       = sinon.spy( factoryFunction )
+				fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction = sinon.spy( factoryFunction )
+
+				Deft.Injector.configure(
+					fnInjectPassedInstance: {
+						fn: fnInjectPassedInstanceFactoryFunction
+					}
+					fnInjectPassedInstanceLazily: {
+						fn: fnInjectPassedInstanceLazilyFactoryFunction
+						eager: false
+					}
+					fnInjectPassedInstanceAsSingleton: {
+						fn: fnInjectPassedInstanceAsSingletonFactoryFunction
+						singleton: true
+					}
+					fnInjectPassedInstanceAsSingletonLazily: {
+						fn: fnInjectPassedInstanceAsSingletonLazilyFactoryFunction
+						singleton: true
+						eager: false
+					}
+					fnInjectPassedInstanceAsPrototype: {
+						fn: fnInjectPassedInstanceAsPrototypeFactoryFunction
+						singleton: false
+					}
+					fnInjectPassedInstanceAsPrototypeLazily: {
+						fn: fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction
+						singleton: false
+						eager: false
+					}
+				)
+
+				exampleConfig =
+					prop1: 42
+					config:
+						example: true
+
+				exampleClassInstance = Ext.create( 'ExampleClassWithInject', exampleConfig, 'second argument', 'third argument' )
+
+				expect( fnInjectPassedInstanceFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsSingletonFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsSingletonLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+
+				expect( fnInjectPassedInstanceFactoryFunction ).to.be.calledWith( exampleConfig, 'second argument', 'third argument' )
+				expect( fnInjectPassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleConfig, 'second argument', 'third argument' )
+				expect( fnInjectPassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleConfig, 'second argument', 'third argument' )
+				expect( fnInjectPassedInstanceAsSingletonLazilyFactoryFunction ).to.be.calledWith( exampleConfig, 'second argument', 'third argument' )
+				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleConfig, 'second argument', 'third argument' )
+				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleConfig, 'second argument', 'third argument' )
+
+			)
+
+			specify( 'should execute in the instance context and pass the initial config of the instance being injected when lazily resolving a dependency with a factory function', ->
+
+				factoryFunction = -> return 'expected value'
+
+				exampleConfig =
+					prop1: 42
+					config:
+						example: true
+
+				exampleClassInstance = Ext.create( 'ExampleClass', exampleConfig )
 
 				fnInjectPassedInstanceFactoryFunction                  = sinon.spy( factoryFunction )
 				fnInjectPassedInstanceLazilyFactoryFunction            = sinon.spy( factoryFunction )
@@ -2087,12 +2179,21 @@ describe( 'Deft.ioc.Injector', ->
 
 				Deft.Injector.inject( factoryFunctionIdentifiers, exampleClassInstance )
 
-				expect( fnInjectPassedInstanceFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceAsSingletonLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleClassInstance )
-				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance )
+				expect( fnInjectPassedInstanceFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsSingletonFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsSingletonLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
+
+				# exampleConfig != the config object eventually passed to the constructor, it appears to have an extra property
+				# in the debugger. Attempts to use getInitialConfig also fail. Still investigating.
+				expect( fnInjectPassedInstanceFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnInjectPassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnInjectPassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnInjectPassedInstanceAsSingletonLazilyFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleConfig )
 
 				return
 			)

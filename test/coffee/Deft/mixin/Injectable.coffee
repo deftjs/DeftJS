@@ -12,7 +12,7 @@ describe( 'Deft.mixin.Injectable', ->
 			inject: [ 'identifier' ]
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier: 'identifier'
 				)
@@ -38,7 +38,7 @@ describe( 'Deft.mixin.Injectable', ->
 			inject: [ 'identifier2' ]
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier1: 'identifier1'
 					identifier2: 'identifier2'
@@ -72,7 +72,7 @@ describe( 'Deft.mixin.Injectable', ->
 			inject: [ 'identifier3', 'identifier4' ]
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier1: 'identifier1'
 					identifier2: 'identifier2'
@@ -106,7 +106,7 @@ describe( 'Deft.mixin.Injectable', ->
 			extend: 'ExampleSubclass'
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier1: 'identifier1'
 					identifier2: 'identifier2'
@@ -139,7 +139,7 @@ describe( 'Deft.mixin.Injectable', ->
 			inject: [ 'identifier2', 'identifier3' ]
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier1: 'identifier1'
 					identifier2: 'identifier2'
@@ -172,7 +172,7 @@ describe( 'Deft.mixin.Injectable', ->
 			extend: 'ExampleSubclass'
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier1: 'identifier1'
 					identifier2: 'identifier2'
@@ -203,7 +203,7 @@ describe( 'Deft.mixin.Injectable', ->
 			inject: [ 'identifier1', 'identifier2' ]
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier1: 'identifier1'
 					identifier2: 'identifier2'
@@ -232,7 +232,7 @@ describe( 'Deft.mixin.Injectable', ->
 			inject: 'identifier3'
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier1: 'identifier1'
 					identifier2: 'identifier2'
@@ -264,7 +264,7 @@ describe( 'Deft.mixin.Injectable', ->
 				identifier3: 'identifier3'
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier1: 'identifier1'
 					identifier2: 'identifier2'
@@ -301,7 +301,7 @@ describe( 'Deft.mixin.Injectable', ->
 				identifier4: 'identifier4'
 
 			constructor: ->
-				expect( injectStub ).to.be.calledWith( @inject, @, false )
+				expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
 				expect( @inject ).to.be.eql(
 					identifier1: 'overriddenIdentifier1'
 					identifier2: 'overriddenIdentifier2'

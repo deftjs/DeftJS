@@ -24,7 +24,7 @@ Ext.define('Deft.mixin.Injectable', {
     createInjectionInterceptor = function() {
       return function() {
         if (!this.$injected) {
-          Deft.Injector.inject(this.inject, this, false);
+          Deft.Injector.inject(this.inject, this, arguments, false);
           this.$injected = true;
         }
         return this.callOverridden(arguments);
@@ -34,7 +34,7 @@ Ext.define('Deft.mixin.Injectable', {
     createInjectionInterceptor = function() {
       return function() {
         if (!this.$injected) {
-          Deft.Injector.inject(this.inject, this, false);
+          Deft.Injector.inject(this.inject, this, arguments, false);
           this.$injected = true;
         }
         return this.callParent(arguments);

@@ -11,7 +11,7 @@ describe('Deft.mixin.Injectable', function() {
     Ext.define('ExampleClass', {
       inject: ['identifier'],
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier: 'identifier'
         });
@@ -32,7 +32,7 @@ describe('Deft.mixin.Injectable', function() {
       extend: 'ExampleClass',
       inject: ['identifier2'],
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier1: 'identifier1',
           identifier2: 'identifier2'
@@ -59,7 +59,7 @@ describe('Deft.mixin.Injectable', function() {
       extend: 'ExampleSubclass',
       inject: ['identifier3', 'identifier4'],
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier1: 'identifier1',
           identifier2: 'identifier2',
@@ -86,7 +86,7 @@ describe('Deft.mixin.Injectable', function() {
     Ext.define('ExampleSubclass2', {
       extend: 'ExampleSubclass',
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier1: 'identifier1',
           identifier2: 'identifier2'
@@ -112,7 +112,7 @@ describe('Deft.mixin.Injectable', function() {
       extend: 'ExampleSubclass',
       inject: ['identifier2', 'identifier3'],
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier1: 'identifier1',
           identifier2: 'identifier2',
@@ -137,7 +137,7 @@ describe('Deft.mixin.Injectable', function() {
     Ext.define('ExampleSubclass2', {
       extend: 'ExampleSubclass',
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier1: 'identifier1',
           identifier2: 'identifier2'
@@ -161,7 +161,7 @@ describe('Deft.mixin.Injectable', function() {
       extend: 'ExampleSubclass',
       inject: ['identifier1', 'identifier2'],
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier1: 'identifier1',
           identifier2: 'identifier2'
@@ -184,7 +184,7 @@ describe('Deft.mixin.Injectable', function() {
       extend: 'ExampleClass',
       inject: 'identifier3',
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier1: 'identifier1',
           identifier2: 'identifier2',
@@ -211,7 +211,7 @@ describe('Deft.mixin.Injectable', function() {
         identifier3: 'identifier3'
       },
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier1: 'identifier1',
           identifier2: 'identifier2',
@@ -242,7 +242,7 @@ describe('Deft.mixin.Injectable', function() {
         identifier4: 'identifier4'
       },
       constructor: function() {
-        expect(injectStub).to.be.calledWith(this.inject, this, false);
+        expect(injectStub).to.be.calledWith(this.inject, this, arguments, false);
         expect(this.inject).to.be.eql({
           identifier1: 'overriddenIdentifier1',
           identifier2: 'overriddenIdentifier2',

@@ -28,6 +28,10 @@
 			<arg line="-cb -o js coffee" />
 		</exec>
 
+    <exec dir="test" executable="${coffeeExecutable}">
+			<arg line="-cb -o js coffee" />
+		</exec>
+
 		<echo message="Concatenating JavaScript files..." />
 		<concat destfile="build/${deftjs.filename.debug}" encoding="UTF-8" outputencoding="UTF-8">
 			<header>${deftjs.copyright.notice}</header>
