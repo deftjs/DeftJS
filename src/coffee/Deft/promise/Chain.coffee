@@ -9,7 +9,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
 ###*
-* Utility class with static methods to create chains of Deft.promise.Promises objects.
+* Utility class with static methods to create chains of {@link Deft.promise.Promise}s.
 ###
 Ext.define( 'Deft.promise.Chain',
 	alternateClassName: [ 'Deft.Chain' ]
@@ -19,15 +19,17 @@ Ext.define( 'Deft.promise.Chain',
 	
 	statics:
 		###*
-		* Execute an Array (or Deferred/Promise of an Array) of functions sequentially.
-		* The specified functions may optionally return their results as Promises.
-		* Returns a Promise of an Array of results for each function call (in the same order).
+		* Execute an Array (or {@link Deft.promise.Promise} of an Array) of functions sequentially.
+		* The specified functions may optionally return their results as {@link Deft.promise.Promise}s.
+		* Returns a {@link Deft.promise.Promise} of an Array of results for each function call (in the same order).
 		###
-		sequence: ( fns, scope ) ->
+		sequence: ( fns, scope = null, args... ) ->
 			return Deft.Promise.reduce( 
 				fns
 				( results, fn ) ->
-					return Deft.Promise.when( fn.call( scope ) ).then( ( result ) -> 
+					if not Ext.isFunction( fn )
+						throw new Error( 'Invalid parameter: expected a function.' )
+					return Deft.Promise.when( fn.apply( scope, args ) ).then( ( result ) -> 
 						results.push( result ) 
 						return results
 					)
@@ -35,26 +37,30 @@ Ext.define( 'Deft.promise.Chain',
 			)
 		
 		###*
-		* Execute an Array (or Deferred/Promise of an Array) of functions in parallel.
-		* The specified functions may optionally return their results as Promises.
-		* Returns a Promise of an Array of results for each function call (in the same order).
+		* Execute an Array (or {@link Deft.promise.Promise} of an Array) of functions in parallel.
+		* The specified functions may optionally return their results as {@link Deft.promise.Promise}s.
+		* Returns a {@link Deft.promise.Promise} of an Array of results for each function call (in the same order).
 		###
-		parallel: ( fns, scope ) ->
+		parallel: ( fns, scope = null, args... ) ->
 			return Deft.Promise.map( 
 				fns
 				( fn ) ->
-					return fn.call( scope )
+					if not Ext.isFunction( fn )
+						throw new Error( 'Invalid parameter: expected a function.' )
+					return fn.apply( scope, args )
 			)
 		
 		###*
-		* Execute an Array (or Deferred/Promise of an Array) of functions as a pipeline, where each function's result is passed to the subsequent function as input.
-		* The specified functions may optionally return their results as Promises.
-		* Returns a Promise of the result value for the final function in the pipeline.
+		* Execute an Array (or {@link Deft.promise.Promise} of an Array) of functions as a pipeline, where each function's result is passed to the subsequent function as input.
+		* The specified functions may optionally return their results as {@link Deft.promise.Promise}s.
+		* Returns a {@link Deft.promise.Promise} of the result value for the final function in the pipeline.
 		###		
-		pipeline: ( fns, scope, initialValue ) ->
+		pipeline: ( fns, initialValue, scope = null ) ->
 			return Deft.Promise.reduce( 
 				fns
 				( value, fn ) ->
+					if not Ext.isFunction( fn )
+						throw new Error( 'Invalid parameter: expected a function.' )
 					return fn.call( scope, value )
 				initialValue
 			)

@@ -2,116 +2,95 @@
 Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
-Promise.when(), all(), any(), some(), map() and reduce() methods adapted from:
-[when.js](https://github.com/cujojs/when)
+Promise.when(), all(), any(), some(), map(), reduce(), delay() and timeout()
+methods adapted from: [when.js](https://github.com/cujojs/when)
 Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
-###*
-* A Promise represents the result of a future value that has not been defined yet, typically because it is created asynchronously. Used in conjunction with Deft.promise.Deferred.
+###
+Promises represent a future value; i.e., a value that may not yet be available.
+
+A Promise's then() method is used to specify onFulfilled and onRejected 
+callbacks that will be notified when the future value becomes available. Those 
+callbacks can subsequently transform the value that was resolved or the reason 
+that was rejected. Each call to then() returns a new Promise of that 
+transformed value; i.e., a Promise that is resolved with the callback return 
+value or rejected with any error thrown by the callback.
 ###
 Ext.define( 'Deft.promise.Promise',
 	alternateClassName: [ 'Deft.Promise' ]
+	requires: [ 'Deft.promise.Resolver' ]
 	
 	statics:
 		###*
 		* Returns a new {@link Deft.promise.Promise} that:
 		* - resolves immediately for the specified value, or
-		* - resolves, rejects, updates or cancels when the specified {@link Deft.promise.Deferred} or {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
+		* - resolves or rejects when the specified {@link Deft.promise.Promise} is
+		* resolved or rejected.
 		###
 		when: ( promiseOrValue ) ->
-			if promiseOrValue instanceof Ext.ClassManager.get( 'Deft.promise.Promise' ) or promiseOrValue instanceof Ext.ClassManager.get( 'Deft.promise.Deferred' )
-				return promiseOrValue.then()
-			else if Ext.isObject( promiseOrValue ) and Ext.isFunction( promiseOrValue.then )
-				deferred = Ext.create( 'Deft.promise.Deferred' )
-				promiseOrValue.then(
-					( value ) -> 
-						deferred.resolve( value )
-						return
-					( error ) -> 
-						deferred.reject( error )
-						return
-				)
-				return deferred.then()
-			else
-				deferred = Ext.create( 'Deft.promise.Deferred' )
-				deferred.resolve( promiseOrValue )
-				return deferred.then()
+			deferred = Ext.create( 'Deft.promise.Deferred' )
+			deferred.resolve( promiseOrValue )
+			return deferred.promise
 		
 		###*
-		* Returns a new {@link Deft.promise.Promise} that will only resolve once all the specified `promisesOrValues` have resolved.
-		* The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
+		* Determines whether the specified value is a Promise (including third-party
+		* untrusted Promises), based on the Promises/A specification feature test.
+		###
+		isPromise: ( value ) ->
+			return ( value and Ext.isFunction( value.then ) ) is true
+		
+		###*
+		* Returns a new {@link Deft.promise.Promise} that will only resolve
+		* once all the specified `promisesOrValues` have resolved.
+		* 
+		* The resolution value will be an Array containing the resolution
+		* value of each of the `promisesOrValues`.
 		###
 		all: ( promisesOrValues ) ->
-			return @when( promisesOrValues ).then( 
-				success: ( promisesOrValues ) ->
-					deferred = Ext.create( 'Deft.promise.Deferred' )
-					
-					total = promisesOrValues.length
-					resolvedValues = new Array( promisesOrValues )
-					resolvedCount = 0
-					
-					updater = ( progress ) ->
-						deferred.update( progress )
-						return progress
-					resolver = ( index, value ) ->
-						resolvedValues[ index ] = value
-						resolvedCount++
-						if resolvedCount is total
-							complete()
-							deferred.resolve( resolvedValues )
-						return value
-					rejecter = ( error ) ->
-						complete()
-						deferred.reject( error )
-						return error
-					canceller = ( reason ) ->
-						complete()
-						deferred.cancel( reason )
-						return reason
-					
-					complete = ->
-						updater = resolver = rejecter = canceller = Ext.emptyFn
-					
-					createSuccessFunction = ( index ) ->
-						return ( value ) -> resolver( index, value )
-					
-					failureFunction  = ( value ) -> rejecter( value )
-					progressFunction = ( value ) -> updater( value )
-					cancelFunction   = ( value ) -> canceller( value )
-					
-					for promiseOrValue, index in promisesOrValues
-						if index of promisesOrValues
-							@when( promiseOrValue )
-								.then( 
-									success: createSuccessFunction( index )
-									failure: failureFunction
-									progress: progressFunction
-									cancel: cancelFunction
-								)
-					
-					return deferred.getPromise()
-				scope: @
-			)
-		
+			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
+				throw new Error( 'Invalid parameter: expected an Array or Promise of an Array.' )
+			return Deft.Promise.map( promisesOrValues, ( x ) -> x )
 		
 		###*
-		* Initiates a competitive race, returning a new {@link Deft.promise.Promise} that will resolve when any one of the supplied `promisesOrValues`
-		* have resolved, or will reject when all `promisesOrValues` have rejected or cancelled.
+		* Initiates a competitive race, returning a new {@link Deft.promise.Promise}
+		* that will resolve when any one of the specified `promisesOrValues`
+		* have resolved, or will reject when all `promisesOrValues` have
+		* rejected or cancelled.
+		* 
 		* The resolution value will the first value of `promisesOrValues` to resolve.
 		###
 		any: ( promisesOrValues ) ->
-			return @some( promisesOrValues, 1 ).then( success: ( values ) -> return values[ 0 ] )
+			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
+				throw new Error( 'Invalid parameter: expected an Array or Promise of an Array.' )
+			return Deft.Promise.some( promisesOrValues, 1 )
+				.then( 
+					( array ) -> 
+						return array[ 0 ]
+					( error ) ->
+						if error.message is 'Too few Promises were resolved.'
+							throw new Error( 'No Promises were resolved.' )
+						else
+							throw error
+				)
 		
 		###*
-		* Initiates a competitive race, returning a new {@link Deft.promise.Promise} that will resolve when `howMany` of the supplied `promisesOrValues`
-		* have resolved, or will reject when it becomes impossible for `howMany` to resolve.
-		* The resolution value will be an Array of the first `howMany` values of `promisesOrValues` to resolve.
+		* Initiates a competitive race, returning a new {@link Deft.promise.Promise}
+		* that will resolve when `howMany` of the specified `promisesOrValues`
+		* have resolved, or will reject when it becomes impossible for
+		* `howMany` to resolve.
+		* 
+		* The resolution value will be an Array of the first `howMany` values
+		* of `promisesOrValues` to resolve.
 		###
 		some: ( promisesOrValues, howMany ) ->
-			return @when( promisesOrValues ).then(
-				success: ( promisesOrValues ) ->
+			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
+				throw new Error( 'Invalid parameter: expected an Array or Promise of an Array.' )
+			if not Ext.isNumeric( howMany ) or howMany <= 0
+				throw new Error( 'Invalid parameter: expected a positive integer.' )
+			return Deft.Promise.when( promisesOrValues ).then(
+				( promisesOrValues ) ->
 					values = []
 					remainingToResolve = howMany
 					remainingToReject = ( promisesOrValues.length - remainingToResolve ) + 1
@@ -119,13 +98,9 @@ Ext.define( 'Deft.promise.Promise',
 					deferred = Ext.create( 'Deft.promise.Deferred' )
 					
 					if promisesOrValues.length < howMany
-						deferred.reject( new Error( 'Too few Promises or values were supplied to obtain the requested number of resolved values.' ) )
+						deferred.reject( new Error( 'Too few Promises were resolved.' ) )
 					else
-						errorMessage = if howMany is 1 then 'No Promises were resolved.' else 'Too few Promises were resolved.'
 						
-						updater = ( progress ) ->
-							deferred.update( progress )
-							return progress
 						resolver = ( value ) ->
 							values.push( value )
 							remainingToResolve--
@@ -137,86 +112,151 @@ Ext.define( 'Deft.promise.Promise',
 							remainingToReject--
 							if remainingToReject is 0
 								complete()
-								deferred.reject( new Error( errorMessage ) )
+								deferred.reject( new Error( 'Too few Promises were resolved.' ) )
 							return error
-						canceller = ( reason ) ->
-							remainingToReject--
-							if remainingToReject is 0
-								complete()
-								deferred.reject( new Error( errorMessage ) )
-							return reason
 						
 						complete = ->
-							updater = resolver = rejecter = canceller = Ext.emptyFn
+							resolver = rejecter = Ext.emptyFn
 						
-						successFunction  = ( value ) -> resolver( value )
-						failureFunction  = ( value ) -> rejecter( value )
-						progressFunction = ( value ) -> updater( value )
-						cancelFunction   = ( value ) -> canceller( value )
+						onResolve = ( value ) -> resolver( value )
+						onReject = ( value ) -> rejecter( value )
 						
 						for promiseOrValue, index in promisesOrValues
 							if index of promisesOrValues
-								@when( promiseOrValue )
-									.then( 
-										success: successFunction
-										failure: failureFunction
-										progress: progressFunction
-										cancel: cancelFunction
-									)
+								Deft.Promise.when( promiseOrValue ).then( onResolve, onReject )
 					
-					return deferred.getPromise()
-				scope: @
+					return deferred.promise
 			)
 		
 		###*
-		* Returns a new function that wraps the specified function and caches the results for previously processed inputs.
-		* Similar to `Deft.util.Function::memoize()`, except it allows input to contain promises and/or values.
+		* Returns a new {@link Deft.promise.Promise} that will automatically
+		* resolve with the specified Promise or value after the specified
+		* delay (in milliseconds).
+		###
+		delay: ( promiseOrValue, milliseconds ) ->
+			if arguments.length is 1
+				milliseconds = promiseOrValue
+				promiseOrValue = undefined
+			milliseconds = Math.max( milliseconds, 0 )
+			
+			deferred = Ext.create( 'Deft.promise.Deferred' )
+			setTimeout( 
+				->
+					deferred.resolve( promiseOrValue )
+					return
+				milliseconds
+			)
+			return deferred.promise
+		
+		###*
+		* Returns a new {@link Deft.promise.Promise} that will automatically
+		* reject after the specified timeout (in milliseconds) if the specified 
+		* promise has not resolved or rejected.
+		###
+		timeout: ( promiseOrValue, milliseconds ) ->
+			deferred = Ext.create( 'Deft.promise.Deferred' )
+			timeoutId = setTimeout( 
+				->
+					if timeoutId
+						deferred.reject( new Error( 'Promise timed out.' ) )
+					return
+				milliseconds
+			)
+			
+			cancelTimeout = ->
+				clearTimeout( timeoutId )
+				timeoutId = null
+			
+			Deft.Promise.when( promiseOrValue ).then(
+				( value ) ->
+					cancelTimeout()
+					deferred.resolve( value )
+					return
+				( reason ) ->
+					cancelTimeout()
+					deferred.reject( reason )
+					return
+			)
+			
+			return deferred.promise
+		
+		###*
+		* Returns a new function that wraps the specified function and caches
+		* the results for previously processed inputs.
+		* 
+		* Similar to `Deft.util.Function::memoize()`, except it allows for
+		* parameters that are {@link Deft.promise.Promise}s and/or values.
 		###
 		memoize: ( fn, scope, hashFn ) ->
 			memoizedFn = Deft.util.Function.memoize( fn, scope, hashFn )
-			return Ext.bind(
-				->
-					return @all( Ext.Array.toArray( arguments ) ).then( ( values ) ->
-						return memoizedFn.apply( scope, values )
-					)
-				@
-			)
+			return ->
+				return Deft.Promise.all( Ext.Array.toArray( arguments ) ).then( ( values ) ->
+					return memoizedFn.apply( scope, values )
+				)
 		
 		###*
-		* Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
+		* Traditional map function, similar to `Array.prototype.map()`, that
+		* allows input to contain promises and/or values.
+		* 
 		* The specified map function may return either a value or a promise.
 		###
-		map: ( promisesOrValues, mapFunction ) ->
-			createCallback = ( index ) ->
-				return ( value ) -> mapFunction( value, index, promisesOrValues )
-			
-			return @when( promisesOrValues ).then( 
-				success: ( promisesOrValues ) ->
-					# Since the map function may be asynchronous, get all invocations of it into flight ASAP.
+		map: ( promisesOrValues, mapFn ) ->
+			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
+				throw new Error( 'Invalid parameter: expected an Array or Promise of an Array.' )
+			if not Ext.isFunction( mapFn )
+				throw new Error( 'Invalid parameter: expected a function.' )
+			return Deft.Promise.when( promisesOrValues ).then(
+				( promisesOrValues ) ->
+					remainingToResolve = promisesOrValues.length
 					results = new Array( promisesOrValues.length )
-					for promiseOrValue, index in promisesOrValues
-						if index of promisesOrValues
-							results[ index ] = @when( promiseOrValue ).then( createCallback( index ) )
 					
-					# Then use reduce() to collect all the results.
-					return @reduce( results, @reduceIntoArray, results )
-				scope: @
+					deferred = Ext.create( 'Deft.promise.Deferred' )
+					
+					if not remainingToResolve
+						deferred.resolve( results )
+					else
+						resolve = ( item, index ) ->
+							Deft.Promise.when( item )
+								.then(
+									( value ) ->
+										return mapFn( value, index, results )
+								)
+								.then(
+									( value ) ->
+										results[ index ] = value
+										if not --remainingToResolve
+											deferred.resolve( results )
+										return value
+									deferred.reject
+								)
+						
+						for promiseOrValue, index in promisesOrValues
+							if index of promisesOrValues
+								resolve( promisesOrValues[ index ], index )
+							else
+								remainingToResolve--
+					
+					return deferred.promise
 			)
 		
 		###*
-		* Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
+		* Traditional reduce function, similar to `Array.reduce()`, that allows
+		* input to contain promises and/or values.
 		###
-		reduce: ( promisesOrValues, reduceFunction, initialValue ) ->
+		reduce: ( promisesOrValues, reduceFn, initialValue ) ->
+			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
+				throw new Error( 'Invalid parameter: expected an Array or Promise of an Array.' )
+			if not Ext.isFunction( reduceFn )
+				throw new Error( 'Invalid parameter: expected a function.' )
 			initialValueSpecified = arguments.length is 3
-			return @when( promisesOrValues ).then( 
-				success: ( promisesOrValues ) ->
+			return Deft.Promise.when( promisesOrValues ).then( 
+				( promisesOrValues ) ->
 					# Wrap the reduce function with one that handles promises and then delegates to it.
-					whenFunction = @when
 					reduceArguments = [
 						( previousValueOrPromise, currentValueOrPromise, currentIndex ) ->
-							return whenFunction( previousValueOrPromise ).then( ( previousValue ) ->
-								return whenFunction( currentValueOrPromise ).then( ( currentValue ) ->
-										return reduceFunction( previousValue, currentValue, currentIndex, promisesOrValues )
+							return Deft.Promise.when( previousValueOrPromise ).then( ( previousValue ) ->
+								return Deft.Promise.when( currentValueOrPromise ).then( ( currentValue ) ->
+									return reduceFn( previousValue, currentValue, currentIndex, promisesOrValues )
 								)
 							)
 					]
@@ -224,15 +264,14 @@ Ext.define( 'Deft.promise.Promise',
 					if initialValueSpecified
 						reduceArguments.push( initialValue )
 					
-					return @when( @reduceArray.apply( promisesOrValues, reduceArguments ) )
-				scope: @
+					return Deft.Promise.reduceArray.apply( promisesOrValues, reduceArguments )
 			)
 		
 		###*
 		* Fallback implementation when Array.reduce is not available.
 		* @private
 		###
-		reduceArray: ( reduceFunction, initialValue ) ->
+		reduceArray: ( reduceFn, initialValue ) ->
 			# ES5 reduce implementation if native not available
 			# See: http://es5.github.com/#x15.4.4.21 as there are many specifics and edge cases.
 			# ES5 dictates that reduce.length === 1
@@ -252,7 +291,7 @@ Ext.define( 'Deft.promise.Promise',
 						break
 					# If we reached the end of the array without finding any real elements, it's a TypeError
 					if ++index >= length
-						throw new TypeError()
+						throw new TypeError( 'Reduce of empty array with no initial value' )
 			else
 				# If initialValue provided, use it
 				reduced = args[ 1 ]
@@ -261,66 +300,154 @@ Ext.define( 'Deft.promise.Promise',
 			while index < length
 				# Skip holes
 				if index of array
-					reduced = reduceFunction( reduced, array[ index ], index, array )
+					reduced = reduceFn( reduced, array[ index ], index, array )
 				index++
 			
 			return reduced
+	
+	constructor: ( resolver ) ->
+		rethrowError = ( error ) -> 
+			Deft.util.Function.nextTick( -> throw error )
+			return
 		
-		###*
-		* @private
-		###
-		reduceIntoArray: ( previousValue, currentValue, currentIndex ) ->
-			previousValue[ currentIndex ] = currentValue
-			return previousValue
-	
-	id: null
-	
-	constructor: ( config ) ->
-		@id = config.id
-		@deferred = config.deferred
+		@then = ( onFulfilled, onRejected, onProgress, scope ) ->
+			if arguments.length is 1 and Ext.isObject( arguments[0] )
+				{ success: onFulfilled, failure: onRejected, progress: onProgress, scope: scope } = arguments[0]
+			if scope?
+				if Ext.isFunction( onFulfilled )
+					onFulfilled = Ext.Function.bind( onFulfilled, scope )
+				if Ext.isFunction( onRejected )
+					onRejected = Ext.Function.bind( onRejected, scope )
+				if Ext.isFunction( onProgress )
+					onProgress = Ext.Function.bind( onProgress, scope )
+			return resolver.then( onFulfilled, onRejected, onProgress )
+		@otherwise = ( onRejected, scope ) ->
+			if arguments.length is 1 and Ext.isObject( arguments[0] )
+				{ fn: onRejected, scope: scope } = arguments[0]
+			if scope?
+				onRejected = Ext.Function.bind( onRejected, scope )
+			return resolver.then( null, onRejected )
+		@always = ( onCompleted, scope ) ->
+			if arguments.length is 1 and Ext.isObject( arguments[0] )
+				{ fn: onCompleted, scope: scope } = arguments[0]
+			if scope?
+				onCompleted = Ext.Function.bind( onCompleted, scope )
+			return resolver.then(
+				( value ) ->
+					try
+						onCompleted()
+					catch error
+						rethrowError( error )
+					return value
+				( reason ) ->
+					try
+						onCompleted()
+					catch error
+						rethrowError( error )
+					throw reason
+			)
+		@done = ->
+			resolver.then( null, rethrowError )
+			return
+		@cancel = ( reason = null )->
+			resolver.reject( new CancellationError( reason ) )
+			return
+		@log = ( name = '' )->
+			return resolver.then(
+				( value ) ->
+					Deft.Logger.log( "#{ name or 'Promise' } resolved with value: #{ value }" )
+					return value
+				( reason ) ->
+					Deft.Logger.log( "#{ name or 'Promise' } rejected with reason: #{ reason }" )
+					throw reason
+			)
+		
 		return @
-	
-	###*
-	* Returns a new {@link Deft.promise.Promise} with the specified callbacks registered to be called when this {@link Deft.promise.Promise} is resolved, rejected, updated or cancelled.
-	###
-	then: ( callbacks ) ->
-		return @deferred.then.apply( @deferred, arguments )
-	
-	###*
-	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is rejected.
-	###	
-	otherwise: ( callback, scope ) ->
-		return @deferred.otherwise.apply( @deferred, arguments )
 		
 	###*
-	* Returns a new {@link Deft.promise.Promise} with the specified callback registered to be called when this {@link Deft.promise.Promise} is resolved, rejected or cancelled.
-	###	
-	always: ( callback, scope ) ->
-		return @deferred.always.apply( @deferred, arguments )
+	* Attaches callbacks that will be notified when this 
+	* {@link Deft.promise.Promise}'s future value becomes available. Those
+	* callbacks can subsequently transform the value that was resolved or
+	* the reason that was rejected.
+	* 
+	* Each call to then() returns a new Promise of that transformed value;
+	* i.e., a Promise that is resolved with the callback return value or 
+	* rejected with any error thrown by the callback.
+	*
+	* @param {Function} fn Callback function to be called when resolved.
+	* @param {Function} fn Callback function to be called when rejected.
+	* @param {Function} fn Callback function to be called with progress updates.
+	* @param {Object} scope Optional scope for the callback(s).
+	* @param {Deft.promise.Promise} A Promise of the transformed future value.
+	###
+	then: Ext.emptyFn
 	
 	###*
-	* Cancel this {@link Deft.promise.Promise} and notify relevant callbacks.
+	* Attaches a callback that will be called if this 
+	* {@link Deft.promise.Promise} is rejected. The callbacks can 
+	* subsequently transform the reason that was rejected.
+	* 
+	* Each call to otherwise() returns a new Promise of that transformed value;
+	* i.e., a Promise that is resolved with the callback return value or 
+	* rejected with any error thrown by the callback.
+	*
+	* @param {Function} fn Callback function to be called when rejected.
+	* @param {Object} scope Optional scope for the callback.
+	* @param {Deft.promise.Promise} A Promise of the transformed future value.
 	###
-	cancel: ( reason ) ->
-		return @deferred.cancel( reason )
+	otherwise: Ext.emptyFn
 	
 	###*
-	* Get this {@link Deft.promise.Promise}'s current state.
+	* Attaches a callback to this {Deft.promise.Promise} that will be 
+	* called when it resolves or rejects. Similar to "finally" in 
+	* "try..catch..finally".
+	*
+	* @param {Function} fn Callback function.
+	* @param {Object} scope Optional scope for the callback.
+	* @return {Deft.promise.Promise} A new "pass-through" Promise that 
+	* resolves with the original value or rejects with the original reason.
 	###
-	getState: ->
-		return @deferred.getState()
+	always: Ext.emptyFn
 	
 	###*
-	* Returns a text representation of this {@link Deft.promise.Promise}, including its optional id.
+	* Terminates a {Deft.promise.Promise} chain, ensuring that unhandled
+	* rejections will be thrown as Errors.
 	###
-	toString: ->
-		if @id?
-			return "Promise #{ @id }"
-		return "Promise"
+	done: Ext.emptyFn
+	
+	###*
+	* Cancels this {Deft.promise.Promise} if it is still pending, triggering 
+	* a rejection with a CancellationError that will propagate to any Promises
+	* originating from this Promise.
+	###
+	cancel: Ext.emptyFn
+	
+	###*
+	* Logs the resolution or rejection of this Promise using 
+	* {@link Deft.Logger#log}.
+	*
+	* @param {String} An optional identifier to incorporate into the 
+	* resulting log entry.
+	* @return {Deft.promise.Promise} A new "pass-through" Promise that 
+	* resolves with the original value or rejects with the original reason.
+	###
+	log: Ext.emptyFn
 ,
 	->
 		# Use native reduce implementation, if available.
 		if Array::reduce?
 			@reduceArray = Array::reduce
+		
+		# Define and export custom CancellationError
+		target = exports ? window
+		target.CancellationError = 
+			( reason ) ->
+				if Error.captureStackTrace
+					Error.captureStackTrace( @, CancellationError )
+				@name = 'Canceled'
+				@message = reason
+				return
+		target.CancellationError.prototype = new Error()
+		target.CancellationError.constructor = target.CancellationError
 		return
 )
