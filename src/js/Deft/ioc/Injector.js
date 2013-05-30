@@ -169,16 +169,19 @@ Ext.define('Deft.ioc.Injector', {
   },
   /**
   	Resolve a dependency (by identifier) with the corresponding object instance or value.
-  	
+  
   	Optionally, the caller may specify the target instance (to be supplied to the dependency provider's factory function, if applicable).
   */
 
-  resolve: function(identifier, targetInstance) {
+  resolve: function(identifier, targetInstance, targetInstanceConstructorArguments) {
     var provider;
 
     provider = this.providers[identifier];
     if (provider != null) {
-      return provider.resolve(targetInstance);
+      if (targetInstance && !targetInstanceConstructorArguments) {
+        targetInstanceConstructorArguments = [targetInstance.getInitialConfig()];
+      }
+      return provider.resolve(targetInstance, targetInstanceConstructorArguments);
     } else {
       Ext.Error.raise({
         msg: "Error while resolving value to inject: no dependency provider found for '" + identifier + "'."
@@ -189,13 +192,16 @@ Ext.define('Deft.ioc.Injector', {
   	Inject dependencies (by their identifiers) into the target object instance.
   */
 
-  inject: function(identifiers, targetInstance, targetInstanceIsInitialized) {
+  inject: function(identifiers, targetInstance, targetInstanceConstructorArguments, targetInstanceIsInitialized) {
     var injectConfig, name, originalInitConfigFunction, setterFunctionName, stackMessage, targetClass, value;
 
     if (targetInstanceIsInitialized == null) {
       targetInstanceIsInitialized = true;
     }
     targetClass = Ext.getClassName(targetInstance);
+    if (targetInstanceIsInitialized) {
+      targetInstanceConstructorArguments = [targetInstance.getInitialConfig()];
+    }
     if (Ext.Array.contains(this.injectionStack, targetClass)) {
       stackMessage = this.injectionStack.join(" -> ");
       this.injectionStack = [];
@@ -214,7 +220,7 @@ Ext.define('Deft.ioc.Injector', {
 
       targetProperty = Ext.isArray(identifiers) ? value : key;
       identifier = value;
-      resolvedValue = this.resolve(identifier, targetInstance);
+      resolvedValue = this.resolve(identifier, targetInstance, targetInstanceConstructorArguments);
       if (targetProperty in targetInstance.config) {
         Deft.Logger.log("Injecting '" + identifier + "' into '" + targetClass + "." + targetProperty + "' config.");
         injectConfig[targetProperty] = resolvedValue;

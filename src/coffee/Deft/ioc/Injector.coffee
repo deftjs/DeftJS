@@ -111,17 +111,17 @@ Ext.define( 'Deft.ioc.Injector',
 	alternateClassName: [ 'Deft.Injector' ]
 	requires: [
 		'Ext.Component'
-		
+
 		'Deft.log.Logger'
 		'Deft.ioc.DependencyProvider'
 	]
 	singleton: true
-	
+
 	constructor: ->
 		@providers = {}
 		@injectionStack = []
 		return @
-	
+
 	###*
 	Configure the Injector.
 	###
@@ -159,7 +159,7 @@ Ext.define( 'Deft.ioc.Injector',
 			@
 		)
 		return
-	
+
 	###*
 	Reset the Injector.
 	###
@@ -167,33 +167,38 @@ Ext.define( 'Deft.ioc.Injector',
 		Deft.Logger.log( 'Resetting the injector.' )
 		@providers = {}
 		return
-	
+
 	###*
 	Indicates whether the Injector can resolve a dependency by the specified identifier with the corresponding object instance or value.
 	###
 	canResolve: ( identifier ) ->
 		provider = @providers[ identifier ]
 		return provider?
-	
+
 	###*
 	Resolve a dependency (by identifier) with the corresponding object instance or value.
-	
+
 	Optionally, the caller may specify the target instance (to be supplied to the dependency provider's factory function, if applicable).
 	###
-	resolve: ( identifier, targetInstance ) ->
+	resolve: ( identifier, targetInstance, targetInstanceConstructorArguments ) ->
 		provider = @providers[ identifier ]
 		if provider?
-			return provider.resolve( targetInstance )
+			if targetInstance and not targetInstanceConstructorArguments
+				targetInstanceConstructorArguments = [ targetInstance.getInitialConfig() ]
+			return provider.resolve( targetInstance, targetInstanceConstructorArguments )
 		else
 			Ext.Error.raise( msg: "Error while resolving value to inject: no dependency provider found for '#{ identifier }'." )
 		return
-	
+
 	###*
 	Inject dependencies (by their identifiers) into the target object instance.
 	###
-	inject: ( identifiers, targetInstance, targetInstanceIsInitialized = true ) ->
+	inject: ( identifiers, targetInstance, targetInstanceConstructorArguments, targetInstanceIsInitialized = true ) ->
 
 		targetClass = Ext.getClassName( targetInstance )
+
+		if targetInstanceIsInitialized
+			targetInstanceConstructorArguments = [ targetInstance.getInitialConfig() ]
 
 		# Maintain a set of classes processed during this injection pass. If we hit a circular dependency, throw an error.
 		if( Ext.Array.contains( @injectionStack, targetClass ) )
@@ -206,12 +211,13 @@ Ext.define( 'Deft.ioc.Injector',
 
 		injectConfig = {}
 		identifiers = [ identifiers ] if Ext.isString( identifiers )
-		Ext.Object.each( 
+		Ext.Object.each(
 			identifiers
 			( key, value ) ->
 				targetProperty = if Ext.isArray( identifiers ) then value else key
 				identifier = value
-				resolvedValue = @resolve( identifier, targetInstance )
+
+				resolvedValue = @resolve( identifier, targetInstance, targetInstanceConstructorArguments )
 				if targetProperty of targetInstance.config
 					Deft.Logger.log( "Injecting '#{ identifier }' into '#{ targetClass }.#{ targetProperty }' config." )
 					injectConfig[ targetProperty ] = resolvedValue
@@ -223,7 +229,7 @@ Ext.define( 'Deft.ioc.Injector',
 		)
 
 		@injectionStack = []
-		
+
 		# Ext JS and Sencha Touch do not provide a consistent mechanism (across the target framework versions) for detecting whether initConfig() has been executed.
 		# Consequently, we rely on an optional method parameter to determine this state instead.
 		if targetInstanceIsInitialized
@@ -240,7 +246,7 @@ Ext.define( 'Deft.ioc.Injector',
 				targetInstance.initConfig = ( config ) ->
 					result = originalInitConfigFunction.call( @, Ext.Object.merge( {}, config or {}, injectConfig ) )
 					return result
-		
+
 		return targetInstance
 ,
 	->
@@ -259,13 +265,13 @@ Ext.define( 'Deft.ioc.Injector',
 				# Ext JS 4.1+
 				Ext.define( 'Deft.InjectableComponent',
 					override: 'Ext.Component'
-					
+
 					constructor: ( config ) ->
 						config = Ext.Object.merge( {}, config or {}, @injectConfig or {} )
 						delete @injectConfig
 						return @callParent( [ config ] )
 				)
-		
+
 		return
 
 )

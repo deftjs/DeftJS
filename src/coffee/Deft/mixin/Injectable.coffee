@@ -8,12 +8,12 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * @deprecated 0.8 Deft.mixin.Injectable has been deprecated and can now be omitted - simply use the \'inject\' class annotation on its own.
 ###
 Ext.define( 'Deft.mixin.Injectable',
-	requires: [ 
+	requires: [
 		'Deft.core.Class'
 		'Deft.ioc.Injector'
 		'Deft.log.Logger'
 	]
-	
+
 	###*
 	@private
 	###
@@ -27,7 +27,7 @@ Ext.define( 'Deft.mixin.Injectable',
 			createInjectionInterceptor = ->
 				return ->
 					if not @$injected
-						Deft.Injector.inject( @inject, @, false )
+						Deft.Injector.inject( @inject, @, arguments, false )
 						@$injected = true
 					return @callOverridden( arguments )
 		else
@@ -35,11 +35,11 @@ Ext.define( 'Deft.mixin.Injectable',
 			createInjectionInterceptor = ->
 				return ->
 					if not @$injected
-						Deft.Injector.inject( @inject, @, false )
+						Deft.Injector.inject( @inject, @, arguments, false )
 						@$injected = true
 					return @callParent( arguments )
-		
-		Deft.Class.registerPreprocessor( 
+
+		Deft.Class.registerPreprocessor(
 			'inject'
 			( Class, data, hooks, callback ) ->
 				# Convert a String or Array of Strings specified for data.inject into an Object.
@@ -49,7 +49,7 @@ Ext.define( 'Deft.mixin.Injectable',
 					for identifier in data.inject
 						dataInjectObject[ identifier ] = identifier
 					data.inject = dataInjectObject
-				
+
 				# Override the constructor for this class with an injection interceptor.
 				Deft.Class.hookOnClassCreated( hooks, ( Class ) ->
 					Class.override(
@@ -57,7 +57,7 @@ Ext.define( 'Deft.mixin.Injectable',
 					)
 					return
 				)
-				
+
 				# Process any classes that extend this class.
 				Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
 					# Override the constructor for this class with an injection interceptor.
@@ -67,18 +67,18 @@ Ext.define( 'Deft.mixin.Injectable',
 						)
 						return
 					)
-					
+
 					# Merge identifiers, ensuring that identifiers in data override identifiers in superclass.
 					data.inject ?= {}
 					Ext.applyIf( data.inject, Class.superclass.inject )
 					return
 				)
-				
+
 				return
 			'before'
 			'extend'
 		)
-		
+
 		return
 )
 
