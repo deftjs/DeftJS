@@ -1647,14 +1647,12 @@ describe( 'Deft.ioc.Injector', ->
 				expect( fnResolvePassedInstanceAsPrototypeFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
 				expect( fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
 
-				# exampleConfig != the config object eventually passed to the constructor, it appears to have an extra property
-				# in the debugger. Attempts to use getInitialConfig also fail. Still investigating.
-				expect( fnResolvePassedInstanceFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
-				expect( fnResolvePassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
-				expect( fnResolvePassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
-				expect( fnResolvePassedInstanceAsSingletonLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
-				expect( fnResolvePassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
-				expect( fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance.getInitialConfig() )
+				expect( fnResolvePassedInstanceFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnResolvePassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnResolvePassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnResolvePassedInstanceAsSingletonLazilyFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnResolvePassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleConfig )
+				expect( fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleConfig )
 
 				return
 			)
@@ -2186,8 +2184,6 @@ describe( 'Deft.ioc.Injector', ->
 				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
 				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction.thisValues[0] ).to.be.equal( exampleClassInstance )
 
-				# exampleConfig != the config object eventually passed to the constructor, it appears to have an extra property
-				# in the debugger. Attempts to use getInitialConfig also fail. Still investigating.
 				expect( fnInjectPassedInstanceFactoryFunction ).to.be.calledWith( exampleConfig )
 				expect( fnInjectPassedInstanceLazilyFactoryFunction ).to.be.calledWith( exampleConfig )
 				expect( fnInjectPassedInstanceAsSingletonFactoryFunction ).to.be.calledWith( exampleConfig )

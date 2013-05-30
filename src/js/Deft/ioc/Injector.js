@@ -179,7 +179,7 @@ Ext.define('Deft.ioc.Injector', {
     provider = this.providers[identifier];
     if (provider != null) {
       if (targetInstance && !targetInstanceConstructorArguments) {
-        targetInstanceConstructorArguments = [targetInstance.getInitialConfig()];
+        targetInstanceConstructorArguments = [targetInstance.initialConfig];
       }
       return provider.resolve(targetInstance, targetInstanceConstructorArguments);
     } else {
@@ -200,7 +200,7 @@ Ext.define('Deft.ioc.Injector', {
     }
     targetClass = Ext.getClassName(targetInstance);
     if (targetInstanceIsInitialized) {
-      targetInstanceConstructorArguments = [targetInstance.getInitialConfig()];
+      targetInstanceConstructorArguments = [targetInstance.initialConfig];
     }
     if (Ext.Array.contains(this.injectionStack, targetClass)) {
       stackMessage = this.injectionStack.join(" -> ");

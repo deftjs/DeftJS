@@ -1042,12 +1042,12 @@ describe('Deft.ioc.Injector', function() {
         expect(fnResolvePassedInstanceAsSingletonLazilyFactoryFunction.thisValues[0]).to.be.equal(exampleClassInstance);
         expect(fnResolvePassedInstanceAsPrototypeFactoryFunction.thisValues[0]).to.be.equal(exampleClassInstance);
         expect(fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction.thisValues[0]).to.be.equal(exampleClassInstance);
-        expect(fnResolvePassedInstanceFactoryFunction).to.be.calledWith(exampleClassInstance.getInitialConfig());
-        expect(fnResolvePassedInstanceLazilyFactoryFunction).to.be.calledWith(exampleClassInstance.getInitialConfig());
-        expect(fnResolvePassedInstanceAsSingletonFactoryFunction).to.be.calledWith(exampleClassInstance.getInitialConfig());
-        expect(fnResolvePassedInstanceAsSingletonLazilyFactoryFunction).to.be.calledWith(exampleClassInstance.getInitialConfig());
-        expect(fnResolvePassedInstanceAsPrototypeFactoryFunction).to.be.calledWith(exampleClassInstance.getInitialConfig());
-        expect(fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction).to.be.calledWith(exampleClassInstance.getInitialConfig());
+        expect(fnResolvePassedInstanceFactoryFunction).to.be.calledWith(exampleConfig);
+        expect(fnResolvePassedInstanceLazilyFactoryFunction).to.be.calledWith(exampleConfig);
+        expect(fnResolvePassedInstanceAsSingletonFactoryFunction).to.be.calledWith(exampleConfig);
+        expect(fnResolvePassedInstanceAsSingletonLazilyFactoryFunction).to.be.calledWith(exampleConfig);
+        expect(fnResolvePassedInstanceAsPrototypeFactoryFunction).to.be.calledWith(exampleConfig);
+        expect(fnResolvePassedInstanceAsPrototypeLazilyFactoryFunction).to.be.calledWith(exampleConfig);
       });
     });
     describe('Injection', function() {
