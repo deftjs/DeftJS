@@ -1,39 +1,125 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Mocha Tests</title>
+	<title>Deft JS Test Suite</title>
+	
+	<style>
+		.platform-links  h1 {
+			font-size: 1em;
+			font-weight: 200;
+		}
+		.platform-links a, .platform-links a:visited {
+			color: inherit;
+			text-decoration: none;
+		}
+		.platform-links a:hover {
+			color: orange;
+			text-decoration: underline;
+		}
+		.platform-links a:active {
+			color: orange;
+			text-decoration: underline;
+		}
+		.current-version h1 {
+			font-size: 1em;
+			font-weight: 200;
+		}
+	</style>
+	
 	<link rel="stylesheet" href="lib/mocha-1.9.0/mocha.css" />
-</head>
-<body>
-	<div id="mocha"></div>
-	<script src="http://cdn.sencha.io/ext-4.2.0-beta/ext-all.js"></script>
-	<script src="../build/deft-debug.js"></script>
-
+	
 	<script src="lib/mocha-1.9.0/mocha.js"></script>
 	<script src="lib/mocha-as-promised-1.3.0/mocha-as-promised.js"></script>
 	<script src="lib/chai-1.6.0/chai.js"></script>
 	<script src="lib/chai-as-promised-3.3.0/chai-as-promised.js"></script>
 	<script src="lib/sinon-1.6.0/sinon.js"></script>
 	<script src="lib/sinon-chai-2.4.0/sinon-chai.js"></script>
-
+	
 	<script>
 		window.global = window;
 		mocha.setup('bdd')
 	</script>
 	<script src="support/browser.js"></script>
-
+	
+	<!-- Include Sencha libs based on passed URL params. -->
+	<script type="text/javascript">
+		function getUrlVars() {
+			var vars = {};
+			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+				vars[key] = value;
+			});
+			return vars;
+		}
+		
+		var platform = getUrlVars()["platform"];
+		var version = getUrlVars()["version"];
+		var newcdn = getUrlVars()["newcdn"];
+		var senchaUrl = "http://cdn.sencha.io/";
+		var currentVersionMessage = "";
+		
+		if (platform && version) {
+			if (platform === "ext") {
+				if( newcdn === "false" ) {
+					senchaUrl += "ext-" + version + "/ext-all.js"; //add all-dev for debug
+				}
+				else {
+					senchaUrl += "ext/gpl/" + version + "/ext-all.js"; //add all-dev for debug
+				}
+				currentVersionMessage = "Currently using: ExtJS " + version;
+			} else {
+				senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js";  //add all-debug for debug
+				currentVersionMessage = "Currently using: Sencha Touch " + version;
+			}
+			
+			// Include target Sencha library.
+			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"" + senchaUrl + "\"><\/script>");
+			
+			// Include DeftJS.
+			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"../build/deft-debug.js\"><\/script>");
+		}
+	</script>
+		
 	<!-- <script src="lib/setImmediate-1.0.1/setImmediate.js"></script> -->
-
-  <script src="js/Deft/ioc/Injector.js"></script>
-  <script src="js/Deft/mixin/Injectable.js"></script>
-
+	
+	<!-- Deft JS Promise Adapter for Promises/A+ Test Suite -->
 	<script src="DeftJS-Promise-adapter.js"></script>
+	
+	<!-- DeftJS Tests -->
+	<script src="js/Deft/ioc/Injector.js"></script>
+	<script src="js/Deft/mixin/Injectable.js"></script>
 	<script src="lib/promises-aplus-tests-1.3.1/promises-aplus-tests.js"></script>
 	<script src="js/Deft/promise/Promise.js"></script>
 	<script src="js/Deft/promise/Chain.js"></script>
-
-	<script>
-		mocha.run();
+	
+	<script type="text/javascript">
+		if (Ext) {
+			Ext.Loader.setConfig({
+				enabled: true
+			});
+			
+			Ext.onReady( function () {
+				mocha.run();
+			});
+		}
 	</script>
+	
+</head>
+<body>
+	<div class="platform-links">
+		<h1>Choose Target Library:</h1>
+		<a href="?platform=ext&version=4.0.7-gpl&newcdn=false">ExtJS 4.0.7</a> |
+		<a href="?platform=ext&version=4.1.0-gpl&newcdn=false">ExtJS 4.1.0</a> |
+		<a href="?platform=ext&version=4.1.1a-gpl&newcdn=false">ExtJS 4.1.1a</a> |
+		<a href="?platform=ext&version=4.2.0&newcdn=true">ExtJS 4.2.0</a> |
+		<a href="?platform=touch&version=2.0.1&newcdn=false">Touch 2.0.1</a> |
+		<a href="?platform=touch&version=2.1.0&newcdn=false">Touch 2.1.0</a> |
+		<a href="?platform=touch&version=2.1.1&newcdn=false">Touch 2.1.1</a>
+	</div>
+	<div class="current-version">
+		<h1><script type="text/javascript">document.write( currentVersionMessage )</script></h1>
+	</div>
+	<hr/>
+	
+	<div id="mocha"></div>
 </body>
 </html>
