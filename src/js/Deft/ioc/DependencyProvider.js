@@ -108,7 +108,7 @@ Ext.define('Deft.ioc.DependencyProvider', {
   */
 
   resolve: function(targetInstance, targetInstanceConstructorArguments) {
-    var instance, parameters;
+    var fnArguments, instance, parameters;
 
     Deft.Logger.log("Resolving '" + (this.getIdentifier()) + "'.");
     if (this.getValue() !== void 0) {
@@ -117,7 +117,12 @@ Ext.define('Deft.ioc.DependencyProvider', {
     instance = null;
     if (this.getFn() != null) {
       Deft.Logger.log("Executing factory function.");
-      instance = this.getFn().apply(targetInstance, targetInstanceConstructorArguments);
+      if (targetInstanceConstructorArguments) {
+        fnArguments = [targetInstance].concat(Ext.toArray(targetInstanceConstructorArguments));
+      } else {
+        fnArguments = [targetInstance];
+      }
+      instance = this.getFn().apply(Deft.Injector, fnArguments);
     } else if (this.getClassName() != null) {
       if (Ext.ClassManager.get(this.getClassName()).singleton) {
         Deft.Logger.log("Using existing singleton instance of '" + (this.getClassName()) + "'.");
