@@ -2,7 +2,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>Deft JS Test Suite</title>
-	
+
 	<style>
 		.platform-links  h1 {
 			font-size: 1em;
@@ -25,22 +25,22 @@
 			font-weight: 200;
 		}
 	</style>
-	
+
 	<link rel="stylesheet" href="lib/mocha-1.9.0/mocha.css" />
-	
+
 	<script src="lib/mocha-1.9.0/mocha.js"></script>
 	<script src="lib/mocha-as-promised-1.3.0/mocha-as-promised.js"></script>
 	<script src="lib/chai-1.6.0/chai.js"></script>
 	<script src="lib/chai-as-promised-3.3.0/chai-as-promised.js"></script>
 	<script src="lib/sinon-1.6.0/sinon.js"></script>
 	<script src="lib/sinon-chai-2.4.0/sinon-chai.js"></script>
-	
+
 	<script>
 		window.global = window;
 		mocha.setup('bdd')
 	</script>
 	<script src="support/browser.js"></script>
-	
+
 	<!-- Include Sencha libs based on passed URL params. -->
 	<script type="text/javascript">
 		function getUrlVars() {
@@ -50,13 +50,13 @@
 			});
 			return vars;
 		}
-		
-		var platform = getUrlVars()["platform"];
-		var version = getUrlVars()["version"];
-		var newcdn = getUrlVars()["newcdn"];
+
+		var platform = getUrlVars()["platform"] || localStorage.getItem('platform');
+		var version = getUrlVars()["version"] || localStorage.getItem('version');
+		var newcdn = getUrlVars()["newcdn"] || localStorage.getItem('newcdn');
 		var senchaUrl = "http://cdn.sencha.io/";
 		var currentVersionMessage = "";
-		
+
 		if (platform && version) {
 			if (platform === "ext") {
 				if( newcdn === "false" ) {
@@ -70,39 +70,44 @@
 				senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js";  //add all-debug for debug
 				currentVersionMessage = "Currently using: Sencha Touch " + version;
 			}
-			
+
 			// Include target Sencha library.
 			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"" + senchaUrl + "\"><\/script>");
-			
+
 			// Include DeftJS.
 			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"../build/deft-debug.js\"><\/script>");
+
+			// Persist selection for Mocha description and test filter support
+			localStorage.setItem('platform', platform)
+			localStorage.setItem('version', version)
+			localStorage.setItem('newcdn', newcdn)
 		}
 	</script>
-		
+
 	<!-- <script src="lib/setImmediate-1.0.1/setImmediate.js"></script> -->
-	
+
 	<!-- Deft JS Promise Adapter for Promises/A+ Test Suite -->
 	<script src="DeftJS-Promise-adapter.js"></script>
-	
+
 	<!-- DeftJS Tests -->
 	<script src="js/Deft/ioc/Injector.js"></script>
 	<script src="js/Deft/mixin/Injectable.js"></script>
 	<script src="lib/promises-aplus-tests-1.3.1/promises-aplus-tests.js"></script>
 	<script src="js/Deft/promise/Promise.js"></script>
 	<script src="js/Deft/promise/Chain.js"></script>
-	
+
 	<script type="text/javascript">
 		if (Ext) {
 			Ext.Loader.setConfig({
 				enabled: true
 			});
-			
+
 			Ext.onReady( function () {
 				mocha.run();
 			});
 		}
 	</script>
-	
+
 </head>
 <body>
 	<div class="platform-links">
@@ -119,7 +124,7 @@
 		<h1><script type="text/javascript">document.write( currentVersionMessage )</script></h1>
 	</div>
 	<hr/>
-	
+
 	<div id="mocha"></div>
 </body>
 </html>
