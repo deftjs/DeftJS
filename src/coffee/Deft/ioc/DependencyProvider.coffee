@@ -97,7 +97,11 @@ Ext.define( 'Deft.ioc.DependencyProvider',
 		instance = null
 		if @getFn()?
 			Deft.Logger.log( "Executing factory function." )
-			instance = @getFn().apply( targetInstance, targetInstanceConstructorArguments )
+			if targetInstanceConstructorArguments
+				fnArguments = [ targetInstance ].concat( Ext.toArray( targetInstanceConstructorArguments ) )
+			else
+				fnArguments = [ targetInstance ]
+			instance = @getFn().apply( Deft.Injector, fnArguments )
 		else if @getClassName()?
 			if Ext.ClassManager.get( @getClassName() ).singleton
 				Deft.Logger.log( "Using existing singleton instance of '#{ @getClassName() }'." )

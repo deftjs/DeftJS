@@ -183,8 +183,6 @@ Ext.define( 'Deft.ioc.Injector',
 	resolve: ( identifier, targetInstance, targetInstanceConstructorArguments ) ->
 		provider = @providers[ identifier ]
 		if provider?
-			if targetInstance and not targetInstanceConstructorArguments
-				targetInstanceConstructorArguments = [ targetInstance.initialConfig ]
 			return provider.resolve( targetInstance, targetInstanceConstructorArguments )
 		else
 			Ext.Error.raise( msg: "Error while resolving value to inject: no dependency provider found for '#{ identifier }'." )
@@ -196,9 +194,6 @@ Ext.define( 'Deft.ioc.Injector',
 	inject: ( identifiers, targetInstance, targetInstanceConstructorArguments, targetInstanceIsInitialized = true ) ->
 
 		targetClass = Ext.getClassName( targetInstance )
-
-		if targetInstanceIsInitialized
-			targetInstanceConstructorArguments = [ targetInstance.initialConfig ]
 
 		# Maintain a set of classes processed during this injection pass. If we hit a circular dependency, throw an error.
 		if( Ext.Array.contains( @injectionStack, targetClass ) )
