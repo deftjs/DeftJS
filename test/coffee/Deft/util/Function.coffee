@@ -114,9 +114,7 @@ describe( 'Deft.util.Function', ->
 			wrapperFunction = Deft.util.Function.spread( targetFunction )
 			
 			expect( Ext.isFunction( wrapperFunction ) ).to.be.true
-			expect( ->
-				wrapperFunction( 'value' )
-			).to.throw( Error, 'Error spreading passed Array over target function arguments: passed a non-Array.' )
+			expect( -> wrapperFunction( 'value' ) ).to.throw( Error, 'Error spreading passed Array over target function arguments: passed a non-Array.' )
 			expect( targetFunction ).not.to.be.called
 			
 			return
