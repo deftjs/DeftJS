@@ -11,6 +11,29 @@ Ext.define('Deft.util.Function', {
   alternateClassName: ['Deft.Function'],
   statics: {
     /**
+    		* Returns a new wrapper function that caches the return value for 
+    		* previously processed function argument(s).
+    		* 
+    		* @param {Function} Function to wrap.
+    		* @param {Object} Optional scope in which to execute the wrapped function.
+    		* @return {Function} The new wrapper function.
+    */
+
+    memoize: function(fn, scope, hashFn) {
+      var memo;
+
+      memo = {};
+      return function(value) {
+        var key;
+
+        key = Ext.isFunction(hashFn) ? hashFn.apply(scope, arguments) : value;
+        if (!(key in memo)) {
+          memo[key] = fn.apply(scope, arguments);
+        }
+        return memo[key];
+      };
+    },
+    /**
     		* Schedules the specified callback function to be executed on the next
     		* turn of the event loop.
     		* 
@@ -41,29 +64,6 @@ Ext.define('Deft.util.Function', {
           });
         }
         return fn.apply(scope, array);
-      };
-    },
-    /**
-    		* Returns a new wrapper function that caches the return value for 
-    		* previously processed function argument(s).
-    		* 
-    		* @param {Function} Function to wrap.
-    		* @param {Object} Optional scope in which to execute the wrapped function.
-    		* @return {Function} The new wrapper function.
-    */
-
-    memoize: function(fn, scope, hashFn) {
-      var memo;
-
-      memo = {};
-      return function(value) {
-        var key;
-
-        key = Ext.isFunction(hashFn) ? hashFn.apply(scope, arguments) : value;
-        if (!(key in memo)) {
-          memo[key] = fn.apply(scope, arguments);
-        }
-        return memo[key];
       };
     },
     /**

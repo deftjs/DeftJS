@@ -147,6 +147,29 @@ Ext.define('Deft.util.Function', {
   alternateClassName: ['Deft.Function'],
   statics: {
     /**
+    		* Returns a new wrapper function that caches the return value for 
+    		* previously processed function argument(s).
+    		* 
+    		* @param {Function} Function to wrap.
+    		* @param {Object} Optional scope in which to execute the wrapped function.
+    		* @return {Function} The new wrapper function.
+    */
+
+    memoize: function(fn, scope, hashFn) {
+      var memo;
+
+      memo = {};
+      return function(value) {
+        var key;
+
+        key = Ext.isFunction(hashFn) ? hashFn.apply(scope, arguments) : value;
+        if (!(key in memo)) {
+          memo[key] = fn.apply(scope, arguments);
+        }
+        return memo[key];
+      };
+    },
+    /**
     		* Schedules the specified callback function to be executed on the next
     		* turn of the event loop.
     		* 
@@ -177,29 +200,6 @@ Ext.define('Deft.util.Function', {
           });
         }
         return fn.apply(scope, array);
-      };
-    },
-    /**
-    		* Returns a new wrapper function that caches the return value for 
-    		* previously processed function argument(s).
-    		* 
-    		* @param {Function} Function to wrap.
-    		* @param {Object} Optional scope in which to execute the wrapped function.
-    		* @return {Function} The new wrapper function.
-    */
-
-    memoize: function(fn, scope, hashFn) {
-      var memo;
-
-      memo = {};
-      return function(value) {
-        var key;
-
-        key = Ext.isFunction(hashFn) ? hashFn.apply(scope, arguments) : value;
-        if (!(key in memo)) {
-          memo[key] = fn.apply(scope, arguments);
-        }
-        return memo[key];
       };
     },
     /**
@@ -529,7 +529,7 @@ Ext.define('Deft.ioc.DependencyProvider', {
   */
 
   resolve: function(targetInstance, targetInstanceConstructorArguments) {
-    var instance, parameters;
+    var fnArguments, instance, parameters;
 
     Deft.Logger.log("Resolving '" + (this.getIdentifier()) + "'.");
     if (this.getValue() !== void 0) {
@@ -538,7 +538,12 @@ Ext.define('Deft.ioc.DependencyProvider', {
     instance = null;
     if (this.getFn() != null) {
       Deft.Logger.log("Executing factory function.");
-      instance = this.getFn().apply(targetInstance, targetInstanceConstructorArguments);
+      if (targetInstanceConstructorArguments) {
+        fnArguments = [targetInstance].concat(Ext.toArray(targetInstanceConstructorArguments));
+      } else {
+        fnArguments = [targetInstance];
+      }
+      instance = this.getFn().apply(Deft.Injector, fnArguments);
     } else if (this.getClassName() != null) {
       if (Ext.ClassManager.get(this.getClassName()).singleton) {
         Deft.Logger.log("Using existing singleton instance of '" + (this.getClassName()) + "'.");
@@ -738,9 +743,6 @@ Ext.define('Deft.ioc.Injector', {
 
     provider = this.providers[identifier];
     if (provider != null) {
-      if (targetInstance && !targetInstanceConstructorArguments) {
-        targetInstanceConstructorArguments = [targetInstance.initialConfig];
-      }
       return provider.resolve(targetInstance, targetInstanceConstructorArguments);
     } else {
       Ext.Error.raise({
@@ -759,9 +761,6 @@ Ext.define('Deft.ioc.Injector', {
       targetInstanceIsInitialized = true;
     }
     targetClass = Ext.getClassName(targetInstance);
-    if (targetInstanceIsInitialized) {
-      targetInstanceConstructorArguments = [targetInstance.initialConfig];
-    }
     if (Ext.Array.contains(this.injectionStack, targetClass)) {
       stackMessage = this.injectionStack.join(" -> ");
       this.injectionStack = [];
