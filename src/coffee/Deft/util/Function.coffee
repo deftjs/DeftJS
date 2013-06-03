@@ -11,6 +11,21 @@ Ext.define( 'Deft.util.Function',
 	
 	statics:
 		###*
+		* Returns a new wrapper function that caches the return value for 
+		* previously processed function argument(s).
+		* 
+		* @param {Function} Function to wrap.
+		* @param {Object} Optional scope in which to execute the wrapped function.
+		* @return {Function} The new wrapper function.
+		###
+		memoize: ( fn, scope, hashFn ) ->
+			memo = {}
+			return ( value ) ->
+				key = if Ext.isFunction( hashFn ) then hashFn.apply( scope, arguments ) else value
+				memo[ key ] = fn.apply( scope, arguments ) unless key of memo
+				return memo[ key ]
+		
+		###*
 		* Schedules the specified callback function to be executed on the next
 		* turn of the event loop.
 		* 
@@ -36,21 +51,6 @@ Ext.define( 'Deft.util.Function',
 				if not Ext.isArray( array )
 					Ext.Error.raise( msg: "Error spreading passed Array over target function arguments: passed a non-Array." )
 				return fn.apply( scope, array )
-		
-		###*
-		* Returns a new wrapper function that caches the return value for 
-		* previously processed function argument(s).
-		* 
-		* @param {Function} Function to wrap.
-		* @param {Object} Optional scope in which to execute the wrapped function.
-		* @return {Function} The new wrapper function.
-		###
-		memoize: ( fn, scope, hashFn ) ->
-			memo = {}
-			return ( value ) ->
-				key = if Ext.isFunction( hashFn ) then hashFn.apply( scope, arguments ) else value
-				memo[ key ] = fn.apply( scope, arguments ) unless key of memo
-				return memo[ key ]
 		
 		###*
 		* Retrieves the value for the specified object key and removes the pair
