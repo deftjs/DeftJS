@@ -93,6 +93,7 @@
 	<script src="js/Deft/ioc/Injector.js"></script>
 	<script src="js/Deft/mixin/Injectable.js"></script>
 	<script src="js/Deft/mixin/Controllable.js"></script>
+	<script src="js/Deft/mvc/ViewController.js"></script>
 	<script src="lib/promises-aplus-tests-1.3.1/promises-aplus-tests.js"></script>
 	<script src="js/Deft/promise/Promise.js"></script>
 	<script src="js/Deft/promise/Chain.js"></script>
@@ -103,8 +104,17 @@
 			Ext.Loader.setConfig({
 				enabled: true
 			});
-
+			
 			Ext.onReady( function () {
+				// Tweak Sinon's "pretty print" logic to make it aware of Sencha classes.
+				var format = sinon.format
+				sinon.format = function (value) {
+					if (value instanceof Ext.ClassManager.get('Ext.Base')) {
+						return Ext.ClassManager.getName(value);
+					}
+					return format.apply(this, arguments);
+				}
+				
 				mocha.run();
 			});
 		}
