@@ -70,17 +70,17 @@
 				senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js";  //add all-debug for debug
 				currentVersionMessage = "Currently using: Sencha Touch " + version;
 			}
+			
+			// Persist selection for Mocha description and test filter support
+			localStorage.setItem('platform', platform);
+			localStorage.setItem('version', version);
+			localStorage.setItem('newcdn', newcdn);
 
 			// Include target Sencha library.
 			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"" + senchaUrl + "\"><\/script>");
 
 			// Include DeftJS.
 			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"../build/deft-debug.js\"><\/script>");
-
-			// Persist selection for Mocha description and test filter support
-			localStorage.setItem('platform', platform)
-			localStorage.setItem('version', version)
-			localStorage.setItem('newcdn', newcdn)
 		}
 	</script>
 
