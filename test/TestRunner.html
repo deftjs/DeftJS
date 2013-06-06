@@ -34,11 +34,8 @@
 	<script src="lib/chai-as-promised-3.3.0/chai-as-promised.js"></script>
 	<script src="lib/sinon-1.6.0/sinon.js"></script>
 	<script src="lib/sinon-chai-2.4.0/sinon-chai.js"></script>
+	<script src="sinon-sencha.js"></script>
 
-	<script>
-		window.global = window;
-		mocha.setup('bdd')
-	</script>
 	<script src="support/browser.js"></script>
 
 	<!-- Include Sencha libs based on passed URL params. -->
@@ -53,28 +50,21 @@
 
 		var platform = getUrlVars()["platform"] || localStorage.getItem('platform');
 		var version = getUrlVars()["version"] || localStorage.getItem('version');
-		var newcdn = getUrlVars()["newcdn"] || localStorage.getItem('newcdn');
 		var senchaUrl = "http://cdn.sencha.io/";
 		var currentVersionMessage = "";
 
 		if (platform && version) {
 			if (platform === "ext") {
-				if( newcdn === "false" ) {
-					senchaUrl += "ext-" + version + "/ext-all.js"; //add all-dev for debug
-				}
-				else {
-					senchaUrl += "ext/gpl/" + version + "/ext-all.js"; //add all-dev for debug
-				}
+				senchaUrl += "ext-" + version + "-gpl/ext-all.js"; //add all-dev for debug
 				currentVersionMessage = "Currently using: ExtJS " + version;
 			} else {
-				senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js";  //add all-debug for debug
+				senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js"; //add all-debug for debug
 				currentVersionMessage = "Currently using: Sencha Touch " + version;
 			}
 			
 			// Persist selection for Mocha description and test filter support
 			localStorage.setItem('platform', platform);
 			localStorage.setItem('version', version);
-			localStorage.setItem('newcdn', newcdn);
 
 			// Include target Sencha library.
 			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"" + senchaUrl + "\"><\/script>");
@@ -106,15 +96,6 @@
 			});
 			
 			Ext.onReady( function () {
-				// Tweak Sinon's "pretty print" logic to make it aware of Sencha classes.
-				var format = sinon.format
-				sinon.format = function (value) {
-					if (value instanceof Ext.ClassManager.get('Ext.Base')) {
-						return Ext.ClassManager.getName(value);
-					}
-					return format.apply(this, arguments);
-				}
-				
 				mocha.run();
 			});
 		}
@@ -124,13 +105,13 @@
 <body>
 	<div class="platform-links">
 		<h1>Choose Target Library:</h1>
-		<a href="?platform=ext&version=4.0.7-gpl&newcdn=false">ExtJS 4.0.7</a> |
-		<a href="?platform=ext&version=4.1.0-gpl&newcdn=false">ExtJS 4.1.0</a> |
-		<a href="?platform=ext&version=4.1.1a-gpl&newcdn=false">ExtJS 4.1.1a</a> |
-		<a href="?platform=ext&version=4.2.0&newcdn=true">ExtJS 4.2.0</a> |
-		<a href="?platform=touch&version=2.0.1&newcdn=false">Touch 2.0.1</a> |
-		<a href="?platform=touch&version=2.1.0&newcdn=false">Touch 2.1.0</a> |
-		<a href="?platform=touch&version=2.1.1&newcdn=false">Touch 2.1.1</a>
+		<a href="?platform=ext&version=4.0.7">ExtJS 4.0.7</a> |
+		<a href="?platform=ext&version=4.1.0">ExtJS 4.1.0</a> |
+		<a href="?platform=ext&version=4.1.1a">ExtJS 4.1.1a</a> |
+		<a href="?platform=ext&version=4.2.0">ExtJS 4.2.0</a> |
+		<a href="?platform=touch&version=2.0.1">Touch 2.0.1</a> |
+		<a href="?platform=touch&version=2.1.0">Touch 2.1.0</a> |
+		<a href="?platform=touch&version=2.1.1">Touch 2.1.1</a>
 	</div>
 	<div class="current-version">
 		<h1><script type="text/javascript">document.write( currentVersionMessage )</script></h1>
