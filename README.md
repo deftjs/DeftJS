@@ -44,11 +44,11 @@ DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks t
 
 ## Promises and Deferreds
 
-* Provides an elegant way to represent a ‘future value’ resulting from an asynchronous operation.
+* Provides an elegant way to represent a Ã«future valueÃ­ resulting from an asynchronous operation.
 * Offers a consistent, readable API for registering success, failure, cancellation or progress callbacks.
 * Allows chaining of transformation and processing of future values.
 * Simplifies processing of a set of future values via utility functions including all(), any(), map() and reduce().
-* Implements the [CommonJS Promises/A specification](http://wiki.commonjs.org/wiki/Promises/A).	
+* Implements the [Promises/A+ specification](https://github.com/promises-aplus/promises-spec) and passes the [Promises/A+ Compliance Test Suite](https://github.com/promises-aplus/promises-tests).
 	
 # Documentation Wiki
 
@@ -64,6 +64,7 @@ The best place to ask for help is on the [DeftJS Google Group](https://groups.go
 
 # Version History
 
+* 0.9.0 - Promises and Deferreds rewritten to be Promises/A+ compliant, migrated from Jasmine to Mocha.
 * 0.8.0 - Moved from mixins to class preprocessors. Added: Promises API, ViewController Observer feature, Deft.Application class, hundreds of Jasmine tests, improved logging, JSDuck documentation, and numerous other improvements.
 * 0.6.7 - Controllable now automatically adds a `getController()` accessor to view. Fixes reported issue with Deferreds completed with 'undefined' values.
 * 0.6.6 - Fixes to improve error handling and reporting; especially those associated with nonexistent classes and classes that were not Ext.require()-ed.
@@ -78,7 +79,6 @@ The best place to ask for help is on the [DeftJS Google Group](https://groups.go
 
 # Roadmap
 
-* Promise unit tests (*in progress*)
 * Promise and Deferred documentation (*in progress*)
 * Forums (*in progress*)
 * JSDuck-compliant comments and Sencha-style documentation browser.
@@ -104,6 +104,11 @@ The best place to ask for help is on the [DeftJS Google Group](https://groups.go
 	* [Robotlegs](http://www.robotlegs.org/)
 	* [Swift Suspenders](https://github.com/tschneidereit/SwiftSuspenders)
 	* [AngularJS](http://angularjs.org/)
+* The Promises/A+ Community
+	* [Kris Zyp](https://github.com/kriszyp), who proposed the original [Common JS Promises/A Specification](http://wiki.commonjs.org/wiki/Promises/A) and created [node-promise](https://github.com/kriszyp/node-promise) and [promised-io](https://github.com/kriszyp/promised-io),
+	* [Domenic Denicola](https://github.com/domenic) for the [Promises/A+ Specification](https://github.com/promises-aplus/promises-spec) and [Promises/A+ Compliance Test Suite](https://github.com/promises-aplus/promises-tests), [mocha-as-promised](https://github.com/domenic/mocha-as-promised), [chai-as-promised](https://github.com/domenic/chai-as-promised), and for his work with:
+	* [Kris Kowal](https://github.com/kriskowal), who created [q](https://github.com/kriskowal/q), a JavaScript promise library that pioneered many of the practices now codified in the [Promises/A+ Specification](https://github.com/promises-aplus/promises-spec),
+	* [Brian Cavalier](https://github.com/briancavalier) for his contributions to the [Promises/A+ Specification](https://github.com/promises-aplus/promises-spec) and [Promises/A+ Compliance Test Suite](https://github.com/promises-aplus/promises-tests), the inspiration that [avow.js](https://github.com/briancavalier/avow) provided, and for permitting us to derive some of the utility methods from [when.js](https://github.com/cujojs/when) (with [John Hann](https://github.com/unscriptable)).
 * Special thanks to:
 	* [Jason Barry](http://dribbble.com/artifactdesign) for creating the Deft JS logo.
 	* [Thomas Burleson](http://twitter.com/thomasburleson) for beta-testing and providing feedback on view controllers and promises.
