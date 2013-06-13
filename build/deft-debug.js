@@ -9,6 +9,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * DeftJS Class-related static utility methods.
 * @private
 */
+
 Ext.define('Deft.core.Class', {
   alternateClassName: ['Deft.Class'],
   statics: {
@@ -37,7 +38,6 @@ Ext.define('Deft.core.Class', {
     },
     hookOnClassExtended: function(data, fn) {
       var onClassExtended;
-
       if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
         onClassExtended = function(Class, data) {
           return fn.call(this, Class, data, data);
@@ -57,7 +57,6 @@ Ext.define('Deft.core.Class', {
 
     extendsClass: function(className, currentClass) {
       var error;
-
       try {
         if (Ext.getClassName(currentClass) === className) {
           return true;
@@ -87,6 +86,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * Logger used by DeftJS. Output is displayed in the console when using ext-dev/ext-all-dev.
 * @private
 */
+
 Ext.define('Deft.log.Logger', {
   alternateClassName: ['Deft.Logger'],
   singleton: true,
@@ -112,7 +112,6 @@ Ext.define('Deft.log.Logger', {
   }
 }, function() {
   var _ref;
-
   if (Ext.getVersion('extjs') != null) {
     this.log = function(message, priority) {
       if (priority == null) {
@@ -143,6 +142,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 /**
 * Common utility functions used by DeftJS.
 */
+
 Ext.define('Deft.util.Function', {
   alternateClassName: ['Deft.Function'],
   statics: {
@@ -157,11 +157,9 @@ Ext.define('Deft.util.Function', {
 
     memoize: function(fn, scope, hashFn) {
       var memo;
-
       memo = {};
       return function(value) {
         var key;
-
         key = Ext.isFunction(hashFn) ? hashFn.apply(scope, arguments) : value;
         if (!(key in memo)) {
           memo[key] = fn.apply(scope, arguments);
@@ -209,7 +207,6 @@ Ext.define('Deft.util.Function', {
 
     extract: function(object, key) {
       var value;
-
       value = object[key];
       delete object[key];
       return value;
@@ -219,7 +216,6 @@ Ext.define('Deft.util.Function', {
   if (typeof setImmediate !== "undefined" && setImmediate !== null) {
     return this.nextTick = function() {
       var fn;
-
       if (typeof scope !== "undefined" && scope !== null) {
         fn = Ext.Function.bind(fn, scope);
       }
@@ -236,12 +232,12 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * Event listener for events fired via the Deft.event.LiveEventBus.
 * @private
 */
+
 Ext.define('Deft.event.LiveEventListener', {
   alternateClassName: ['Deft.LiveEventListener'],
   requires: ['Ext.ComponentQuery'],
   constructor: function(config) {
     var component, components, _i, _len;
-
     Ext.apply(this, config);
     this.components = [];
     components = Ext.ComponentQuery.query(this.selector, this.container);
@@ -253,7 +249,6 @@ Ext.define('Deft.event.LiveEventListener', {
   },
   destroy: function() {
     var component, _i, _len, _ref;
-
     _ref = this.components;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       component = _ref[_i];
@@ -269,7 +264,6 @@ Ext.define('Deft.event.LiveEventListener', {
   },
   unregister: function(component) {
     var index;
-
     index = Ext.Array.indexOf(this.components, component);
     if (index !== -1) {
       component.un(this.eventName, this.fn, this.scope);
@@ -297,6 +291,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 /**
 * Event bus for live component selectors.
 */
+
 Ext.define('Deft.event.LiveEventBus', {
   alternateClassName: ['Deft.LiveEventBus'],
   requires: ['Ext.Component', 'Ext.ComponentManager', 'Deft.event.LiveEventListener'],
@@ -306,7 +301,6 @@ Ext.define('Deft.event.LiveEventBus', {
   },
   destroy: function() {
     var listener, _i, _len, _ref;
-
     _ref = this.listeners;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       listener = _ref[_i];
@@ -316,7 +310,6 @@ Ext.define('Deft.event.LiveEventBus', {
   },
   addListener: function(container, selector, eventName, fn, scope, options) {
     var listener;
-
     listener = Ext.create('Deft.event.LiveEventListener', {
       container: container,
       selector: selector,
@@ -329,7 +322,6 @@ Ext.define('Deft.event.LiveEventBus', {
   },
   removeListener: function(container, selector, eventName, fn, scope) {
     var listener;
-
     listener = this.findListener(container, selector, eventName, fn, scope);
     if (listener != null) {
       Ext.Array.remove(this.listeners, listener);
@@ -344,7 +336,6 @@ Ext.define('Deft.event.LiveEventBus', {
   },
   findListener: function(container, selector, eventName, fn, scope) {
     var listener, _i, _len, _ref;
-
     _ref = this.listeners;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       listener = _ref[_i];
@@ -364,7 +355,6 @@ Ext.define('Deft.event.LiveEventBus', {
   },
   onComponentAdded: function(component, container, eOpts) {
     var listener, _i, _len, _ref;
-
     _ref = this.listeners;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       listener = _ref[_i];
@@ -373,7 +363,6 @@ Ext.define('Deft.event.LiveEventBus', {
   },
   onComponentRemoved: function(component, container, eOpts) {
     var listener, _i, _len, _ref;
-
     _ref = this.listeners;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       listener = _ref[_i];
@@ -386,7 +375,6 @@ Ext.define('Deft.event.LiveEventBus', {
       override: 'Ext.Component',
       setParent: function(newParent) {
         var oldParent, result;
-
         oldParent = this.getParent();
         result = this.callParent(arguments);
         if (oldParent === null && newParent !== null) {
@@ -401,7 +389,6 @@ Ext.define('Deft.event.LiveEventBus', {
       },
       isDescendantOf: function(container) {
         var ancestor;
-
         ancestor = this.getParent();
         while (ancestor != null) {
           if (ancestor === container) {
@@ -429,6 +416,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * Used by Deft.ioc.Injector.
 * @private
 */
+
 Ext.define('Deft.ioc.DependencyProvider', {
   requires: ['Deft.log.Logger'],
   config: {
@@ -470,7 +458,6 @@ Ext.define('Deft.ioc.DependencyProvider', {
   },
   constructor: function(config) {
     var classDefinition;
-
     this.initConfig(config);
     if ((config.value != null) && config.value.constructor === Object) {
       this.setValue(config.value);
@@ -530,7 +517,6 @@ Ext.define('Deft.ioc.DependencyProvider', {
 
   resolve: function(targetInstance, targetInstanceConstructorArguments) {
     var fnArguments, instance, parameters;
-
     Deft.Logger.log("Resolving '" + (this.getIdentifier()) + "'.");
     if (this.getValue() !== void 0) {
       return this.getValue();
@@ -672,6 +658,7 @@ Factory function dependency providers can be configured as singletons or prototy
 
 > **NOTE: Only singleton factory functions can be eagerly instantiated.** This means that specifying `singleton: false` and `eager: true` for a dependency provider won't work. The reason may be obvious: DeftJS can't do anything with a prototype object that is eagerly created, since by definition each injection of a prototype dependency must be a new instance!
 */
+
 Ext.define('Deft.ioc.Injector', {
   alternateClassName: ['Deft.Injector'],
   requires: ['Ext.Component', 'Deft.log.Logger', 'Deft.ioc.DependencyProvider'],
@@ -687,12 +674,10 @@ Ext.define('Deft.ioc.Injector', {
 
   configure: function(configuration) {
     var newProviders;
-
     Deft.Logger.log('Configuring the injector.');
     newProviders = {};
     Ext.Object.each(configuration, function(identifier, config) {
       var provider;
-
       Deft.Logger.log("Configuring dependency provider for '" + identifier + "'.");
       if (Ext.isString(config)) {
         provider = Ext.create('Deft.ioc.DependencyProvider', {
@@ -728,7 +713,6 @@ Ext.define('Deft.ioc.Injector', {
 
   canResolve: function(identifier) {
     var provider;
-
     provider = this.providers[identifier];
     return provider != null;
   },
@@ -740,7 +724,6 @@ Ext.define('Deft.ioc.Injector', {
 
   resolve: function(identifier, targetInstance, targetInstanceConstructorArguments) {
     var provider;
-
     provider = this.providers[identifier];
     if (provider != null) {
       return provider.resolve(targetInstance, targetInstanceConstructorArguments);
@@ -756,7 +739,6 @@ Ext.define('Deft.ioc.Injector', {
 
   inject: function(identifiers, targetInstance, targetInstanceConstructorArguments, targetInstanceIsInitialized) {
     var injectConfig, name, originalInitConfigFunction, setterFunctionName, stackMessage, targetClass, value;
-
     if (targetInstanceIsInitialized == null) {
       targetInstanceIsInitialized = true;
     }
@@ -776,7 +758,6 @@ Ext.define('Deft.ioc.Injector', {
     }
     Ext.Object.each(identifiers, function(key, value) {
       var identifier, resolvedValue, targetProperty;
-
       targetProperty = Ext.isArray(identifiers) ? value : key;
       identifier = value;
       resolvedValue = this.resolve(identifier, targetInstance, targetInstanceConstructorArguments);
@@ -802,7 +783,6 @@ Ext.define('Deft.ioc.Injector', {
         originalInitConfigFunction = targetInstance.initConfig;
         targetInstance.initConfig = function(config) {
           var result;
-
           result = originalInitConfigFunction.call(this, Ext.Object.merge({}, config || {}, injectConfig));
           return result;
         };
@@ -841,6 +821,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * A mixin that marks a class as participating in dependency injection. Used in conjunction with Deft.ioc.Injector.
 * @deprecated 0.8 Deft.mixin.Injectable has been deprecated and can now be omitted - simply use the \'inject\' class annotation on its own.
 */
+
 Ext.define('Deft.mixin.Injectable', {
   requires: ['Deft.core.Class', 'Deft.ioc.Injector', 'Deft.log.Logger'],
   /**
@@ -852,7 +833,6 @@ Ext.define('Deft.mixin.Injectable', {
   }
 }, function() {
   var createInjectionInterceptor;
-
   if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
     createInjectionInterceptor = function() {
       return function() {
@@ -876,7 +856,6 @@ Ext.define('Deft.mixin.Injectable', {
   }
   Deft.Class.registerPreprocessor('inject', function(Class, data, hooks, callback) {
     var dataInjectObject, identifier, _i, _len, _ref;
-
     if (Ext.isString(data.inject)) {
       data.inject = [data.inject];
     }
@@ -895,14 +874,12 @@ Ext.define('Deft.mixin.Injectable', {
       });
     });
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
-      var _ref1;
-
       Deft.Class.hookOnClassCreated(hooks, function(Class) {
         Class.override({
           constructor: createInjectionInterceptor()
         });
       });
-      if ((_ref1 = data.inject) == null) {
+      if (data.inject == null) {
         data.inject = {};
       }
       Ext.applyIf(data.inject, Class.superclass.inject);
@@ -918,6 +895,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * @private
 * Used by Deft.mvc.ViewController to handle events fired from injected objects.
 */
+
 Ext.define('Deft.mvc.Observer', {
   requires: ['Deft.core.Class', 'Ext.util.Observable', 'Deft.util.Function'],
   statics: {
@@ -931,7 +909,6 @@ Ext.define('Deft.mvc.Observer', {
 
     mergeObserve: function(originalParentObserve, originalChildObserve) {
       var childEvent, childEvents, childHandler, childHandlerArray, childObserve, childTarget, convertConfigArray, eventOptionNames, parentEvent, parentEvents, parentHandler, parentHandlerArray, parentObserve, parentTarget, _ref, _ref1;
-
       if (!Ext.isObject(originalParentObserve)) {
         parentObserve = {};
       } else {
@@ -945,7 +922,6 @@ Ext.define('Deft.mvc.Observer', {
       eventOptionNames = ["buffer", "single", "delay", "element", "target", "destroyable"];
       convertConfigArray = function(observeConfig) {
         var handlerConfig, newObserveEvents, observeEvents, observeTarget, thisEventOptionName, thisObserveEvent, _i, _j, _len, _len1, _results;
-
         _results = [];
         for (observeTarget in observeConfig) {
           observeEvents = observeConfig[observeTarget];
@@ -1020,7 +996,6 @@ Ext.define('Deft.mvc.Observer', {
 
   constructor: function(config) {
     var eventName, events, handler, handlerArray, host, options, references, scope, target, _i, _len;
-
     this.listeners = [];
     host = config != null ? config.host : void 0;
     target = config != null ? config.target : void 0;
@@ -1075,7 +1050,6 @@ Ext.define('Deft.mvc.Observer', {
 
   isTargetObservable: function(host, target) {
     var hostTarget, hostTargetClass, _ref;
-
     hostTarget = this.locateTarget(host, target);
     if (hostTarget == null) {
       return false;
@@ -1094,7 +1068,6 @@ Ext.define('Deft.mvc.Observer', {
 
   locateTarget: function(host, target) {
     var result;
-
     if (Ext.isFunction(host['get' + Ext.String.capitalize(target)])) {
       result = host['get' + Ext.String.capitalize(target)].call(host);
       return result;
@@ -1119,7 +1092,6 @@ Ext.define('Deft.mvc.Observer', {
 
   locateReferences: function(host, target, handler) {
     var handlerHost, propertyChain;
-
     handlerHost = host;
     if (this.isPropertyChain(target)) {
       propertyChain = this.parsePropertyChain(host, target);
@@ -1150,7 +1122,6 @@ Ext.define('Deft.mvc.Observer', {
 
   parsePropertyChain: function(host, target) {
     var propertyChain;
-
     if (Ext.isString(target)) {
       propertyChain = target.split('.');
     } else if (Ext.isArray(target)) {
@@ -1175,7 +1146,6 @@ Ext.define('Deft.mvc.Observer', {
 
   destroy: function() {
     var listenerData, _i, _len, _ref;
-
     _ref = this.listeners;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       listenerData = _ref[_i];
@@ -1194,11 +1164,11 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * Manages live events attached to component selectors. Used by Deft.mvc.ComponentSelector.
 * @private
 */
+
 Ext.define('Deft.mvc.ComponentSelectorListener', {
   requires: ['Deft.event.LiveEventBus'],
   constructor: function(config) {
     var component, _i, _len, _ref;
-
     Ext.apply(this, config);
     if (this.componentSelector.live) {
       Deft.LiveEventBus.addListener(this.componentSelector.view, this.componentSelector.selector, this.eventName, this.fn, this.scope, this.options);
@@ -1213,7 +1183,6 @@ Ext.define('Deft.mvc.ComponentSelectorListener', {
   },
   destroy: function() {
     var component, _i, _len, _ref;
-
     if (this.componentSelector.live) {
       Deft.LiveEventBus.removeListener(this.componentSelector.view, this.componentSelector.selector, this.eventName, this.fn, this.scope);
     } else {
@@ -1234,11 +1203,11 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * @private
 * Models a component selector used by Deft.mvc.ViewController to locate view components and attach event listeners.
 */
+
 Ext.define('Deft.mvc.ComponentSelector', {
   requires: ['Ext.ComponentQuery', 'Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
   constructor: function(config) {
     var eventName, fn, listener, options, scope, _ref;
-
     Ext.apply(this, config);
     if (!this.live) {
       this.components = this.selector != null ? Ext.ComponentQuery.query(this.selector, this.view) : [this.view];
@@ -1277,7 +1246,6 @@ Ext.define('Deft.mvc.ComponentSelector', {
   },
   destroy: function() {
     var selectorListener, _i, _len, _ref;
-
     _ref = this.selectorListeners;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       selectorListener = _ref[_i];
@@ -1291,7 +1259,6 @@ Ext.define('Deft.mvc.ComponentSelector', {
 
   addListener: function(eventName, fn, scope, options) {
     var selectorListener;
-
     if (this.findListener(eventName, fn, scope) != null) {
       Ext.Error.raise({
         msg: "Error adding '" + eventName + "' listener: an existing listener for the specified function was already registered for '" + this.selector + "."
@@ -1313,7 +1280,6 @@ Ext.define('Deft.mvc.ComponentSelector', {
 
   removeListener: function(eventName, fn, scope) {
     var selectorListener;
-
     selectorListener = this.findListener(eventName, fn, scope);
     if (selectorListener != null) {
       Deft.Logger.log("Removing '" + eventName + "' listener from '" + this.selector + "'.");
@@ -1323,7 +1289,6 @@ Ext.define('Deft.mvc.ComponentSelector', {
   },
   findListener: function(eventName, fn, scope) {
     var selectorListener, _i, _len, _ref;
-
     _ref = this.selectorListeners;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       selectorListener = _ref[_i];
@@ -1451,6 +1416,7 @@ Next, define the ViewController:
 
     });
 */
+
 Ext.define('Deft.mvc.ViewController', {
   alternateClassName: ['Deft.ViewController'],
   requires: ['Deft.core.Class', 'Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mvc.Observer'],
@@ -1522,7 +1488,6 @@ Ext.define('Deft.mvc.ViewController', {
 
   destroy: function() {
     var id, selector;
-
     for (id in this.registeredComponentReferences) {
       this.removeComponentReference(id);
     }
@@ -1538,7 +1503,6 @@ Ext.define('Deft.mvc.ViewController', {
 
   onViewInitialize: function() {
     var config, id, listeners, live, originalViewDestroyFunction, selector, self, _ref;
-
     if (Ext.getVersion('extjs') != null) {
       this.getView().on('beforedestroy', this.onViewBeforeDestroy, this);
     } else {
@@ -1594,7 +1558,6 @@ Ext.define('Deft.mvc.ViewController', {
 
   addComponentReference: function(id, selector, live) {
     var getterName, matches;
-
     if (live == null) {
       live = false;
     }
@@ -1631,7 +1594,6 @@ Ext.define('Deft.mvc.ViewController', {
 
   removeComponentReference: function(id) {
     var getterName;
-
     Deft.Logger.log("Removing '" + id + "' component reference.");
     if (this.registeredComponentReferences[id] == null) {
       Ext.Error.raise({
@@ -1652,7 +1614,6 @@ Ext.define('Deft.mvc.ViewController', {
 
   getViewComponent: function(selector) {
     var matches;
-
     if (selector != null) {
       matches = Ext.ComponentQuery.query(selector, this.getView());
       if (matches.length === 0) {
@@ -1672,7 +1633,6 @@ Ext.define('Deft.mvc.ViewController', {
 
   addComponentSelector: function(selector, listeners, live) {
     var componentSelector, existingComponentSelector;
-
     if (live == null) {
       live = false;
     }
@@ -1698,7 +1658,6 @@ Ext.define('Deft.mvc.ViewController', {
 
   removeComponentSelector: function(selector) {
     var existingComponentSelector;
-
     Deft.Logger.log("Removing component selector for '" + selector + "'.");
     existingComponentSelector = this.getComponentSelector(selector);
     if (existingComponentSelector == null) {
@@ -1722,7 +1681,6 @@ Ext.define('Deft.mvc.ViewController', {
 
   createObservers: function() {
     var events, target, _ref;
-
     this.registeredObservers = {};
     _ref = this.observe;
     for (target in _ref) {
@@ -1732,7 +1690,6 @@ Ext.define('Deft.mvc.ViewController', {
   },
   addObserver: function(target, events) {
     var observer;
-
     observer = Ext.create('Deft.mvc.Observer', {
       host: this,
       target: target,
@@ -1746,7 +1703,6 @@ Ext.define('Deft.mvc.ViewController', {
 
   removeObservers: function() {
     var observer, target, _ref;
-
     _ref = this.registeredObservers;
     for (target in _ref) {
       observer = _ref[target];
@@ -1758,10 +1714,10 @@ Ext.define('Deft.mvc.ViewController', {
   /**
   	* Preprocessor to handle merging of 'observe' objects on parent and child classes.
   */
+
   return Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
     Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
       var _ref;
-
       if (Class.superclass && ((_ref = Class.superclass) != null ? _ref.observe : void 0) && Deft.Class.extendsClass('Deft.mvc.ViewController', Class)) {
         data.observe = Deft.mvc.Observer.mergeObserve(Class.superclass.observe, data.observe);
       }
@@ -1776,6 +1732,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 /**
 * A lightweight Application template class for use with Ext JS.
 */
+
 Ext.define('Deft.mvc.Application', {
   alternateClassName: ['Deft.Application'],
   /**
@@ -1813,6 +1770,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 * A mixin that creates and attaches the specified view controller(s) to the target view. Used in conjunction with Deft.mvc.ViewController.
 * @deprecated 0.8 Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.
 */
+
 Ext.define('Deft.mixin.Controllable', {
   requires: ['Ext.Component', 'Deft.core.Class', 'Deft.log.Logger'],
   /**
@@ -1824,12 +1782,10 @@ Ext.define('Deft.mixin.Controllable', {
   }
 }, function() {
   var createControllerInterceptor;
-
   if (Ext.getVersion('extjs') && Ext.getVersion('core').isLessThan('4.1.0')) {
     createControllerInterceptor = function() {
       return function(config) {
         var controller, error;
-
         if (config == null) {
           config = {};
         }
@@ -1858,7 +1814,6 @@ Ext.define('Deft.mixin.Controllable', {
     createControllerInterceptor = function() {
       return function(config) {
         var controller, error;
-
         if (config == null) {
           config = {};
         }
@@ -1886,7 +1841,6 @@ Ext.define('Deft.mixin.Controllable', {
   }
   Deft.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
     var self;
-
     Deft.Class.hookOnClassCreated(hooks, function(Class) {
       Class.override({
         constructor: createControllerInterceptor()
@@ -1934,12 +1888,12 @@ notified, it is cleared out of the set of chained Resolvers and will not be
 notified again.
 @private
 */
+
 Ext.define('Deft.promise.Resolver', {
   alternateClassName: ['Deft.Resolver'],
   requires: ['Deft.util.Function'],
   constructor: function(onResolved, onRejected, onProgress) {
     var complete, completeRejected, completeResolved, completed, completionAction, completionValue, nextTick, pendingResolvers, process, processed, propagate, schedule;
-
     this.promise = Ext.create('Deft.promise.Promise', this);
     pendingResolvers = [];
     processed = false;
@@ -1954,7 +1908,6 @@ Ext.define('Deft.promise.Resolver', {
     nextTick = Deft.util.Function.nextTick;
     propagate = function() {
       var pendingResolver, _i, _len;
-
       for (_i = 0, _len = pendingResolvers.length; _i < _len; _i++) {
         pendingResolver = pendingResolvers[_i];
         pendingResolver[completionAction](completionValue);
@@ -1982,7 +1935,6 @@ Ext.define('Deft.promise.Resolver', {
     };
     process = function(callback, value) {
       var error;
-
       processed = true;
       try {
         if (Ext.isFunction(callback)) {
@@ -2010,7 +1962,6 @@ Ext.define('Deft.promise.Resolver', {
     };
     this.update = function(progress) {
       var pendingResolver, _i, _len;
-
       if (!completed) {
         if (Ext.isFunction(onProgress)) {
           progress = onProgress(progress);
@@ -2023,7 +1974,6 @@ Ext.define('Deft.promise.Resolver', {
     };
     this.then = function(onResolved, onRejected, onProgress) {
       var pendingResolver;
-
       if (Ext.isFunction(onResolved) || Ext.isFunction(onRejected) || Ext.isFunction(onProgress)) {
         pendingResolver = Ext.create('Deft.promise.Resolver', onResolved, onRejected, onProgress);
         nextTick(function() {
@@ -2056,6 +2006,7 @@ that was rejected. Each call to then() returns a new Promise of that
 transformed value; i.e., a Promise that is resolved with the callback return 
 value or rejected with any error thrown by the callback.
 */
+
 Ext.define('Deft.promise.Promise', {
   alternateClassName: ['Deft.Promise'],
   requires: ['Deft.promise.Resolver'],
@@ -2069,7 +2020,6 @@ Ext.define('Deft.promise.Promise', {
 
     when: function(promiseOrValue) {
       var deferred;
-
       deferred = Ext.create('Deft.promise.Deferred');
       deferred.resolve(promiseOrValue);
       return deferred.promise;
@@ -2140,7 +2090,6 @@ Ext.define('Deft.promise.Promise', {
       }
       return Deft.Promise.when(promisesOrValues).then(function(promisesOrValues) {
         var complete, deferred, index, onReject, onResolve, promiseOrValue, rejecter, remainingToReject, remainingToResolve, resolver, values, _i, _len;
-
         values = [];
         remainingToResolve = howMany;
         remainingToReject = (promisesOrValues.length - remainingToResolve) + 1;
@@ -2192,7 +2141,6 @@ Ext.define('Deft.promise.Promise', {
 
     delay: function(promiseOrValue, milliseconds) {
       var deferred;
-
       if (arguments.length === 1) {
         milliseconds = promiseOrValue;
         promiseOrValue = void 0;
@@ -2212,7 +2160,6 @@ Ext.define('Deft.promise.Promise', {
 
     timeout: function(promiseOrValue, milliseconds) {
       var cancelTimeout, deferred, timeoutId;
-
       deferred = Ext.create('Deft.promise.Deferred');
       timeoutId = setTimeout(function() {
         if (timeoutId) {
@@ -2242,7 +2189,6 @@ Ext.define('Deft.promise.Promise', {
 
     memoize: function(fn, scope, hashFn) {
       var memoizedFn;
-
       memoizedFn = Deft.util.Function.memoize(fn, scope, hashFn);
       return function() {
         return Deft.Promise.all(Ext.Array.toArray(arguments)).then(function(values) {
@@ -2266,7 +2212,6 @@ Ext.define('Deft.promise.Promise', {
       }
       return Deft.Promise.when(promisesOrValues).then(function(promisesOrValues) {
         var deferred, index, promiseOrValue, remainingToResolve, resolve, results, _i, _len;
-
         remainingToResolve = promisesOrValues.length;
         results = new Array(promisesOrValues.length);
         deferred = Ext.create('Deft.promise.Deferred');
@@ -2303,7 +2248,6 @@ Ext.define('Deft.promise.Promise', {
 
     reduce: function(promisesOrValues, reduceFn, initialValue) {
       var initialValueSpecified;
-
       if (!(Ext.isArray(promisesOrValues) || Deft.Promise.isPromise(promisesOrValues))) {
         throw new Error('Invalid parameter: expected an Array or Promise of an Array.');
       }
@@ -2313,7 +2257,6 @@ Ext.define('Deft.promise.Promise', {
       initialValueSpecified = arguments.length === 3;
       return Deft.Promise.when(promisesOrValues).then(function(promisesOrValues) {
         var reduceArguments;
-
         reduceArguments = [
           function(previousValueOrPromise, currentValueOrPromise, currentIndex) {
             return Deft.Promise.when(previousValueOrPromise).then(function(previousValue) {
@@ -2336,7 +2279,6 @@ Ext.define('Deft.promise.Promise', {
 
     reduceArray: function(reduceFn, initialValue) {
       var args, array, index, length, reduced;
-
       index = 0;
       array = Object(this);
       length = array.length >>> 0;
@@ -2365,7 +2307,6 @@ Ext.define('Deft.promise.Promise', {
   },
   constructor: function(resolver) {
     var rethrowError;
-
     rethrowError = function(error) {
       Deft.util.Function.nextTick(function() {
         throw error;
@@ -2373,7 +2314,6 @@ Ext.define('Deft.promise.Promise', {
     };
     this.then = function(onFulfilled, onRejected, onProgress, scope) {
       var _ref;
-
       if (arguments.length === 1 && Ext.isObject(arguments[0])) {
         _ref = arguments[0], onFulfilled = _ref.success, onRejected = _ref.failure, onProgress = _ref.progress, scope = _ref.scope;
       }
@@ -2392,7 +2332,6 @@ Ext.define('Deft.promise.Promise', {
     };
     this.otherwise = function(onRejected, scope) {
       var _ref;
-
       if (arguments.length === 1 && Ext.isObject(arguments[0])) {
         _ref = arguments[0], onRejected = _ref.fn, scope = _ref.scope;
       }
@@ -2403,7 +2342,6 @@ Ext.define('Deft.promise.Promise', {
     };
     this.always = function(onCompleted, scope) {
       var _ref;
-
       if (arguments.length === 1 && Ext.isObject(arguments[0])) {
         _ref = arguments[0], onCompleted = _ref.fn, scope = _ref.scope;
       }
@@ -2412,7 +2350,6 @@ Ext.define('Deft.promise.Promise', {
       }
       return resolver.then(function(value) {
         var error;
-
         try {
           onCompleted();
         } catch (_error) {
@@ -2422,7 +2359,6 @@ Ext.define('Deft.promise.Promise', {
         return value;
       }, function(reason) {
         var error;
-
         try {
           onCompleted();
         } catch (_error) {
@@ -2526,7 +2462,6 @@ Ext.define('Deft.promise.Promise', {
   log: Ext.emptyFn
 }, function() {
   var target;
-
   if (Array.prototype.reduce != null) {
     this.reduceArray = Array.prototype.reduce;
   }
@@ -2559,6 +2494,7 @@ single associated Promise that can be safely returned to external consumers
 to ensure they do not interfere with the resolution or rejection of the deferred 
 operation.
 */
+
 Ext.define('Deft.promise.Deferred', {
   alternateClassName: ['Deft.Deferred'],
   requires: ['Deft.promise.Resolver'],
@@ -2571,7 +2507,6 @@ Ext.define('Deft.promise.Deferred', {
 
     resolve: function(value) {
       var deferred;
-
       deferred = Ext.create('Deft.promise.Deferred');
       deferred.resolve(value);
       return deferred.promise;
@@ -2584,7 +2519,6 @@ Ext.define('Deft.promise.Deferred', {
 
     reject: function(reason) {
       var deferred;
-
       deferred = Ext.create('Deft.promise.Deferred');
       deferred.reject(reason);
       return deferred.promise;
@@ -2598,7 +2532,6 @@ Ext.define('Deft.promise.Deferred', {
   promise: null,
   constructor: function() {
     var resolver;
-
     resolver = Ext.create('Deft.promise.Resolver');
     this.promise = resolver.promise;
     this.resolve = function(value) {
@@ -2675,7 +2608,6 @@ Ext.define('Deft.promise.Chain', {
 
     sequence: function() {
       var args, fns, scope;
-
       fns = arguments[0], scope = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
       if (scope == null) {
         scope = null;
@@ -2698,7 +2630,6 @@ Ext.define('Deft.promise.Chain', {
 
     parallel: function() {
       var args, fns, scope;
-
       fns = arguments[0], scope = arguments[1], args = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
       if (scope == null) {
         scope = null;
