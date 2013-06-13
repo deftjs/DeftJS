@@ -1,0 +1,21 @@
+{
+  "name": "DeftJS",
+  "version": "0.9.0",
+  "author": {
+    "name": "John Yanarella",
+    "email": "john.yanarella@deftjs.org"
+  },
+  "description": "Essential extensions for large-scale Sencha Touch and Ext JS applications",
+  "homepage": "http://deftjs.org/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deftjs/DeftJS.git"
+  },
+  "devDependencies": {
+    "karma": "~0.8"
+  },
+  "scripts": {
+    "test": "ant test -Dkarma.browsers=PhantomJS"
+  },
+  "license": "MIT"
+}
