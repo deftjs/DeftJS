@@ -24,11 +24,7 @@
 			<arg line="-cb -o js coffee" />
 		</exec>
 
-		<exec dir="spec" executable="${coffeeExecutable}">
-			<arg line="-cb -o js coffee" />
-		</exec>
-
-    <exec dir="test" executable="${coffeeExecutable}">
+		<exec dir="test" executable="${coffeeExecutable}">
 			<arg line="-cb -o js coffee" />
 		</exec>
 
@@ -83,6 +79,12 @@
 		<!-- <antcall target="docs" /> -->
 
 		<echo message="Done." />
+
+	</target>
+
+	<target name="test" description="Tests the build against all supported versions of Sencha Touch and Ext JS">
+
+		<ant dir="test" />
 
 	</target>
 
