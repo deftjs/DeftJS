@@ -1,10 +1,10 @@
-# DeftJS
+# Deft JS
 
-Essential extensions for enterprise web and mobile application development with [Ext JS](http://www.sencha.com/products/extjs/) and [Sencha Touch](http://www.sencha.com/products/touch/).
+Essential extensions for large-scale web and mobile application development with [Ext JS](http://www.sencha.com/products/extjs/) and [Sencha Touch](http://www.sencha.com/products/touch/).
 
 # About
 
-DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks that enable large development teams to rapidly build enterprise scale applications, leveraging best practices and proven patterns discovered by top RIA developers at some of the best consulting firms in the industry.
+Deft JS enhances Ext JS and Sencha Touch's APIs with additional building blocks that enable large development teams to rapidly build enterprise scale applications, leveraging best practices and proven patterns discovered by top RIA developers at some of the best consulting firms in the industry.
 
 # Goals
 
@@ -52,15 +52,15 @@ DeftJS enhances Ext JS and Sencha Touch's APIs with additional building blocks t
 	
 # Documentation Wiki
 
-Full documentation on the features and usage of DeftJS is available in the [Wiki](https://github.com/deftjs/DeftJS/wiki).
+Full documentation on the features and usage of Deft JS is available in the [Wiki](https://github.com/deftjs/DeftJS/wiki).
 
 # API Docs
 
-The latest API documentation for DeftJS is available at [http://docs.deftjs.org/deft-js/latest/](http://docs.deftjs.org/deft-js/latest/). If you're interested in API docs for a specific version, you can substitue the version in the URL (e.g. [http://docs.deftjs.org/deft-js/0-8-0/](http://docs.deftjs.org/deft-js/0-8-0/))
+The latest API documentation for Deft JS is available at [http://docs.deftjs.org/deft-js/latest/](http://docs.deftjs.org/deft-js/latest/). If you're interested in API docs for a specific version, you can substitue the version in the URL (e.g. [http://docs.deftjs.org/deft-js/0-8-0/](http://docs.deftjs.org/deft-js/0-8-0/))
 
 # Help
 
-The best place to ask for help is on the [DeftJS Google Group](https://groups.google.com/forum/?fromgroups#!forum/deftjs).
+The best place to ask for help is on the [Deft JS Google Group](https://groups.google.com/forum/?fromgroups#!forum/deftjs).
 
 # Version History
 
