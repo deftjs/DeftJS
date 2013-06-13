@@ -64,17 +64,18 @@ describe( 'Deft.promise.Promise', ->
 		
 		assert.eventuallyThrows = ( error, done, timeout = 50 ) ->
 			originalHandler = window.onerror
-			onErrorStub = sinon.stub().returns( true )
-			window.onerror = onErrorStub
-			setTimeout( 
+			restored = false
+			window.onerror = ( message ) ->
+				window.onerror = originalHandler
+				restored = true
+				expect( message ).to.contain( error.message )
+				done()
+				return
+			setTimeout(
 				->
-					window.onerror = originalHandler
-					try
-						expect( onErrorStub ).to.be.calledOnce
-						expect( onErrorStub.lastCall.args[ 0 ] ).to.contain( error.message )
-						done()
-					catch error
-						done( error )
+					if not restored
+						window.onerror = originalHandler
+						done( new Error( 'expected ' + error + ' to be thrown within ' + timeout + 'ms' ) )
 				timeout
 			)
 			return
@@ -1074,7 +1075,7 @@ describe( 'Deft.promise.Promise', ->
 				promise.should.be.an.instanceof( Deft.Promise )
 				promise = promise.then(
 					( value ) -> 
-						expect( now() - start ).to.be.closeTo( 100, 10 )
+						expect( now() - start ).to.be.closeTo( 100, 50 )
 						return value
 				)
 				return promise.should.eventually.equal( undefined )
@@ -1108,7 +1109,7 @@ describe( 'Deft.promise.Promise', ->
 				promise.should.be.an.instanceof( Deft.Promise )
 				promise = promise.then(
 					( value ) -> 
-						expect( now() - start ).to.be.closeTo( 100, 10 )
+						expect( now() - start ).to.be.closeTo( 100, 50 )
 						return value
 				)
 				return promise.should.eventually.equal( 'expected value' )
@@ -1124,7 +1125,7 @@ describe( 'Deft.promise.Promise', ->
 				promise.should.be.an.instanceof( Deft.Promise )
 				promise = promise.then(
 					( value ) -> 
-						expect( now() - start ).to.be.closeTo( 100, 10 )
+						expect( now() - start ).to.be.closeTo( 100, 50 )
 						return value
 				)
 				return promise.should.eventually.equal( 'expected value' )
@@ -1146,7 +1147,7 @@ describe( 'Deft.promise.Promise', ->
 					( value ) ->
 						return value
 					( error ) ->
-						expect( now() - start ).to.be.closeTo( 100, 10 )
+						expect( now() - start ).to.be.closeTo( 100, 50 )
 						throw error
 				)
 				return promise.should.be.rejected.with( Error, 'error message' )
@@ -2946,14 +2947,14 @@ describe( 'Deft.promise.Promise', ->
 				promise = Deft.Promise.reduce( [], sumFunction )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( TypeError, 'Reduce of empty array with no initial value' )
+				return promise.should.be.rejected.with( TypeError )
 			)
 			
 			specify( 'Promise of an empty Array', ->
 				promise = Deft.Promise.reduce( Deft.Deferred.resolve( [] ), sumFunction )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( TypeError, 'Reduce of empty array with no initial value' )
+				return promise.should.be.rejected.with( TypeError )
 			)
 			
 			return
@@ -2996,15 +2997,16 @@ describe( 'Deft.promise.Promise', ->
 		describe( 'attaches a callback that will be called if this Promise is rejected', ->
 			specify( 'called if rejected', ( done ) ->
 				onRejected = sinon.spy()
+				error = new Error( 'error message' )
 				
-				promise = Deft.Deferred.reject( new Error( 'error message' ) )
+				promise = Deft.Deferred.reject( error )
 				promise.otherwise( onRejected )
 				
 				promise.then( 
 					null
 					->
 						try
-							expect( onRejected ).to.be.calledOnce.and.calledWith( new Error( 'error message' ) )
+							expect( onRejected ).to.be.calledOnce.and.calledWith( error )
 							done()
 						catch error
 							done( error )
@@ -3016,15 +3018,16 @@ describe( 'Deft.promise.Promise', ->
 			specify( 'called in specified scope if rejected', ( done ) ->
 				targetScope = {}
 				onRejected = sinon.spy()
+				error = new Error( 'error message' )
 				
-				promise = Deft.Deferred.reject( new Error( 'error message' ) )
+				promise = Deft.Deferred.reject( error )
 				promise.otherwise( onRejected, targetScope )
 				
 				promise.then(
 					null
 					->
 						try
-							expect( onRejected ).to.be.calledOnce.and.calledWith( new Error( 'error message' ) ).and.calledOn( targetScope )
+							expect( onRejected ).to.be.calledOnce.and.calledWith( error ).and.calledOn( targetScope )
 							done()
 						catch error
 							done( error )
