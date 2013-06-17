@@ -3,3 +3,4 @@
 *.iml
 node_modules
 packages/deft/src/js
+packages/deft/test/js
