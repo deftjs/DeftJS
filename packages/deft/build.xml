@@ -27,11 +27,62 @@
 
             <target name="-before-init"/>
             <target name="-after-init"/>
-        
+
         The "build" target performs the call to Sencha Cmd to build the application.
 
             <target name="-before-build"/>
             <target name="-after-build"/>
     -->
+
+    <target name="-before-build" description="Compiles CoffeeScript">
+
+      <condition property="coffeeExecutable" value="coffee.cmd">
+        <os family="windows"/>
+      </condition>
+      <condition property="coffeeExecutable" value="coffee">
+        <os family="unix"/>
+      </condition>
+
+      <exec dir="src" executable="${coffeeExecutable}">
+        <arg line="-cblo js coffee" />
+      </exec>
+      <exec dir="test" executable="${coffeeExecutable}">
+        <arg line="-cblo js coffee" />
+      </exec>
+
+    </target>
+
+    <target name="-before-pkg" description="Generates JSDuck API documentation">
+
+      <condition property="jsDuckExecutable" value="${workspace.dir}/tools/jsduck.exe">
+        <os family="windows" />
+      </condition>
+
+		<!-- JSDuck on *nix requires a Ruby gem to be installed. See https://github.com/senchalabs/jsduck -->
+      <condition property="jsDuckExecutable" value="jsduck">
+        <os family="unix" />
+      </condition>
+
+      <delete includeemptydirs="true" failonerror="false">
+        <fileset dir="./docs" />
+      </delete>
+
+		<!-- For some reason, deleting and re-adding the docs folder often causes a write error. A slight delay usually avoids this. -->
+      <sleep seconds="2" />
+
+      <echo message="Generating API documentation..." />
+
+      <exec executable="${jsDuckExecutable}" timeout="20000" failonerror="false">
+        <arg line='--warnings=-all --ext-namespaces=Ext --output=docs --ignore-global --title="DeftJS - API Documentation" src/js' />
+        <arg line='--head-html="&lt;style type=text/css&gt;.class-categories .section .left-column{float:left;width:350px;margin-left:20px} .class-categories .section .middle-column{float:left;width:350px} .class-categories .section .right-column{float:left;width:350px}&lt;/style&gt;"' />
+      </exec>
+
+    </target>
+
+    <target name="test" description="Tests the build against all supported versions of Sencha Touch and Ext JS">
+
+      <ant dir="test" />
+
+    </target>
 
 </project>

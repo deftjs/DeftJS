@@ -23,20 +23,20 @@ files = [
   'test/support/browser.js',
   'test/DeftJS-Promise-adapter.js',
 
-  'test/js/Deft/ioc/Injector.js',
-  'test/js/Deft/mixin/Injectable.js',
-  'test/js/Deft/mixin/Controllable.js',
-  'test/js/Deft/mvc/ViewController.js',
+  'test/js/ioc/Injector.js',
+  'test/js/mixin/Injectable.js',
+  'test/js/mixin/Controllable.js',
+  'test/js/mvc/ViewController.js',
   'test/lib/promises-aplus-tests-1.3.1/promises-aplus-tests.js',
-  'test/js/Deft/promise/Promise.js',
-  'test/js/Deft/promise/Chain.js',
-  'test/js/Deft/util/Function.js'
+  'test/js/promise/Promise.js',
+  'test/js/promise/Chain.js',
+  'test/js/util/Function.js'
 ];
 
 
 // list of files to exclude
 exclude = [
-  
+
 ];
 
 
