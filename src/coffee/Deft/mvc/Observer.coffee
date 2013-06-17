@@ -115,9 +115,9 @@ Ext.define( 'Deft.mvc.Observer',
 					# If the handler is a configuration object, parse it and use those values to create the Observer.
 					if( Ext.isObject( handler ) )
 						options = Ext.clone( handler )
-						eventName = Deft.util.Function.extract( options, "event" ) if options?.event
-						handler = Deft.util.Function.extract( options, "fn" ) if options?.fn
-						scope = Deft.util.Function.extract( options, "scope" ) if options?.scope
+						eventName = @extract( options, "event" ) if options?.event
+						handler = @extract( options, "fn" ) if options?.fn
+						scope = @extract( options, "scope" ) if options?.scope
 
 					references = @locateReferences( host, target, handler )
 					if references
@@ -204,6 +204,15 @@ Ext.define( 'Deft.mvc.Observer',
 			return { host: host, target: propertyChain[0] }
 		else
 			return null
+
+	###*
+	* Retrieves the value for the specified object key and removes the pair
+	* from the object.
+	###
+	extract: ( object, key ) ->
+		value = object[key]
+		delete object[key]
+		return value
 
 	###*
 	* Iterate through the listeners array and remove each event listener.

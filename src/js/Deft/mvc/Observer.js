@@ -126,13 +126,13 @@ Ext.define('Deft.mvc.Observer', {
           if (Ext.isObject(handler)) {
             options = Ext.clone(handler);
             if (options != null ? options.event : void 0) {
-              eventName = Deft.util.Function.extract(options, "event");
+              eventName = this.extract(options, "event");
             }
             if (options != null ? options.fn : void 0) {
-              handler = Deft.util.Function.extract(options, "fn");
+              handler = this.extract(options, "fn");
             }
             if (options != null ? options.scope : void 0) {
-              scope = Deft.util.Function.extract(options, "scope");
+              scope = this.extract(options, "scope");
             }
           }
           references = this.locateReferences(host, target, handler);
@@ -252,6 +252,17 @@ Ext.define('Deft.mvc.Observer', {
     } else {
       return null;
     }
+  },
+  /**
+  	* Retrieves the value for the specified object key and removes the pair
+  	* from the object.
+  */
+
+  extract: function(object, key) {
+    var value;
+    value = object[key];
+    delete object[key];
+    return value;
   },
   /**
   	* Iterate through the listeners array and remove each event listener.

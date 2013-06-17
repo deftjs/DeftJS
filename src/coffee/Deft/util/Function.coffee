@@ -51,15 +51,6 @@ Ext.define( 'Deft.util.Function',
 				if not Ext.isArray( array )
 					Ext.Error.raise( msg: "Error spreading passed Array over target function arguments: passed a non-Array." )
 				return fn.apply( scope, array )
-		
-		###*
-		* Retrieves the value for the specified object key and removes the pair
-		* from the object.
-		###
-		extract: ( object, key ) ->
-			value = object[key]
-			delete object[key]
-			return value
 ,
 	->
 		if setImmediate? 
