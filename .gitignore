@@ -2,4 +2,3 @@
 .idea
 *.iml
 node_modules
-packages/deft/docs
