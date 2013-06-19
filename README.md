@@ -94,9 +94,10 @@ The best place to ask for help is on the [Deft JS Google Group](https://groups.g
 # Development Team
 
 * [John Yanarella](http://twitter.com/johnyanarella) (Creator)
-* [Ryan Campbell](http://www.ryancampbell.com/)
-* [Brian Kotek](http://www.briankotek.com/)
-* [David Tucker](http://www.davidtucker.net/)
+* [Brian Kotek](https://twitter.com/brian428)
+* [Isaac Johnston](https://twitter.com/superstructor)
+* [Ryan Campbell](https://twitter.com/bobjim)
+* [David Tucker](https://twitter.com/mindmillmedia)
 
 # Acknowledgements
 
