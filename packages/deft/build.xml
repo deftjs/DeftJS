@@ -43,11 +43,14 @@
         <os family="unix"/>
       </condition>
 
+      <echo message="Compiling CoffeeScript in ${package.dir}/src/coffee to ${package.dir}/src/js" />
       <exec dir="src" executable="${coffeeExecutable}">
-        <arg line="-cblo js coffee" />
+        <arg line="-cbo js coffee" />
       </exec>
+
+      <echo message="Compiling CoffeeScript in ${package.dir}/test/coffee to ${package.dir}/test/js" />
       <exec dir="test" executable="${coffeeExecutable}">
-        <arg line="-cblo js coffee" />
+        <arg line="-cbo js coffee" />
       </exec>
 
     </target>
