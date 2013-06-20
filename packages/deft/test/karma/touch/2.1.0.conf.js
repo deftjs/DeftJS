@@ -18,8 +18,8 @@ files = [
   'test/lib/chai-as-promised-3.3.0/chai-as-promised.js',
   'test/lib/sinon-1.6.0/sinon.js',
   'test/lib/sinon-chai-2.4.0/sinon-chai.js',
+  'test/lib/sinon-sencha-1.0.0/sinon-sencha.js',
 
-  'test/sinon-sencha.js',
   'test/support/browser.js',
   'test/DeftJS-Promise-adapter.js',
 
