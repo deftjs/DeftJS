@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project name="deft" default=".help">
+
+    <property name="skip.style" value="1" />
+
     <!--
     The build-impl.xml file imported here contains the guts of the build process. It is
     a great idea to read that file to understand how the process works, but it is best to
