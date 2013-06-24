@@ -34,31 +34,45 @@
             <target name="-after-build"/>
     -->
 
-    <target name="-before-build" description="Compiles CoffeeScript">
+    <target name="-before-build" description="Sencha Cmd build extension point">
 
-      <condition property="coffeeExecutable" value="coffee.cmd">
-        <os family="windows"/>
-      </condition>
-      <condition property="coffeeExecutable" value="coffee">
-        <os family="unix"/>
-      </condition>
-
-      <exec dir="src" executable="${coffeeExecutable}">
-        <arg line="-cblo js coffee" />
-      </exec>
-      <exec dir="test" executable="${coffeeExecutable}">
-        <arg line="-cblo js coffee" />
-      </exec>
+        <ant target="compile" />
 
     </target>
 
-    <target name="-before-pkg" description="Generates JSDuck API documentation">
+    <target name="-before-pkg" description="Sencha Cmd package extension point">
+
+        <antcall target="docs" />
+
+    </target>
+
+    <target name="compile" description="Compiles CoffeeScript">
+        
+        <condition property="coffeeExecutable" value="coffee.cmd">
+          <os family="windows"/>
+        </condition>
+        <condition property="coffeeExecutable" value="coffee">
+          <os family="unix"/>
+        </condition>
+
+        <echo message="Compiling CoffeeScript..." />
+
+        <exec dir="src" executable="${coffeeExecutable}">
+          <arg line="-cbo js coffee" />
+        </exec>
+        <exec dir="test" executable="${coffeeExecutable}">
+          <arg line="-cbo js coffee" />
+        </exec>
+        
+    </target>
+
+    <target name="docs" description="Generates JSDuck API documentation">
 
       <condition property="jsDuckExecutable" value="${workspace.dir}/tools/jsduck.exe">
         <os family="windows" />
       </condition>
 
-		<!-- JSDuck on *nix requires a Ruby gem to be installed. See https://github.com/senchalabs/jsduck -->
+      <!-- JSDuck on *nix requires a Ruby gem to be installed. See https://github.com/senchalabs/jsduck -->
       <condition property="jsDuckExecutable" value="jsduck">
         <os family="unix" />
       </condition>
@@ -67,13 +81,13 @@
         <fileset dir="./docs" />
       </delete>
 
-		<!-- For some reason, deleting and re-adding the docs folder often causes a write error. A slight delay usually avoids this. -->
+      <!-- For some reason, deleting and re-adding the docs folder often causes a write error. A slight delay usually avoids this. -->
       <sleep seconds="2" />
 
       <echo message="Generating API documentation..." />
 
       <exec executable="${jsDuckExecutable}" timeout="20000" failonerror="false">
-        <arg line='--warnings=-all --ext-namespaces=Ext --output=docs --ignore-global --title="DeftJS - API Documentation" src/js' />
+        <arg line='--ext-namespaces=Ext --output=docs --ignore-global --title="DeftJS - API Documentation" src/js' />
         <arg line='--head-html="&lt;style type=text/css&gt;.class-categories .section .left-column{float:left;width:350px;margin-left:20px} .class-categories .section .middle-column{float:left;width:350px} .class-categories .section .right-column{float:left;width:350px}&lt;/style&gt;"' />
       </exec>
 
