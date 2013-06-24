@@ -197,10 +197,13 @@ Ext.define('Deft.mvc.Observer', {
     if (!(hostTarget != null)) {
       return false;
     }
+    hostTargetClass = Ext.ClassManager.getClass(hostTarget);
+    if (Deft.Class.extendsClass('Ext.dom.Element', hostTargetClass)) {
+      return true;
+    }
     if ((hostTarget.isObservable != null) || (((_ref = hostTarget.mixins) != null ? _ref.observable : void 0) != null)) {
       return true;
     } else {
-      hostTargetClass = Ext.ClassManager.getClass(hostTarget);
       return Deft.Class.extendsClass('Ext.util.Observable', hostTargetClass) || Deft.Class.extendsClass('Ext.mixin.Observable', hostTargetClass);
     }
   },

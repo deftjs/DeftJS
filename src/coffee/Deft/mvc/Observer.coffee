@@ -163,11 +163,14 @@ Ext.define( 'Deft.mvc.Observer',
 	isTargetObservable: ( host, target ) ->
 		hostTarget = @locateTarget( host, target )
 		return false if not hostTarget?
-
+		
+		hostTargetClass = Ext.ClassManager.getClass( hostTarget )
+		if Deft.Class.extendsClass('Ext.dom.Element', hostTargetClass)
+			return true
+		
 		if hostTarget.isObservable? or hostTarget.mixins?.observable?
 			return true
 		else
-			hostTargetClass = Ext.ClassManager.getClass( hostTarget )
 			return ( Deft.Class.extendsClass( 'Ext.util.Observable', hostTargetClass ) or Deft.Class.extendsClass( 'Ext.mixin.Observable', hostTargetClass ) )
 
 	###*
