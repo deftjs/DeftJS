@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project name="deft" default=".help">
+
+    <property name="skip.style" value="1" />
+
     <!--
     The build-impl.xml file imported here contains the guts of the build process. It is
     a great idea to read that file to understand how the process works, but it is best to
@@ -37,7 +40,7 @@
     <target name="-before-build" description="Sencha Cmd build extension point">
 
         <ant target="compile" />
-
+    
     </target>
 
     <target name="-before-pkg" description="Sencha Cmd package extension point">
@@ -57,9 +60,12 @@
 
         <echo message="Compiling CoffeeScript..." />
 
+        <echo message="Compiling CoffeeScript in ${package.dir}/src/coffee to ${package.dir}/src/js" />
         <exec dir="src" executable="${coffeeExecutable}">
           <arg line="-cbo js coffee" />
         </exec>
+        
+        <echo message="Compiling CoffeeScript in ${package.dir}/test/coffee to ${package.dir}/test/js" />
         <exec dir="test" executable="${coffeeExecutable}">
           <arg line="-cbo js coffee" />
         </exec>
