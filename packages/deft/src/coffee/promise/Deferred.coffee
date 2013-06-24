@@ -1,9 +1,9 @@
 ###
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Copyright (c) 2012-2013 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
-###
+###*
 A Deferred is typically used within the body of a function that performs an 
 asynchronous operation. When that operation succeeds, the Deferred should be 
 resolved; if that operation fails, the Deferred should be rejected.
@@ -22,9 +22,10 @@ Ext.define( 'Deft.promise.Deferred',
 	
 	statics:
 		###*
-		* Returns a new {@link Deft.promise.Promise} that resolves immediately with
-		* the specified value.
-		* @param The resolved future value.
+		* Returns a new {@link Deft.promise.Promise} that resolves immediately with the specified value.
+		*
+		* @param {Mixed} value The resolved future value.
+		* @return {Deft.promise.Promise} Promise resolved with the specified value.
 		###
 		resolve: ( value ) ->
 			deferred = Ext.create( 'Deft.promise.Deferred' )
@@ -32,9 +33,10 @@ Ext.define( 'Deft.promise.Deferred',
 			return deferred.promise
 		
 		###*
-		* Returns a new {@link Deft.promise.Promise} that rejects immediately with
-		* the specified reason.
-		* @param {Error} The rejection reason.
+		* Returns a new {@link Deft.promise.Promise} that rejects immediately with the specified reason.
+		*
+		* @param {Error} reason The rejection reason.
+		* @return {Deft.promise.Promise} Promise rejected with the specified reason.
 		###
 		reject: ( reason ) ->
 			deferred = Ext.create( 'Deft.promise.Deferred' )
@@ -42,8 +44,8 @@ Ext.define( 'Deft.promise.Deferred',
 			return deferred.promise
 	
 	###*
-	* The {@link Deft.promise.Promise} of a future value associated with this
-	* {@link Deft.promise.Deferred}.
+	* @property {Deft.promise.Promise}
+	* The {@link Deft.promise.Promise Promise} of a future value associated with this Deferred.
 	###
 	promise: null
 	
@@ -58,34 +60,30 @@ Ext.define( 'Deft.promise.Deferred',
 		return @
 	
 	###*
-	* Resolves the {@link Deft.promise.Promise} associated with this
-	* {@link Deft.promise.Deferred} with the specified value.
+	* Resolves this Deferred's {@link Deft.promise.Promise Promise} with the specified value.
 	*
-	* @param The resolved future value.
+	* @param {Mixed} value The resolved future value.
 	###
 	resolve: Ext.emptyFn
 	
 	###*
-	* Rejects this {@link Deft.promise.Deferred} with the specified reason.
+	* Rejects this Deferred's {@link Deft.promise.Promise Promise} with the specified reason.
 	*
-	* @param {Error} The rejection reason.
+	* @param {Error} reason The rejection reason.
 	###
 	reject: Ext.emptyFn
 	
 	###*
-	* Updates progress for this {@link Deft.promise.Deferred} if it is 
-	* still pending, notifying callbacks with the specified progress value 
-	* that will propagate to any Promises originating from this Promise.
+	* Updates progress for this Deferred's {@link Deft.promise.Promise Promise}, if it is still pending.
 	*
-	* @param {Error} The progress value.
+	* @param {Mixed} progress The progress value.
 	###
 	update: Ext.emptyFn
 	
 	###*
-	* Returns the {@link Deft.promise.Promise} of a future value associated 
-	* with this {@link Deft.promise.Deferred}.
+	* Returns the {@link Deft.promise.Promise Promise} of a future value associated with this Deferred.
 	*
-	* @return {Deft.promise.Promise} Promise of the associated future value.
+	* @return {Deft.promise.Promise} The Promise of the associated future value.
 	###
 	getPromise: ->
 		return @promise

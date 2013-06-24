@@ -1,5 +1,5 @@
 ###
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Copyright (c) 2012-2013 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
@@ -144,7 +144,7 @@ Ext.define( 'Deft.mvc.Observer',
 			return true
 		else
 			hostTargetClass = Ext.ClassManager.getClass( hostTarget )
-			return ( Deft.Class.extendsClass( 'Ext.util.Observable', hostTargetClass ) or Deft.Class.extendsClass( 'Ext.mixin.Observable', hostTargetClass ) )
+			return ( Deft.Class.extendsClass( hostTargetClass, 'Ext.util.Observable' ) or Deft.Class.extendsClass( hostTargetClass, 'Ext.mixin.Observable' ) )
 
 	###*
 	* Attempts to locate an observer target given the host object and target property name.

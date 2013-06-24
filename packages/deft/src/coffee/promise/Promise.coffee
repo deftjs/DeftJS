@@ -1,5 +1,5 @@
 ###
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Copyright (c) 2012-2013 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Promise.when(), all(), any(), some(), map(), reduce(), delay() and timeout()
@@ -8,7 +8,7 @@ Copyright (c) B Cavalier & J Hann
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
-###
+###*
 Promises represent a future value; i.e., a value that may not yet be available.
 
 A Promise's then() method is used to specify onFulfilled and onRejected 
@@ -24,10 +24,13 @@ Ext.define( 'Deft.promise.Promise',
 	
 	statics:
 		###*
-		* Returns a new {@link Deft.promise.Promise} that:
-		* - resolves immediately for the specified value, or
-		* - resolves or rejects when the specified {@link Deft.promise.Promise} is
-		* resolved or rejected.
+		* Returns a new Promise that:
+		*
+		* * resolves immediately for the specified value, or
+		* * resolves or rejects when the specified {@link Deft.promise.Promise Promise} (or third-party Promise or then()-able) is resolved or rejected.
+		*
+		* @param {Mixed} promiseOrValue A Promise (or third-party Promise or then()-able) or value.
+		* @return {Deft.promise.Promise} A Promise of the specified Promise or value.
 		###
 		when: ( promiseOrValue ) ->
 			deferred = Ext.create( 'Deft.promise.Deferred' )
@@ -35,18 +38,21 @@ Ext.define( 'Deft.promise.Promise',
 			return deferred.promise
 		
 		###*
-		* Determines whether the specified value is a Promise (including third-party
-		* untrusted Promises), based on the Promises/A specification feature test.
+		* Determines whether the specified value is a Promise (including third-party untrusted Promises or then()-ables), based on the Promises/A specification feature test.
+		* 
+		* @param {Mixed} value A potential Promise.
+		* @return {Boolean} A Boolean indicating whether the specified value was a Promise.
 		###
 		isPromise: ( value ) ->
 			return ( value and Ext.isFunction( value.then ) ) is true
 		
 		###*
-		* Returns a new {@link Deft.promise.Promise} that will only resolve
-		* once all the specified `promisesOrValues` have resolved.
+		* Returns a new Promise that will only resolve once all the specified `promisesOrValues` have resolved.
 		* 
-		* The resolution value will be an Array containing the resolution
-		* value of each of the `promisesOrValues`.
+		* The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
+		*
+		* @param {Mixed[]/Deft.promise.Promise[]/Deft.promise.Promise} promisesOrValues An Array of values or Promises, or a Promise of an Array of values or Promises.
+		* @return {Deft.promise.Promise} A Promise of an Array of the resolved values.
 		###
 		all: ( promisesOrValues ) ->
 			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
@@ -54,12 +60,12 @@ Ext.define( 'Deft.promise.Promise',
 			return Deft.Promise.map( promisesOrValues, ( x ) -> x )
 		
 		###*
-		* Initiates a competitive race, returning a new {@link Deft.promise.Promise}
-		* that will resolve when any one of the specified `promisesOrValues`
-		* have resolved, or will reject when all `promisesOrValues` have
-		* rejected or cancelled.
+		* Initiates a competitive race, returning a new Promise that will resolve when any one of the specified `promisesOrValues` have resolved, or will reject when all `promisesOrValues` have rejected or cancelled.
 		* 
 		* The resolution value will the first value of `promisesOrValues` to resolve.
+		*
+		* @param {Mixed[]/Deft.promise.Promise[]/Deft.promise.Promise} promisesOrValues An Array of values or Promises, or a Promise of an Array of values or Promises.
+		* @return {Deft.promise.Promise} A Promise of the first resolved value.
 		###
 		any: ( promisesOrValues ) ->
 			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
@@ -76,13 +82,13 @@ Ext.define( 'Deft.promise.Promise',
 				)
 		
 		###*
-		* Initiates a competitive race, returning a new {@link Deft.promise.Promise}
-		* that will resolve when `howMany` of the specified `promisesOrValues`
-		* have resolved, or will reject when it becomes impossible for
-		* `howMany` to resolve.
+		* Initiates a competitive race, returning a new Promise that will resolve when `howMany` of the specified `promisesOrValues` have resolved, or will reject when it becomes impossible for `howMany` to resolve.
 		* 
-		* The resolution value will be an Array of the first `howMany` values
-		* of `promisesOrValues` to resolve.
+		* The resolution value will be an Array of the first `howMany` values of `promisesOrValues` to resolve.
+		*
+		* @param {Mixed[]/Deft.promise.Promise[]/Deft.promise.Promise} promisesOrValues An Array of values or Promises, or a Promise of an Array of values or Promises.
+		* @param {Number} howMany The expected number of resolved values.
+		* @return {Deft.promise.Promise} A Promise of the expected number of resolved values.
 		###
 		some: ( promisesOrValues, howMany ) ->
 			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
@@ -129,9 +135,11 @@ Ext.define( 'Deft.promise.Promise',
 			)
 		
 		###*
-		* Returns a new {@link Deft.promise.Promise} that will automatically
-		* resolve with the specified Promise or value after the specified
-		* delay (in milliseconds).
+		* Returns a new Promise that will automatically resolve with the specified Promise or value after the specified delay (in milliseconds).
+		*
+		* @param {Mixed} promiseOrValue A Promise or value.
+		* @param {Number} milliseconds A delay duration (in milliseconds).
+		* @return {Deft.promise.Promise} A Promise of the specified Promise or value that will resolve after the specified delay.
 		###
 		delay: ( promiseOrValue, milliseconds ) ->
 			if arguments.length is 1
@@ -149,9 +157,11 @@ Ext.define( 'Deft.promise.Promise',
 			return deferred.promise
 		
 		###*
-		* Returns a new {@link Deft.promise.Promise} that will automatically
-		* reject after the specified timeout (in milliseconds) if the specified 
-		* promise has not resolved or rejected.
+		* Returns a new Promise that will automatically reject after the specified timeout (in milliseconds) if the specified promise has not resolved or rejected.
+		*
+		* @param {Mixed} promiseOrValue A Promise or value.
+		* @param {Number} milliseconds A timeout duration (in milliseconds).
+		* @return {Deft.promise.Promise} A Promise of the specified Promise or value that enforces the specified timeout.
 		###
 		timeout: ( promiseOrValue, milliseconds ) ->
 			deferred = Ext.create( 'Deft.promise.Deferred' )
@@ -181,11 +191,14 @@ Ext.define( 'Deft.promise.Promise',
 			return deferred.promise
 		
 		###*
-		* Returns a new function that wraps the specified function and caches
-		* the results for previously processed inputs.
+		* Returns a new function that wraps the specified function and caches the results for previously processed inputs.
 		* 
-		* Similar to `Deft.util.Function::memoize()`, except it allows for
-		* parameters that are {@link Deft.promise.Promise}s and/or values.
+		* Similar to {@link Deft.Function#memoize Deft.util.Function::memoize()}, except it allows for parameters that are Promises and/or values.
+		*
+		* @param {Function} fn A Function to wrap.
+		* @param {Object} scope An optional scope in which to execute the wrapped function.
+		* @param {Function} hashFn An optional function used to compute a hash key for storing the result, based on the arguments to the original function.
+		* @return {Function} The new wrapper function.
 		###
 		memoize: ( fn, scope, hashFn ) ->
 			memoizedFn = Deft.util.Function.memoize( fn, scope, hashFn )
@@ -195,10 +208,13 @@ Ext.define( 'Deft.promise.Promise',
 				)
 		
 		###*
-		* Traditional map function, similar to `Array.prototype.map()`, that
-		* allows input to contain promises and/or values.
+		* Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
 		* 
 		* The specified map function may return either a value or a promise.
+		*
+		* @param {Mixed[]/Deft.promise.Promise[]/Deft.promise.Promise} promisesOrValues An Array of values or Promises, or a Promise of an Array of values or Promises.
+		* @param {Function} mapFn A Function to call to transform each resolved value in the Array.
+		* @return {Promise} A Promise of an Array of the mapped resolved values.
 		###
 		map: ( promisesOrValues, mapFn ) ->
 			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
@@ -240,8 +256,12 @@ Ext.define( 'Deft.promise.Promise',
 			)
 		
 		###*
-		* Traditional reduce function, similar to `Array.reduce()`, that allows
-		* input to contain promises and/or values.
+		* Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
+		*
+		* @param {Mixed[]/Deft.promise.Promise[]/Deft.promise.Promise} promisesOrValues An Array of values or Promises, or a Promise of an Array of values or Promises.
+		* @param {Function} reduceFn A Function to call to transform each successive item in the Array into the final reduced value.
+		* @param {Mixed} initialValue An initial Promise or value.
+		* @return {Promise} A Promise of the reduced value.
 		###
 		reduce: ( promisesOrValues, reduceFn, initialValue ) ->
 			if not ( Ext.isArray( promisesOrValues ) or Deft.Promise.isPromise( promisesOrValues ) )
@@ -365,71 +385,53 @@ Ext.define( 'Deft.promise.Promise',
 		return @
 		
 	###*
-	* Attaches callbacks that will be notified when this 
-	* {@link Deft.promise.Promise}'s future value becomes available. Those
-	* callbacks can subsequently transform the value that was resolved or
-	* the reason that was rejected.
+	* Attaches callbacks that will be notified when this Promise's future value becomes available. Those callbacks can subsequently transform the value that was resolved or the reason that was rejected.
 	* 
-	* Each call to then() returns a new Promise of that transformed value;
-	* i.e., a Promise that is resolved with the callback return value or 
-	* rejected with any error thrown by the callback.
+	* Each call to then() returns a new Promise of that transformed value; i.e., a Promise that is resolved with the callback return value or rejected with any error thrown by the callback.
 	*
-	* @param {Function} fn Callback function to be called when resolved.
-	* @param {Function} fn Callback function to be called when rejected.
-	* @param {Function} fn Callback function to be called with progress updates.
+	* @param {Function} onFulfilled Callback function to be called when resolved.
+	* @param {Function} onRejected Callback function to be called when rejected.
+	* @param {Function} onProgress Callback function to be called with progress updates.
 	* @param {Object} scope Optional scope for the callback(s).
-	* @param {Deft.promise.Promise} A Promise of the transformed future value.
+	* @return {Deft.promise.Promise} A Promise of the transformed future value.
 	###
 	then: Ext.emptyFn
 	
 	###*
-	* Attaches a callback that will be called if this 
-	* {@link Deft.promise.Promise} is rejected. The callbacks can 
-	* subsequently transform the reason that was rejected.
+	* Attaches a callback that will be called if this Promise is rejected. The callbacks can subsequently transform the reason that was rejected.
 	* 
-	* Each call to otherwise() returns a new Promise of that transformed value;
-	* i.e., a Promise that is resolved with the callback return value or 
-	* rejected with any error thrown by the callback.
+	* Each call to otherwise() returns a new Promise of that transformed value; i.e., a Promise that is resolved with the callback return value or rejected with any error thrown by the callback.
 	*
-	* @param {Function} fn Callback function to be called when rejected.
+	* @param {Function} onRejected Callback function to be called when rejected.
 	* @param {Object} scope Optional scope for the callback.
-	* @param {Deft.promise.Promise} A Promise of the transformed future value.
+	* @return {Deft.promise.Promise} A Promise of the transformed future value.
 	###
 	otherwise: Ext.emptyFn
 	
 	###*
-	* Attaches a callback to this {Deft.promise.Promise} that will be 
-	* called when it resolves or rejects. Similar to "finally" in 
-	* "try..catch..finally".
+	* Attaches a callback to this {Deft.promise.Promise} that will be called when it resolves or rejects. Similar to "finally" in "try..catch..finally".
 	*
-	* @param {Function} fn Callback function.
+	* @param {Function} onCompleted Callback function to be called when resolved or rejected.
 	* @param {Object} scope Optional scope for the callback.
-	* @return {Deft.promise.Promise} A new "pass-through" Promise that 
-	* resolves with the original value or rejects with the original reason.
+	* @return {Deft.promise.Promise} A new "pass-through" Promise that resolves with the original value or rejects with the original reason.
 	###
 	always: Ext.emptyFn
 	
 	###*
-	* Terminates a {Deft.promise.Promise} chain, ensuring that unhandled
-	* rejections will be thrown as Errors.
+	* Terminates a {Deft.promise.Promise} chain, ensuring that unhandled rejections will be thrown as Errors.
 	###
 	done: Ext.emptyFn
 	
 	###*
-	* Cancels this {Deft.promise.Promise} if it is still pending, triggering 
-	* a rejection with a CancellationError that will propagate to any Promises
-	* originating from this Promise.
+	* Cancels this {Deft.promise.Promise} if it is still pending, triggering a rejection with a CancellationError that will propagate to any Promises originating from this Promise.
 	###
 	cancel: Ext.emptyFn
 	
 	###*
-	* Logs the resolution or rejection of this Promise using 
-	* {@link Deft.Logger#log}.
+	* Logs the resolution or rejection of this Promise using {@link Deft.Logger#log Deft.logger.Logger::log()}.
 	*
-	* @param {String} An optional identifier to incorporate into the 
-	* resulting log entry.
-	* @return {Deft.promise.Promise} A new "pass-through" Promise that 
-	* resolves with the original value or rejects with the original reason.
+	* @param {String} identifier An optional identifier to incorporate into the resulting log entry.
+	* @return {Deft.promise.Promise} A new "pass-through" Promise that resolves with the original value or rejects with the original reason.
 	###
 	log: Ext.emptyFn
 ,

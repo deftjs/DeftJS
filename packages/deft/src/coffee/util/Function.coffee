@@ -1,21 +1,21 @@
-###*
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+###
+Copyright (c) 2012-2013 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
 ###*
-* Common utility functions used by DeftJS.
+* A collection of useful static methods for interacting with Functions.
 ###
 Ext.define( 'Deft.util.Function',
 	alternateClassName: [ 'Deft.Function' ]
 	
 	statics:
 		###*
-		* Returns a new wrapper function that caches the return value for 
-		* previously processed function argument(s).
+		* Returns a new wrapper function that caches the return value for previously processed function argument(s).
 		* 
-		* @param {Function} Function to wrap.
-		* @param {Object} Optional scope in which to execute the wrapped function.
+		* @param {Function} fn Function to wrap.
+		* @param {Object} scope Optional scope in which to execute the wrapped function.
+		* @param {Function} hashFn Optional function used to compute a hash key for storing the result, based on the arguments to the original function.
 		* @return {Function} The new wrapper function.
 		###
 		memoize: ( fn, scope, hashFn ) ->
@@ -26,11 +26,10 @@ Ext.define( 'Deft.util.Function',
 				return memo[ key ]
 		
 		###*
-		* Schedules the specified callback function to be executed on the next
-		* turn of the event loop.
+		* Schedules the specified callback function to be executed on the next turn of the event loop.
 		* 
-		* @param {Function} Callback function.
-		* @param {Object} Optional scope for the callback.
+		* @param {Function} fn Callback function.
+		* @param {Object} scope Optional scope for the callback.
 		###
 		nextTick: ( fn, scope ) ->
 			if scope?
@@ -39,11 +38,10 @@ Ext.define( 'Deft.util.Function',
 			return
 		
 		###*
-		* Creates a new wrapper function that spreads the passed Array over the
-		* target function arguments.
+		* Creates a new wrapper function that spreads the passed Array over the target function arguments.
 		* 
-		* @param {Function} Function to wrap.
-		* @param {Object} Optional scope in which to execute the wrapped function.
+		* @param {Function} fn Function to wrap.
+		* @param {Object} scope Optional scope in which to execute the wrapped function.
 		* @return {Function} The new wrapper function.
 		###
 		spread: ( fn, scope ) ->

@@ -1,9 +1,9 @@
 ###
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Copyright (c) 2012-2013 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
-###
+###*
 Resolvers are used internally by Deferreds and Promises to capture and notify
 callbacks, process callback return values and propagate resolution or rejection
 to chained Resolvers.
@@ -94,4 +94,38 @@ Ext.define( 'Deft.promise.Resolver',
 			return @promise
 		
 		return @
+	
+	###*
+	* Resolves this Resolver with the specified value, triggering it to execute the 'onResolved' callback and propagate the resulting resolution value or rejection reason to Resolvers that originate from this Resolver.
+	*
+	* @param {Mixed} value The resolved future value.
+	###
+	resolve: Ext.emptyFn
+	
+	###*
+	* Rejects this Resolver with the specified reason, triggering it to execute the 'onRejected' callback and propagate the resulting resolution value or rejection reason to Resolvers that originate from this Resolver.
+	*
+	* @param {Error} reason The rejection reason.
+	###
+	reject: Ext.emptyFn
+	
+	###*
+	* Updates progress for this Resolver, if it is still pending, triggering it to execute the 'onProgress' callback and propagate the resulting transformed progress value to Resolvers that originate from this Resolver.
+	*
+	* @param {Mixed} progress The progress value.
+	###
+	update: Ext.emptyFn
+	
+	###*
+	* Schedules creation of a new Resolver that originates from this Resolver, configured with the specified callbacks.  Those callbacks can subsequently transform the value that was resolved or the reason that was rejected.
+	*
+	* Each call to then() returns a new Promise of that transformed value; i.e., a Promise that is resolved with the callback return value or rejected with any error thrown by the callback.
+	*
+	* @param {Function} onFulfilled Callback function to be called when resolved.
+	* @param {Function} onRejected Callback function to be called when rejected.
+	* @param {Function} onProgress Callback function to be called with progress updates.
+	* @param {Object} scope Optional scope for the callback(s).
+	* @return {Deft.promise.Promise} A Promise of the transformed future value.
+	###
+	then: Ext.emptyFn
 )

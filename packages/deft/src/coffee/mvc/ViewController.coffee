@@ -1,5 +1,5 @@
 ###
-Copyright (c) 2012 [DeftJS Framework Contributors](http://deftjs.org)
+Copyright (c) 2012-2013 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 
@@ -369,7 +369,7 @@ Ext.define( 'Deft.mvc.ViewController',
 			# Process any classes that extend this class.
 			Deft.Class.hookOnClassExtended( data, ( Class, data, hooks ) ->
 				# If the Class extends ViewController at some point in its inheritance chain, merge the parent and child class observers.
-				if Class.superclass and Class.superclass?.observe and Deft.Class.extendsClass( 'Deft.mvc.ViewController', Class )
+				if Class.superclass and Class.superclass?.observe and Deft.Class.extendsClass( Class, 'Deft.mvc.ViewController' )
 					data.observe = Deft.mvc.Observer.mergeObserve( Class.superclass.observe, data.observe )
 				return
 			)
