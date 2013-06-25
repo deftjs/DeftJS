@@ -206,7 +206,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		else
 			config =
 				view:
-					intiialize:
+					initialize:
 						single: true,
 						fn: "onViewInitialize"
 	
