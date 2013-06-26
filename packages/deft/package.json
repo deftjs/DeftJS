@@ -1,7 +1,7 @@
 {
     "name": "deft",
     "type": "code",
-    "creator": "anonymous",
+    "creator": "Deft JS",
     "summary": "Extensions for Large-Scale Sencha Touch and Ext JS Applications",
     "detailedDescription": "Deft JS enhances Ext JS and Sencha Touch's APIs with additional building blocks that enable large development teams to rapidly build enterprise scale applications, leveraging best practices and proven patterns discovered by top RIA developers at some of the best consulting firms in the industry.",
     "version": "0.9.0",
