@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project name="deft" default=".help">
 
+    <property file="build.properties" />
+    
     <property name="skip.style" value="1" />
-
+    
     <!--
         The build-impl.xml file imported here contains the guts of the build process. It is
         a great idea to read that file to understand how the process works, but it is best to
@@ -42,11 +44,39 @@
         <ant target="compile" />
 
     </target>
+    
+    <target name="-after-js" description="Sencha Cmd package extension point">
+        
+        <antcall target="copyright">
+            <param name="file" value="${package.dir}/build/deft-debug.js" />
+        </antcall>
+
+        <antcall target="copyright">
+            <param name="file" value="${package.dir}/build/deft-dev.js" />
+        </antcall>
+        
+        <antcall target="copyright">
+            <param name="file" value="${package.dir}/build/deft.js" />
+        </antcall>
+        
+    </target>
 
     <target name="-before-pkg" description="Sencha Cmd package extension point">
 
         <antcall target="docs" />
 
+    </target>
+    
+    <target name="copyright" description="Add version and copyright notice header.">
+    
+        <echo message="Adding copyright notice to ${file}" />
+        <concat destfile="${file}-with-copyright" encoding="UTF-8" outputencoding="UTF-8">
+            <header>${deftjs.copyright.notice}</header>
+            <fileset file="${file}" />
+        </concat>
+        
+        <move file="${file}-with-copyright" tofile="${file}" />
+    
     </target>
 
     <target name="compile" description="Compiles CoffeeScript">
