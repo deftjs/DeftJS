@@ -3,7 +3,7 @@
     "type": "code",
     "creator": "Deft JS",
     "summary": "Extensions for Large-Scale Sencha Touch and Ext JS Applications",
-    "detailedDescription": "Deft JS enhances Ext JS and Sencha Touch's APIs with additional building blocks that enable large development teams to rapidly build enterprise scale applications, leveraging best practices and proven patterns discovered by top RIA developers at some of the best consulting firms in the industry.",
+    "detailedDescription": "Deft JS extends Sencha Touch and Ext JS to add an Inversion of Control (IoC) container, for dependency injection and dynamic application assembly; an alternative MVC implementation, for per-view-instance ViewControllers; and a Promises/A+ compliant implementation of Promises and Deferreds, for simplified coordination, aggregation and transformation of asynchronous operations and their resulting values.",
     "version": "0.9.0",
     "compatVersion": "0.9.0",
     "format": "1",
