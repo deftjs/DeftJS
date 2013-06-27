@@ -2,7 +2,7 @@
 
 	<property file="build.properties" />
 
-	<target name="test" description="Tests the Deft JS against all supported versions of Sencha Touch and Ext JS">
+	<target name="test" description="Tests Deft JS against all supported versions of Sencha Touch and Ext JS">
 
 		<echo message="Performing Deft JS unit tests with the following browsers: ${karma.browsers}." />
 
@@ -44,6 +44,52 @@
 		<echo message="Sencha Touch 2.2.0" />
 		<exec executable="karma" failonerror="true">
 			<arg line="start karma/touch/2.2.0.conf.js --single-run --browsers ${karma.browsers}" />
+		</exec>
+
+	</target>
+	
+	<target name="coverage" description="Tests and generates a coverage report for Deft JS against all supported versions of Sencha Touch and Ext JS">
+
+		<echo message="Performing Deft JS unit tests with the following browsers: ${karma.browsers}." />
+
+		<echo message="Ext JS 4.0.7" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/ext/4.0.7.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
+		</exec>
+
+		<echo message="Ext JS 4.1.0" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/ext/4.1.0.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
+		</exec>
+
+		<echo message="Ext JS 4.1.1a" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/ext/4.1.1a.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
+		</exec>
+
+		<echo message="Ext JS 4.2.0" />
+		<exec executable="karma">
+			<arg line="start karma/ext/4.2.0.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
+		</exec>
+
+		<echo message="Sencha Touch 2.0.1" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/touch/2.0.1.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
+		</exec>
+
+		<echo message="Sencha Touch 2.1.0" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/touch/2.1.0.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
+		</exec>
+
+		<echo message="Sencha Touch 2.1.1" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/touch/2.1.1.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
+		</exec>
+
+		<echo message="Sencha Touch 2.2.0" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/touch/2.2.0.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
 		</exec>
 
 	</target>

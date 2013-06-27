@@ -39,11 +39,20 @@ exclude = [
 
 ];
 
+// preprocessors
+preprocessors = {
+  'build/deft-debug.js': 'coverage'
+};
 
 // test results reporter to use
 // possible values: 'dots', 'progress', 'junit'
 reporters = ['progress'];
 
+// coverage report options
+coverageReporter = {
+  type : 'html',
+  dir : 'coverage/ext/4.1.1a'
+}
 
 // web server port
 port = 9876;
