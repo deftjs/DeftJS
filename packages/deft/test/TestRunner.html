@@ -50,21 +50,30 @@
 
 		var platform = getUrlVars()["platform"] || localStorage.getItem('platform');
 		var version = getUrlVars()["version"] || localStorage.getItem('version');
+		var cdn = getUrlVars()["cdn"] || localStorage.getItem('cdn');
 		var senchaUrl = "http://cdn.sencha.io/";
 		var currentVersionMessage = "";
 
 		if (platform && version) {
 			if (platform === "ext") {
-				senchaUrl += "ext-" + version + "-gpl/ext-all.js"; //add all-dev for debug
+				if (cdn === "new") {
+					senchaUrl += 'ext/gpl/' + version + '/ext-all.js'; // use -all-dev to debug
+				}
+				else {
+					senchaUrl += "ext-" + version + "-gpl/ext-all.js"; // use -all-dev to debug
+				}
+				
 				currentVersionMessage = "Currently using: ExtJS " + version;
 			} else {
-				senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js"; //add all-debug for debug
+				senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js"; // use -all-debug to debug
 				currentVersionMessage = "Currently using: Sencha Touch " + version;
 			}
 			
 			// Persist selection for Mocha description and test filter support
 			localStorage.setItem('platform', platform);
 			localStorage.setItem('version', version);
+			localStorage.setItem('cdn', cdn);
+			
 
 			// Include target Sencha library.
 			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"" + senchaUrl + "\"><\/script>");
@@ -105,14 +114,16 @@
 <body>
 	<div class="platform-links">
 		<h1>Choose Target Library:</h1>
-		<a href="?platform=ext&version=4.0.7">ExtJS 4.0.7</a> |
-		<a href="?platform=ext&version=4.1.0">ExtJS 4.1.0</a> |
-		<a href="?platform=ext&version=4.1.1a">ExtJS 4.1.1a</a> |
-		<a href="?platform=ext&version=4.2.0">ExtJS 4.2.0</a> |
-		<a href="?platform=touch&version=2.0.1">Touch 2.0.1</a> |
-		<a href="?platform=touch&version=2.1.0">Touch 2.1.0</a> |
-		<a href="?platform=touch&version=2.1.1">Touch 2.1.1</a> |
-		<a href="?platform=touch&version=2.2.0">Touch 2.2.0</a>
+		<a href="?platform=ext&version=4.0.7&cdn=original">ExtJS 4.0.7</a> |
+		<a href="?platform=ext&version=4.1.0&cdn=original">ExtJS 4.1.0</a> |
+		<a href="?platform=ext&version=4.1.1a&cdn=original">ExtJS 4.1.1a</a> |
+		<a href="?platform=ext&version=4.2.0&cdn=new">ExtJS 4.2.0</a> |
+		<a href="?platform=ext&version=4.2.1&cdn=new">ExtJS 4.2.1</a> |
+		<a href="?platform=touch&version=2.0.1&cdn=original">Touch 2.0.1</a> |
+		<a href="?platform=touch&version=2.1.0&cdn=original">Touch 2.1.0</a> |
+		<a href="?platform=touch&version=2.1.1&cdn=original">Touch 2.1.1</a> |
+		<a href="?platform=touch&version=2.2.0&cdn=original">Touch 2.2.0</a> | 
+		<a href="?platform=touch&version=2.2.0&cdn=original">Touch 2.2.1</a>
 	</div>
 	<div class="current-version">
 		<h1><script type="text/javascript">document.write( currentVersionMessage )</script></h1>

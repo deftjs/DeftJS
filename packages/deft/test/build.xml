@@ -26,6 +26,11 @@
 			<arg line="start karma/ext/4.2.0.conf.js --single-run --browsers ${karma.browsers}" />
 		</exec>
 
+		<echo message="Ext JS 4.2.1" />
+		<exec executable="karma">
+			<arg line="start karma/ext/4.2.1.conf.js --single-run --browsers ${karma.browsers}" />
+		</exec>
+
 		<echo message="Sencha Touch 2.0.1" />
 		<exec executable="karma" failonerror="true">
 			<arg line="start karma/touch/2.0.1.conf.js --single-run --browsers ${karma.browsers}" />
@@ -44,6 +49,11 @@
 		<echo message="Sencha Touch 2.2.0" />
 		<exec executable="karma" failonerror="true">
 			<arg line="start karma/touch/2.2.0.conf.js --single-run --browsers ${karma.browsers}" />
+		</exec>
+
+		<echo message="Sencha Touch 2.2.1" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/touch/2.2.1.conf.js --single-run --browsers ${karma.browsers}" />
 		</exec>
 
 	</target>
@@ -72,6 +82,11 @@
 			<arg line="start karma/ext/4.2.0.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
 		</exec>
 
+		<echo message="Ext JS 4.2.1" />
+		<exec executable="karma">
+			<arg line="start karma/ext/4.2.1.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
+		</exec>
+
 		<echo message="Sencha Touch 2.0.1" />
 		<exec executable="karma" failonerror="true">
 			<arg line="start karma/touch/2.0.1.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
@@ -90,6 +105,11 @@
 		<echo message="Sencha Touch 2.2.0" />
 		<exec executable="karma" failonerror="true">
 			<arg line="start karma/touch/2.2.0.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
+		</exec>
+
+		<echo message="Sencha Touch 2.2.1" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/touch/2.2.1.conf.js --single-run --browsers ${karma.browsers} --reporters=progress,coverage" />
 		</exec>
 
 	</target>
