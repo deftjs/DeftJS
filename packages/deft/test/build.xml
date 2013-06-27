@@ -2,6 +2,10 @@
 
 	<property file="build.properties" />
 
+	<target name="clean" description="Remove artifacts in build directory from previous builds.">
+		<delete dir="coverage" />
+	</target>
+
 	<target name="test" description="Tests Deft JS against all supported versions of Sencha Touch and Ext JS">
 
 		<echo message="Performing Deft JS unit tests with the following browsers: ${karma.browsers}." />

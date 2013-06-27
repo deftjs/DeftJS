@@ -51,7 +51,7 @@ reporters = ['progress'];
 // coverage report options
 coverageReporter = {
   type : 'html',
-  dir : 'coverage/ext/4.0.7'
+  dir : 'test/coverage/ext/4.0.7'
 }
 
 // web server port
