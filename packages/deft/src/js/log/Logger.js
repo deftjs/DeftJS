@@ -5,42 +5,81 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
 /**
-* Logger used by DeftJS. Output is displayed in the console when using ext-dev/ext-all-dev.
+* Logger used by DeftJS.
+* 
+* Output is displayed in the console when using `ext-dev`/`ext-all-dev` or `sencha-debug`/`sencha-all-debug`.
+*
 * @private
 */
 
 Ext.define('Deft.log.Logger', {
   alternateClassName: ['Deft.Logger'],
   singleton: true,
+  /**
+  	* Logs a message with the specified priority.
+  	*
+  	* @param {String} message The message to log.
+  	* @param {String} priority The priority of the log message. Valid values are: `verbose`, `info`, `deprecate`, `warn` and `error`.
+  */
+
   log: function(message, priority) {
     if (priority == null) {
       priority = 'info';
     }
   },
-  error: function(message) {
-    this.log(message, 'error');
-  },
-  info: function(message) {
-    this.log(message, 'info');
-  },
+  /**
+  	* Logs a message with 'verbose' priority.
+  	*
+  	* @param {String} message The message to log.
+  */
+
   verbose: function(message) {
     this.log(message, 'verbose');
   },
+  /**
+  	* Logs a message with 'info' priority.
+  	*
+  	* @param {String} message The message to log.
+  */
+
+  info: function(message) {
+    this.log(message, 'info');
+  },
+  /**
+  	* Logs a message with 'deprecate' priority.
+  	*
+  	* @param {String} message The message to log.
+  */
+
+  deprecate: function(message) {
+    this.log(message, 'deprecate');
+  },
+  /**
+  	* Logs a message with 'warn' priority.
+  	*
+  	* @param {String} message The message to log.
+  */
+
   warn: function(message) {
     this.log(message, 'warn');
   },
-  deprecate: function(message) {
-    this.log(message, 'deprecate');
+  /**
+  	* Logs a message with 'error' priority.
+  	*
+  	* @param {String} message The message to log.
+  */
+
+  error: function(message) {
+    this.log(message, 'error');
   }
 }, function() {
-  var _ref;
   if (Ext.getVersion('extjs') != null) {
     this.log = function(message, priority) {
       if (priority == null) {
         priority = 'info';
       }
       if (priority === 'verbose') {
-        priority === 'info';
+        priority = 'info';
       }
       if (priority === 'deprecate') {
         priority = 'warn';
@@ -51,8 +90,13 @@ Ext.define('Deft.log.Logger', {
       });
     };
   } else {
-    if (Ext.isFunction((_ref = Ext.Logger) != null ? _ref.log : void 0)) {
-      this.log = Ext.bind(Ext.Logger.log, Ext.Logger);
-    }
+    this.log = function(message, priority) {
+      if (priority == null) {
+        priority = 'info';
+      }
+      if ((Ext.Logger != null) && Ext.isFunction(Ext.Logger.log)) {
+        Ext.Logger.log(message, Ext.Array.indexOf(['verbose', 'info', 'deprecate', 'warn', 'error'], priority));
+      }
+    };
   }
 });
