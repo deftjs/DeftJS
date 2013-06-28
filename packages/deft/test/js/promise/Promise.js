@@ -213,7 +213,7 @@ describe('Deft.promise.Promise', function() {
         expect(Deft.Promise.isPromise(promise)).to.be["true"];
       });
     });
-    return describe('returns false for non-promises', function() {
+    describe('returns false for non-promises', function() {
       var value, values, _fn, _i, _len;
       values = [void 0, null, false, 0, 1, 'value', [1, 2, 3], {}, new Error('error message')];
       _fn = function(value) {
@@ -519,7 +519,7 @@ describe('Deft.promise.Promise', function() {
         return promise.should.be.rejected["with"](Error, 'error message');
       });
     });
-    return describe('throws an Error if anything other than Array or Promise of an Array is specified', function() {
+    describe('throws an Error if anything other than Array or Promise of an Array is specified', function() {
       specify('no parameters', function() {
         expect(function() {
           return Deft.Promise.any();
@@ -734,7 +734,7 @@ describe('Deft.promise.Promise', function() {
         return promise.should.be.rejected["with"](Error, 'error message');
       });
     });
-    return describe('throws an Error if anything other than Array or Promise of an Array is specified', function() {
+    describe('throws an Error if anything other than Array or Promise of an Array is specified', function() {
       specify('no parameters', function() {
         expect(function() {
           return Deft.Promise.some();
@@ -1291,37 +1291,37 @@ describe('Deft.promise.Promise', function() {
     });
     describe('throws an Error if anything other than an Array or Promise of an Array and a function are specified', function() {
       specify('no parameters', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.map();
         }).to["throw"](Error, 'Invalid parameter: expected an Array or Promise of an Array.');
       });
       specify('a single non-Array parameter', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.map(1);
         }).to["throw"](Error, 'Invalid parameter: expected an Array or Promise of an Array.');
       });
       specify('multiple non-Array parameters', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.map(1, 2, 3);
         }).to["throw"](Error, 'Invalid parameter: expected an Array or Promise of an Array.');
       });
       specify('an Array and no function', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.map([1, 2, 3]);
         }).to["throw"](Error, 'Invalid parameter: expected a function.');
       });
       specify('a Promise of an Array and no function', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.map(Deft.Deferred.resolve([1, 2, 3]));
         }).to["throw"](Error, 'Invalid parameter: expected a function.');
       });
       specify('an Array and a non-function parameter', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.map([1, 2, 3], 'not a function');
         }).to["throw"](Error, 'Invalid parameter: expected a function.');
       });
-      return specify('a Promise of a non-function parameter', function() {
-        return expect(function() {
+      specify('a Promise of a non-function parameter', function() {
+        expect(function() {
           return Deft.Promise.map(Deft.Deferred.resolve([1, 2, 3], 'not a function'));
         }).to["throw"](Error, 'Invalid parameter: expected a function.');
       });
@@ -1995,37 +1995,37 @@ describe('Deft.promise.Promise', function() {
     });
     describe('throws an Error if anything other than an Array or Promise of an Array and a function are specified as the first two parameters', function() {
       specify('no parameters', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.reduce();
         }).to["throw"](Error, 'Invalid parameter: expected an Array or Promise of an Array.');
       });
       specify('a single non-Array parameter', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.reduce(1);
         }).to["throw"](Error, 'Invalid parameter: expected an Array or Promise of an Array.');
       });
       specify('multiple non-Array parameters', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.reduce(1, 2, 3);
         }).to["throw"](Error, 'Invalid parameter: expected an Array or Promise of an Array.');
       });
       specify('an Array and no function', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.reduce([1, 2, 3]);
         }).to["throw"](Error, 'Invalid parameter: expected a function.');
       });
       specify('a Promise of an Array and no function', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.reduce(Deft.Deferred.resolve([1, 2, 3]));
         }).to["throw"](Error, 'Invalid parameter: expected a function.');
       });
       specify('an Array and a non-function parameter', function() {
-        return expect(function() {
+        expect(function() {
           return Deft.Promise.reduce([1, 2, 3], 'not a function');
         }).to["throw"](Error, 'Invalid parameter: expected a function.');
       });
-      return specify('a Promise of a non-function parameter', function() {
-        return expect(function() {
+      specify('a Promise of a non-function parameter', function() {
+        expect(function() {
           return Deft.Promise.reduce(Deft.Deferred.resolve([1, 2, 3], 'not a function'));
         }).to["throw"](Error, 'Invalid parameter: expected a function.');
       });

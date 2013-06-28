@@ -240,6 +240,8 @@ describe( 'Deft.promise.Promise', ->
 			
 			return
 		)
+		
+		return
 	)
 	
 	describe( 'all()', ->
@@ -704,6 +706,8 @@ describe( 'Deft.promise.Promise', ->
 			
 			return
 		)
+		
+		return
 	)
 	
 	describe( 'some()', ->
@@ -1052,6 +1056,8 @@ describe( 'Deft.promise.Promise', ->
 			
 			return
 		)
+		
+		return
 	)
 	
 	describe( 'delay()', ->
@@ -1855,31 +1861,40 @@ describe( 'Deft.promise.Promise', ->
 		describe( 'throws an Error if anything other than an Array or Promise of an Array and a function are specified', ->
 			specify( 'no parameters', ->
 				expect( -> Deft.Promise.map() ).to.throw( Error, 'Invalid parameter: expected an Array or Promise of an Array.' )
+				return
 			)
 			
 			specify( 'a single non-Array parameter', ->
 				expect( -> Deft.Promise.map( 1 ) ).to.throw( Error, 'Invalid parameter: expected an Array or Promise of an Array.' )
+				return
 			)
 			
 			specify( 'multiple non-Array parameters', ->
 				expect( -> Deft.Promise.map( 1, 2, 3 ) ).to.throw( Error, 'Invalid parameter: expected an Array or Promise of an Array.' )
+				return
 			)
 			
 			specify( 'an Array and no function', ->
 				expect( -> Deft.Promise.map( [ 1, 2, 3 ] ) ).to.throw( Error, 'Invalid parameter: expected a function.' )
+				return
 			)
 			
 			specify( 'a Promise of an Array and no function', ->
 				expect( -> Deft.Promise.map( Deft.Deferred.resolve( [ 1, 2, 3 ] ) ) ).to.throw( Error, 'Invalid parameter: expected a function.' )
+				return
 			)
 			
 			specify( 'an Array and a non-function parameter', ->
 				expect( -> Deft.Promise.map( [ 1, 2, 3 ], 'not a function' ) ).to.throw( Error, 'Invalid parameter: expected a function.' )
+				return
 			)
 			
 			specify( 'a Promise of a non-function parameter', ->
 				expect( -> Deft.Promise.map( Deft.Deferred.resolve( [ 1, 2, 3 ], 'not a function' ) ) ).to.throw( Error, 'Invalid parameter: expected a function.' )
+				return
 			)
+			
+			return
 		)
 		
 		return
@@ -2963,31 +2978,40 @@ describe( 'Deft.promise.Promise', ->
 		describe( 'throws an Error if anything other than an Array or Promise of an Array and a function are specified as the first two parameters', ->
 			specify( 'no parameters', ->
 				expect( -> Deft.Promise.reduce() ).to.throw( Error, 'Invalid parameter: expected an Array or Promise of an Array.' )
+				return
 			)
 			
 			specify( 'a single non-Array parameter', ->
 				expect( -> Deft.Promise.reduce( 1 ) ).to.throw( Error, 'Invalid parameter: expected an Array or Promise of an Array.' )
+				return
 			)
 			
 			specify( 'multiple non-Array parameters', ->
 				expect( -> Deft.Promise.reduce( 1, 2, 3 ) ).to.throw( Error, 'Invalid parameter: expected an Array or Promise of an Array.' )
+				return
 			)
 			
 			specify( 'an Array and no function', ->
 				expect( -> Deft.Promise.reduce( [ 1, 2, 3 ] ) ).to.throw( Error, 'Invalid parameter: expected a function.' )
+				return
 			)
 			
 			specify( 'a Promise of an Array and no function', ->
 				expect( -> Deft.Promise.reduce( Deft.Deferred.resolve( [ 1, 2, 3 ] ) ) ).to.throw( Error, 'Invalid parameter: expected a function.' )
+				return
 			)
 			
 			specify( 'an Array and a non-function parameter', ->
 				expect( -> Deft.Promise.reduce( [ 1, 2, 3 ], 'not a function' ) ).to.throw( Error, 'Invalid parameter: expected a function.' )
+				return
 			)
 			
 			specify( 'a Promise of a non-function parameter', ->
 				expect( -> Deft.Promise.reduce( Deft.Deferred.resolve( [ 1, 2, 3 ], 'not a function' ) ) ).to.throw( Error, 'Invalid parameter: expected a function.' )
+				return
 			)
+			
+			return
 		)
 		
 		return
@@ -3011,7 +3035,6 @@ describe( 'Deft.promise.Promise', ->
 						catch error
 							done( error )
 				)
-				
 				return
 			)
 			
@@ -3032,7 +3055,6 @@ describe( 'Deft.promise.Promise', ->
 						catch error
 							done( error )
 				)
-				
 				return
 			)
 			
@@ -3050,7 +3072,6 @@ describe( 'Deft.promise.Promise', ->
 						catch error
 							done( error )
 				)
-				
 				return
 			)
 			
@@ -3120,7 +3141,6 @@ describe( 'Deft.promise.Promise', ->
 						catch error
 							done( error )
 				)
-				
 				return
 			)
 			
@@ -3139,7 +3159,6 @@ describe( 'Deft.promise.Promise', ->
 						catch error
 							done( error )
 				)
-				
 				return
 			)
 			
@@ -3270,7 +3289,6 @@ describe( 'Deft.promise.Promise', ->
 					done()
 					return
 				)
-				
 				return
 			)
 			
@@ -3339,7 +3357,6 @@ describe( 'Deft.promise.Promise', ->
 				
 				return promise.should.be.rejected.with( Error, 'rejection reason' )
 			)
-			
 			
 			specify( 'propagates rejection with that CancellationError to Promises that originate from the cancelled Promise', ->
 				promise = Ext.create( 'Deft.Deferred' ).promise
