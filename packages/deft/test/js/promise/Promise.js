@@ -2033,53 +2033,113 @@ describe('Deft.promise.Promise', function() {
   });
   describe('otherwise()', function() {
     describe('attaches a callback that will be called if this Promise is rejected', function() {
-      specify('called if rejected', function(done) {
-        var error, onRejected, promise;
-        onRejected = sinon.spy();
-        error = new Error('error message');
-        promise = Deft.Deferred.reject(error);
-        promise.otherwise(onRejected);
-        promise.then(null, function() {
-          try {
-            expect(onRejected).to.be.calledOnce.and.calledWith(error);
-            return done();
-          } catch (_error) {
-            error = _error;
-            return done(error);
-          }
+      describe('with parameters specified via function arguments', function() {
+        specify('called if rejected', function(done) {
+          var error, onRejected, promise;
+          onRejected = sinon.spy();
+          error = new Error('error message');
+          promise = Deft.Deferred.reject(error);
+          promise.otherwise(onRejected);
+          promise.then(null, function() {
+            try {
+              expect(onRejected).to.be.calledOnce.and.calledWith(error);
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
+        });
+        specify('called in specified scope if rejected', function(done) {
+          var error, onRejected, promise, targetScope;
+          targetScope = {};
+          onRejected = sinon.spy();
+          error = new Error('error message');
+          promise = Deft.Deferred.reject(error);
+          promise.otherwise(onRejected, targetScope);
+          promise.then(null, function() {
+            try {
+              expect(onRejected).to.be.calledOnce.and.calledWith(error).and.calledOn(targetScope);
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
+        });
+        specify('not called if resolved', function(done) {
+          var onRejected, promise;
+          onRejected = sinon.spy();
+          promise = Deft.Deferred.resolve('value');
+          promise.otherwise(onRejected);
+          promise.then(function() {
+            var error;
+            try {
+              expect(onRejected).not.to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
         });
       });
-      specify('called in specified scope if rejected', function(done) {
-        var error, onRejected, promise, targetScope;
-        targetScope = {};
-        onRejected = sinon.spy();
-        error = new Error('error message');
-        promise = Deft.Deferred.reject(error);
-        promise.otherwise(onRejected, targetScope);
-        promise.then(null, function() {
-          try {
-            expect(onRejected).to.be.calledOnce.and.calledWith(error).and.calledOn(targetScope);
-            return done();
-          } catch (_error) {
-            error = _error;
-            return done(error);
-          }
+      describe('with parameters specified via a configuration object', function() {
+        specify('called if rejected', function(done) {
+          var error, onRejected, promise;
+          onRejected = sinon.spy();
+          error = new Error('error message');
+          promise = Deft.Deferred.reject(error);
+          promise.otherwise({
+            fn: onRejected
+          });
+          promise.then(null, function() {
+            try {
+              expect(onRejected).to.be.calledOnce.and.calledWith(error);
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
         });
-      });
-      specify('not called if resolved', function(done) {
-        var onRejected, promise;
-        onRejected = sinon.spy();
-        promise = Deft.Deferred.resolve('value');
-        promise.otherwise(onRejected);
-        promise.then(function() {
-          var error;
-          try {
-            expect(onRejected).not.to.be.called;
-            return done();
-          } catch (_error) {
-            error = _error;
-            return done(error);
-          }
+        specify('called in specified scope if rejected', function(done) {
+          var error, onRejected, promise, targetScope;
+          targetScope = {};
+          onRejected = sinon.spy();
+          error = new Error('error message');
+          promise = Deft.Deferred.reject(error);
+          promise.otherwise({
+            fn: onRejected,
+            scope: targetScope
+          });
+          promise.then(null, function() {
+            try {
+              expect(onRejected).to.be.calledOnce.and.calledWith(error).and.calledOn(targetScope);
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
+        });
+        specify('not called if resolved', function(done) {
+          var onRejected, promise;
+          onRejected = sinon.spy();
+          promise = Deft.Deferred.resolve('value');
+          promise.otherwise({
+            fn: onRejected
+          });
+          promise.then(function() {
+            var error;
+            try {
+              expect(onRejected).not.to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
         });
       });
     });
@@ -2124,36 +2184,150 @@ describe('Deft.promise.Promise', function() {
   });
   describe('always()', function() {
     describe('attaches a callback to this Promise that will be called when it resolves or rejects', function() {
-      specify('called with no parameters when resolved', function(done) {
-        var onComplete, promise;
-        onComplete = sinon.spy();
-        promise = Deft.Deferred.resolve('value');
-        promise.always(onComplete);
-        promise.then(function() {
-          var error;
-          try {
-            expect(onComplete).to.be.called;
-            return done();
-          } catch (_error) {
-            error = _error;
-            return done(error);
-          }
+      describe('with parameters specified via function arguments', function() {
+        specify('called with no parameters when resolved', function(done) {
+          var onComplete, promise;
+          onComplete = sinon.spy();
+          promise = Deft.Deferred.resolve('value');
+          promise.always(onComplete);
+          promise.then(function() {
+            var error;
+            try {
+              expect(onComplete).to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
+        });
+        specify('called with no parameters in the specified scope when resolved', function(done) {
+          var onComplete, promise, targetScope;
+          targetScope = {};
+          onComplete = sinon.spy();
+          promise = Deft.Deferred.resolve('value');
+          promise.always(onComplete, targetScope);
+          promise.then(function() {
+            var error;
+            try {
+              expect(onComplete).to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
+        });
+        specify('called with no parameters when rejected', function(done) {
+          var onComplete, promise;
+          onComplete = sinon.spy();
+          promise = Deft.Deferred.reject(new Error('error message'));
+          promise.always(onComplete);
+          promise.then(null, function() {
+            var error;
+            try {
+              expect(onComplete).to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
+        });
+        specify('called with no parameters in the specified scope when rejected', function(done) {
+          var onComplete, promise, targetScope;
+          targetScope = {};
+          onComplete = sinon.spy();
+          promise = Deft.Deferred.reject(new Error('error message'));
+          promise.always(onComplete, targetScope);
+          promise.then(null, function() {
+            var error;
+            try {
+              expect(onComplete).to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
         });
       });
-      specify('called with no parameters when rejected', function(done) {
-        var onComplete, promise;
-        onComplete = sinon.spy();
-        promise = Deft.Deferred.reject(new Error('error message'));
-        promise.always(onComplete);
-        promise.then(null, function() {
-          var error;
-          try {
-            expect(onComplete).to.be.called;
-            return done();
-          } catch (_error) {
-            error = _error;
-            return done(error);
-          }
+      describe('with parameters specified via a configuration object', function() {
+        specify('called with no parameters when resolved', function(done) {
+          var onComplete, promise;
+          onComplete = sinon.spy();
+          promise = Deft.Deferred.resolve('value');
+          promise.always({
+            fn: onComplete
+          });
+          promise.then(function() {
+            var error;
+            try {
+              expect(onComplete).to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
+        });
+        specify('called with no parameters in the specified scope when resolved', function(done) {
+          var onComplete, promise, targetScope;
+          targetScope = {};
+          onComplete = sinon.spy();
+          promise = Deft.Deferred.resolve('value');
+          promise.always({
+            fn: onComplete,
+            scope: targetScope
+          });
+          promise.then(function() {
+            var error;
+            try {
+              expect(onComplete).to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
+        });
+        specify('called with no parameters when rejected', function(done) {
+          var onComplete, promise;
+          onComplete = sinon.spy();
+          promise = Deft.Deferred.reject(new Error('error message'));
+          promise.always({
+            fn: onComplete
+          });
+          promise.then(null, function() {
+            var error;
+            try {
+              expect(onComplete).to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
+        });
+        specify('called with no parameters in the specified scope when rejected', function(done) {
+          var onComplete, promise, targetScope;
+          targetScope = {};
+          onComplete = sinon.spy();
+          promise = Deft.Deferred.reject(new Error('error message'));
+          promise.always({
+            fn: onComplete,
+            scope: targetScope
+          });
+          promise.then(null, function() {
+            var error;
+            try {
+              expect(onComplete).to.be.called;
+              return done();
+            } catch (_error) {
+              error = _error;
+              return done(error);
+            }
+          });
         });
       });
     });

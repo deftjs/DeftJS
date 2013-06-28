@@ -3019,59 +3019,130 @@ describe( 'Deft.promise.Promise', ->
 	
 	describe( 'otherwise()', ->
 		describe( 'attaches a callback that will be called if this Promise is rejected', ->
-			specify( 'called if rejected', ( done ) ->
-				onRejected = sinon.spy()
-				error = new Error( 'error message' )
-				
-				promise = Deft.Deferred.reject( error )
-				promise.otherwise( onRejected )
-				
-				promise.then( 
-					null
-					->
-						try
-							expect( onRejected ).to.be.calledOnce.and.calledWith( error )
-							done()
-						catch error
-							done( error )
+			describe( 'with parameters specified via function arguments', ->
+				specify( 'called if rejected', ( done ) ->
+					onRejected = sinon.spy()
+					error = new Error( 'error message' )
+					
+					promise = Deft.Deferred.reject( error )
+					promise.otherwise( onRejected )
+					
+					promise.then( 
+						null
+						->
+							try
+								expect( onRejected ).to.be.calledOnce.and.calledWith( error )
+								done()
+							catch error
+								done( error )
+					)
+					return
 				)
+				
+				specify( 'called in specified scope if rejected', ( done ) ->
+					targetScope = {}
+					onRejected = sinon.spy()
+					error = new Error( 'error message' )
+					
+					promise = Deft.Deferred.reject( error )
+					promise.otherwise( onRejected, targetScope )
+					
+					promise.then(
+						null
+						->
+							try
+								expect( onRejected ).to.be.calledOnce.and.calledWith( error ).and.calledOn( targetScope )
+								done()
+							catch error
+								done( error )
+					)
+					return
+				)
+				
+				specify( 'not called if resolved', ( done ) ->
+					onRejected = sinon.spy()
+					
+					promise = Deft.Deferred.resolve( 'value' )
+					promise.otherwise( onRejected )
+					
+					promise.then(
+						->
+							try
+								expect( onRejected ).not.to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
+				)
+				
 				return
 			)
 			
-			specify( 'called in specified scope if rejected', ( done ) ->
-				targetScope = {}
-				onRejected = sinon.spy()
-				error = new Error( 'error message' )
-				
-				promise = Deft.Deferred.reject( error )
-				promise.otherwise( onRejected, targetScope )
-				
-				promise.then(
-					null
-					->
-						try
-							expect( onRejected ).to.be.calledOnce.and.calledWith( error ).and.calledOn( targetScope )
-							done()
-						catch error
-							done( error )
+			describe( 'with parameters specified via a configuration object', ->
+				specify( 'called if rejected', ( done ) ->
+					onRejected = sinon.spy()
+					error = new Error( 'error message' )
+					
+					promise = Deft.Deferred.reject( error )
+					promise.otherwise(
+						fn: onRejected
+					)
+					
+					promise.then( 
+						null
+						->
+							try
+								expect( onRejected ).to.be.calledOnce.and.calledWith( error )
+								done()
+							catch error
+								done( error )
+					)
+					return
 				)
-				return
-			)
-			
-			specify( 'not called if resolved', ( done ) ->
-				onRejected = sinon.spy()
 				
-				promise = Deft.Deferred.resolve( 'value' )
-				promise.otherwise( onRejected )
-				
-				promise.then(
-					->
-						try
-							expect( onRejected ).not.to.be.called
-							done()
-						catch error
-							done( error )
+				specify( 'called in specified scope if rejected', ( done ) ->
+					targetScope = {}
+					onRejected = sinon.spy()
+					error = new Error( 'error message' )
+					
+					promise = Deft.Deferred.reject( error )
+					promise.otherwise(
+						fn: onRejected 
+						scope: targetScope
+					)
+					
+					promise.then(
+						null
+						->
+							try
+								expect( onRejected ).to.be.calledOnce.and.calledWith( error ).and.calledOn( targetScope )
+								done()
+							catch error
+								done( error )
+					)
+					return
 				)
+				
+				specify( 'not called if resolved', ( done ) ->
+					onRejected = sinon.spy()
+					
+					promise = Deft.Deferred.resolve( 'value' )
+					promise.otherwise(
+						fn: onRejected
+					)
+					
+					promise.then(
+						->
+							try
+								expect( onRejected ).not.to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
+				)
+				
 				return
 			)
 			
@@ -3127,38 +3198,165 @@ describe( 'Deft.promise.Promise', ->
 	
 	describe( 'always()', ->
 		describe( 'attaches a callback to this Promise that will be called when it resolves or rejects', ->
-			specify( 'called with no parameters when resolved', ( done ) ->
-				onComplete = sinon.spy()
-				
-				promise = Deft.Deferred.resolve( 'value' )
-				promise.always( onComplete )
-				
-				promise.then(
-					->
-						try
-							expect( onComplete ).to.be.called
-							done()
-						catch error
-							done( error )
+			describe( 'with parameters specified via function arguments', ->
+				specify( 'called with no parameters when resolved', ( done ) ->
+					onComplete = sinon.spy()
+					
+					promise = Deft.Deferred.resolve( 'value' )
+					promise.always( onComplete )
+					
+					promise.then(
+						->
+							try
+								expect( onComplete ).to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
 				)
+				
+				specify( 'called with no parameters in the specified scope when resolved', ( done ) ->
+					targetScope = {}
+					onComplete = sinon.spy()
+					
+					promise = Deft.Deferred.resolve( 'value' )
+					promise.always( onComplete, targetScope )
+					
+					promise.then(
+						->
+							try
+								expect( onComplete ).to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
+				)
+				
+				specify( 'called with no parameters when rejected', ( done ) ->
+					onComplete = sinon.spy()
+					
+					promise = Deft.Deferred.reject( new Error( 'error message' ) )
+					promise.always( onComplete )
+					
+					promise.then(
+						null
+						->
+							try
+								expect( onComplete ).to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
+				)
+				
+				specify( 'called with no parameters in the specified scope when rejected', ( done ) ->
+					targetScope = {}
+					onComplete = sinon.spy()
+					
+					promise = Deft.Deferred.reject( new Error( 'error message' ) )
+					promise.always( onComplete, targetScope )
+					
+					promise.then(
+						null
+						->
+							try
+								expect( onComplete ).to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
+				)
+				
 				return
 			)
 			
-			specify( 'called with no parameters when rejected', ( done ) ->
-				onComplete = sinon.spy()
-				
-				promise = Deft.Deferred.reject( new Error( 'error message' ) )
-				promise.always( onComplete )
-				
-				promise.then(
-					null
-					->
-						try
-							expect( onComplete ).to.be.called
-							done()
-						catch error
-							done( error )
+			describe( 'with parameters specified via a configuration object', ->
+				specify( 'called with no parameters when resolved', ( done ) ->
+					onComplete = sinon.spy()
+					
+					promise = Deft.Deferred.resolve( 'value' )
+					promise.always(
+						fn: onComplete
+					)
+					
+					promise.then(
+						->
+							try
+								expect( onComplete ).to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
 				)
+				
+				specify( 'called with no parameters in the specified scope when resolved', ( done ) ->
+					targetScope = {}
+					onComplete = sinon.spy()
+					
+					promise = Deft.Deferred.resolve( 'value' )
+					promise.always(
+						fn: onComplete
+						scope: targetScope
+					)
+					
+					promise.then(
+						->
+							try
+								expect( onComplete ).to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
+				)
+				
+				specify( 'called with no parameters when rejected', ( done ) ->
+					onComplete = sinon.spy()
+					
+					promise = Deft.Deferred.reject( new Error( 'error message' ) )
+					promise.always(
+						fn: onComplete
+					)
+					
+					promise.then(
+						null
+						->
+							try
+								expect( onComplete ).to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
+				)
+				
+				specify( 'called with no parameters in the specified scope when rejected', ( done ) ->
+					targetScope = {}
+					onComplete = sinon.spy()
+					
+					promise = Deft.Deferred.reject( new Error( 'error message' ) )
+					promise.always(
+						fn: onComplete
+						scope: targetScope
+					)
+					
+					promise.then(
+						null
+						->
+							try
+								expect( onComplete ).to.be.called
+								done()
+							catch error
+								done( error )
+					)
+					return
+				)
+				
 				return
 			)
 			
