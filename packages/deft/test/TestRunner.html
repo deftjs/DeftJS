@@ -1,33 +1,35 @@
+<!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8">
 	<title>Deft JS Test Suite</title>
-
+	
 	<style>
-		.platform-links  h1 {
-			font-size: 1em;
+		.test-runner-configuration h1 {
+			font-size: 1.0em;
 			font-weight: 200;
 		}
-		.platform-links a, .platform-links a:visited {
+		.test-runner-configuration h2 {
+			font-size: 0.8em;
+			font-weight: 200;
+		}
+		.test-runner-configuration a, .test-runner-configuration a:visited {
+			font-size: 0.8em;
 			color: inherit;
 			text-decoration: none;
 		}
-		.platform-links a:hover {
+		.test-runner-configuration a:hover {
 			color: orange;
 			text-decoration: underline;
 		}
-		.platform-links a:active {
+		.test-runner-configuration a:active {
 			color: orange;
 			text-decoration: underline;
-		}
-		.current-version h1 {
-			font-size: 1em;
-			font-weight: 200;
 		}
 	</style>
-
+	
 	<link rel="stylesheet" href="lib/mocha-1.9.0/mocha.css" />
-
+	
 	<script src="lib/mocha-1.9.0/mocha.js"></script>
 	<script src="lib/mocha-as-promised-1.3.0/mocha-as-promised.js"></script>
 	<script src="lib/chai-1.6.0/chai.js"></script>
@@ -35,72 +37,132 @@
 	<script src="lib/sinon-1.6.0/sinon.js"></script>
 	<script src="lib/sinon-chai-2.4.0/sinon-chai.js"></script>
 	<script src="lib/sinon-sencha-1.0.0/sinon-sencha.js"></script>
-
+	<!-- <script src="lib/setImmediate-1.0.1/setImmediate.js"></script> -->
+	
 	<script src="support/browser.js"></script>
-
-	<!-- Include Sencha libs based on passed URL params. -->
+	
+	<!-- Include selected Sencha framework and Deft JS test files based on URL parameters and local storage values. -->
 	<script type="text/javascript">
-		function getUrlVars() {
-			var vars = {};
-			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-				vars[key] = value;
-			});
-			return vars;
-		}
-		
-		var parameters = getUrlVars();
-		
-		var platform = parameters.platform || localStorage.getItem('platform');
-		var version = parameters.version || localStorage.getItem('version');
-		var cdn = parameters.cdn || localStorage.getItem('cdn');
-		
-		var senchaUrl = "http://cdn.sencha.io/";
-		var currentVersionMessage = "";
-		
-		if (platform && version) {
-			if (platform === "ext") {
-				if (cdn === "new") {
-					senchaUrl += 'ext/gpl/' + version + '/ext-all.js'; // use -all-dev to debug
-				}
-				else {
-					senchaUrl += "ext-" + version + "-gpl/ext-all.js"; // use -all-dev to debug
-				}
+		var TestRunner = (function(){
+			// Supported Sencha Touch and Ext JS frameworks.
+			var frameworks = [
+				{ name: 'Ext JS 4.0.7',  platform: 'ext',   version: '4.0.7',  cdn: 'original' },
+				{ name: 'Ext JS 4.1.0',  platform: 'ext',   version: '4.1.0',  cdn: 'original' },
+				{ name: 'Ext JS 4.1.1a', platform: 'ext',   version: '4.1.1a', cdn: 'original' },
+				{ name: 'Ext JS 4.2.0',  platform: 'ext',   version: '4.2.0',  cdn: 'new' },
+				{ name: 'Ext JS 4.2.1',  platform: 'ext',   version: '4.2.1',  cdn: 'new' },
+				{ name: 'Touch 2.0.1',   platform: 'touch', version: '2.0.1',  cdn: 'original' },
+				{ name: 'Touch 2.1.0',   platform: 'touch', version: '2.1.0',  cdn: 'original' },
+				{ name: 'Touch 2.1.1',   platform: 'touch', version: '2.1.1',  cdn: 'original' },
+				{ name: 'Touch 2.2.0',   platform: 'touch', version: '2.2.0',  cdn: 'original' },
+				{ name: 'Touch 2.2.1',   platform: 'touch', version: '2.2.1',  cdn: 'original' }
+			];
+			
+			// Deft JS test files.
+			var files = [
+				'DeftJS-Promise-adapter.js',
 				
-				currentVersionMessage = "Currently using: ExtJS " + version;
-			} else {
-				senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js"; // use -all-debug to debug
-				currentVersionMessage = "Currently using: Sencha Touch " + version;
+				'js/log/Logger.js',
+				'js/ioc/Injector.js',
+				'js/mixin/Injectable.js',
+				'js/mixin/Controllable.js',
+				'js/mvc/ViewController.js',
+				'lib/promises-aplus-tests-1.3.1/promises-aplus-tests.js',
+				'js/promise/Promise.js',
+				'js/promise/Chain.js',
+				'js/util/Function.js'
+			];
+			
+			function getURLParameters() {
+				var parameters = {};
+				window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(match, key, value) {
+					parameters[key] = value;
+				});
+				return parameters;
 			}
 			
-			// Persist selection for Mocha description and test filter support
-			localStorage.setItem('platform', platform);
-			localStorage.setItem('version', version);
-			localStorage.setItem('cdn', cdn);
+			function includeScript(scriptUrl) {
+				document.write('<script type="text/javascript" src="' + scriptUrl + '"><\/script>');
+			}
 			
-			// Include target Sencha library.
-			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"" + senchaUrl + "\"><\/script>");
+			var parameters = getURLParameters();
 			
-			// Include DeftJS.
-			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"../build/deft-debug.js\"><\/script>");
-		}
+			var platform = parameters.platform || localStorage.getItem('platform');
+			var version = parameters.version || localStorage.getItem('version');
+			var cdn = parameters.cdn || localStorage.getItem('cdn');
+			
+			var senchaUrl = "http://cdn.sencha.io/";
+			
+			var currentVersion = "";
+			if (platform && version) {
+				if (platform === "ext") {
+					if (cdn === "new") {
+						senchaUrl += 'ext/gpl/' + version + '/ext-all.js'; // use -all-dev to debug
+					}
+					else {
+						senchaUrl += "ext-" + version + "-gpl/ext-all.js"; // use -all-dev to debug
+					}
+					currentVersion = "ExtJS " + version;
+				} else {
+					senchaUrl += "touch/sencha-touch-" + version + "/sencha-touch-all.js"; // use -all-debug to debug
+					currentVersion = "Sencha Touch " + version;
+				}
+				
+				// Persist selection for Mocha description and test filter support
+				localStorage.setItem('platform', platform);
+				localStorage.setItem('version', version);
+				localStorage.setItem('cdn', cdn);
+				
+				// Include target Sencha library.
+				includeScript(senchaUrl);
+				
+				// Include DeftJS.
+				includeScript('../build/deft-debug.js');
+				
+				// Include Deft JS tests.
+				var fileCount = files.length;
+				for (var fileIndex = 0; fileIndex < fileCount; fileIndex++) {
+					var file = files[fileIndex];
+					includeScript(file);
+				}
+			}
+			
+			var filter = null;
+			if (parameters.grep) {
+				filter = decodeURIComponent(parameters.grep);
+			}
+			
+			function redirect(platform, version, cdn, grep) {
+				var url = "?platform=" + platform + "&version=" + version + "&cdn=" + cdn;
+				if (grep) {
+					url += "&grep=" + parameters.grep;
+				}
+				window.location.href = url;
+			}
+			
+			function execute(platform, version, cdn) {
+				redirect(platform, version, cdn, parameters.grep);
+			}
+			
+			function clearFilter() {
+				redirect(platform, version, cdn);
+			};
+			
+			return {
+				frameworks: frameworks,
+				currentVersion: currentVersion,
+				execute: execute,
+				clearFilter: clearFilter,
+				configuration: {
+					platform: platform,
+					version: version,
+					cdn: cdn,
+					filter: filter
+				}
+			}
+		})();
 	</script>
-
-	<!-- <script src="lib/setImmediate-1.0.1/setImmediate.js"></script> -->
-
-	<!-- Deft JS Promise Adapter for Promises/A+ Test Suite -->
-	<script src="DeftJS-Promise-adapter.js"></script>
-
-	<!-- DeftJS Tests -->
-	<script src="js/log/Logger.js"></script>
-	<script src="js/ioc/Injector.js"></script>
-	<script src="js/mixin/Injectable.js"></script>
-	<script src="js/mixin/Controllable.js"></script>
-	<script src="js/mvc/ViewController.js"></script>
-	<script src="lib/promises-aplus-tests-1.3.1/promises-aplus-tests.js"></script>
-	<script src="js/promise/Promise.js"></script>
-	<script src="js/promise/Chain.js"></script>
-	<script src="js/util/Function.js"></script>
-
+		
 	<script type="text/javascript">
 		if (Ext) {
 			Ext.Loader.setConfig({
@@ -112,27 +174,35 @@
 			});
 		}
 	</script>
-
+	
 </head>
 <body>
-	<div class="platform-links">
-		<h1>Choose Target Library:</h1>
-		<a href="?platform=ext&version=4.0.7&cdn=original">ExtJS 4.0.7</a> |
-		<a href="?platform=ext&version=4.1.0&cdn=original">ExtJS 4.1.0</a> |
-		<a href="?platform=ext&version=4.1.1a&cdn=original">ExtJS 4.1.1a</a> |
-		<a href="?platform=ext&version=4.2.0&cdn=new">ExtJS 4.2.0</a> |
-		<a href="?platform=ext&version=4.2.1&cdn=new">ExtJS 4.2.1</a> |
-		<a href="?platform=touch&version=2.0.1&cdn=original">Touch 2.0.1</a> |
-		<a href="?platform=touch&version=2.1.0&cdn=original">Touch 2.1.0</a> |
-		<a href="?platform=touch&version=2.1.1&cdn=original">Touch 2.1.1</a> |
-		<a href="?platform=touch&version=2.2.0&cdn=original">Touch 2.2.0</a> | 
-		<a href="?platform=touch&version=2.2.0&cdn=original">Touch 2.2.1</a>
-	</div>
-	<div class="current-version">
-		<h1><script type="text/javascript">document.write( currentVersionMessage )</script></h1>
+	<div class="test-runner-configuration">
+		<h1>Choose Target Framework:</h1>
+		<script type="text/javascript">
+			(function(){
+				var frameworkCount = TestRunner.frameworks.length;
+				for (var frameworkIndex = 0; frameworkIndex < frameworkCount; frameworkIndex++) {
+					var framework = TestRunner.frameworks[frameworkIndex];
+					document.write('<a href="javascript:TestRunner.execute(\'' + framework.platform + '\', \'' + framework.version + '\', \'' + framework.cdn + '\');">' + framework.name + '</a>');
+					if (frameworkIndex + 1 < frameworkCount) {
+						document.write(' | ');
+					}
+				}
+				if (TestRunner.currentVersion) {
+					document.write('<h2>Currently using: ' + TestRunner.currentVersion + '</h2>');
+				}
+				else {
+					document.write('<h2>Please select a framework to use.</h2>');
+				}
+				if (TestRunner.configuration.filter) {
+					document.write('<h1>Filter: ' + TestRunner.configuration.filter + '</h1>');
+					document.write('<a href="javascript:TestRunner.clearFilter()">Clear filter</a>');
+				}
+			})();
+		</script>
 	</div>
 	<hr/>
-
 	<div id="mocha"></div>
 </body>
 </html>
