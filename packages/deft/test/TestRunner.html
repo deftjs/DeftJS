@@ -47,13 +47,16 @@
 			});
 			return vars;
 		}
-
-		var platform = getUrlVars()["platform"] || localStorage.getItem('platform');
-		var version = getUrlVars()["version"] || localStorage.getItem('version');
-		var cdn = getUrlVars()["cdn"] || localStorage.getItem('cdn');
+		
+		var parameters = getUrlVars();
+		
+		var platform = parameters.platform || localStorage.getItem('platform');
+		var version = parameters.version || localStorage.getItem('version');
+		var cdn = parameters.cdn || localStorage.getItem('cdn');
+		
 		var senchaUrl = "http://cdn.sencha.io/";
 		var currentVersionMessage = "";
-
+		
 		if (platform && version) {
 			if (platform === "ext") {
 				if (cdn === "new") {
@@ -74,10 +77,9 @@
 			localStorage.setItem('version', version);
 			localStorage.setItem('cdn', cdn);
 			
-
 			// Include target Sencha library.
 			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"" + senchaUrl + "\"><\/script>");
-
+			
 			// Include DeftJS.
 			document.write("<script type=\"text/javascript\" charset=\"UTF-8\" src=\"../build/deft-debug.js\"><\/script>");
 		}
