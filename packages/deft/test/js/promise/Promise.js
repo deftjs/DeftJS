@@ -2031,6 +2031,287 @@ describe('Deft.promise.Promise', function() {
       });
     });
   });
+  describe('then()', function() {
+    describe('with a progress handler', function() {
+      describe('attaches a progress handler that will be called on progress updates', function() {
+        specify('called with progress update when updated', function(done) {
+          var deferred, progressHandler, promise;
+          progressHandler = sinon.spy();
+          deferred = Ext.create('Deft.Deferred');
+          promise = deferred.promise;
+          promise.then(null, null, progressHandler);
+          Deft.Function.nextTick(function() {
+            deferred.update('progress');
+            expect(progressHandler).to.be.calledOnce.and.calledWith('progress');
+            done();
+          });
+        });
+        specify('called with progress update in specified scope when updated', function(done) {
+          var deferred, progressHandler, promise, targetScope;
+          targetScope = {};
+          progressHandler = sinon.spy();
+          deferred = Ext.create('Deft.Deferred');
+          promise = deferred.promise;
+          promise.then(null, null, progressHandler, targetScope);
+          Deft.Function.nextTick(function() {
+            deferred.update('progress');
+            expect(progressHandler).to.be.calledOnce.and.calledWith('progress').and.calledOn(targetScope);
+            done();
+          });
+        });
+      });
+      describe('propagates transformed progress updates that originate from this Promise', function() {
+        specify('propagates progress updates to subsequent Promises in the chain if a progress handler is omitted', function(done) {
+          var deferred, progressHandler, promise;
+          progressHandler = sinon.spy();
+          deferred = Ext.create('Deft.Deferred');
+          promise = deferred.promise;
+          promise.then().then(null, null, progressHandler);
+          Deft.Function.nextTick(function() {
+            deferred.update('progress');
+            expect(progressHandler).to.be.calledOnce.and.calledWith('progress');
+            done();
+          });
+        });
+        specify('propagates transformed progress updates to subsequent Promises in the chain if a progress handler transforms the progress update', function(done) {
+          var deferred, progressHandler, promise, transformedProgressHandler, transformedTransformedProgressHandler;
+          progressHandler = sinon.stub().returns('transformed progress');
+          transformedProgressHandler = sinon.stub().returns('transformed transformed progress');
+          transformedTransformedProgressHandler = sinon.spy();
+          deferred = Ext.create('Deft.Deferred');
+          promise = deferred.promise;
+          promise.then(null, null, progressHandler).then(null, null, transformedProgressHandler).then(null, null, transformedTransformedProgressHandler);
+          Deft.Function.nextTick(function() {
+            deferred.update('progress');
+            expect(progressHandler).to.be.calledOnce.and.calledWith('progress');
+            expect(transformedProgressHandler).to.be.calledOnce.and.calledWith('transformed progress');
+            expect(transformedTransformedProgressHandler).to.be.calledOnce.and.calledWith('transformed transformed progress');
+            done();
+          });
+        });
+      });
+    });
+    describe('with parameters specified via a configuration object', function() {
+      describe('attaches an onResolved callback to this Promise that will be called when it resolves', function() {
+        describe('when only a success handler is specified', function() {
+          specify('called with resolved value when resolved', function(done) {
+            var onResolved, promise;
+            onResolved = sinon.spy();
+            promise = Deft.Deferred.resolve('resolved value');
+            promise.then({
+              success: onResolved
+            });
+            Deft.Function.nextTick(function() {
+              expect(onResolved).to.be.calledOnce.and.calledWith('resolved value');
+              done();
+            });
+          });
+          specify('called with resolved value in the specified scope when resolved', function(done) {
+            var onResolved, promise, targetScope;
+            targetScope = {};
+            onResolved = sinon.spy();
+            promise = Deft.Deferred.resolve('resolved value');
+            promise.then({
+              success: onResolved,
+              scope: targetScope
+            });
+            Deft.Function.nextTick(function() {
+              expect(onResolved).to.be.calledOnce.and.calledWith('resolved value').and.calledOn(targetScope);
+              done();
+            });
+          });
+        });
+        describe('when success, failure and progress handlers are specified', function() {
+          specify('called with resolved value when resolved', function(done) {
+            var onProgress, onRejected, onResolved, promise;
+            onResolved = sinon.spy();
+            onRejected = sinon.spy();
+            onProgress = sinon.spy();
+            promise = Deft.Deferred.resolve('resolved value');
+            promise.then({
+              success: onResolved,
+              failure: onRejected,
+              progress: onProgress
+            });
+            Deft.Function.nextTick(function() {
+              expect(onResolved).to.be.calledOnce.and.calledWith('resolved value');
+              expect(onRejected).to.not.be.called;
+              expect(onProgress).to.not.be.called;
+              done();
+            });
+          });
+          specify('called with resolved value in the specified scope when resolved', function(done) {
+            var onProgress, onRejected, onResolved, promise, targetScope;
+            targetScope = {};
+            onResolved = sinon.spy();
+            onRejected = sinon.spy();
+            onProgress = sinon.spy();
+            promise = Deft.Deferred.resolve('resolved value');
+            promise.then({
+              success: onResolved,
+              failure: onRejected,
+              progress: onProgress,
+              scope: targetScope
+            });
+            Deft.Function.nextTick(function() {
+              expect(onResolved).to.be.calledOnce.and.calledWith('resolved value').and.calledOn(targetScope);
+              expect(onRejected).to.not.be.called;
+              expect(onProgress).to.not.be.called;
+              done();
+            });
+          });
+        });
+      });
+      describe('attaches an onRejected callback to this Promise that will be called when it rejects', function() {
+        describe('when only a failure handler is specified', function() {
+          specify('called with rejection reason when rejected', function(done) {
+            var onRejected, promise;
+            onRejected = sinon.spy();
+            promise = Deft.Deferred.reject('rejection reason');
+            promise.then({
+              failure: onRejected
+            });
+            Deft.Function.nextTick(function() {
+              expect(onRejected).to.be.calledOnce.and.calledWith('rejection reason');
+              done();
+            });
+          });
+          specify('called with rejection reason in specified scope when rejected', function(done) {
+            var onRejected, promise, targetScope;
+            targetScope = {};
+            onRejected = sinon.spy();
+            promise = Deft.Deferred.reject('rejection reason');
+            promise.then({
+              failure: onRejected,
+              scope: targetScope
+            });
+            Deft.Function.nextTick(function() {
+              expect(onRejected).to.be.calledOnce.and.calledWith('rejection reason').and.calledOn(targetScope);
+              done();
+            });
+          });
+        });
+        describe('when success, failure and progress handlers are specified', function() {
+          specify('called with rejection reason when rejected', function(done) {
+            var onProgress, onRejected, onResolved, promise;
+            onResolved = sinon.spy();
+            onRejected = sinon.spy();
+            onProgress = sinon.spy();
+            promise = Deft.Deferred.reject('rejection reason');
+            promise.then({
+              success: onResolved,
+              failure: onRejected,
+              progress: onProgress
+            });
+            Deft.Function.nextTick(function() {
+              expect(onResolved).to.not.be.called;
+              expect(onRejected).to.be.calledOnce.and.calledWith('rejection reason');
+              expect(onProgress).to.not.be.called;
+              done();
+            });
+          });
+          specify('called with rejection reason in specified scope when rejected', function(done) {
+            var onProgress, onRejected, onResolved, promise, targetScope;
+            targetScope = {};
+            onResolved = sinon.spy();
+            onRejected = sinon.spy();
+            onProgress = sinon.spy();
+            promise = Deft.Deferred.reject('rejection reason');
+            promise.then({
+              success: onResolved,
+              failure: onRejected,
+              progress: onProgress,
+              scope: targetScope
+            });
+            Deft.Function.nextTick(function() {
+              expect(onResolved).to.not.be.called;
+              expect(onRejected).to.be.calledOnce.and.calledWith('rejection reason').and.calledOn(targetScope);
+              expect(onProgress).to.not.be.called;
+              done();
+            });
+          });
+        });
+      });
+      describe('attaches an onProgress callback to this Promise that will be called when it resolves', function() {
+        describe('when only a progress handler is specified', function() {
+          specify('called with progress update when updated', function(done) {
+            var deferred, onProgress, promise;
+            onProgress = sinon.spy();
+            deferred = Ext.create('Deft.Deferred');
+            promise = deferred.promise;
+            promise.then({
+              progress: onProgress
+            });
+            Deft.Function.nextTick(function() {
+              deferred.update('progress');
+              expect(onProgress).to.be.calledOnce.and.calledWith('progress');
+              done();
+            });
+          });
+          specify('called with progress update in specified scope when updated', function(done) {
+            var deferred, onProgress, promise, targetScope;
+            targetScope = {};
+            onProgress = sinon.spy();
+            deferred = Ext.create('Deft.Deferred');
+            promise = deferred.promise;
+            promise.then({
+              progress: onProgress,
+              scope: targetScope
+            });
+            Deft.Function.nextTick(function() {
+              deferred.update('progress');
+              expect(onProgress).to.be.calledOnce.and.calledWith('progress').and.calledOn(targetScope);
+              done();
+            });
+          });
+        });
+        describe('when success, failure and progress handlers are specified', function() {
+          specify('called with progress update when updated', function(done) {
+            var deferred, onProgress, onRejected, onResolved, promise;
+            onResolved = sinon.spy();
+            onRejected = sinon.spy();
+            onProgress = sinon.spy();
+            deferred = Ext.create('Deft.Deferred');
+            promise = deferred.promise;
+            promise.then({
+              success: onResolved,
+              failure: onRejected,
+              progress: onProgress
+            });
+            Deft.Function.nextTick(function() {
+              deferred.update('progress');
+              expect(onResolved).to.not.be.called;
+              expect(onRejected).to.not.be.called;
+              expect(onProgress).to.be.calledOnce.and.calledWith('progress');
+              done();
+            });
+          });
+          specify('called with progress update in specified scope when updated', function(done) {
+            var deferred, onProgress, onRejected, onResolved, promise, targetScope;
+            targetScope = {};
+            onResolved = sinon.spy();
+            onRejected = sinon.spy();
+            onProgress = sinon.spy();
+            deferred = Ext.create('Deft.Deferred');
+            promise = deferred.promise;
+            promise.then({
+              success: onResolved,
+              failure: onRejected,
+              progress: onProgress,
+              scope: targetScope
+            });
+            Deft.Function.nextTick(function() {
+              deferred.update('progress');
+              expect(onResolved).to.not.be.called;
+              expect(onRejected).to.not.be.called;
+              expect(onProgress).to.be.calledOnce.and.calledWith('progress').and.calledOn(targetScope);
+              done();
+            });
+          });
+        });
+      });
+    });
+  });
   describe('otherwise()', function() {
     describe('attaches a callback that will be called if this Promise is rejected', function() {
       describe('with parameters specified via function arguments', function() {
@@ -2341,7 +2622,7 @@ describe('Deft.promise.Promise', function() {
         promise.should.be.an["instanceof"](Deft.Promise);
         return promise.should.eventually.equal('resolved value');
       });
-      specify('if the originating Promise resolves, ignores and later rethrows Error thrown by callback', function() {
+      specify('if the originating Promise resolves, ignores and later rethrows Error thrown by callback', function(done) {
         var onComplete, promise;
         onComplete = function() {
           throw new Error('callback error message');
@@ -2351,9 +2632,13 @@ describe('Deft.promise.Promise', function() {
           if (error) {
             throw error;
           }
+          return promise.should.eventually.equal('resolved value').then(function(value) {
+            return done();
+          }, function(reason) {
+            return done(reason);
+          });
         }, 100);
         promise.should.be.an["instanceof"](Deft.Promise);
-        return promise.should.eventually.equal('resolved value');
       });
       specify('if the originating Promise rejects, ignores value returned by callback', function() {
         var onComplete, promise;
@@ -2364,7 +2649,7 @@ describe('Deft.promise.Promise', function() {
         promise.should.be.an["instanceof"](Deft.Promise);
         return promise.should.be.rejected["with"](Error, 'rejection reason');
       });
-      specify('if the originating Promise rejects, ignores and later rethrows Error thrown by callback', function() {
+      specify('if the originating Promise rejects, ignores and later rethrows Error thrown by callback', function(done) {
         var onComplete, promise;
         onComplete = function() {
           throw new Error('callback error message');
@@ -2374,53 +2659,13 @@ describe('Deft.promise.Promise', function() {
           if (error) {
             throw error;
           }
+          return promise.should.be.rejected["with"](Error, 'rejection reason').then(function(value) {
+            return done();
+          }, function(reason) {
+            return done(reason);
+          });
         }, 100);
         promise.should.be.an["instanceof"](Deft.Promise);
-        return promise.should.be.rejected["with"](Error, 'rejection reason');
-      });
-    });
-  });
-  describe('then() - with a progress handler', function() {
-    describe('should register the specified progress handler and propagate future transformed progress updates that originate from this Promise', function() {
-      specify('registers the specified progress handler to be notified with future progress updates', function(done) {
-        var deferred, progressHandler, promise;
-        deferred = Ext.create('Deft.Deferred');
-        promise = deferred.promise;
-        progressHandler = sinon.spy();
-        promise.then(null, null, progressHandler);
-        Deft.Function.nextTick(function() {
-          deferred.update('progress');
-          expect(progressHandler).to.be.calledOnce.and.calledWith('progress');
-          done();
-        });
-      });
-      specify('propagates future progress updates to subsequent Promises in the chain if a progress handler is omitted', function(done) {
-        var deferred, progressHandler, promise;
-        deferred = Ext.create('Deft.Deferred');
-        promise = deferred.promise;
-        progressHandler = sinon.spy();
-        promise.then().then(null, null, progressHandler);
-        Deft.Function.nextTick(function() {
-          deferred.update('progress');
-          expect(progressHandler).to.be.calledOnce.and.calledWith('progress');
-          done();
-        });
-      });
-      specify('propagates future transformed progress updates to subsequent Promises in the chain if a progress handler transforms the progress update', function(done) {
-        var deferred, progressHandler, promise, transformedProgressHandler, transformedTransformedProgressHandler;
-        deferred = Ext.create('Deft.Deferred');
-        promise = deferred.promise;
-        progressHandler = sinon.stub().returns('transformed progress');
-        transformedProgressHandler = sinon.stub().returns('transformed transformed progress');
-        transformedTransformedProgressHandler = sinon.spy();
-        promise.then(null, null, progressHandler).then(null, null, transformedProgressHandler).then(null, null, transformedTransformedProgressHandler);
-        Deft.Function.nextTick(function() {
-          deferred.update('progress');
-          expect(progressHandler).to.be.calledOnce.and.calledWith('progress');
-          expect(transformedProgressHandler).to.be.calledOnce.and.calledWith('transformed progress');
-          expect(transformedTransformedProgressHandler).to.be.calledOnce.and.calledWith('transformed transformed progress');
-          done();
-        });
       });
     });
   });

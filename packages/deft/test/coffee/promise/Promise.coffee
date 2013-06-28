@@ -3017,6 +3017,423 @@ describe( 'Deft.promise.Promise', ->
 		return
 	)
 	
+	describe( 'then()', ->
+		# NOTE: We are relying on the standard Promises/A+ Compliance Suite to perform the bulk of the tests for this method.
+		describe( 'with a progress handler', ->
+			describe( 'attaches a progress handler that will be called on progress updates', ->
+				specify( 'called with progress update when updated', ( done ) ->
+					progressHandler = sinon.spy()
+					
+					deferred = Ext.create( 'Deft.Deferred' )
+					promise = deferred.promise
+					
+					promise.then( null, null, progressHandler )
+					
+					Deft.Function.nextTick( ->
+						deferred.update( 'progress' )
+						
+						expect( progressHandler ).to.be.calledOnce.and.calledWith( 'progress' )
+						
+						done()
+						return
+					)
+					return
+				)
+				
+				specify( 'called with progress update in specified scope when updated', ( done ) ->
+					targetScope = {}
+					progressHandler = sinon.spy()
+					
+					deferred = Ext.create( 'Deft.Deferred' )
+					promise = deferred.promise
+					
+					promise.then( null, null, progressHandler, targetScope )
+					
+					Deft.Function.nextTick( ->
+						deferred.update( 'progress' )
+						
+						expect( progressHandler ).to.be.calledOnce.and.calledWith( 'progress' ).and.calledOn( targetScope )
+						
+						done()
+						return
+					)
+					return
+				)
+				
+				return
+			)
+			
+			describe( 'propagates transformed progress updates that originate from this Promise', ->
+				specify( 'propagates progress updates to subsequent Promises in the chain if a progress handler is omitted', ( done ) ->
+					progressHandler = sinon.spy()
+					
+					deferred = Ext.create( 'Deft.Deferred' )
+					promise = deferred.promise
+					
+					promise.then().then( null, null, progressHandler )
+					
+					Deft.Function.nextTick( ->
+						deferred.update( 'progress' )
+						
+						expect( progressHandler ).to.be.calledOnce.and.calledWith( 'progress' )
+						
+						done()
+						return
+					)
+					return
+				)
+				
+				specify( 'propagates transformed progress updates to subsequent Promises in the chain if a progress handler transforms the progress update', ( done ) ->
+					progressHandler = sinon.stub().returns( 'transformed progress' )
+					transformedProgressHandler = sinon.stub().returns( 'transformed transformed progress' )
+					transformedTransformedProgressHandler = sinon.spy()
+					
+					deferred = Ext.create( 'Deft.Deferred' )
+					promise = deferred.promise
+					
+					promise
+						.then( null, null, progressHandler )
+						.then( null, null, transformedProgressHandler )
+						.then( null, null, transformedTransformedProgressHandler )
+						
+					Deft.Function.nextTick( ->
+						deferred.update( 'progress' )
+						
+						expect( progressHandler ).to.be.calledOnce.and.calledWith( 'progress' )
+						expect( transformedProgressHandler ).to.be.calledOnce.and.calledWith( 'transformed progress' )
+						expect( transformedTransformedProgressHandler ).to.be.calledOnce.and.calledWith( 'transformed transformed progress' )
+						
+						done()
+						return
+					)
+					return
+				)
+				
+				return
+			)
+			
+			return
+		)
+		
+		describe( 'with parameters specified via a configuration object', ->
+			describe( 'attaches an onResolved callback to this Promise that will be called when it resolves', ->
+				describe( 'when only a success handler is specified', ->
+					specify( 'called with resolved value when resolved', ( done ) ->
+						onResolved = sinon.spy()
+						
+						promise = Deft.Deferred.resolve( 'resolved value' )
+						
+						promise.then(
+							success: onResolved
+						)
+						
+						Deft.Function.nextTick( ->
+							expect( onResolved ).to.be.calledOnce.and.calledWith( 'resolved value' )
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					specify( 'called with resolved value in the specified scope when resolved', ( done ) ->
+						targetScope = {}
+						onResolved = sinon.spy()
+						
+						promise = Deft.Deferred.resolve( 'resolved value' )
+						
+						promise.then(
+							success: onResolved
+							scope: targetScope
+						)
+						
+						Deft.Function.nextTick( ->
+							expect( onResolved ).to.be.calledOnce.and.calledWith( 'resolved value' ).and.calledOn( targetScope )
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					return
+				)
+				
+				describe( 'when success, failure and progress handlers are specified', ->
+					specify( 'called with resolved value when resolved', ( done ) ->
+						onResolved = sinon.spy()
+						onRejected = sinon.spy()
+						onProgress = sinon.spy()
+						
+						promise = Deft.Deferred.resolve( 'resolved value' )
+						
+						promise.then(
+							success: onResolved
+							failure: onRejected
+							progress: onProgress
+						)
+						
+						Deft.Function.nextTick( ->
+							expect( onResolved ).to.be.calledOnce.and.calledWith( 'resolved value' )
+							expect( onRejected ).to.not.be.called
+							expect( onProgress ).to.not.be.called
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					specify( 'called with resolved value in the specified scope when resolved', ( done ) ->
+						targetScope = {}
+						onResolved = sinon.spy()
+						onRejected = sinon.spy()
+						onProgress = sinon.spy()
+						
+						promise = Deft.Deferred.resolve( 'resolved value' )
+						
+						promise.then(
+							success: onResolved
+							failure: onRejected
+							progress: onProgress
+							scope: targetScope
+						)
+						
+						Deft.Function.nextTick( ->
+							expect( onResolved ).to.be.calledOnce.and.calledWith( 'resolved value' ).and.calledOn( targetScope )
+							expect( onRejected ).to.not.be.called
+							expect( onProgress ).to.not.be.called
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					return
+				)
+				
+				return
+			)
+			
+			describe( 'attaches an onRejected callback to this Promise that will be called when it rejects', ->
+				describe( 'when only a failure handler is specified', ->
+					specify( 'called with rejection reason when rejected', ( done ) ->
+						onRejected = sinon.spy()
+						
+						promise = Deft.Deferred.reject( 'rejection reason' )
+						
+						promise.then(
+							failure: onRejected
+						)
+						
+						Deft.Function.nextTick( ->
+							expect( onRejected ).to.be.calledOnce.and.calledWith( 'rejection reason' )
+							
+							done()
+							return
+						)
+						return
+					)
+				
+					specify( 'called with rejection reason in specified scope when rejected', ( done ) ->
+						targetScope = {}
+						onRejected = sinon.spy()
+						
+						promise = Deft.Deferred.reject( 'rejection reason' )
+						
+						promise.then(
+							failure: onRejected
+							scope: targetScope
+						)
+						
+						Deft.Function.nextTick( ->
+							expect( onRejected ).to.be.calledOnce.and.calledWith( 'rejection reason' ).and.calledOn( targetScope )
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					return
+				)
+				
+				describe( 'when success, failure and progress handlers are specified', ->
+					specify( 'called with rejection reason when rejected', ( done ) ->
+						onResolved = sinon.spy()
+						onRejected = sinon.spy()
+						onProgress = sinon.spy()
+						
+						promise = Deft.Deferred.reject( 'rejection reason' )
+						
+						promise.then(
+							success: onResolved
+							failure: onRejected
+							progress: onProgress
+						)
+						
+						Deft.Function.nextTick( ->
+							expect( onResolved ).to.not.be.called
+							expect( onRejected ).to.be.calledOnce.and.calledWith( 'rejection reason' )
+							expect( onProgress ).to.not.be.called
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					specify( 'called with rejection reason in specified scope when rejected', ( done ) ->
+						targetScope = {}
+						onResolved = sinon.spy()
+						onRejected = sinon.spy()
+						onProgress = sinon.spy()
+						
+						promise = Deft.Deferred.reject( 'rejection reason' )
+						
+						promise.then(
+							success: onResolved
+							failure: onRejected
+							progress: onProgress
+							scope: targetScope
+						)
+						
+						Deft.Function.nextTick( ->
+							expect( onResolved ).to.not.be.called
+							expect( onRejected ).to.be.calledOnce.and.calledWith( 'rejection reason' ).and.calledOn( targetScope )
+							expect( onProgress ).to.not.be.called
+							
+							done()
+							return
+						)
+						return
+					)
+				
+					return
+				)
+				
+				return
+			)
+			
+			describe( 'attaches an onProgress callback to this Promise that will be called when it resolves', ->
+				describe( 'when only a progress handler is specified', ->
+					specify( 'called with progress update when updated', ( done ) ->
+						onProgress = sinon.spy()
+						
+						deferred = Ext.create( 'Deft.Deferred' )
+						promise = deferred.promise
+						
+						promise.then(
+							progress: onProgress
+						)
+						
+						Deft.Function.nextTick( ->
+							deferred.update( 'progress' )
+							
+							expect( onProgress ).to.be.calledOnce.and.calledWith( 'progress' )
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					specify( 'called with progress update in specified scope when updated', ( done ) ->
+						targetScope = {}
+						onProgress = sinon.spy()
+						
+						deferred = Ext.create( 'Deft.Deferred' )
+						promise = deferred.promise
+						
+						promise.then(
+							progress: onProgress
+							scope: targetScope
+						)
+						
+						Deft.Function.nextTick( ->
+							deferred.update( 'progress' )
+							
+							expect( onProgress ).to.be.calledOnce.and.calledWith( 'progress' ).and.calledOn( targetScope )
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					return
+				)
+				
+				describe( 'when success, failure and progress handlers are specified', ->
+					specify( 'called with progress update when updated', ( done ) ->
+						onResolved = sinon.spy()
+						onRejected = sinon.spy()
+						onProgress = sinon.spy()
+						
+						deferred = Ext.create( 'Deft.Deferred' )
+						promise = deferred.promise
+						
+						promise.then(
+							success: onResolved
+							failure: onRejected
+							progress: onProgress
+						)
+						
+						Deft.Function.nextTick( ->
+							deferred.update( 'progress' )
+							
+							expect( onResolved ).to.not.be.called
+							expect( onRejected ).to.not.be.called
+							expect( onProgress ).to.be.calledOnce.and.calledWith( 'progress' )
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					specify( 'called with progress update in specified scope when updated', ( done ) ->
+						targetScope = {}
+						onResolved = sinon.spy()
+						onRejected = sinon.spy()
+						onProgress = sinon.spy()
+						
+						deferred = Ext.create( 'Deft.Deferred' )
+						promise = deferred.promise
+						
+						promise.then(
+							success: onResolved
+							failure: onRejected
+							progress: onProgress
+							scope: targetScope
+						)
+						
+						Deft.Function.nextTick( ->
+							deferred.update( 'progress' )
+							
+							expect( onResolved ).to.not.be.called
+							expect( onRejected ).to.not.be.called
+							expect( onProgress ).to.be.calledOnce.and.calledWith( 'progress' ).and.calledOn( targetScope )
+							
+							done()
+							return
+						)
+						return
+					)
+					
+					return
+				)
+				
+				return
+			)
+			
+			return
+		)
+		
+		return
+	)
+	
 	describe( 'otherwise()', ->
 		describe( 'attaches a callback that will be called if this Promise is rejected', ->
 			describe( 'with parameters specified via function arguments', ->
@@ -3374,7 +3791,7 @@ describe( 'Deft.promise.Promise', ->
 				return promise.should.eventually.equal( 'resolved value' )
 			)
 			
-			specify( 'if the originating Promise resolves, ignores and later rethrows Error thrown by callback', ->
+			specify( 'if the originating Promise resolves, ignores and later rethrows Error thrown by callback', ( done ) ->
 				onComplete = ->
 					throw new Error( 'callback error message' )
 				
@@ -3382,14 +3799,21 @@ describe( 'Deft.promise.Promise', ->
 				
 				assert.eventuallyThrows( 
 					new Error( 'callback error message' )
-					( error ) -> 
-						if error 
+					( error ) ->
+						if error
 							throw error
+						
+						promise.should.eventually.equal( 'resolved value' ).then(
+							( value ) ->
+								done()
+							( reason ) ->
+								done( reason )
+						)
 					100
 				)
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.eventually.equal( 'resolved value' )
+				return
 			)
 			
 			specify( 'if the originating Promise rejects, ignores value returned by callback', ->
@@ -3402,7 +3826,7 @@ describe( 'Deft.promise.Promise', ->
 				return promise.should.be.rejected.with( Error, 'rejection reason' )
 			)
 			
-			specify( 'if the originating Promise rejects, ignores and later rethrows Error thrown by callback', ->
+			specify( 'if the originating Promise rejects, ignores and later rethrows Error thrown by callback', ( done ) ->
 				onComplete = ->
 					throw new Error( 'callback error message' )
 				
@@ -3410,83 +3834,19 @@ describe( 'Deft.promise.Promise', ->
 				
 				assert.eventuallyThrows( 
 					new Error( 'callback error message' )
-					( error ) -> 
-						if error 
+					( error ) ->
+						if error
 							throw error
+						promise.should.be.rejected.with( Error, 'rejection reason' ).then(
+							( value ) ->
+								done()
+							( reason ) ->
+								done( reason )
+						)
 					100
 				)
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'rejection reason' )
-			)
-			
-			return
-		)
-		
-		return
-	)
-	
-	describe( 'then() - with a progress handler', ->
-		describe( 'should register the specified progress handler and propagate future transformed progress updates that originate from this Promise', ->
-			
-			specify( 'registers the specified progress handler to be notified with future progress updates', ( done ) ->
-				deferred = Ext.create( 'Deft.Deferred' )
-				promise = deferred.promise
-				progressHandler = sinon.spy()
-				
-				promise.then( null, null, progressHandler )
-				
-				Deft.Function.nextTick( ->
-					deferred.update( 'progress' )
-					
-					expect( progressHandler ).to.be.calledOnce.and.calledWith( 'progress' )
-					
-					done()
-					return
-				)
-				return
-			)
-			
-			specify( 'propagates future progress updates to subsequent Promises in the chain if a progress handler is omitted', ( done ) ->
-				deferred = Ext.create( 'Deft.Deferred' )
-				promise = deferred.promise
-				progressHandler = sinon.spy()
-				
-				promise.then().then( null, null, progressHandler )
-				
-				Deft.Function.nextTick( ->
-					deferred.update( 'progress' )
-					
-					expect( progressHandler ).to.be.calledOnce.and.calledWith( 'progress' )
-					
-					done()
-					return
-				)
-				return
-			)
-			
-			specify( 'propagates future transformed progress updates to subsequent Promises in the chain if a progress handler transforms the progress update', ( done ) ->
-				deferred = Ext.create( 'Deft.Deferred' )
-				promise = deferred.promise
-				progressHandler = sinon.stub().returns( 'transformed progress' )
-				transformedProgressHandler = sinon.stub().returns( 'transformed transformed progress' )
-				transformedTransformedProgressHandler = sinon.spy()
-				
-				promise
-					.then( null, null, progressHandler )
-					.then( null, null, transformedProgressHandler )
-					.then( null, null, transformedTransformedProgressHandler )
-				
-				Deft.Function.nextTick( ->
-					deferred.update( 'progress' )
-					
-					expect( progressHandler ).to.be.calledOnce.and.calledWith( 'progress' )
-					expect( transformedProgressHandler ).to.be.calledOnce.and.calledWith( 'transformed progress' )
-					expect( transformedTransformedProgressHandler ).to.be.calledOnce.and.calledWith( 'transformed transformed progress' )
-					
-					done()
-					return
-				)
 				return
 			)
 			
