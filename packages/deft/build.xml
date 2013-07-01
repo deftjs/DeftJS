@@ -119,13 +119,25 @@
 
         <!-- For some reason, deleting and re-adding the docs folder often causes a write error. A slight delay usually avoids this. -->
         <sleep seconds="2" />
+        
+        <!-- Create updated JSDuck configuration file. -->
+        <loadfile property="jsduck.config" srcFile=".jsduck/config.template.json">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </loadfile>
+        <echo message="${jsduck.config}" file="jsduck.json" />
 
         <echo message="Generating API documentation..." />
-
-        <exec executable="${jsDuckExecutable}" timeout="20000" failonerror="false">
-            <arg line='--ext-namespaces=Ext --output=docs --ignore-global --title="DeftJS - API Documentation" src/js' />
-            <arg line='--head-html="&lt;style type=text/css&gt;.class-categories .section .left-column{float:left;width:350px;margin-left:20px} .class-categories .section .middle-column{float:left;width:350px} .class-categories .section .right-column{float:left;width:350px}&lt;/style&gt;"' />
-        </exec>
+        <exec executable="${jsDuckExecutable}" timeout="20000" failonerror="false" />
+        
+        <echo message="Applying custom JSDuck theme..." />
+        <copy todir="docs" overwrite="true">
+            <fileset file=".jsduck/theme/favicon.ico"></fileset>
+        </copy>
+        <copy todir="docs/theme/resources">
+            <fileset dir=".jsduck/theme/resources"></fileset>
+        </copy>
 
     </target>
 
