@@ -1,6 +1,5 @@
 {
   "--title": "Deft JS - v${deftjs.version} API Documentation",
-  "--ext-namespaces": "Ext",
   "--ignore-global": true,
   "--head-html": [
     "<link rel=\"stylesheet\" href=\"theme/resources/css/theme.css\" type=\"text/css\" />",

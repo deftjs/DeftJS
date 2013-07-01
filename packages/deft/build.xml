@@ -121,7 +121,7 @@
         <sleep seconds="2" />
         
         <!-- Create updated JSDuck configuration file. -->
-        <loadfile property="jsduck.config" srcFile=".jsduck/config.template.json">
+        <loadfile property="jsduck.config" srcFile=".jsduck/jsduck.template.json">
             <filterchain>
                 <expandproperties/>
             </filterchain>
