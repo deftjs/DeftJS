@@ -1,5 +1,5 @@
 /*!
-DeftJS 0.9.0pre
+DeftJS 0.9.0-pre
 
 Copyright (c) 2012-2013 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
@@ -102,7 +102,7 @@ Ext.define('Deft.log.Logger', {
         priority = 'info';
       }
       if ((Ext.Logger != null) && Ext.isFunction(Ext.Logger.log)) {
-        Ext.Logger.log(message, Ext.Array.indexOf(['verbose', 'info', 'deprecate', 'warn', 'error'], priority));
+        Ext.Logger.log(message, priority);
       }
     };
   }

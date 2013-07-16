@@ -95,7 +95,7 @@ Ext.define('Deft.log.Logger', {
         priority = 'info';
       }
       if ((Ext.Logger != null) && Ext.isFunction(Ext.Logger.log)) {
-        Ext.Logger.log(message, Ext.Array.indexOf(['verbose', 'info', 'deprecate', 'warn', 'error'], priority));
+        Ext.Logger.log(message, priority);
       }
     };
   }
