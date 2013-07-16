@@ -74,27 +74,27 @@ describe('Deft.log.Logger', function() {
         });
         specify('no priority specified', function() {
           Deft.Logger.log('message', 'info');
-          expect(logFunction).to.be.calledOnce.and.calledWith('message', 1);
+          expect(logFunction).to.be.calledOnce.and.calledWith('message', 'info');
         });
         specify('verbose', function() {
           Deft.Logger.log('message', 'verbose');
-          expect(logFunction).to.be.calledOnce.and.calledWith('message', 0);
+          expect(logFunction).to.be.calledOnce.and.calledWith('message', 'verbose');
         });
         specify('info', function() {
           Deft.Logger.log('message', 'info');
-          expect(logFunction).to.be.calledOnce.and.calledWith('message', 1);
+          expect(logFunction).to.be.calledOnce.and.calledWith('message', 'info');
         });
         specify('deprecate', function() {
           Deft.Logger.log('message', 'deprecate');
-          expect(logFunction).to.be.calledOnce.and.calledWith('message', 2);
+          expect(logFunction).to.be.calledOnce.and.calledWith('message', 'deprecate');
         });
         specify('warn', function() {
           Deft.Logger.log('message', 'warn');
-          expect(logFunction).to.be.calledOnce.and.calledWith('message', 3);
+          expect(logFunction).to.be.calledOnce.and.calledWith('message', 'warn');
         });
         specify('error', function() {
           Deft.Logger.log('message', 'error');
-          expect(logFunction).to.be.calledOnce.and.calledWith('message', 4);
+          expect(logFunction).to.be.calledOnce.and.calledWith('message', 'error');
         });
       });
       return describe('silently ignores messages when Ext.Logger is unavailable', function() {

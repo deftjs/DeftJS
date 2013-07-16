@@ -86,42 +86,42 @@ describe( 'Deft.log.Logger', ->
 				specify( 'no priority specified', ->
 					Deft.Logger.log( 'message', 'info' )
 					
-					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 1 )
+					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 'info' )
 					return
 				)
 				
 				specify( 'verbose', ->
 					Deft.Logger.log( 'message', 'verbose' )
 					
-					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 0 )
+					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 'verbose' )
 					return
 				)
 				
 				specify( 'info', ->
 					Deft.Logger.log( 'message', 'info' )
 					
-					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 1 )
+					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 'info' )
 					return
 				)
 				
 				specify( 'deprecate', ->
 					Deft.Logger.log( 'message', 'deprecate' )
 					
-					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 2)
+					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 'deprecate' )
 					return
 				)
 				
 				specify( 'warn', ->
 					Deft.Logger.log( 'message', 'warn' )
 					
-					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 3 )
+					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 'warn' )
 					return
 				)
 				
 				specify( 'error', ->
 					Deft.Logger.log( 'message', 'error' )
 					
-					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 4 )
+					expect( logFunction ).to.be.calledOnce.and.calledWith( 'message', 'error' )
 					return
 				)
 				
