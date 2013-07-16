@@ -1,9 +1,8 @@
 {
-  "--title": "Deft JS - v0.9.0pre API Documentation",
-  "--ext-namespaces": "Ext",
+  "--title": "Deft JS - v0.9.0-pre API Documentation",
   "--ignore-global": true,
   "--head-html": [
-    "<link rel=\"stylesheet\" href=\"theme/resources/css/theme.css\" type=\"text/css\" />\n",
+    "<link rel=\"stylesheet\" href=\"theme/resources/css/theme.css\" type=\"text/css\" />",
     "<script type=\"text/javascript\" src=\"theme/resources/js/theme.js\"></script>"
   ],
   "--output": "docs",
