@@ -39,7 +39,7 @@ Ext.define('Deft.promise.Deferred', {
   alternateClassName: ['Deft.Deferred'],
   requires: ['Deft.promise.Resolver'],
   statics: {
-<span id='Deft-promise-Deferred-method-resolve'>    /**
+<span id='Deft-promise-Deferred-static-method-resolve'>    /**
 </span>    		* Returns a new {@link Deft.promise.Promise} that resolves immediately with the specified value.
     		*
     		* @param {Mixed} value The resolved future value.
@@ -52,7 +52,7 @@ Ext.define('Deft.promise.Deferred', {
       deferred.resolve(value);
       return deferred.promise;
     },
-<span id='Deft-promise-Deferred-method-reject'>    /**
+<span id='Deft-promise-Deferred-static-method-reject'>    /**
 </span>    		* Returns a new {@link Deft.promise.Promise} that rejects immediately with the specified reason.
     		*
     		* @param {Error} reason The rejection reason.

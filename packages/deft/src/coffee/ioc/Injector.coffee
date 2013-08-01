@@ -66,7 +66,7 @@ If needed, constructor parameters can be specified for a dependency provider. Th
       }
     });
 
-## <u>[Constructor Parameters](https://github.com/deftjs/DeftJS/wiki/Factory-Functions)</u>
+## <u>[Factory Functions](https://github.com/deftjs/DeftJS/wiki/Factory-Functions)</u>
 
 A dependency provider can also specify a function to use to create the object that will be injected:
 

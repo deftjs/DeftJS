@@ -28,7 +28,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.util.Function', {
   alternateClassName: ['Deft.Function'],
   statics: {
-<span id='Deft-util-Function-method-memoize'>    /**
+<span id='Deft-util-Function-static-method-memoize'>    /**
 </span>    		* Returns a new wrapper function that caches the return value for previously processed function argument(s).
     		* 
     		* @param {Function} fn Function to wrap.
@@ -49,7 +49,7 @@ Ext.define('Deft.util.Function', {
         return memo[key];
       };
     },
-<span id='Deft-util-Function-method-nextTick'>    /**
+<span id='Deft-util-Function-static-method-nextTick'>    /**
 </span>    		* Schedules the specified callback function to be executed on the next turn of the event loop.
     		* 
     		* @param {Function} fn Callback function.
@@ -62,7 +62,7 @@ Ext.define('Deft.util.Function', {
       }
       setTimeout(fn, 0);
     },
-<span id='Deft-util-Function-method-spread'>    /**
+<span id='Deft-util-Function-static-method-spread'>    /**
 </span>    		* Creates a new wrapper function that spreads the passed Array over the target function arguments.
     		* 
     		* @param {Function} fn Function to wrap.

@@ -34,7 +34,7 @@ Ext.define('Deft.promise.Chain', {
   alternateClassName: ['Deft.Chain'],
   requires: ['Deft.promise.Promise'],
   statics: {
-<span id='Deft-promise-Chain-method-sequence'>    /**
+<span id='Deft-promise-Chain-static-method-sequence'>    /**
 </span>    		* Execute an Array (or {@link Deft.promise.Promise Promise} of an Array) of functions sequentially.
     		* 
     		* The specified functions may optionally return their results as {@link Deft.promise.Promise Promises}.
@@ -60,7 +60,7 @@ Ext.define('Deft.promise.Chain', {
         });
       }, []);
     },
-<span id='Deft-promise-Chain-method-parallel'>    /**
+<span id='Deft-promise-Chain-static-method-parallel'>    /**
 </span>    		* Execute an Array (or {@link Deft.promise.Promise Promise} of an Array) of functions in parallel.
     		* 
     		* The specified functions may optionally return their results as {@link Deft.promise.Promise Promises}.
@@ -83,7 +83,7 @@ Ext.define('Deft.promise.Chain', {
         return fn.apply(scope, args);
       });
     },
-<span id='Deft-promise-Chain-method-pipeline'>    /**
+<span id='Deft-promise-Chain-static-method-pipeline'>    /**
 </span>    		* Execute an Array (or {@link Deft.promise.Promise Promise} of an Array) of functions as a pipeline, where each function's result is passed to the subsequent function as input.
     		* 
     		* The specified functions may optionally return their results as {@link Deft.promise.Promise Promises}.

@@ -29,7 +29,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.core.Class', {
   alternateClassName: ['Deft.Class'],
   statics: {
-<span id='Deft-core-Class-method-registerPreprocessor'>    /**
+<span id='Deft-core-Class-static-method-registerPreprocessor'>    /**
 </span>    		* Register a new pre-processor to be used during the class creation process.
     		* 
     		* (Normalizes API differences between the various Sencha frameworks and versions.)
@@ -51,7 +51,7 @@ Ext.define('Deft.core.Class', {
         }, [name], position, relativeTo);
       }
     },
-<span id='Deft-core-Class-method-hookOnClassCreated'>    /**
+<span id='Deft-core-Class-static-method-hookOnClassCreated'>    /**
 </span>    		* Intercept class creation.
     		*
     		* (Normalizes API differences between the various Sencha frameworks and versions.)
@@ -64,7 +64,7 @@ Ext.define('Deft.core.Class', {
         Ext.Function.interceptBefore(hooks, 'onCreated', fn);
       }
     },
-<span id='Deft-core-Class-method-hookOnClassExtended'>    /**
+<span id='Deft-core-Class-static-method-hookOnClassExtended'>    /**
 </span>    		* Intercept class extension.
     		*
     		* (Normalizes API differences between the various Sencha frameworks and versions.)
@@ -85,7 +85,7 @@ Ext.define('Deft.core.Class', {
         data.onClassExtended = onClassExtended;
       }
     },
-<span id='Deft-core-Class-method-extendsClass'>    /**
+<span id='Deft-core-Class-static-method-extendsClass'>    /**
 </span>    		* Determines whether the passed Class reference is or extends the specified Class (by name).
     		*
     		* @return {Boolean} A Boolean indicating whether the specified Class reference is or extends the specified Class (by name)

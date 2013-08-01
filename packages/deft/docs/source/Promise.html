@@ -29,19 +29,69 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 <span id='Deft-promise-Promise'>/**
 </span>Promises represent a future value; i.e., a value that may not yet be available.
 
-A Promise's then() method is used to specify onFulfilled and onRejected 
-callbacks that will be notified when the future value becomes available. Those 
-callbacks can subsequently transform the value that was resolved or the reason 
-that was rejected. Each call to then() returns a new Promise of that 
-transformed value; i.e., a Promise that is resolved with the callback return 
+A Promise's then() method is used to specify onFulfilled and onRejected
+callbacks that will be notified when the future value becomes available. Those
+callbacks can subsequently transform the value that was resolved or the reason
+that was rejected. Each call to then() returns a new Promise of that
+transformed value; i.e., a Promise that is resolved with the callback return
 value or rejected with any error thrown by the callback.
+
+## &lt;u&gt;[Basic Usage](https://github.com/deftjs/DeftJS/wiki/Promises%20API)&lt;/u&gt;
+
+In it's most basic and common form, a method will create and return a Promise like this:
+
+    // A method in a service class which uses a Store and returns a Promise
+    loadCompanies: function() {
+      var deferred = Ext.create('Deft.Deferred');
+
+      this.companyStore.load({
+
+        callback: function(records, operation, success) {
+          if (success) {
+            deferred.resolve(records);
+          } else {
+            deferred.reject(&quot;Error loading Companies.&quot;);
+          }
+        }
+
+      });
+
+      return deferred.promise;
+    }
+
+You can see this method first creates a Deferred object. It then returns a Promise object for
+use by the caller. Finally, in the asynchronous callback, it resolves the Deferred object if
+the call was successful, and rejects the Deferred if the call failed.
+
+The method which calls the above code and works with the returned Promise might look like:
+
+    // Using a Promise returned by another object.
+    loadCompanies: function() {
+
+      this.companyService.loadCompanies().then({
+        success: function(records) {
+          // Do something with result.
+        },
+        failure: function(error) {
+          // Do something on failure.
+        }
+      }).always(function() {
+        // Do something whether call succeeded or failed
+      });
+
+    }
+
+The calling code uses the Promise returned from the companyService.loadCompanies() method and
+uses then() to attach success and failure handlers. Finally, an always() method call is chained
+onto the returned Promise. This specifies a callback function that will run whether the underlying
+call succeeded or failed.
 */
 
 Ext.define('Deft.promise.Promise', {
   alternateClassName: ['Deft.Promise'],
   requires: ['Deft.promise.Resolver'],
   statics: {
-<span id='Deft-promise-Promise-method-when'>    /**
+<span id='Deft-promise-Promise-static-method-when'>    /**
 </span>    		* Returns a new Promise that:
     		*
     		* * resolves immediately for the specified value, or
@@ -57,7 +107,7 @@ Ext.define('Deft.promise.Promise', {
       deferred.resolve(promiseOrValue);
       return deferred.promise;
     },
-<span id='Deft-promise-Promise-method-isPromise'>    /**
+<span id='Deft-promise-Promise-static-method-isPromise'>    /**
 </span>    		* Determines whether the specified value is a Promise (including third-party untrusted Promises or then()-ables), based on the Promises/A specification feature test.
     		* 
     		* @param {Mixed} value A potential Promise.
@@ -67,7 +117,7 @@ Ext.define('Deft.promise.Promise', {
     isPromise: function(value) {
       return (value &amp;&amp; Ext.isFunction(value.then)) === true;
     },
-<span id='Deft-promise-Promise-method-all'>    /**
+<span id='Deft-promise-Promise-static-method-all'>    /**
 </span>    		* Returns a new Promise that will only resolve once all the specified `promisesOrValues` have resolved.
     		* 
     		* The resolution value will be an Array containing the resolution value of each of the `promisesOrValues`.
@@ -84,7 +134,7 @@ Ext.define('Deft.promise.Promise', {
         return x;
       });
     },
-<span id='Deft-promise-Promise-method-any'>    /**
+<span id='Deft-promise-Promise-static-method-any'>    /**
 </span>    		* Initiates a competitive race, returning a new Promise that will resolve when any one of the specified `promisesOrValues` have resolved, or will reject when all `promisesOrValues` have rejected or cancelled.
     		* 
     		* The resolution value will the first value of `promisesOrValues` to resolve.
@@ -107,7 +157,7 @@ Ext.define('Deft.promise.Promise', {
         }
       });
     },
-<span id='Deft-promise-Promise-method-some'>    /**
+<span id='Deft-promise-Promise-static-method-some'>    /**
 </span>    		* Initiates a competitive race, returning a new Promise that will resolve when `howMany` of the specified `promisesOrValues` have resolved, or will reject when it becomes impossible for `howMany` to resolve.
     		* 
     		* The resolution value will be an Array of the first `howMany` values of `promisesOrValues` to resolve.
@@ -169,7 +219,7 @@ Ext.define('Deft.promise.Promise', {
         return deferred.promise;
       });
     },
-<span id='Deft-promise-Promise-method-delay'>    /**
+<span id='Deft-promise-Promise-static-method-delay'>    /**
 </span>    		* Returns a new Promise that will automatically resolve with the specified Promise or value after the specified delay (in milliseconds).
     		*
     		* @param {Mixed} promiseOrValue A Promise or value.
@@ -190,7 +240,7 @@ Ext.define('Deft.promise.Promise', {
       }, milliseconds);
       return deferred.promise;
     },
-<span id='Deft-promise-Promise-method-timeout'>    /**
+<span id='Deft-promise-Promise-static-method-timeout'>    /**
 </span>    		* Returns a new Promise that will automatically reject after the specified timeout (in milliseconds) if the specified promise has not resolved or rejected.
     		*
     		* @param {Mixed} promiseOrValue A Promise or value.
@@ -219,7 +269,7 @@ Ext.define('Deft.promise.Promise', {
       });
       return deferred.promise;
     },
-<span id='Deft-promise-Promise-method-memoize'>    /**
+<span id='Deft-promise-Promise-static-method-memoize'>    /**
 </span>    		* Returns a new function that wraps the specified function and caches the results for previously processed inputs.
     		* 
     		* Similar to {@link Deft.Function#memoize Deft.util.Function::memoize()}, except it allows for parameters that are Promises and/or values.
@@ -239,7 +289,7 @@ Ext.define('Deft.promise.Promise', {
         });
       };
     },
-<span id='Deft-promise-Promise-method-map'>    /**
+<span id='Deft-promise-Promise-static-method-map'>    /**
 </span>    		* Traditional map function, similar to `Array.prototype.map()`, that allows input to contain promises and/or values.
     		* 
     		* The specified map function may return either a value or a promise.
@@ -287,7 +337,7 @@ Ext.define('Deft.promise.Promise', {
         return deferred.promise;
       });
     },
-<span id='Deft-promise-Promise-method-reduce'>    /**
+<span id='Deft-promise-Promise-static-method-reduce'>    /**
 </span>    		* Traditional reduce function, similar to `Array.reduce()`, that allows input to contain promises and/or values.
     		*
     		* @param {Mixed[]/Deft.promise.Promise[]/Deft.promise.Promise} promisesOrValues An Array of values or Promises, or a Promise of an Array of values or Promises.
@@ -322,7 +372,7 @@ Ext.define('Deft.promise.Promise', {
         return Deft.Promise.reduceArray.apply(promisesOrValues, reduceArguments);
       });
     },
-<span id='Deft-promise-Promise-method-reduceArray'>    /**
+<span id='Deft-promise-Promise-static-method-reduceArray'>    /**
 </span>    		* Fallback implementation when Array.reduce is not available.
     		* @private
     */
