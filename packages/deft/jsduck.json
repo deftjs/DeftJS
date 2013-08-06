@@ -1,5 +1,5 @@
 {
-  "--title": "Deft JS - v0.9.0-pre API Documentation",
+  "--title": "Deft JS - v0.9.1 API Documentation",
   "--ignore-global": true,
   "--head-html": [
     "<link rel=\"stylesheet\" href=\"theme/resources/css/theme.css\" type=\"text/css\" />",
