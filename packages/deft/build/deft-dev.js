@@ -322,7 +322,7 @@ If needed, constructor parameters can be specified for a dependency provider. Th
       }
     });
 
-## <u>[Constructor Parameters](https://github.com/deftjs/DeftJS/wiki/Factory-Functions)</u>
+## <u>[Factory Functions](https://github.com/deftjs/DeftJS/wiki/Factory-Functions)</u>
 
 A dependency provider can also specify a function to use to create the object that will be injected:
 
@@ -1239,9 +1239,8 @@ Ext.define('Deft.util.Function', {
   }
 }, function() {
   if (typeof setImmediate !== "undefined" && setImmediate !== null) {
-    return this.nextTick = function() {
-      var fn;
-      if (typeof scope !== "undefined" && scope !== null) {
+    return this.nextTick = function(fn, scope) {
+      if (scope != null) {
         fn = Ext.Function.bind(fn, scope);
       }
       setImmediate(fn);
@@ -2132,12 +2131,62 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 /**
 Promises represent a future value; i.e., a value that may not yet be available.
 
-A Promise's then() method is used to specify onFulfilled and onRejected 
-callbacks that will be notified when the future value becomes available. Those 
-callbacks can subsequently transform the value that was resolved or the reason 
-that was rejected. Each call to then() returns a new Promise of that 
-transformed value; i.e., a Promise that is resolved with the callback return 
+A Promise's then() method is used to specify onFulfilled and onRejected
+callbacks that will be notified when the future value becomes available. Those
+callbacks can subsequently transform the value that was resolved or the reason
+that was rejected. Each call to then() returns a new Promise of that
+transformed value; i.e., a Promise that is resolved with the callback return
 value or rejected with any error thrown by the callback.
+
+## <u>[Basic Usage](https://github.com/deftjs/DeftJS/wiki/Promises%20API)</u>
+
+In it's most basic and common form, a method will create and return a Promise like this:
+
+    // A method in a service class which uses a Store and returns a Promise
+    loadCompanies: function() {
+      var deferred = Ext.create('Deft.Deferred');
+
+      this.companyStore.load({
+
+        callback: function(records, operation, success) {
+          if (success) {
+            deferred.resolve(records);
+          } else {
+            deferred.reject("Error loading Companies.");
+          }
+        }
+
+      });
+
+      return deferred.promise;
+    }
+
+You can see this method first creates a Deferred object. It then returns a Promise object for
+use by the caller. Finally, in the asynchronous callback, it resolves the Deferred object if
+the call was successful, and rejects the Deferred if the call failed.
+
+The method which calls the above code and works with the returned Promise might look like:
+
+    // Using a Promise returned by another object.
+    loadCompanies: function() {
+
+      this.companyService.loadCompanies().then({
+        success: function(records) {
+          // Do something with result.
+        },
+        failure: function(error) {
+          // Do something on failure.
+        }
+      }).always(function() {
+        // Do something whether call succeeded or failed
+      });
+
+    }
+
+The calling code uses the Promise returned from the companyService.loadCompanies() method and
+uses then() to attach success and failure handlers. Finally, an always() method call is chained
+onto the returned Promise. This specifies a callback function that will run whether the underlying
+call succeeded or failed.
 */
 
 Ext.define('Deft.promise.Promise', {

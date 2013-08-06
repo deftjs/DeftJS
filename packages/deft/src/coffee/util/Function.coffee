@@ -52,7 +52,7 @@ Ext.define( 'Deft.util.Function',
 ,
 	->
 		if setImmediate? 
-			@nextTick = ->
+			@nextTick = ( fn, scope ) ->
 				if scope?
 					fn = Ext.Function.bind( fn, scope )
 				setImmediate( fn )

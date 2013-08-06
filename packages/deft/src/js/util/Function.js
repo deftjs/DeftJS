@@ -66,9 +66,8 @@ Ext.define('Deft.util.Function', {
   }
 }, function() {
   if (typeof setImmediate !== "undefined" && setImmediate !== null) {
-    return this.nextTick = function() {
-      var fn;
-      if (typeof scope !== "undefined" && scope !== null) {
+    return this.nextTick = function(fn, scope) {
+      if (scope != null) {
         fn = Ext.Function.bind(fn, scope);
       }
       setImmediate(fn);
