@@ -43,7 +43,6 @@ Ext.define( 'Deft.event.LiveEventListener',
 		component.liveHandlers = {}
 		
 		#TODO: define this in Deft.Component, EventBus overrides this method and doesn't call the parent method...
-		
 		# Keeps track of the original fireEvent method
 		oldFireEvent = component.fireEvent
 		component.fireEvent = ( event ) ->
@@ -59,6 +58,24 @@ Ext.define( 'Deft.event.LiveEventListener',
 				# Breaks the loop and returns false if an event is returning false  
 				if handler.observable.matches( @ ) and handler.fireEvent.apply( handler, arguments) is false
 					return false
+		
+		if ! component.fireAction
+			return
+		  
+		# Keeps track of the original fireAction method
+		oldFireAction = component.fireAction
+		component.fireAction = ( event, params ) ->
+			if @liveHandlers[ event ] is undefined
+				return oldFireAction.apply( @, arguments )
+
+			for handler in @liveHandlers[ event ]
+				args = [ event ].concat( params || [] )
+				  
+				# Fires the event only if the LiveEventListener is meant for this component (see matches method)
+				# Breaks the loop and returns false if an event is returning false
+				if handler.observable.matches( @ ) and handler.fireEvent.apply( handler, args ) is false
+					return false
+					
 		return
 	
 	# Handles the fired event calling the LiveEventHandler's function

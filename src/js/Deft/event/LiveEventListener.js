@@ -37,7 +37,7 @@ Ext.define('Deft.event.LiveEventListener', {
   */
 
   overrideComponent: function(component) {
-    var oldFireEvent;
+    var oldFireAction, oldFireEvent;
     if (component.liveHandlers !== void 0) {
       return;
     }
@@ -55,6 +55,24 @@ Ext.define('Deft.event.LiveEventListener', {
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         handler = _ref[_i];
         if (handler.observable.matches(this) && handler.fireEvent.apply(handler, arguments) === false) {
+          return false;
+        }
+      }
+    };
+    if (!component.fireAction) {
+      return;
+    }
+    oldFireAction = component.fireAction;
+    component.fireAction = function(event, params) {
+      var args, handler, _i, _len, _ref;
+      if (this.liveHandlers[event] === void 0) {
+        return oldFireAction.apply(this, arguments);
+      }
+      _ref = this.liveHandlers[event];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        handler = _ref[_i];
+        args = [event].concat(params || []);
+        if (handler.observable.matches(this) && handler.fireEvent.apply(handler, args) === false) {
           return false;
         }
       }

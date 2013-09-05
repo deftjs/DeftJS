@@ -10,7 +10,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 Ext.define('Deft.event.LiveEventBus', {
   alternateClassName: ['Deft.LiveEventBus'],
-  requires: ['Ext.Component', 'Ext.ComponentManager', 'Deft.event.LiveEventListener'],
+  requires: ['Ext.Component', 'Ext.ComponentManager', 'Deft.core.Component', 'Deft.event.LiveEventListener'],
   singleton: true,
   constructor: function() {
     this.listeners = {};

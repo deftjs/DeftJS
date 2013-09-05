@@ -18,7 +18,7 @@ Ext.define( 'Deft.core.Component',
   
   setParent: ( newParent ) ->
     if Ext.getVersion( 'touch' )?
-      oldParent = @getParent()
+      oldParent = @getParent() || null
           
       result = @callParent( arguments )
           

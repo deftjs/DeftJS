@@ -11,7 +11,7 @@ Ext.define( 'Deft.event.LiveEventBus',
 	requires: [ 
 		'Ext.Component'
 		'Ext.ComponentManager'
-		
+		'Deft.core.Component'
 		'Deft.event.LiveEventListener'
 	]
 	singleton: true

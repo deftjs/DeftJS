@@ -25,7 +25,7 @@ Ext.define('Deft.core.Component', {
   setParent: function(newParent) {
     var oldParent, result;
     if (Ext.getVersion('touch') != null) {
-      oldParent = this.getParent();
+      oldParent = this.getParent() || null;
       result = this.callParent(arguments);
       if (oldParent === null && newParent !== null) {
         this.fireEvent('added', this, newParent);
