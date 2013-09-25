@@ -1,3 +1,24 @@
 language: node_js
 node_js:
   - 0.8
+before_script:
+  # Framebuffer for Firefox
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  # Install JSDuck dependency
+  - "gem install jsduck"
+  # Download, unzip and symlink Sencha Ext JS dependency
+  - "wget http://cdn.sencha.com/ext/commercial/ext-4.2.1-commercial.zip"
+  - "unzip -q ext-4.2.1-commercial.zip"
+  - "ln -sv `pwd`/ext-4.2.1.883 $TRAVIS_BUILD_DIR/../ext"
+  # Install Sencha Cmd
+  - "wget http://cdn.sencha.com/cmd/3.1.2.342/SenchaCmd-3.1.2.342-linux-x64.run.zip"
+  - "unzip -q SenchaCmd-3.1.2.342-linux-x64.run.zip"
+  - "chmod +x SenchaCmd-3.1.2.342-linux-x64.run"
+  - "./SenchaCmd-3.1.2.342-linux-x64.run --mode unattended"
+  # Make Sencha Cmd and CoffeeScript available in the PATH
+  - "export PATH=~/bin/Sencha/Cmd/3.1.2.342/:$TRAVIS_BUILD_DIR/node_modules/karma/bin:$TRAVIS_BUILD_DIR/node_modules/coffee-script/bin:$PATH"
+  # Change directory to the package and build the package
+  - "cd $TRAVIS_BUILD_DIR/packages/deft && sencha package build"
+  # Change directory back to the root of the repository ready for running tests
+  - "cd $TRAVIS_BUILD_DIR"
