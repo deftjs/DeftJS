@@ -12,10 +12,11 @@
     "url": "https://github.com/deftjs/DeftJS.git"
   },
   "devDependencies": {
-    "karma": "~0.8"
+    "karma": "~0.8",
+    "coffee-script": "1.6.3"
   },
   "scripts": {
-    "test": "cd packages/deft && ant test -Dkarma.browsers=PhantomJS"
+    "test": "cd packages/deft && ant test -Dkarma.browsers=PhantomJS,Firefox"
   },
   "license": "MIT"
 }
