@@ -16,7 +16,7 @@
     "coffee-script": "1.6.3"
   },
   "scripts": {
-    "test": "cd packages/deft && ant test -Dkarma.browsers=PhantomJS,Firefox"
+    "test": "cd packages/deft && ant test -Dkarma.browsers=../../.travis/chrome-start.sh,Firefox,PhantomJS"
   },
   "license": "MIT"
 }
