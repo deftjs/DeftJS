@@ -2,25 +2,47 @@ language: node_js
 node_js:
   - 0.8
 env:
-  - DEFT_SENCHA_CMD_VERSION="4.0.0.203"
+  global:
+    - secure: kB0WTYJK6Xi4cnZTIDiLdlENSUWTRV6ujPmptLI8PddBOFKE2aR/PXvVAMUHWY7IknLNYAqQdhwPHsZqZpbs40n+x5b118akhGeyP6KQSXu4V8bAu+9UNl71yQfSF6t4+bE4u80OVppGLCs4B7X82fPCOdh+dXMiZcNOywhi90Q=
+    - secure: HF5NFq6NSTuOT8+nLJ5XcAk4NqK6UO3ZFOMEv6weRrstQ6pJgV23oUMyrNkwLGHKi3GheOgmAUf87d7JGjjVqumdhxgVf8cVr+nH7OZRnrJvtBZdQynLBoi5YchLz7iETOHlHCYADL9x9pafxATsv7yg/cNovZlDgMueAH9cysI=
+    - secure: ewxyb6Hnrr4XAVJACv1Q/yMRtdtgqAeo4llX7/7lsQCJ3kTkllGpUjBzzb+gpb2D87TB2Tb34Im0d3wXN0+1t9Ol2glWsu6advs0Hq04XEx6jJypozWi8aFrsiQv4wmibhIigEwkD5GKAxaS7Ja+cQngt4fpvz/Qt15+j70zSNE=
+    - secure: K+saOeNiZuKt3KrSu2fXEkjeTvuLOIv5PBzkaAienF2KcuKuYyD87XkLD9VgHNPwcIiS31JU/eyMUg3YPYhvBUN4EsFe0fOqV4kh9vZ2DGne2m1aD5/3vVqlNxen+toblA9ZAhAfiSTZER9Z0PoecQh0nB5e7cTBdzhH1WqPTV4=
+    - secure: LqVhijD+WiwB1QLfMIxaMmOrnzraF0VfFw0sduBPbY7kwz0JnWhJnuOVo3kbYFJESiUeDmqEwjDpZymAc71S9G06TfqpyjeSuq04RFPhZxxtT0pGNxQjGBo32FWXienpIQn9/yyYkbFpNN//aWAg1IzvG53ii/sBJOzb54TsjS4=
+    - secure: OuLeWgg2BsYtJUrm7JSQt3OWO0VVEROkUW4bUOvGk+CW4Gp9nztvi7JcN08QRVKKXaU4/ZpwMUFZ6wd27/Nd6iAIcArWf0g6mGbuXM4CS48p/DT6lXoypSNFkY9zrynIa1r7P4PrhO8FA/ZxAFldA79+hXWFl52yhuHmId9uEYk=
+    - secure: C9uvqCLeuPktt5tO4iPZ6Xb123u9Nsv/29N7EkyqQOlWHEkWOZBSoDZHQsjCLd1Jtdlb3yhevUHNBo+Qi0fgWl5O0QVcHos/vwVtXc9Jqht9Ykwy+bVVu1+USP05uHoach9ODpPEwxtRLmPIaW8TgWmj+L6a/NQyRnzJJ7a5P1I=
+    - secure: bm+YSNd1EfS7lAXMPjeYv4tY3sVIHXGxzD/Ayxb6BzgA/yIK3LmB76cdb1Zu6C2DWy/vOcneZLYSA92xi3qTFK4l6s9S7TxoHpyVw/OQHj1Dcbe/2qq1bwuU+9kqxYkoFrg2xF56vRJAsxf2S5Lovk8eEaq2Guvp3wzKqzc21s0=
+    - secure: e+KOQxVtrVzY6ZmsVH9Vj1VNHluEAEAMsH+Bk+0dGpb55RDH9yH/AEqBauSmZPaNqyhALmTXHf4oZ9dBFkQVd6wcfkzFmt1r5Bk9/B2qEPZcbDHHPtAErUQrOHtwMh+ATYHvF7I2KpGtwgiFUoRR+VNIVVyhCtS5Aiq583nNoh4=
+    - secure: bCB8LMUIB/zkORZsB2Bl3suZRILH5HuYs3C1gALG/jTQs+b6Kg1BgN5ZgD4H3Jho8HVS5/hNVlAVdC4SI43Z0k04k59P2jZiS6cILQ6WPFz9Se99pNx/DahWtFj83ewnkJ3r5ZDiErVeMcekRnelIckxYKfZlKgvxBPIQ9nJs1k=
+    - secure: a7g94u1/IADMh82wETPwyWc3mu502Nl3MoHaBhMC7ZydUobrqrBRB+JBX1/0qRsk0An9GqrCq+PHn/PJ0+L13glf9ZGZ6TFSpuuS0Sq75N2H/Wy+Bymac9GzTu7ZE9NeCgY0YEIJEu5sQGupjcdryypoeVFdWhBS0NKUMVeX0OI=
+    - secure: TmEQ/Se0UFgY2b09w7HRR92EBqixHoPVGpkSdH1AfGln5h7oT2o8ngUI4vWzNXNrDCbUrln8kYpKK9b8IfjNcfoOfrarzgZdXjhWRlkHTl87su462DvIUBW8nZAv5KzZjnxvHDgU/c6AmECPe1kNxxkJb0jkzIylZCaOs10ytjI=
+    - secure: QDz361eVZ0zoUhZRbXrjyb5LJ/s/uLT/p5Fo4AffDwOFbhv/j4hh8FIqMdzYnLwHmdyVb/FAB2pLXc6SMTpDBHBjeWdXhS5HZGXEYkbIInNVo2Lm/zF9guDou90CXtzGfbopP5Ss4b17HTQizUymckZryACWq7Dq1oVj1bQ7NsI=
+    - secure: M+GpJbq57XJpTsPyVYyZZdRlLKjNJHeH+THhNxV2DVdQsvnrFJjNnkuE0DVV4EUpEsFv/7xXhY7zmWjtFU27moGbHOt2xXVNh4BcFcMHVkF5rFFm54mFYs1v7wxVaisdacna9A3hYmqdMDjoI25pvhBM0v+8u6GYTBmrJEPeVyw=
+    - secure: WZNCvOZHMkyxRFMPVfanWvM6Z2uH4A8aHry6MXBVOudDEJ/rcrXLoyVC3RP0h3obInOdHcGXJTkDCNdOBEEmFYIjh+TKPRRfXXJIuD2r3m3EmnrY7V/PTfwGmBeo1dzDHLBJDDwcsc/mccWs1bMmxmtW1swinSxcNcmVQlOvO4k=
+    - secure: WpwjkdvNSYDQ0O5VdLmdipVCeClUeu3sURAzMKv8kp7lZxN3nQ8G1gu5LOCT/1VXKMZQExRKsSa161lsu1P5hSzA6TqLQoMrvPAVH3gyQ7mOM3a6z2skiYk/TOvCtcehMBFokbSExz5nEwIPpBEsS2/rfKHNZC+FNl4IKuT4mOQ=
+    - secure: iM4C+IuYC3oD/h8OvnkorVsrDdv4betUymZDHY7Y489vBhrY4IkWBJ0kYJqKK1odhC0Oaycmi0THmZ3DyMm95QPsYml7UJdBN/ULA+/bWpqAWUtQfWWa1mt/sWash+1eQQoOW4FNy/6F+7yWhybeyj1U1mcmat2/Hf/L+r3jz6E=
+    - secure: PUaK0E3nEz/1ceDUTwHSaTjeU9PVEVhaQxjxz2IW6dd1WivHDy8Rt+Us6nZlW2j+8mPAMx+veDZfccaR4WHlokhPsttvkOFMRBZKfzexLolqaBWqIrIPUYRqSEaGpcB6AXh9rCc2idipYxlgNSg46Nn82tIiIq9MoK/ftu2NQzI=
+    - secure: QyPTWH9bjMMJ0xQ2Orzwy5EeHnIWQyV7Jl8VSi5VcVhE1SN2RDXPi3QJaRI3rarBR+3w7yyJMsh2qsgUVNarp16AuAV9oN/gd+9N4na8nNKtaEWaDLSVVj6CoGUaFSx+Xe0W07FE+Lr8i98vkPQwi52dQb7sDgk6XVlQE95TAR8=
+    - secure: Za2Ngl9XZQNbL4PxPD3bM8bSEL8SuGXV0RXAFpEGqyMB6tucms0pdIgA7XzGRykOFaLJMKol85YiiRgRwi722VXcVSCcAMg0qR6qlBDsINEwhFkUN2WV29lpzbH5uUS+Mkd8pXJLIVURm7P4zme1ChNMUXPgZNSCpXq+ZU9YVtY=
+    - secure: KrzWO0In4deYkmUe74eRwRJwx/9YqhwD/CN1h4glwssrvKrgDmQteiHpBlHK6UCoCYtA8rmxWXlqjMEFA7zU2NjMUTBXvcrHXwP8Fn9UOcSKt8a+CAJHjm0aW8AtJgrSV26y63hUYkq4C3kfyppYbWP8LsnPLLZ8JZYBmc4MhsE=
+    - secure: TXIqloWRTDAK/ESfpFPs1CB+APy8ZKRObGeAWho0TuevGWJ2pd+ymEKol/9IxP0n+6c56kqw/jYq5yN3wL4XeLZijk/39aocW4ijnUYE07zsJwYkYEuT9Zwf2N3MXNqy9TIQN1LM6ntQ0nWCxq/OTI2Pj/Xs5vXUhvf08fCRcf4=
+    - secure: CGCVkcYSGtm9+bBj5SkRWBiMbZ0Nj7fdIozX/JjDSueUxZED7qEQMeoX3ZnCa/afKN+2os8cpRO6fo2MC3FA0RuQUU9X9DtE25UFHReeChfOFCt7du6uglfr3vOXhKyzEpeNiQb2py/x1AB2jjtiifq3uN0EaKN13gNDLxRU4RA=
+    - secure: aTehFwYwwDBwZ+43uud57EKEtBAWT6J/XZ10e2XIl0lYZlkRmkrXE4uMftGC61OGsYHiMv2oT+2O8rWeWbc80yAwXcnbOMe3B3pSIgkMhe4ki4+2SNR/tPTzUGu9gSzaJHC5Mud3cNm0u8JKGur3bv7OY/OI1qiAUWaRnQKaEjQ=
+    - secure: k5b77OJ3RUk2e0ivzakR3cvRjKVrSDkw0b5AUn3uwxmiZgTMTrIVpsH+c2+u16d9rULo7rP4xkbmysa747cVNFqBAQlQFDUYcHexoRY/oVnv8Ptcx7lI6pcdc4WyboYlD1A3Mxd2xzhrbBioEVz1x/P6Y0zMS7/b9he++aZxAlo=
+    - secure: ZOAKp8fTIQGjc6F0kuOPD/jTghJ8WaWNIoPykk+zZzjTd1bEBoFc3pYzBo/8/KAkkXR8G1rxDFg29/8ZVLzq+EZ7qMRbmMkbSFrlD1+Jr9Gt/V87uJu6e80KY9JO9wjeWmJe5gReDbdOMz7D6ixV9EqJuDWC/VwyUqKzgGnXTqc=
+    - secure: G/T77NblDFYSgu3+9mt6s7Ryz7daiKhkx30uoEDuTz+aeSe4HQz7lUosGLmqBYIQZ192x78iv8abPPvhUKExTYRKXDB0d7gLdB9cmyq/8rxgACQSPxU9j6Tw8syLd7n7mw1tPnChlSb/pfm8BFBo13FPC+erd5jPpfXvoyf+uz4=
+    - secure: B9e0G4uQMrXc5c4YfqIOKsF6AjczBEo4TtP9S47bHXONE80vITkclW0SYl5ZD0/fUOhOiJyKSyHZIKMvEtCFs0QFGiRLux+/5Wl+TEHosJ71Z7tsqI8NFZLuAk5Jzd3G5WXTSbSisJtdvuH+V2uJzHYTbXIQlDjPuSuqLSl0TsI=
+    - secure: I7tf8ui42Rzz3Kagzj3qQvP8WQapcrV3VE1kaZEbEatADQQIpgo9N9vNbKbZ8TQC3tQFcVIKceXHpzXq/Z/iG7CL+Vjehs7/DFA4B2uePrsrl9XlSBi9CZ58JFbZj0KKt0HcWjrRBvsSJ39tEAb0j2pAUJZNqGi2FIL1M2HtV98=
+    - secure: N9/kqsALYXuk/7nNmIfr/xUwqcYSO1eSGsZrTxzzMgTGEB1tEPOtE/Cn+uwUHj6kwkWe/FI3IEiPtLixePaspRcft3lMNFBhisCDIn3qGGfnOnDjln3Ot5Vm37q/FPGdUN3rBJLG6b2i99mL7uL5eoddRVo1kW/Viz5/B1tL44E=
+    - secure: P8eTeY+hDkUL5Xj7GdXOPQY7CsH3IuM4m9dOyXT7mf+RhMRPXCYXIOTi9EC5e2iU0r+DRJ7a93H0Nt38p7ePgHHoBTauaEXFi7iAHQwm99xzRfnC8/yyicESmZ1VAG6kEGThZHrquZPEXxReJaXe4L0JTF9gpvELPHPImeulND0=
+    - SENCHA_CMD_VERSION="4.0.0.203"
+    - SENCHA_EXT_VERSION="4.2.1"
 before_script:
-  # Framebuffer for Firefox
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  # Install JSDuck dependency
-  - "gem install jsduck"
-  # Download, unzip and symlink Sencha Ext JS dependency
-  - "wget http://cdn.sencha.com/ext/commercial/ext-4.2.1-commercial.zip"
-  - "unzip -q ext-4.2.1-commercial.zip"
-  - "ln -sv `pwd`/ext-4.2.1.883 $TRAVIS_BUILD_DIR/../ext"
-  # Install Sencha Cmd
-  - "wget http://cdn.sencha.com/cmd/$DEFT_SENCHA_CMD_VERSION/SenchaCmd-$DEFT_SENCHA_CMD_VERSION-linux-x64.run.zip"
-  - "unzip -q SenchaCmd-$DEFT_SENCHA_CMD_VERSION-linux-x64.run.zip"
-  - "chmod +x SenchaCmd-$DEFT_SENCHA_CMD_VERSION-linux-x64.run"
-  - "./SenchaCmd-$DEFT_SENCHA_CMD_VERSION-linux-x64.run --mode unattended"
-  # Make Sencha Cmd and CoffeeScript available in the PATH
-  - "export PATH=~/bin/Sencha/Cmd/$DEFT_SENCHA_CMD_VERSION/:$TRAVIS_BUILD_DIR/node_modules/karma/bin:$TRAVIS_BUILD_DIR/node_modules/coffee-script/bin:$PATH"
-  # Change directory to the package and build the package
-  - "cd $TRAVIS_BUILD_DIR/packages/deft && sencha package build"
-  # Change directory back to the root of the repository ready for running tests
+  - .travis/framebuffer-start.sh
+  - .travis/jsduck-install.sh
+  - .travis/sencha-cmd-install.sh
+  - .travis/sencha-ext-install.sh
+  - .travis/setenv.sh
+  - .travis/sencha-cmd-unpack-private-key.sh
+  - .travis/sencha-package-build.sh
+  # Ensure we are in the root of the repository ready for running tests
   - "cd $TRAVIS_BUILD_DIR"
