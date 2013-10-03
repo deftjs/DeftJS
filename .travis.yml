@@ -1,6 +1,8 @@
 language: node_js
 node_js:
   - 0.8
+env:
+  - DEFT_SENCHA_CMD_VERSION="4.0.0.203"
 before_script:
   # Framebuffer for Firefox
   - "export DISPLAY=:99.0"
@@ -12,12 +14,12 @@ before_script:
   - "unzip -q ext-4.2.1-commercial.zip"
   - "ln -sv `pwd`/ext-4.2.1.883 $TRAVIS_BUILD_DIR/../ext"
   # Install Sencha Cmd
-  - "wget http://cdn.sencha.com/cmd/3.1.2.342/SenchaCmd-3.1.2.342-linux-x64.run.zip"
-  - "unzip -q SenchaCmd-3.1.2.342-linux-x64.run.zip"
-  - "chmod +x SenchaCmd-3.1.2.342-linux-x64.run"
-  - "./SenchaCmd-3.1.2.342-linux-x64.run --mode unattended"
+  - "wget http://cdn.sencha.com/cmd/$DEFT_SENCHA_CMD_VERSION/SenchaCmd-$DEFT_SENCHA_CMD_VERSION-linux-x64.run.zip"
+  - "unzip -q SenchaCmd-$DEFT_SENCHA_CMD_VERSION-linux-x64.run.zip"
+  - "chmod +x SenchaCmd-$DEFT_SENCHA_CMD_VERSION-linux-x64.run"
+  - "./SenchaCmd-$DEFT_SENCHA_CMD_VERSION-linux-x64.run --mode unattended"
   # Make Sencha Cmd and CoffeeScript available in the PATH
-  - "export PATH=~/bin/Sencha/Cmd/3.1.2.342/:$TRAVIS_BUILD_DIR/node_modules/karma/bin:$TRAVIS_BUILD_DIR/node_modules/coffee-script/bin:$PATH"
+  - "export PATH=~/bin/Sencha/Cmd/$DEFT_SENCHA_CMD_VERSION/:$TRAVIS_BUILD_DIR/node_modules/karma/bin:$TRAVIS_BUILD_DIR/node_modules/coffee-script/bin:$PATH"
   # Change directory to the package and build the package
   - "cd $TRAVIS_BUILD_DIR/packages/deft && sencha package build"
   # Change directory back to the root of the repository ready for running tests
