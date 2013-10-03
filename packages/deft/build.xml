@@ -50,10 +50,6 @@
         <antcall target="copyright">
             <param name="file" value="${package.dir}/build/deft-debug.js" />
         </antcall>
-
-        <antcall target="copyright">
-            <param name="file" value="${package.dir}/build/deft-dev.js" />
-        </antcall>
         
         <antcall target="copyright">
             <param name="file" value="${package.dir}/build/deft.js" />
