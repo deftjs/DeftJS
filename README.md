@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/deftjs/DeftJS.png?label=ready)](https://waffle.io/deftjs/DeftJS)  
 # Deft JS
 
 [![Build Status](https://travis-ci.org/deftjs/DeftJS.png?branch=master)](https://travis-ci.org/deftjs/DeftJS)
@@ -46,7 +47,7 @@ Deft JS enhances Ext JS and Sencha Touch's APIs with additional building blocks 
 
 ## Promises and Deferreds
 
-* Provides an elegant way to represent a ëfuture valueí resulting from an asynchronous operation.
+* Provides an elegant way to represent a C+future valueC- resulting from an asynchronous operation.
 * Offers a consistent, readable API for registering success, failure, cancellation or progress callbacks.
 * Allows chaining of transformation and processing of future values.
 * Simplifies processing of a set of future values via utility functions including all(), any(), map() and reduce().
