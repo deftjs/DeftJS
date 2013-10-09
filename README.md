@@ -1,6 +1,7 @@
 # Deft JS
 
 [![Build Status](https://travis-ci.org/deftjs/DeftJS.png?branch=master)](https://travis-ci.org/deftjs/DeftJS)
+[![Stories in Ready](https://badge.waffle.io/deftjs/DeftJS.png)](http://waffle.io/deftjs/DeftJS)
 
 Essential extensions for large-scale web and mobile application development with [Ext JS](http://www.sencha.com/products/extjs/) and [Sencha Touch](http://www.sencha.com/products/touch/).
 
@@ -51,7 +52,7 @@ Deft JS enhances Ext JS and Sencha Touch's APIs with additional building blocks 
 * Allows chaining of transformation and processing of future values.
 * Simplifies processing of a set of future values via utility functions including all(), any(), map() and reduce().
 * Implements the [Promises/A+ specification](https://github.com/promises-aplus/promises-spec) and passes the [Promises/A+ Compliance Test Suite](https://github.com/promises-aplus/promises-tests).
-	
+
 # Documentation Wiki
 
 Full documentation on the features and usage of Deft JS is available in the [Wiki](https://github.com/deftjs/DeftJS/wiki).
