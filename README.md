@@ -1,7 +1,7 @@
 # Deft JS
 
 [![Build Status](https://travis-ci.org/deftjs/DeftJS.png?branch=master)](https://travis-ci.org/deftjs/DeftJS)
-[![Stories in Ready](https://badge.waffle.io/deftjs/DeftJS.png)](http://waffle.io/deftjs/DeftJS)
+[![Stories in Ready](https://badge.waffle.io/deftjs/DeftJS.png?label=Ready)](http://waffle.io/deftjs/DeftJS)
 
 Essential extensions for large-scale web and mobile application development with [Ext JS](http://www.sencha.com/products/extjs/) and [Sencha Touch](http://www.sencha.com/products/touch/).
 
