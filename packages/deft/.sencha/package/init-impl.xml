@@ -50,20 +50,13 @@
     <target name="-before-apply-version"/>
     <target name="-after-apply-version"/>
     <target name="apply-version" if="build.version">
-        <if>
-            <not>
-                <equals arg1="${build.version}" arg2="${package.version}"/>
-            </not>
-            <then>
-                <echo>Switch package version from ${package.version} to ${build.version}</echo>
-                <antcall target="-before-apply-version"/>
+        <echo>Switch package version to ${build.version}</echo>
+        <antcall target="-before-apply-version"/>
 
-                <x-set-json-version file="${package.dir}/package.json"
-                                    version="${build.version}"/>
+        <x-set-json-version file="${basedir}/package.json"
+                            version="${build.version}"/>
 
-                <antcall target="-after-apply-version"/>
-            </then>
-        </if>
+        <antcall target="-after-apply-version"/>
     </target>
 
     <target name="-before-init"/>
@@ -199,6 +192,35 @@
 
     <target name="-before-init-defaults"/>
     <target name="-init-defaults">
+        <!--
+             This property can be modified to change general build options
+             such as excluding files from the set.  The format expects newlines
+             for each argument, for example:
+             
+             <property name="build.operations"/>
+                   exclude
+                       -namespace=Ext
+             </property>
+        -->
+        <property name="build.operations" value=""/>
+        
+        <!--
+             This property can be modified to change concatenation
+             specific options
+             
+             -strip-comments: comment suppression
+             -remove-text-references: transform string literal class references to objects
+             -beautify: unpack the source
+             
+             <property name="build.concat.options"/>
+                    -strip-comments
+                    -remove-text-references
+                    -beautify
+             </property>
+        -->
+        <property name="build.concat.options" value=""/>
+        <property name="build.concat.debug.options" value=""/>
+        
         <property name="build.pkg.manifest" value="pkg.files"/>
     </target>
     <target name="-after-init-defaults"/>

@@ -85,10 +85,11 @@
 
     <target name="-compass-compile" depends="-compile-sass">
         <x-compass-compile
-            trace="true"
-            boring="false"
-            force="true"
-            dir="${build.dir}"
+            rubyPath="${build.ruby.path}"
+            trace="${compass.compile.trace}"
+            boring="${compass.compile.boring}"
+            force="${compass.compile.force}"
+            dir="${compass.working.dir}"
             sassdir="${build.dir}"
             cssdir="${build.dir}/resources"
             config="${build.all.ruby}"/>
