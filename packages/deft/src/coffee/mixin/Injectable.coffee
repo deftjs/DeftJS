@@ -5,21 +5,88 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 ###*
 * A mixin that marks a class as participating in dependency injection. Used in conjunction with Deft.ioc.Injector.
-* @deprecated 0.8 Deft.mixin.Injectable has been deprecated and can now be omitted - simply use the \'inject\' class annotation on its own.
 ###
 Ext.define( 'Deft.mixin.Injectable',
 	requires: [
 		'Deft.core.Class'
 		'Deft.ioc.Injector'
 		'Deft.log.Logger'
+		'Deft.util.DeftMixinUtils'
 	]
 
 	###*
 	@private
 	###
-	onClassMixedIn: ( targetClass ) ->
-		Deft.Logger.deprecate( 'Deft.mixin.Injectable has been deprecated and can now be omitted - simply use the \'inject\' class annotation on its own.' )
+	onClassMixedIn: ( target ) ->
+
+		# Override mixin target constructor to merge superclass inject configs and perform injections.
+		target::constructor = Ext.Function.createInterceptor( target::constructor, ->
+			Deft.mixin.Injectable.constructorInterceptor( @, arguments )
+			return true
+		)
+
+		# Since the above mixin target constructor interceptor will not be fired before subclass
+		# constructors are called, ensure constructors in subclasses are also intercepted.
+		target.onExtended( ( clazz, config ) ->
+			config.constructor = Ext.Function.createInterceptor( config.constructor, ->
+				Deft.mixin.Injectable.constructorInterceptor( @, arguments )
+				return true
+			)
+			return true
+		)
+
 		return
+
+
+	statics:
+
+		MIXIN_COMPLETED_KEY: "$injected"
+		PROPERTY_NAME: "inject"
+
+
+		###*
+		@private
+		###
+		constructorInterceptor: ( target, targetInstanceConstructorArguments ) ->
+			# Only continue of the target hasn't already been processed for injections.
+			if( not target[ @MIXIN_COMPLETED_KEY ] )
+				Deft.util.DeftMixinUtils.mergeSuperclassProperty( target, @PROPERTY_NAME, @propertyMergeHandler )
+				injectConfig = target[ @PROPERTY_NAME ]
+				Deft.Injector.inject( injectConfig, target, targetInstanceConstructorArguments, false )
+				@afterMixinProcessed( target )
+
+			return
+
+
+		###*
+  	* @private
+		* Called by DeftMixinUtils.mergeSuperclassProperty(). Allows each mixin to define its own
+  	* customized subclass/superclass merge logic.
+		###
+		propertyMergeHandler: ( mergeTarget, mergeSource ) ->
+			# Convert a String or Array of Strings specified in source config into Objects.
+			mergeSource = [ mergeSource ] if Ext.isString( mergeSource )
+
+			if Ext.isArray( mergeSource )
+				dataInjectObject = {}
+				for identifier in mergeSource
+					dataInjectObject[ identifier ] = identifier
+				mergeSource = dataInjectObject
+
+			# Since child inject overrides parent inject, apply source config onto target config
+			mergeTarget = Ext.apply( mergeTarget, mergeSource )
+			return mergeTarget
+
+
+		###*
+		@private
+		###
+		afterMixinProcessed: ( target ) ->
+			target[ @MIXIN_COMPLETED_KEY ] = true
+			return
+
+
+			###
 ,
 	->
 		if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
@@ -80,5 +147,8 @@ Ext.define( 'Deft.mixin.Injectable',
 		)
 
 		return
+
+			###
+
 )
 

@@ -1489,6 +1489,7 @@ describe( 'Deft.ioc.Injector', ->
 			{
 				type: 'Function'
 				value: ->
+					return
 			}
 		]
 
@@ -1840,6 +1841,7 @@ describe( 'Deft.ioc.Injector', ->
 
 			Ext.define( 'InjectableCircularDependencyClass1',
 				extend: 'SimpleClass'
+				mixins: [ 'Deft.mixin.Injectable' ]
 				inject: [ "simpleClass", "injectableCircularDependencyClass2" ]
 
 				constructor: ( config ) ->
@@ -1848,6 +1850,7 @@ describe( 'Deft.ioc.Injector', ->
 
 			Ext.define( 'InjectableCircularDependencyClass2',
 				extend: 'SimpleClass'
+				mixins: [ 'Deft.mixin.Injectable' ]
 				inject: [ "injectableCircularDependencyClass3", "simpleClass" ]
 
 				constructor: ( config ) ->
@@ -1856,6 +1859,7 @@ describe( 'Deft.ioc.Injector', ->
 
 			Ext.define( 'InjectableCircularDependencyClass3Parent',
 				extend: 'SimpleClass'
+				mixins: [ 'Deft.mixin.Injectable' ]
 				inject: [ "injectableCircularDependencyClass1" ]
 
 				constructor: ( config ) ->
@@ -1864,6 +1868,7 @@ describe( 'Deft.ioc.Injector', ->
 
 			Ext.define( 'InjectableCircularDependencyClass3',
 				extend: 'InjectableCircularDependencyClass3Parent'
+				mixins: [ 'Deft.mixin.Injectable' ]
 				inject: [ "simpleClass" ]
 
 				constructor: ( config ) ->
@@ -2052,6 +2057,7 @@ describe( 'Deft.ioc.Injector', ->
 				factoryFunction = -> return 'expected value'
 
 				Ext.define( 'ExampleClassWithInject',
+					mixins: [ 'Deft.mixin.Injectable' ]
 					inject: [
 						'fnInjectPassedInstance'
 						'fnInjectPassedInstanceLazily'

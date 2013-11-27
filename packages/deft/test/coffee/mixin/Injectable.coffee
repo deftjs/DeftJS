@@ -9,6 +9,7 @@ describe( 'Deft.mixin.Injectable', ->
 		injectStub = sinon.stub( Deft.Injector, 'inject' )
 
 		Ext.define( 'ExampleClass',
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier' ]
 
 			constructor: ->
@@ -30,11 +31,13 @@ describe( 'Deft.mixin.Injectable', ->
 		injectStub = sinon.stub( Deft.Injector, 'inject' )
 
 		Ext.define( 'ExampleClass',
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier1' ]
 		)
 
 		Ext.define( 'ExampleSubclass',
 			extend: 'ExampleClass'
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier2' ]
 
 			constructor: ->
@@ -69,6 +72,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		Ext.define( 'ExampleSubclass2',
 			extend: 'ExampleSubclass'
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier3', 'identifier4' ]
 
 			constructor: ->
@@ -95,6 +99,7 @@ describe( 'Deft.mixin.Injectable', ->
 		injectStub = sinon.stub( Deft.Injector, 'inject' )
 
 		Ext.define( 'ExampleClass',
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier1', 'identifier2' ]
 		)
 
@@ -127,6 +132,7 @@ describe( 'Deft.mixin.Injectable', ->
 		injectStub = sinon.stub( Deft.Injector, 'inject' )
 
 		Ext.define( 'ExampleClass',
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier1' ]
 		)
 
@@ -165,6 +171,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		Ext.define( 'ExampleSubclass',
 			extend: 'ExampleClass'
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier1', 'identifier2' ]
 		)
 
@@ -200,6 +207,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		Ext.define( 'ExampleSubclass2',
 			extend: 'ExampleSubclass'
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier1', 'identifier2' ]
 
 			constructor: ->
@@ -224,11 +232,13 @@ describe( 'Deft.mixin.Injectable', ->
 		injectStub = sinon.stub( Deft.Injector, 'inject' )
 
 		Ext.define( 'ExampleClass',
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier1', 'identifier2' ]
 		)
 
 		Ext.define( 'ExampleSubclass',
 			extend: 'ExampleClass'
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: 'identifier3'
 
 			constructor: ->
@@ -254,11 +264,13 @@ describe( 'Deft.mixin.Injectable', ->
 		injectStub = sinon.stub( Deft.Injector, 'inject' )
 
 		Ext.define( 'ExampleClass',
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier1' ]
 		)
 
 		Ext.define( 'ExampleSubclass',
 			extend: 'ExampleClass'
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject:
 				identifier2: 'identifier2'
 				identifier3: 'identifier3'
@@ -286,6 +298,7 @@ describe( 'Deft.mixin.Injectable', ->
 		injectStub = sinon.stub( Deft.Injector, 'inject' )
 
 		Ext.define( 'ExampleClass',
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject: [ 'identifier1', 'identifier2', 'identifier3' ]
 		)
 
@@ -295,6 +308,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		Ext.define( 'ExampleSubclass2',
 			extend: 'ExampleSubclass'
+			mixins: [ 'Deft.mixin.Injectable' ]
 			inject:
 				identifier1: 'overriddenIdentifier1'
 				identifier2: 'overriddenIdentifier2'
