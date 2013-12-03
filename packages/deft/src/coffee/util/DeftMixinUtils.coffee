@@ -2,7 +2,10 @@ Ext.define( "Deft.util.DeftMixinUtils",
 
 	statics:
 
-		mergeSuperclassProperty: ( target, propertyName, mergeFn=Ext.merge, currentResult ) ->
+		###*
+		* Uses the passed mergeFn to recursively merge the specified propertyName up the class hierarchy of the target.
+		###
+		mergeSuperclassProperty: ( target, propertyName, mergeFn=Ext.merge, currentResult=null ) ->
 			wasMerged = false
 			isRecursionStart = false
 
@@ -22,4 +25,16 @@ Ext.define( "Deft.util.DeftMixinUtils",
 
 			return currentResult
 
+
+		###*
+		* Returns the proper method name to call the superclass constructor, based on platform and version.
+		###
+		parentConstructorForVersion: ( target ) ->
+			if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
+				return "callOverridden"
+			else
+				return "callParent"
+
+
 )
+

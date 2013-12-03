@@ -18,21 +18,13 @@ Ext.define( 'Deft.mixin.Controllable',
 	###
 	onClassMixedIn: ( target ) ->
 
-		#@createAfterMixinInterceptor( target:: )
-
-		# Override mixin target constructor to merge superclass inject configs and perform injections.
-		# Use Ext.override( target, {obj} ) instead?
-		#target::constructor = @createMixinInterceptor( target::constructor )
-
 		target.override(
-			constructor: Deft.mixin.Controllable.createControllerInterceptor()
+			constructor: Deft.mixin.Controllable.createMixinInterceptor()
 		)
 
 		target.onExtended( ( clazz, config ) ->
-			#config.constructor = Deft.mixin.Controllable.createMixinInterceptor( config.constructor )
-
 			clazz.override(
-				constructor: Deft.mixin.Controllable.createControllerInterceptor()
+				constructor: Deft.mixin.Controllable.createMixinInterceptor()
 			)
 
 			return true
@@ -46,81 +38,43 @@ Ext.define( 'Deft.mixin.Controllable',
 		MIXIN_COMPLETED_KEY: "$controlled"
 		PROPERTY_NAME: "controller"
 		CONFIG_PROPERTY_NAME: "controllerConfig"
+		CONTROLLER_GETTER_NAME: "getController"
 
 
-		createControllerInterceptor: ->
+		###*
+		@private
+		###
+		createMixinInterceptor: ->
 			return ( config = {} ) ->
-				if @ instanceof Ext.ClassManager.get( 'Ext.Component' ) and not @$controlled
+
+				# TODO: Check with John on using statics. Idea is to make it easy to change these if it ever becomes necessary.
+				mixinCompletedKey = Deft.mixin.Controllable.MIXIN_COMPLETED_KEY
+				controllerName = Deft.mixin.Controllable.PROPERTY_NAME
+				configPropertyName = Deft.mixin.Controllable.CONFIG_PROPERTY_NAME
+				controllerGetterName = Deft.mixin.Controllable.CONTROLLER_GETTER_NAME
+
+				if @ instanceof Ext.ClassManager.get( 'Ext.Component' ) and not @[ mixinCompletedKey ]
 					try
-						controller = Ext.create( @controller, config.controllerConfig || @controllerConfig || {} )
+						controller = Ext.create( @[ controllerName ], config[ configPropertyName ] || @[ configPropertyName ] || {} )
 					catch error
 						# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
 						Deft.Logger.warn( "Error initializing view controller: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
 						throw error
 
-					if @getController is undefined
-						@getController = ->
+					if @[ controllerGetterName ] is undefined
+						@[ controllerGetterName ] = ->
 							return controller
 
-					@$controlled = true
+					Deft.mixin.Controllable.afterMixinProcessed( @ )
 
-					@callParent( arguments )
+					# TODO: These calls based on Ext JS version can revert to @callParent() if we end up dropping 4.0.x support...
+					@[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
 
 					controller.controlView( @ )
 
 					return @
 
-				return @callParent( arguments )
-
-
-		###*
-		@private
-		###
-		createMixinInterceptor: ( targetMethod ) ->
-			return Ext.Function.createInterceptor( targetMethod, ->
-				Deft.mixin.Controllable.constructorInterceptor( @, arguments )
-				return true
-			)
-
-
-		###*
-		@private
-		###
-		createAfterMixinInterceptor: ( target ) ->
-			return Ext.Function.interceptAfter( target, "constructor", ->
-				@getController().controlView( this )
-				return true
-			)
-
-
-
-		###*
-		@private
-		###
-		constructorInterceptor: ( target, targetInstanceConstructorArguments ) ->
-			# Only continue of the target hasn't already been processed for injections.
-			if( target instanceof Ext.ClassManager.get( 'Ext.Component' ) )
-				if( not target[ @MIXIN_COMPLETED_KEY ] )
-					controllerName = target[ @PROPERTY_NAME ]
-					config = {}
-					try
-						controller = Ext.create( controllerName, config.controllerConfig || target[ @CONFIG_PROPERTY_NAME ] || {} )
-					catch error
-						# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
-						Deft.Logger.warn( "Error initializing view controller: an error occurred while creating an instance of the specified controller: '#{ controllerName }'." )
-						throw error
-
-					if target.getController is undefined
-						target.getController = ->
-							return controller
-
-					@afterMixinProcessed( target )
-
-					#@callOverridden( arguments )
-
-					#controller.controlView( target )
-
-			return true
+				return @[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
 
 
 		###*
@@ -128,7 +82,6 @@ Ext.define( 'Deft.mixin.Controllable',
 		###
 		afterMixinProcessed: ( target ) ->
 			target[ @MIXIN_COMPLETED_KEY ] = true
-			console.log( "Controllable afterMixinProcessed()" )
 			return
 
 
