@@ -14,13 +14,15 @@ describe( 'Deft.mixin.Controllable', ->
 			
 			Ext.define( 'ExampleView',
 				extend: 'Ext.Container'
+				mixins: [ 'Deft.mixin.Controllable' ]
 				controller: 'ExampleViewController'
 			)
 			
 			constructorSpy = sinon.spy( ExampleViewController.prototype, 'constructor' )
 			
 			exampleViewInstance = Ext.create( 'ExampleView' )
-			
+
+			console.log( "About to run expectations on constructor." )
 			expect( constructorSpy ).to.be.calledOnce
 			exampleViewControllerInstance = constructorSpy.lastCall.thisValue
 			expect( exampleViewControllerInstance.getView() ).to.equal( exampleViewInstance )
@@ -34,6 +36,7 @@ describe( 'Deft.mixin.Controllable', ->
 			
 			Ext.define( 'ExampleView',
 				extend: 'Ext.Container'
+				mixins: [ 'Deft.mixin.Controllable' ]
 				controller: 'ExampleViewController'
 				
 				constructor: ( config ) ->
@@ -61,6 +64,7 @@ describe( 'Deft.mixin.Controllable', ->
 			Ext.define( 'ExampleView',
 				extend: 'Ext.Container'
 				alias: 'widget.ExampleView'
+				mixins: [ 'Deft.mixin.Controllable' ]
 				controller: 'ExampleViewController'
 			)
 			
@@ -86,6 +90,7 @@ describe( 'Deft.mixin.Controllable', ->
 			
 			Ext.define( 'ExampleView',
 				extend: 'Ext.Container'
+				mixins: [ 'Deft.mixin.Controllable' ]
 				controller: 'ExampleViewController'
 			)
 			
@@ -100,7 +105,7 @@ describe( 'Deft.mixin.Controllable', ->
 			return
 		)
 
-		specify( 'only creates and attaches the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified', ->
+		specify( 'only creates and attaches the most specific controller (i.e. the controller specified for the subclass) in an inheritance tree where multiple controllers are specified, and Controllable mixin is inherited', ->
 			Ext.define( 'BaseViewController',
 				extend: 'Deft.mvc.ViewController'
 				
@@ -117,6 +122,7 @@ describe( 'Deft.mixin.Controllable', ->
 			
 			Ext.define( 'BaseView',
 				extend: 'Ext.Container'
+				mixins: [ 'Deft.mixin.Controllable' ]
 				controller: 'BaseViewController'
 				
 				constructor: ->
@@ -173,6 +179,7 @@ describe( 'Deft.mixin.Controllable', ->
 			
 			Ext.define( 'BaseView',
 				extend: 'Ext.Container'
+				mixins: [ 'Deft.mixin.Controllable' ]
 				controller: 'BaseViewController'
 				
 				constructor: ->
@@ -226,11 +233,13 @@ describe( 'Deft.mixin.Controllable', ->
 			
 			Ext.define( 'BaseView',
 				extend: 'Ext.Container'
+				mixins: [ 'Deft.mixin.Controllable' ]
 				controller: 'BaseViewController'
 			)
 			
 			Ext.define( 'ExtendedView',
 				extend: 'BaseView'
+				mixins: [ 'Deft.mixin.Controllable' ]
 				controller: 'ExtendedViewController'
 				
 				constructor: ->
@@ -272,6 +281,7 @@ describe( 'Deft.mixin.Controllable', ->
 			
 			Ext.define( 'ExampleView',
 				extend: 'Ext.Container'
+				mixins: [ 'Deft.mixin.Controllable' ]
 				controller: 'ExampleErrorThrowingViewController'
 			)
 			

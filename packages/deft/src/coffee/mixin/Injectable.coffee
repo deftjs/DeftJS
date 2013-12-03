@@ -19,19 +19,10 @@ Ext.define( 'Deft.mixin.Injectable',
 	###
 	onClassMixedIn: ( target ) ->
 
-		# Override mixin target constructor to merge superclass inject configs and perform injections.
-		target::constructor = Ext.Function.createInterceptor( target::constructor, ->
-			Deft.mixin.Injectable.constructorInterceptor( @, arguments )
-			return true
-		)
+		target::constructor = @createMixinInterceptor( target::constructor )
 
-		# Since the above mixin target constructor interceptor will not be fired before subclass
-		# constructors are called, ensure constructors in subclasses are also intercepted.
 		target.onExtended( ( clazz, config ) ->
-			config.constructor = Ext.Function.createInterceptor( config.constructor, ->
-				Deft.mixin.Injectable.constructorInterceptor( @, arguments )
-				return true
-			)
+			config.constructor = Deft.mixin.Injectable.createMixinInterceptor( config.constructor )
 			return true
 		)
 
@@ -47,6 +38,16 @@ Ext.define( 'Deft.mixin.Injectable',
 		###*
 		@private
 		###
+		createMixinInterceptor: ( targetMethod ) ->
+			return Ext.Function.createInterceptor( targetMethod, ->
+				Deft.mixin.Injectable.constructorInterceptor( @, arguments )
+				return true
+			)
+
+
+		###*
+		@private
+		###
 		constructorInterceptor: ( target, targetInstanceConstructorArguments ) ->
 			# Only continue of the target hasn't already been processed for injections.
 			if( not target[ @MIXIN_COMPLETED_KEY ] )
@@ -55,7 +56,7 @@ Ext.define( 'Deft.mixin.Injectable',
 				Deft.Injector.inject( injectConfig, target, targetInstanceConstructorArguments, false )
 				@afterMixinProcessed( target )
 
-			return
+			return true
 
 
 		###*
