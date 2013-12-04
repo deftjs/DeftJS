@@ -36,7 +36,7 @@ Ext.define( 'Deft.mixin.Injectable',
 
 
 		###*
-		@private
+		* @private
 		###
 		createMixinInterceptor: ( targetMethod ) ->
 			return Ext.Function.createInterceptor( targetMethod, ->
@@ -46,7 +46,7 @@ Ext.define( 'Deft.mixin.Injectable',
 
 
 		###*
-		@private
+		* @private
 		###
 		constructorInterceptor: ( target, targetInstanceConstructorArguments ) ->
 			# Only continue of the target hasn't already been processed for injections.
@@ -60,9 +60,9 @@ Ext.define( 'Deft.mixin.Injectable',
 
 
 		###*
-  	* @private
+		* @private
 		* Called by DeftMixinUtils.mergeSuperclassProperty(). Allows each mixin to define its own
-  	* customized subclass/superclass merge logic.
+		* customized subclass/superclass merge logic.
 		###
 		propertyMergeHandler: ( mergeTarget, mergeSource ) ->
 			# Convert a String or Array of Strings specified in source config into Objects.

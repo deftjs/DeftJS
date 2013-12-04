@@ -1,3 +1,6 @@
+###*
+* Utility class to support Deft JS mixins.
+###
 Ext.define( "Deft.util.DeftMixinUtils",
 
 	statics:
@@ -14,7 +17,7 @@ Ext.define( "Deft.util.DeftMixinUtils",
 				isRecursionStart = true
 
 			if( target?.superclass? )
-				wasMerged = @mergeSuperclassProperty( target.superclass, propertyName, mergeFn, currentResult )
+				currentResult = @mergeSuperclassProperty( target.superclass, propertyName, mergeFn, currentResult )
 
 			if( target?[ propertyName ]? )
 				currentResult = mergeFn( currentResult, target[ propertyName ] )

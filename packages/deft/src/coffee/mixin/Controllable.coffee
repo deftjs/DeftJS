@@ -11,6 +11,7 @@ Ext.define( 'Deft.mixin.Controllable',
 		'Ext.Component'
 		'Deft.core.Class'
 		'Deft.log.Logger'
+		'Deft.util.DeftMixinUtils'
 	]
 	
 	###*
@@ -42,7 +43,7 @@ Ext.define( 'Deft.mixin.Controllable',
 
 
 		###*
-		@private
+		* @private
 		###
 		createMixinInterceptor: ->
 			return ( config = {} ) ->
@@ -78,7 +79,7 @@ Ext.define( 'Deft.mixin.Controllable',
 
 
 		###*
-		@private
+		* @private
 		###
 		afterMixinProcessed: ( target ) ->
 			target[ @MIXIN_COMPLETED_KEY ] = true
