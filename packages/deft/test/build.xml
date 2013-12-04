@@ -13,7 +13,7 @@
         <!-- Removing 4.0.7 since it does not support onExtended().
 		<echo message="Ext JS 4.0.7" />
 		<exec executable="karma" failonerror="true">
-			<arg line="start karma/ext/4.0.7.conf.js --single-run --browsers ${karma.browsers}" />
+			<arg line="start karma/ext/4.0.7.conf.js - -single-run - -browsers ${karma.browsers}" />
 		</exec>
         -->
 
