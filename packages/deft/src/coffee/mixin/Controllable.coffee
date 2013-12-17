@@ -56,10 +56,10 @@ Ext.define( 'Deft.mixin.Controllable',
 
 				if @ instanceof Ext.ClassManager.get( 'Ext.Component' ) and not @[ mixinCompletedKey ]
 					try
-						controller = Ext.create( @[ controllerName ], config[ configPropertyName ] || @[ configPropertyName ] || {} )
+						controller = Ext.create( config[ controllerName ] || @[ controllerName ], config[ configPropertyName ] || @[ configPropertyName ] || {} )
 					catch error
 						# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
-						Deft.Logger.warn( "Error initializing view controller: an error occurred while creating an instance of the specified controller: '#{ @controller }'." )
+						Deft.Logger.warn( "Error initializing view controller: an error occurred while creating an instance of the specified controller: '#{ config[ controllerName ] || @[ controllerName ] }'." )
 						throw error
 
 					if @[ controllerGetterName ] is undefined

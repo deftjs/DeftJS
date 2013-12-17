@@ -29,7 +29,7 @@ describe( 'Deft.mixin.Controllable', ->
 			return
 		)
 		
-		specify( 'creates an instance of the view controller specified by the target view `controller` class annotation and configures it with a reference to the target view instance when an instance of the target view is created', ->
+		specify( 'creates an instance of the view controller passed via `controller` in the view config object and configures it with a reference to the target view instance when an instance of the target view is created', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
 			)
@@ -37,16 +37,39 @@ describe( 'Deft.mixin.Controllable', ->
 			Ext.define( 'ExampleView',
 				extend: 'Ext.Container'
 				mixins: [ 'Deft.mixin.Controllable' ]
-				controller: 'ExampleViewController'
-				
+
 				constructor: ( config ) ->
 					@callParent( arguments )
 			)
 			
 			constructorSpy = sinon.spy( ExampleViewController.prototype, 'constructor' )
 			
-			exampleViewInstance = Ext.create( 'ExampleView' )
+			exampleViewInstance = Ext.create( 'ExampleView', { controller: 'ExampleViewController' } )
 			
+			expect( constructorSpy ).to.be.calledOnce
+			exampleViewControllerInstance = constructorSpy.lastCall.thisValue
+			expect( exampleViewControllerInstance.getView() ).to.equal( exampleViewInstance )
+			return
+		)
+
+		specify( 'creates an instance of the view controller passed via `controller` in the view config object, overriding the view\'s `controller` class annotation, and configures it with a reference to the target view instance when an instance of the target view is created', ->
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+			)
+
+			Ext.define( 'ExampleView',
+				extend: 'Ext.Container'
+				mixins: [ 'Deft.mixin.Controllable' ]
+				controller: 'SomeOtherViewController'
+
+				constructor: ( config ) ->
+					@callParent( arguments )
+			)
+
+			constructorSpy = sinon.spy( ExampleViewController.prototype, 'constructor' )
+
+			exampleViewInstance = Ext.create( 'ExampleView', { controller: 'ExampleViewController' } )
+
 			expect( constructorSpy ).to.be.calledOnce
 			exampleViewControllerInstance = constructorSpy.lastCall.thisValue
 			expect( exampleViewControllerInstance.getView() ).to.equal( exampleViewInstance )
