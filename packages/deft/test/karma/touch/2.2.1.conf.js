@@ -17,16 +17,20 @@ module.exports = function(config) {
 			'http://cdn.sencha.io/touch/sencha-touch-2.2.1/sencha-touch-all.js',
 			'build/deft-debug.js',
 
-			'test/lib/mocha-as-promised-1.3.0/mocha-as-promised.js',
 			'test/lib/chai-1.8.1/chai.js',
-			'test/lib/chai-as-promised-3.3.0/chai-as-promised.js',
-			'test/lib/sinon-1.6.0/sinon.js',
+			'test/lib/sinon-1.7.3/sinon.js',
 			'test/lib/sinon-chai-2.4.0/sinon-chai.js',
 			'test/lib/sinon-sencha-1.0.0/sinon-sencha.js',
 
 			'test/support/browser.js',
+			'test/support/custom-assertions.js',
+
+			'test/lib/mocha-as-promised-2.0.0/mocha-as-promised.js',
+			'test/lib/chai-as-promised-4.1.0/chai-as-promised.js',
+
 			'test/DeftJS-Promise-adapter.js',
 
+			'test/js/custom-assertions.js',
 			'test/js/log/Logger.js',
 			'test/js/util/Function.js',
 			'test/js/ioc/Injector.js',
