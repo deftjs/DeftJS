@@ -23,6 +23,8 @@ describe( 'Deft.mixin.Injectable', ->
 
 		Deft.Injector.inject.restore()
 
+		delete ExampleClass
+
 		return
 	)
 
@@ -51,6 +53,9 @@ describe( 'Deft.mixin.Injectable', ->
 		expect( injectStub ).to.be.calledOnce
 
 		Deft.Injector.inject.restore()
+
+		delete ExampleClass
+		delete ExampleSubclass
 
 		return
 	)
@@ -88,6 +93,10 @@ describe( 'Deft.mixin.Injectable', ->
 
 		Deft.Injector.inject.restore()
 
+		delete ExampleClass
+		delete ExampleSubclass
+		delete ExampleSubclass2
+
 		return
 	)
 
@@ -119,6 +128,10 @@ describe( 'Deft.mixin.Injectable', ->
 		expect( injectStub ).to.be.calledOnce
 
 		Deft.Injector.inject.restore()
+
+		delete ExampleClass
+		delete ExampleSubclass
+		delete ExampleSubclass2
 
 		return
 	)
@@ -154,6 +167,9 @@ describe( 'Deft.mixin.Injectable', ->
 
 		Deft.Injector.inject.restore()
 
+		delete ExampleClass
+		delete ExampleSubclass
+		delete ExampleSubclass2
 
 		return
 	)
@@ -186,6 +202,10 @@ describe( 'Deft.mixin.Injectable', ->
 
 		Deft.Injector.inject.restore()
 
+		delete ExampleClass
+		delete ExampleSubclass
+		delete ExampleSubclass2
+
 		return
 	)
 
@@ -217,6 +237,10 @@ describe( 'Deft.mixin.Injectable', ->
 
 		Deft.Injector.inject.restore()
 
+		delete ExampleClass
+		delete ExampleSubclass
+		delete ExampleSubclass2
+
 		return
 	)
 
@@ -246,6 +270,9 @@ describe( 'Deft.mixin.Injectable', ->
 		expect( injectStub ).to.be.calledOnce
 
 		Deft.Injector.inject.restore()
+
+		delete ExampleClass
+		delete ExampleSubclass
 
 		return
 	)
@@ -278,6 +305,9 @@ describe( 'Deft.mixin.Injectable', ->
 		expect( injectStub ).to.be.calledOnce
 
 		Deft.Injector.inject.restore()
+
+		delete ExampleClass
+		delete ExampleSubclass
 
 		return
 	)
@@ -316,6 +346,10 @@ describe( 'Deft.mixin.Injectable', ->
 		expect( injectStub ).to.be.calledOnce
 
 		Deft.Injector.inject.restore()
+
+		delete ExampleClass
+		delete ExampleSubclass
+		delete ExampleSubclass2
 
 		return
 	)

@@ -1,7 +1,7 @@
 window.global = window;
+window.Test = {};
 mocha.setup({
-   ui : "bdd",
-   ignoreLeaks : false
+	ui: "bdd"
 });
 
 chai.should();

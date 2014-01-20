@@ -1081,7 +1081,7 @@ describe( 'Deft.promise.Promise', ->
 				promise.should.be.an.instanceof( Deft.Promise )
 				promise = promise.then(
 					( value ) -> 
-						expect( now() - start ).to.be.closeTo( 100, 50 )
+						expect( now() - start ).to.be.closeTo( 100, 100 )
 						return value
 				)
 				return promise.should.eventually.equal( undefined )

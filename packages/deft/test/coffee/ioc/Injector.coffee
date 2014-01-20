@@ -1488,7 +1488,7 @@ describe( 'Deft.ioc.Injector', ->
 			}
 			{
 				type: 'Function'
-				value: ->
+				value: -> return
 			}
 		]
 
@@ -1840,7 +1840,7 @@ describe( 'Deft.ioc.Injector', ->
 
 			Ext.define( 'InjectableCircularDependencyClass1',
 				extend: 'SimpleClass'
-				inject: [ "simpleClass", "injectableCircularDependencyClass2" ]
+				inject: [ 'simpleClass', 'injectableCircularDependencyClass2' ]
 
 				constructor: ( config ) ->
 					return @callParent( arguments )
@@ -1848,7 +1848,7 @@ describe( 'Deft.ioc.Injector', ->
 
 			Ext.define( 'InjectableCircularDependencyClass2',
 				extend: 'SimpleClass'
-				inject: [ "injectableCircularDependencyClass3", "simpleClass" ]
+				inject: [ 'injectableCircularDependencyClass3', 'simpleClass' ]
 
 				constructor: ( config ) ->
 					return @callParent( arguments )
@@ -1856,7 +1856,7 @@ describe( 'Deft.ioc.Injector', ->
 
 			Ext.define( 'InjectableCircularDependencyClass3Parent',
 				extend: 'SimpleClass'
-				inject: [ "injectableCircularDependencyClass1" ]
+				inject: [ 'injectableCircularDependencyClass1' ]
 
 				constructor: ( config ) ->
 					return @callParent( arguments )
@@ -1864,7 +1864,7 @@ describe( 'Deft.ioc.Injector', ->
 
 			Ext.define( 'InjectableCircularDependencyClass3',
 				extend: 'InjectableCircularDependencyClass3Parent'
-				inject: [ "simpleClass" ]
+				inject: [ 'simpleClass' ]
 
 				constructor: ( config ) ->
 					return @callParent( arguments )
@@ -1872,10 +1872,10 @@ describe( 'Deft.ioc.Injector', ->
 
 			specify( 'should throw an error when injecting configured circular dependencies into properties for a given class instance', ->
 				Deft.Injector.configure(
-					simpleClass: "SimpleClass"
-					injectableCircularDependencyClass1: "InjectableCircularDependencyClass1"
-					injectableCircularDependencyClass2: "InjectableCircularDependencyClass2"
-					injectableCircularDependencyClass3: "InjectableCircularDependencyClass3"
+					simpleClass: 'SimpleClass'
+					injectableCircularDependencyClass1: 'InjectableCircularDependencyClass1'
+					injectableCircularDependencyClass2: 'InjectableCircularDependencyClass2'
+					injectableCircularDependencyClass3: 'InjectableCircularDependencyClass3'
 				)
 
 				Ext.define( 'InjectableTargetClassForCircularDependencies',
@@ -1890,7 +1890,9 @@ describe( 'Deft.ioc.Injector', ->
 				try
 					injectableSimpleClassForCircularDependencies = Ext.create( 'InjectableTargetClassForCircularDependencies' )
 				catch error
-					expect( error.message.lastIndexOf( "circular dependency" ) ).to.be.greaterThan( -1 )
+					expect( error.message.lastIndexOf( 'circular dependency' ) ).to.be.greaterThan( -1 )
+
+				delete InjectableTargetClassForCircularDependencies
 
 				return
 			)
@@ -2118,6 +2120,9 @@ describe( 'Deft.ioc.Injector', ->
 				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleClassInstance, exampleConfig, 'second argument', 'third argument' )
 				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance, exampleConfig, 'second argument', 'third argument' )
 
+				delete ExampleClassWithInject
+
+				return
 			)
 
 			specify( 'should execute in the instance context and pass the initial config of the instance being injected when lazily resolving a dependency with a factory function', ->

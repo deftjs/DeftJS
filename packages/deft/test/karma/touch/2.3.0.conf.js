@@ -14,7 +14,7 @@ module.exports = function(config) {
 
 		// list of files / patterns to load in the browser
 		files: [
-			'http://cdn.sencha.io/ext-4.1.0-gpl/ext-all.js',
+			'http://cdn.sencha.io/touch/sencha-touch-2.3.0/sencha-touch-all.js',
 			'build/deft-debug.js',
 
 			'test/lib/mocha-as-promised-1.3.0/mocha-as-promised.js',
@@ -49,7 +49,7 @@ module.exports = function(config) {
 
 		coverageReporter: {
 			type: 'html',
-			dir: 'test/coverage/ext/4.1.0'
+			dir: 'test/coverage/touch/2.2.1'
 		},
 
 		// test results reporter to use

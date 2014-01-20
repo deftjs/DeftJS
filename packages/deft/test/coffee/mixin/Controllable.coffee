@@ -24,6 +24,10 @@ describe( 'Deft.mixin.Controllable', ->
 			expect( constructorSpy ).to.be.calledOnce
 			exampleViewControllerInstance = constructorSpy.lastCall.thisValue
 			expect( exampleViewControllerInstance.getView() ).to.equal( exampleViewInstance )
+
+			delete ExampleViewController
+			delete ExampleView
+
 			return
 		)
 		
@@ -47,6 +51,10 @@ describe( 'Deft.mixin.Controllable', ->
 			expect( constructorSpy ).to.be.calledOnce
 			exampleViewControllerInstance = constructorSpy.lastCall.thisValue
 			expect( exampleViewControllerInstance.getView() ).to.equal( exampleViewInstance )
+
+			delete ExampleViewController
+			delete ExampleView
+
 			return
 		)
 		
@@ -75,7 +83,10 @@ describe( 'Deft.mixin.Controllable', ->
 			exampleViewControllerInstance = constructorSpy.lastCall.thisValue
 			expect( exampleViewControllerInstance.getView() ).to.equal( exampleViewInstance )
 			expect( exampleViewControllerInstance.getValue() ).to.equal( 'expected value' )
-			
+
+			delete ExampleViewController
+			delete ExampleView
+
 			return
 		)
 		
@@ -96,6 +107,9 @@ describe( 'Deft.mixin.Controllable', ->
 			expect( constructorSpy ).to.be.calledOnce
 			exampleViewControllerInstance = constructorSpy.lastCall.thisValue
 			expect( exampleViewInstance.getController() ).to.equal( exampleViewControllerInstance )
+
+			delete ExampleViewController
+			delete ExampleView
 
 			return
 		)
@@ -152,7 +166,12 @@ describe( 'Deft.mixin.Controllable', ->
 			extendedViewControllerInstance = extendedViewControllerConstructorSpy.lastCall.thisValue
 			expect( extendedViewControllerInstance ).to.equal( baseViewControllerInstance )
 			expect( extendedViewInstance.getController() ).to.equal( extendedViewControllerInstance )
-			
+
+			delete BaseViewController
+			delete ExtendedViewController
+			delete BaseView
+			delete ExtendedView
+
 			return
 		)
 
@@ -205,7 +224,12 @@ describe( 'Deft.mixin.Controllable', ->
 			extendedViewControllerInstance = extendedViewControllerConstructorSpy.lastCall.thisValue
 			expect( extendedViewControllerInstance ).to.equal( baseViewControllerInstance )
 			expect( extendedViewInstance.getController() ).to.equal( extendedViewControllerInstance )
-			
+
+			delete BaseViewController
+			delete ExtendedViewController
+			delete BaseView
+			delete ExtendedView
+
 			return
 		)
 		
@@ -258,7 +282,12 @@ describe( 'Deft.mixin.Controllable', ->
 			extendedViewControllerInstance = extendedViewControllerConstructorSpy.lastCall.thisValue
 			expect( extendedViewControllerInstance ).to.equal( baseViewControllerInstance )
 			expect( extendedViewInstance.getController() ).to.equal( extendedViewControllerInstance )
-			
+
+			delete BaseViewController
+			delete ExtendedViewController
+			delete BaseView
+			delete ExtendedView
+
 			return
 		)
 		
@@ -276,7 +305,10 @@ describe( 'Deft.mixin.Controllable', ->
 			)
 			
 			expect( -> Ext.create( 'ExampleView' ) ).to.throw( Error, 'Error thrown by \`ExampleErrorThrowingViewController\`.' )
-			
+
+			delete ExampleErrorThrowingViewController
+			delete ExampleView
+
 			return
 		)
 
