@@ -94,9 +94,9 @@ Ext.define( 'Deft.mixin.Observer',
 				mixinCompletedKey = Deft.mixin.Observer.MIXIN_COMPLETED_KEY
 				propertyName = Deft.mixin.Observer.PROPERTY_NAME
 
-				if not @observe? then @observe = {}
+				if not @[ propertyName ]? then @[ propertyName ] = {}
 
-				if( not @[ mixinCompletedKey ] and @[ propertyName ] and Ext.Object.getSize( @observe ) > 0 )
+				if( not @[ mixinCompletedKey ] and Ext.Object.getSize( @[ propertyName ] ) > 0 )
 					Deft.util.DeftMixinUtils.mergeSuperclassProperty( @, propertyName, Deft.mixin.Observer.propertyMergeHandler )
 					Deft.mixin.Observer.afterMixinProcessed( @ )
 
@@ -109,11 +109,11 @@ Ext.define( 'Deft.mixin.Observer',
 
 
 		###*
-  	* @private
+		* @private
 		* Called by DeftMixinUtils.mergeSuperclassProperty(). Allows each mixin to define its own
-  	* customized subclass/superclass merge logic.
-  	*
-  	* Merges child and parent observers into a single object. This differs from a normal object merge because
+		* customized subclass/superclass merge logic.
+		*
+		* Merges child and parent observers into a single object. This differs from a normal object merge because
 		* a given observer target and event can potentially have multiple handlers declared in different parent or
 		* child classes. It transforms an event handler value into an array of values, and merges the arrays of handlers
 		* from child to parent. This maintains the handlers even if both parent and child classes have handlers for the
@@ -164,10 +164,10 @@ Ext.define( 'Deft.mixin.Observer',
 
 
 		###*
-  	* @private
+		* @private
 		* Converts an observe configuration that use an array of event configuration objects into object keys for
-  	* event name, containing an array of configuration objects.
-  	###
+		* event name, containing an array of configuration objects.
+		###
 		convertConfigArray: ( observeConfig, eventOptionNames ) ->
 			for observeTarget, observeEvents of observeConfig
 				if( Ext.isArray( observeEvents ) )
