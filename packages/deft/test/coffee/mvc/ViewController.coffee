@@ -136,6 +136,122 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			return
 		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging simple inherited control blocks', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+
+			return
+		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging complex inherited control blocks', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					someComponent:
+						selector: '#example'
+						listeners:
+							exampleevent2:
+								fn: 'onExampleViewExampleEvent2Parent'
+								single: true
+
+				behaviors: [ 'ParentBehavior', 'DupeBehavior' ]
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					someComponent:
+						selector: '#example'
+						listeners:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				behaviors: [ 'ChildBehavior', 'DupeBehavior' ]
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+			expect( hasListener( viewController.getSomeComponent(), 'exampleevent2' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+			viewController.getSomeComponent().fireEvent( 'exampleevent2', 'expected value 2' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			return
+		)
 		
 		specify( 'attaches view controller scoped event listeners to events for a component view', ->
 			Ext.define( 'ExampleViewController',
