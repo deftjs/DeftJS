@@ -136,19 +136,21 @@ Next, define the ViewController:
 
 Ext.define('Deft.mvc.ViewController', {
   alternateClassName: ['Deft.ViewController'],
-  requires: ['Deft.core.Class', 'Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mvc.Observer'],
+  mixins: ['Deft.mixin.Observer'],
+  requires: ['Deft.core.Class', 'Deft.log.Logger', 'Deft.mvc.ComponentSelector', 'Deft.mixin.Observer', 'Deft.mvc.Observer', 'Deft.util.DeftMixinUtils'],
   config: {
 <span id='Deft-mvc-ViewController-cfg-view'>    /**
 </span>    		* View controlled by this ViewController.
     */
 
-    view: null
-  },
-<span id='Deft-mvc-ViewController-property-observe'>  /**
-</span>  	* Observers automatically created and removed by this ViewController.
-  */
+    view: null,
+<span id='Deft-mvc-ViewController-cfg-behaviorHosts'>    /**
+</span>    	* @private
+    		* Associated ViewControllers to supply additional behavior.
+    */
 
-  observe: {},
+    behaviorHosts: null
+  },
 <span id='Deft-mvc-ViewController-method-constructor'>  constructor: function(config) {
 </span>    if (config == null) {
       config = {};
@@ -157,11 +159,14 @@ Ext.define('Deft.mvc.ViewController', {
       this.controlView(config.view);
     }
     this.initConfig(config);
-    if (Ext.Object.getSize(this.observe) &gt; 0) {
-      this.createObservers();
-    }
+    this.createObservers();
     return this;
   },
+<span id='Deft-mvc-ViewController-method-init'>  /**
+</span>  	* Initialize the ViewController
+  */
+
+  init: function() {},
 <span id='Deft-mvc-ViewController-method-controlView'>  /**
 </span>  	* @protected
   */
@@ -188,17 +193,109 @@ Ext.define('Deft.mvc.ViewController', {
           });
         }
       }
+      this.createBehaviors();
     } else {
       Ext.Error.raise({
         msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.'
       });
     }
   },
-<span id='Deft-mvc-ViewController-method-init'>  /**
-</span>  	* Initialize the ViewController
+<span id='Deft-mvc-ViewController-method-createBehaviors'>  /**
+</span>  	* @protected
   */
 
-  init: function() {},
+  createBehaviors: function() {
+    var alias, clazz, _ref, _results;
+    this.behaviorHosts = {};
+    _ref = this.behaviors;
+    _results = [];
+    for (alias in _ref) {
+      clazz = _ref[alias];
+      _results.push(this.addBehavior(alias, clazz));
+    }
+    return _results;
+  },
+<span id='Deft-mvc-ViewController-method-destroyBehaviors'>  /**
+</span>  	* @protected
+  */
+
+  destroyBehaviors: function() {
+    var alias, instance, _ref, _results;
+    _ref = this.behaviorHosts;
+    _results = [];
+    for (alias in _ref) {
+      instance = _ref[alias];
+      _results.push(this.removeBehavior(alias));
+    }
+    return _results;
+  },
+<span id='Deft-mvc-ViewController-method-addBehavior'>  /**
+</span>   *	Add a new view controller behavior association to a view controller.
+   * @param {String} alias The alias for the new behavior host
+   * @param {String} class The class name of the view controller that will supply the additional behavior.
+  */
+
+  addBehavior: function(alias, clazz) {
+    var error, initialClass, isRecursionStart, newHost, stackMessage;
+    if ((this.behaviorHosts[alias] != null)) {
+      Deft.Logger.warn(&quot;The specified behavior alias '&quot; + alias + &quot;' already exists.&quot;);
+      return;
+    }
+    isRecursionStart = false;
+    if (Deft.mvc.ViewController.behaviorCreationStack.length === 0) {
+      isRecursionStart = true;
+    }
+    try {
+      if (!Ext.Array.contains(Deft.mvc.ViewController.behaviorCreationStack, Ext.getClassName(this))) {
+        Deft.mvc.ViewController.behaviorCreationStack.push(Ext.getClassName(this));
+      } else {
+        Deft.mvc.ViewController.behaviorCreationStack.push(Ext.getClassName(this));
+        initialClass = Deft.mvc.ViewController.behaviorCreationStack[0];
+        stackMessage = Deft.mvc.ViewController.behaviorCreationStack.join(&quot; -&gt; &quot;);
+        Deft.mvc.ViewController.behaviorCreationStack = [];
+        Ext.Error.raise({
+          msg: &quot;Error creating behaviors for '&quot; + initialClass + &quot;'. A circular dependency exists in its behaviors: &quot; + stackMessage
+        });
+      }
+      newHost = Ext.create(clazz);
+      newHost.controlView(this.getView());
+      this.behaviorHosts[alias] = newHost;
+      if (isRecursionStart) {
+        return Deft.mvc.ViewController.behaviorCreationStack = [];
+      }
+    } catch (_error) {
+      error = _error;
+      Deft.Logger.warn(&quot;Error initializing associated view controller: an error occurred while creating an instance of the specified controller: '&quot; + clazz + &quot;'.&quot;);
+      Deft.mvc.ViewController.behaviorCreationStack = [];
+      throw error;
+    }
+  },
+<span id='Deft-mvc-ViewController-method-removeBehavior'>  /**
+</span>  	*	Removes and destroys a view controller behavior association for this view controller.
+   * @param {String} alias The alias for the behavior host to remove
+  */
+
+  removeBehavior: function(alias) {
+    var error, _ref;
+    if (this.behaviorHosts[alias] == null) {
+      Deft.Logger.warn(&quot;The specified behavior alias '&quot; + alias + &quot;' cannot be removed because the alias does not exist.&quot;);
+    }
+    try {
+      return (_ref = this.behaviorHosts[alias]) != null ? _ref.destroy() : void 0;
+    } catch (_error) {
+      error = _error;
+      Deft.Logger.warn(&quot;Error destroying associated view controller: an error occurred while destroying the associated controller with the alias '&quot; + alias + &quot;'.&quot;);
+      throw error;
+    }
+  },
+<span id='Deft-mvc-ViewController-method-getBehaviorHost'>  /**
+</span>   *	Locates a behavior host by alias.
+   * @param {String} alias The alias for the desired behavior instance
+  */
+
+  getBehaviorHost: function(alias) {
+    return this.behaviorHosts[alias];
+  },
 <span id='Deft-mvc-ViewController-method-destroy'>  /**
 </span>  	* Destroy the ViewController
   */
@@ -212,6 +309,7 @@ Ext.define('Deft.mvc.ViewController', {
       this.removeComponentSelector(selector);
     }
     this.removeObservers();
+    this.destroyBehaviors();
     return true;
   },
 <span id='Deft-mvc-ViewController-method-onViewInitialize'>  /**
@@ -392,54 +490,129 @@ Ext.define('Deft.mvc.ViewController', {
   getComponentSelector: function(selector) {
     return this.registeredComponentSelectors[selector];
   },
-<span id='Deft-mvc-ViewController-method-createObservers'>  /**
-</span>  	* @protected
-  */
-
-  createObservers: function() {
-    var events, target, _ref;
-    this.registeredObservers = {};
-    _ref = this.observe;
-    for (target in _ref) {
-      events = _ref[target];
-      this.addObserver(target, events);
-    }
-  },
-<span id='Deft-mvc-ViewController-method-addObserver'>  addObserver: function(target, events) {
-</span>    var observer;
-    observer = Ext.create('Deft.mvc.Observer', {
-      host: this,
-      target: target,
-      events: events
+<span id='Deft-mvc-ViewController-method-onClassExtended'>  onClassExtended: function(clazz, config) {
+</span>    clazz.override({
+      constructor: Deft.mvc.ViewController.mergeSubclassInterceptor()
     });
-    return this.registeredObservers[target] = observer;
+    return true;
   },
-<span id='Deft-mvc-ViewController-method-removeObservers'>  /**
-</span>  	* @protected
-  */
-
-  removeObservers: function() {
-    var observer, target, _ref;
-    _ref = this.registeredObservers;
-    for (target in _ref) {
-      observer = _ref[target];
-      observer.destroy();
-      delete this.registeredObservers[target];
+  statics: {
+<span id='Deft-mvc-ViewController-static-property-behaviorCreationStack'>    behaviorCreationStack: [],
+</span><span id='Deft-mvc-ViewController-static-method-mergeSubclassInterceptor'>    mergeSubclassInterceptor: function() {
+</span>      return function(config) {
+        var behaviorPropertyName, controlPropertyName;
+        if (config == null) {
+          config = {};
+        }
+        controlPropertyName = &quot;control&quot;;
+        behaviorPropertyName = &quot;behaviors&quot;;
+        if (this[controlPropertyName] == null) {
+          this[controlPropertyName] = {};
+        }
+        if (this[behaviorPropertyName] == null) {
+          this[behaviorPropertyName] = [];
+        }
+        if (Ext.Object.getSize(this[controlPropertyName]) &gt; 0) {
+          Deft.util.DeftMixinUtils.mergeSuperclassProperty(this, controlPropertyName, Deft.mvc.ViewController.controlMergeHandler);
+          Deft.util.DeftMixinUtils.mergeSuperclassProperty(this, behaviorPropertyName, Deft.mvc.ViewController.behaviorMergeHandler);
+          this[Deft.util.DeftMixinUtils.parentConstructorForVersion(this)](arguments);
+          return this;
+        }
+        return this[Deft.util.DeftMixinUtils.parentConstructorForVersion(this)](arguments);
+      };
+    },
+<span id='Deft-mvc-ViewController-static-method-controlMergeHandler'>    controlMergeHandler: function(originalParentControl, originalChildControl) {
+</span>      var childControl, matchedPostMergeParentTargetConfig, originalParentControlConfig, originalParentControlTarget, parentControl;
+      parentControl = Ext.isObject(originalParentControl) ? Ext.clone(originalParentControl) : {};
+      childControl = Ext.isObject(originalChildControl) ? Ext.clone(originalChildControl) : {};
+      parentControl = Ext.merge(parentControl, childControl);
+      for (originalParentControlTarget in originalParentControl) {
+        originalParentControlConfig = originalParentControl[originalParentControlTarget];
+        if (parentControl[originalParentControlTarget] != null) {
+          matchedPostMergeParentTargetConfig = parentControl[originalParentControlTarget];
+          if (originalParentControlConfig.selector === void 0 || matchedPostMergeParentTargetConfig.selector === originalParentControlConfig.selector) {
+            Deft.mvc.ViewController.detectReplacedListeners(matchedPostMergeParentTargetConfig, originalParentControlConfig, originalChildControl, originalParentControlTarget);
+          }
+        }
+      }
+      return parentControl;
+    },
+<span id='Deft-mvc-ViewController-static-method-detectReplacedListeners'>    detectReplacedListeners: function(matchedPostMergeParentTargetConfig, originalParentControlConfig, originalChildControl, originalParentControlTarget) {
+</span>      var matchedPostMergeListeners, normalizedConfig, originalListeners;
+      if (Deft.mvc.ViewController.areBothConfigsComplex(matchedPostMergeParentTargetConfig, originalParentControlConfig, originalChildControl, originalParentControlTarget)) {
+        matchedPostMergeListeners = matchedPostMergeParentTargetConfig.listeners;
+        originalListeners = originalParentControlConfig.listeners;
+        Deft.mvc.ViewController.applyReplacedListeners(originalListeners, matchedPostMergeListeners, function(listenerArray, eventConfig) {
+          listenerArray.push(Ext.clone(eventConfig));
+        });
+      } else if (Deft.mvc.ViewController.hasMixedConfigs(matchedPostMergeParentTargetConfig, originalParentControlConfig)) {
+        normalizedConfig = Deft.mvc.ViewController.normalizeMixedConfigs(originalParentControlConfig, matchedPostMergeParentTargetConfig);
+        Deft.mvc.ViewController.applyReplacedListeners(normalizedConfig.listeners, matchedPostMergeParentTargetConfig.listeners, function(listenerArray, eventConfig) {
+          listenerArray.push(Ext.clone(eventConfig));
+        });
+      } else {
+        Deft.mvc.ViewController.applyReplacedListeners(originalParentControlConfig, matchedPostMergeParentTargetConfig, function(listenerArray, eventConfig) {
+          listenerArray.push(Ext.clone(eventConfig));
+          return Ext.Array.unique(listenerArray);
+        });
+      }
+    },
+<span id='Deft-mvc-ViewController-static-method-applyReplacedListeners'>    applyReplacedListeners: function(originalControlConfig, postMergeControlConfig, applyFn) {
+</span>      var applyResult, dupeCheckListener, eventConfig, isDuplicateListener, thisEvent, _i, _len, _ref;
+      for (thisEvent in originalControlConfig) {
+        eventConfig = originalControlConfig[thisEvent];
+        if (postMergeControlConfig[thisEvent]) {
+          if (!Ext.isArray(postMergeControlConfig[thisEvent])) {
+            postMergeControlConfig[thisEvent] = [postMergeControlConfig[thisEvent]];
+          }
+          isDuplicateListener = false;
+          _ref = postMergeControlConfig[thisEvent];
+          for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+            dupeCheckListener = _ref[_i];
+            if (dupeCheckListener === eventConfig || ((dupeCheckListener.fn !== void 0 || eventConfig.fn !== void 0) &amp;&amp; dupeCheckListener.fn === eventConfig.fn)) {
+              isDuplicateListener = true;
+              break;
+            }
+          }
+          if (!isDuplicateListener) {
+            applyResult = applyFn(postMergeControlConfig[thisEvent], eventConfig);
+            if (applyResult !== void 0) {
+              postMergeControlConfig[thisEvent] = applyResult;
+            }
+          }
+        }
+      }
+    },
+<span id='Deft-mvc-ViewController-static-method-areBothConfigsComplex'>    areBothConfigsComplex: function(matchedPostMergeParentTargetConfig, originalParentControlConfig, originalChildControl, originalParentControlTarget) {
+</span>      return Ext.isObject(matchedPostMergeParentTargetConfig.listeners) &amp;&amp; Ext.isObject(originalParentControlConfig.listeners) &amp;&amp; (originalChildControl[originalParentControlTarget] === void 0 || Ext.isObject(originalChildControl[originalParentControlTarget].listeners));
+    },
+<span id='Deft-mvc-ViewController-static-method-hasMixedConfigs'>    hasMixedConfigs: function(matchedPostMergeParentTargetConfig, originalParentControlConfig) {
+</span>      return Ext.isObject(matchedPostMergeParentTargetConfig.listeners) || Ext.isObject(originalParentControlConfig.listeners);
+    },
+<span id='Deft-mvc-ViewController-static-method-normalizeMixedConfigs'>    normalizeMixedConfigs: function(originalParentControlConfig, matchedPostMergeParentTargetConfig) {
+</span>      var matchedParentKey, matchedParentValue, normalizedOriginalParentControlConfig;
+      normalizedOriginalParentControlConfig = Ext.clone(originalParentControlConfig);
+      if (Ext.isObject(matchedPostMergeParentTargetConfig.listeners)) {
+        if (!Ext.isObject(normalizedOriginalParentControlConfig.listeners)) {
+          normalizedOriginalParentControlConfig.listeners = {};
+        }
+        for (matchedParentKey in matchedPostMergeParentTargetConfig) {
+          matchedParentValue = matchedPostMergeParentTargetConfig[matchedParentKey];
+          if (matchedParentKey !== &quot;listeners&quot;) {
+            normalizedOriginalParentControlConfig.listeners[matchedParentKey] = Ext.clone(matchedParentValue);
+            if (matchedPostMergeParentTargetConfig.listeners[matchedParentKey] === void 0) {
+              matchedPostMergeParentTargetConfig.listeners[matchedParentKey] = Ext.clone(matchedParentValue);
+              delete matchedPostMergeParentTargetConfig[matchedParentKey];
+            }
+          }
+        }
+      }
+      return normalizedOriginalParentControlConfig;
+    },
+<span id='Deft-mvc-ViewController-static-method-behaviorMergeHandler'>    behaviorMergeHandler: function(parentBehaviors, childBehaviors) {
+</span>      return Ext.merge(Ext.clone(parentBehaviors), Ext.clone(childBehaviors));
     }
   }
-}, function() {
-<span id='Deft-mvc-ViewController-property-'>  /**
-</span>  	* Preprocessor to handle merging of 'observe' objects on parent and child classes.
-  */
-
-  return Deft.Class.registerPreprocessor('observe', function(Class, data, hooks, callback) {
-    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
-      var _ref;
-      if (Class.superclass &amp;&amp; ((_ref = Class.superclass) != null ? _ref.observe : void 0) &amp;&amp; Deft.Class.extendsClass(Class, 'Deft.mvc.ViewController')) {
-        data.observe = Deft.mvc.Observer.mergeObserve(Class.superclass.observe, data.observe);
-      }
-    });
-  }, 'before', 'extend');
 });
 </pre>
 </body>

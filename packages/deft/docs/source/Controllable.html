@@ -23,99 +23,73 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 <span id='Deft-mixin-Controllable'>/**
 </span>* A mixin that creates and attaches the specified view controller(s) to the target view. Used in conjunction with Deft.mvc.ViewController.
-* @deprecated 0.8 Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.
 */
 
 Ext.define('Deft.mixin.Controllable', {
-  requires: ['Ext.Component', 'Deft.core.Class', 'Deft.log.Logger'],
+  requires: ['Ext.Component', 'Deft.core.Class', 'Deft.log.Logger', 'Deft.util.DeftMixinUtils'],
 <span id='Deft-mixin-Controllable-method-onClassMixedIn'>  /**
 </span>  	@private
   */
 
-  onClassMixedIn: function(targetClass) {
-    Deft.Logger.deprecate('Deft.mixin.Controllable has been deprecated and can now be omitted - simply use the \'controller\' class annotation on its own.');
-  }
-}, function() {
-  var createControllerInterceptor;
-  if (Ext.getVersion('extjs') &amp;&amp; Ext.getVersion('core').isLessThan('4.1.0')) {
-    createControllerInterceptor = function() {
+  onClassMixedIn: function(target) {
+    target.override({
+      constructor: Deft.mixin.Controllable.createMixinInterceptor()
+    });
+    target.onExtended(function(clazz, config) {
+      clazz.override({
+        constructor: Deft.mixin.Controllable.createMixinInterceptor()
+      });
+      return true;
+    });
+  },
+  statics: {
+<span id='Deft-mixin-Controllable-static-property-MIXIN_COMPLETED_KEY'>    MIXIN_COMPLETED_KEY: &quot;$controlled&quot;,
+</span><span id='Deft-mixin-Controllable-static-property-PROPERTY_NAME'>    PROPERTY_NAME: &quot;controller&quot;,
+</span><span id='Deft-mixin-Controllable-static-property-CONFIG_PROPERTY_NAME'>    CONFIG_PROPERTY_NAME: &quot;controllerConfig&quot;,
+</span><span id='Deft-mixin-Controllable-static-property-CONTROLLER_GETTER_NAME'>    CONTROLLER_GETTER_NAME: &quot;getController&quot;,
+</span><span id='Deft-mixin-Controllable-static-method-createMixinInterceptor'>    /**
+</span>    		* @private
+    */
+
+    createMixinInterceptor: function() {
       return function(config) {
-        var controller, error;
+        var configPropertyName, controller, controllerGetterName, controllerName, error, mixinCompletedKey;
         if (config == null) {
           config = {};
         }
-        if (this instanceof Ext.ClassManager.get('Ext.Component') &amp;&amp; !this.$controlled) {
+        mixinCompletedKey = Deft.mixin.Controllable.MIXIN_COMPLETED_KEY;
+        controllerName = Deft.mixin.Controllable.PROPERTY_NAME;
+        configPropertyName = Deft.mixin.Controllable.CONFIG_PROPERTY_NAME;
+        controllerGetterName = Deft.mixin.Controllable.CONTROLLER_GETTER_NAME;
+        if (this instanceof Ext.ClassManager.get('Ext.Component') &amp;&amp; !this[mixinCompletedKey]) {
           try {
-            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
+            controller = Ext.create(config[controllerName] || this[controllerName], config[configPropertyName] || this[configPropertyName] || {});
           } catch (_error) {
             error = _error;
-            Deft.Logger.warn(&quot;Error initializing view controller: an error occurred while creating an instance of the specified controller: '&quot; + this.controller + &quot;'.&quot;);
+            Deft.Logger.warn(&quot;Error initializing view controller: an error occurred while creating an instance of the specified controller: '&quot; + (config[controllerName] || this[controllerName]) + &quot;'.&quot;);
             throw error;
           }
-          if (this.getController === void 0) {
-            this.getController = function() {
+          if (this[controllerGetterName] === void 0) {
+            this[controllerGetterName] = function() {
               return controller;
             };
           }
-          this.$controlled = true;
-          this.callOverridden(arguments);
+          Deft.mixin.Controllable.afterMixinProcessed(this);
+          this[Deft.util.DeftMixinUtils.parentConstructorForVersion(this)](arguments);
           controller.controlView(this);
           return this;
         }
-        return this.callOverridden(arguments);
+        return this[Deft.util.DeftMixinUtils.parentConstructorForVersion(this)](arguments);
       };
-    };
-  } else {
-    createControllerInterceptor = function() {
-      return function(config) {
-        var controller, error;
-        if (config == null) {
-          config = {};
-        }
-        if (this instanceof Ext.ClassManager.get('Ext.Component') &amp;&amp; !this.$controlled) {
-          try {
-            controller = Ext.create(this.controller, config.controllerConfig || this.controllerConfig || {});
-          } catch (_error) {
-            error = _error;
-            Deft.Logger.warn(&quot;Error initializing view controller: an error occurred while creating an instance of the specified controller: '&quot; + this.controller + &quot;'.&quot;);
-            throw error;
-          }
-          if (this.getController === void 0) {
-            this.getController = function() {
-              return controller;
-            };
-          }
-          this.$controlled = true;
-          this.callParent(arguments);
-          controller.controlView(this);
-          return this;
-        }
-        return this.callParent(arguments);
-      };
-    };
+    },
+<span id='Deft-mixin-Controllable-static-method-afterMixinProcessed'>    /**
+</span>    		* @private
+    */
+
+    afterMixinProcessed: function(target) {
+      target[this.MIXIN_COMPLETED_KEY] = true;
+    }
   }
-  Deft.Class.registerPreprocessor('controller', function(Class, data, hooks, callback) {
-    var self;
-    Deft.Class.hookOnClassCreated(hooks, function(Class) {
-      Class.override({
-        constructor: createControllerInterceptor()
-      });
-    });
-    Deft.Class.hookOnClassExtended(data, function(Class, data, hooks) {
-      Deft.Class.hookOnClassCreated(hooks, function(Class) {
-        Class.override({
-          constructor: createControllerInterceptor()
-        });
-      });
-    });
-    self = this;
-    Ext.require([data.controller], function() {
-      if (callback != null) {
-        callback.call(self, Class, data, hooks);
-      }
-    });
-    return false;
-  }, 'before', 'extend');
 });
 </pre>
 </body>

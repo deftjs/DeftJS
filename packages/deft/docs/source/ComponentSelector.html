@@ -29,7 +29,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 Ext.define('Deft.mvc.ComponentSelector', {
   requires: ['Ext.ComponentQuery', 'Deft.log.Logger', 'Deft.mvc.ComponentSelectorListener'],
 <span id='Deft-mvc-ComponentSelector-method-constructor'>  constructor: function(config) {
-</span>    var eventName, fn, listener, options, scope, _ref;
+</span>    var eventName, fn, listener, listenerList, options, scope, _i, _len, _ref;
     Ext.apply(this, config);
     if (!this.live) {
       this.components = this.selector != null ? Ext.ComponentQuery.query(this.selector, this.view) : [this.view];
@@ -38,30 +38,36 @@ Ext.define('Deft.mvc.ComponentSelector', {
     if (Ext.isObject(this.listeners)) {
       _ref = this.listeners;
       for (eventName in _ref) {
-        listener = _ref[eventName];
-        fn = listener;
-        scope = this.scope;
-        options = null;
-        if (Ext.isObject(listener)) {
-          options = Ext.apply({}, listener);
-          if (options.fn != null) {
-            fn = options.fn;
-            delete options.fn;
+        listenerList = _ref[eventName];
+        if (!Ext.isArray(listenerList)) {
+          listenerList = [listenerList];
+        }
+        for (_i = 0, _len = listenerList.length; _i &lt; _len; _i++) {
+          listener = listenerList[_i];
+          fn = listener;
+          scope = this.scope;
+          options = null;
+          if (Ext.isObject(listener)) {
+            options = Ext.apply({}, listener);
+            if (options.fn != null) {
+              fn = options.fn;
+              delete options.fn;
+            }
+            if (options.scope != null) {
+              scope = options.scope;
+              delete options.scope;
+            }
           }
-          if (options.scope != null) {
-            scope = options.scope;
-            delete options.scope;
+          if (Ext.isString(fn) &amp;&amp; Ext.isFunction(scope[fn])) {
+            fn = scope[fn];
           }
+          if (!Ext.isFunction(fn)) {
+            Ext.Error.raise({
+              msg: &quot;Error adding '&quot; + eventName + &quot;' listener: the specified handler '&quot; + fn + &quot;' is not a Function or does not exist.&quot;
+            });
+          }
+          this.addListener(eventName, fn, scope, options);
         }
-        if (Ext.isString(fn) &amp;&amp; Ext.isFunction(scope[fn])) {
-          fn = scope[fn];
-        }
-        if (!Ext.isFunction(fn)) {
-          Ext.Error.raise({
-            msg: &quot;Error adding '&quot; + eventName + &quot;' listener: the specified handler '&quot; + fn + &quot;' is not a Function or does not exist.&quot;
-          });
-        }
-        this.addListener(eventName, fn, scope, options);
       }
     }
     return this;
@@ -86,7 +92,7 @@ Ext.define('Deft.mvc.ComponentSelector', {
         msg: &quot;Error adding '&quot; + eventName + &quot;' listener: an existing listener for the specified function was already registered for '&quot; + this.selector + &quot;.&quot;
       });
     }
-    Deft.Logger.log(&quot;Adding '&quot; + eventName + &quot;' listener to '&quot; + this.selector + &quot;'.&quot;);
+    Deft.Logger.log(&quot;Adding '&quot; + eventName + &quot;' listener to '&quot; + this.selector + &quot;' with fn: &quot; + fn + &quot;.&quot;);
     selectorListener = Ext.create('Deft.mvc.ComponentSelectorListener', {
       componentSelector: this,
       eventName: eventName,

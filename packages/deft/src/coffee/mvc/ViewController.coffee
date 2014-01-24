@@ -136,6 +136,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		view: null
 
 		###*
+  	* @private
 		* Associated ViewControllers to supply additional behavior.
 		###
 		behaviorHosts: null
@@ -261,6 +262,7 @@ Ext.define( 'Deft.mvc.ViewController',
 
 	###*
   *	Locates a behavior host by alias.
+  * @param {String} alias The alias for the desired behavior instance
   ###
 	getBehaviorHost: ( alias ) ->
 		return @behaviorHosts[ alias ]
@@ -486,64 +488,60 @@ Ext.define( 'Deft.mvc.ViewController',
 					# And it has no selector specified, or the selectors match...
 					if originalParentControlConfig.selector is undefined or matchedPostMergeParentTargetConfig.selector is originalParentControlConfig.selector
 
-						# If we are dealing with an Object-based event config, and the parent and child configs for
-						# this target do not mix simple and complex configurations, merge in any missing parent listeners...
-						if( Ext.isObject( matchedPostMergeParentTargetConfig.listeners ) and
-								Ext.isObject( originalParentControlConfig.listeners ) and
-								( originalChildControl[ originalParentControlTarget ] is undefined or
-									Ext.isObject( originalChildControl[ originalParentControlTarget ].listeners ) ) )
-							matchedPostMergeListeners = matchedPostMergeParentTargetConfig.listeners
-							originalListeners = originalParentControlConfig.listeners
-
-							Deft.mvc.ViewController.applyReplacedListeners( originalListeners, matchedPostMergeListeners, ( listenerArray, eventConfig ) ->
-								listenerArray.push( Ext.clone( eventConfig ) )
-								return
-							)
-
-						# If original and merged configs use both complex listener config and simple config, we need to
-						# transform the simple config into a listener config object so both can be processed as complex listener configs.
-						# If we didn't transform the simple config, those targets and event handlers would not be processed into
-						# ComponentSelectorListeners!
-						else if Ext.isObject( matchedPostMergeParentTargetConfig.listeners ) or Ext.isObject( originalParentControlConfig.listeners )
-							normalizedOriginalParentControlConfig = Ext.clone( originalParentControlConfig )
-
-							# If the merged parent config for this target has listener configuration...
-							if Ext.isObject( matchedPostMergeParentTargetConfig.listeners )
-
-								# Ensure the original parent config also has listener configuration...
-								if not Ext.isObject( normalizedOriginalParentControlConfig.listeners )
-									normalizedOriginalParentControlConfig.listeners = {}
-
-								# Loop over the merged parent configuration
-								for matchedParentKey, matchedParentValue of matchedPostMergeParentTargetConfig
-									if matchedParentKey isnt "listeners"
-										# Make sure the normalized listener config now includes mirrored targets and event handlers.
-										# The call to applyReplacedListeners() will make sure we don't end up with duplicates.
-										normalizedOriginalParentControlConfig.listeners[ matchedParentKey ] = Ext.clone( matchedParentValue )
-
-										# Also, if the merged config also has non-listener targets, move them into the listener config
-										if matchedPostMergeParentTargetConfig.listeners[ matchedParentKey ] is undefined
-											matchedPostMergeParentTargetConfig.listeners[ matchedParentKey ] = Ext.clone( matchedParentValue )
-											delete matchedPostMergeParentTargetConfig[ matchedParentKey ]
-
-							# Now apply the original listener config onto the merged config. This way, any non-listener
-							# targets and event handlers are treated like any other listener config items.
-							Deft.mvc.ViewController.applyReplacedListeners(
-								normalizedOriginalParentControlConfig.listeners,
-								matchedPostMergeParentTargetConfig.listeners,
-								( listenerArray, eventConfig ) ->
-									listenerArray.push( Ext.clone( eventConfig ) )
-									return
-							)
-
-						# Otherwise, this is a "simple" listener config
-						else
-							Deft.mvc.ViewController.applyReplacedListeners( originalParentControlConfig, matchedPostMergeParentTargetConfig, ( listenerArray, eventConfig ) ->
-								listenerArray.push( Ext.clone( eventConfig ) )
-								return Ext.Array.unique( listenerArray )
-							)
+						Deft.mvc.ViewController.detectReplacedListeners(
+							matchedPostMergeParentTargetConfig,
+							originalParentControlConfig,
+							originalChildControl,
+							originalParentControlTarget
+						)
 
 			return parentControl
+
+
+		detectReplacedListeners: ( matchedPostMergeParentTargetConfig, originalParentControlConfig, originalChildControl, originalParentControlTarget ) ->
+
+			# If we are dealing with an Object-based event config, and the parent and child configs for
+			# this target do not mix simple and complex configurations, merge in any missing parent listeners...
+			if( Deft.mvc.ViewController.areBothConfigsComplex(
+					matchedPostMergeParentTargetConfig,
+					originalParentControlConfig,
+					originalChildControl,
+					originalParentControlTarget ) )
+
+				matchedPostMergeListeners = matchedPostMergeParentTargetConfig.listeners
+				originalListeners = originalParentControlConfig.listeners
+
+				Deft.mvc.ViewController.applyReplacedListeners( originalListeners, matchedPostMergeListeners, ( listenerArray, eventConfig ) ->
+					listenerArray.push( Ext.clone( eventConfig ) )
+					return
+				)
+
+			# If original and merged configs use both complex listener config and simple config, we need to
+			# transform the simple config into a listener config object so both can be processed as complex listener configs.
+			# If we didn't transform the simple config, those targets and event handlers would not be processed into
+			# ComponentSelectorListeners!
+			else if Deft.mvc.ViewController.hasMixedConfigs( matchedPostMergeParentTargetConfig, originalParentControlConfig )
+
+				normalizedConfig = Deft.mvc.ViewController.normalizeMixedConfigs( originalParentControlConfig, matchedPostMergeParentTargetConfig )
+
+				# Now apply the original listener config onto the merged config. This way, any non-listener
+				# targets and event handlers are treated like any other listener config items.
+				Deft.mvc.ViewController.applyReplacedListeners(
+					normalizedConfig.listeners,
+					matchedPostMergeParentTargetConfig.listeners,
+					( listenerArray, eventConfig ) ->
+						listenerArray.push( Ext.clone( eventConfig ) )
+						return
+				)
+
+			# Otherwise, this is a "simple" listener config
+			else
+				Deft.mvc.ViewController.applyReplacedListeners( originalParentControlConfig, matchedPostMergeParentTargetConfig, ( listenerArray, eventConfig ) ->
+					listenerArray.push( Ext.clone( eventConfig ) )
+					return Ext.Array.unique( listenerArray )
+				)
+
+			return
 
 
 		applyReplacedListeners: ( originalControlConfig, postMergeControlConfig, applyFn ) ->
@@ -570,6 +568,42 @@ Ext.define( 'Deft.mvc.ViewController',
 						postMergeControlConfig[ thisEvent ] = applyResult if applyResult isnt undefined
 
 			return
+
+
+		areBothConfigsComplex: ( matchedPostMergeParentTargetConfig, originalParentControlConfig, originalChildControl, originalParentControlTarget ) ->
+			return Ext.isObject( matchedPostMergeParentTargetConfig.listeners ) and
+						 Ext.isObject( originalParentControlConfig.listeners ) and
+						 ( originalChildControl[ originalParentControlTarget ] is undefined or
+							 Ext.isObject( originalChildControl[ originalParentControlTarget ].listeners ) )
+
+
+		hasMixedConfigs: ( matchedPostMergeParentTargetConfig, originalParentControlConfig ) ->
+			return Ext.isObject( matchedPostMergeParentTargetConfig.listeners ) or Ext.isObject( originalParentControlConfig.listeners )
+
+
+		normalizeMixedConfigs: ( originalParentControlConfig, matchedPostMergeParentTargetConfig ) ->
+			normalizedOriginalParentControlConfig = Ext.clone( originalParentControlConfig )
+
+			# If the merged parent config for this target has listener configuration...
+			if Ext.isObject( matchedPostMergeParentTargetConfig.listeners )
+
+				# Ensure the original parent config also has listener configuration...
+				if not Ext.isObject( normalizedOriginalParentControlConfig.listeners )
+					normalizedOriginalParentControlConfig.listeners = {}
+
+				# Loop over the merged parent configuration
+				for matchedParentKey, matchedParentValue of matchedPostMergeParentTargetConfig
+					if matchedParentKey isnt "listeners"
+						# Make sure the normalized listener config now includes mirrored targets and event handlers.
+						# The call to applyReplacedListeners() will make sure we don't end up with duplicates.
+						normalizedOriginalParentControlConfig.listeners[ matchedParentKey ] = Ext.clone( matchedParentValue )
+
+						# Also, if the merged config also has non-listener targets, move them into the listener config
+						if matchedPostMergeParentTargetConfig.listeners[ matchedParentKey ] is undefined
+							matchedPostMergeParentTargetConfig.listeners[ matchedParentKey ] = Ext.clone( matchedParentValue )
+							delete matchedPostMergeParentTargetConfig[ matchedParentKey ]
+
+			return normalizedOriginalParentControlConfig
 
 
 		behaviorMergeHandler: ( parentBehaviors, childBehaviors ) ->

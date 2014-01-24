@@ -21,24 +21,118 @@ Copyright (c) 2012-2013 [DeftJS Framework Contributors](http://deftjs.org)
 Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 */
 
-<span id='Deft-mvc-Observer'>/**
-</span>* @private
-* Used by Deft.mvc.ViewController to handle events fired from injected objects.
+<span id='Deft-mixin-Observer'>/**
+</span>* A mixin that marks a class as an observer of events from Observable objects.
+* Classes using the mixin should call the mixed-in method 'createObservers()' to
+* trigger creation of the event listeners using the 'observe:' configuration.
+* The Deft JS ViewController uses this mixin, adding the Observers at construction
+* and removing them on ViewController destruction.
+*
+* **IMPORTANT NOTE:** If you choose to use this mixin in your own classes, and you intend
+* to destroy the instance, you **MUST** call the mixed-in method 'removeObservers()' at
+* destruction time! Failure to do this will result in memory leaks, since the event
+* listeners will not be cleaned up. There is no standard way for this mixin to be notified
+* of pending instance destruction, so the developer must ensure that this is done.
 */
 
-Ext.define('Deft.mvc.Observer', {
-  requires: ['Deft.core.Class', 'Ext.util.Observable', 'Deft.util.Function'],
+Ext.define('Deft.mixin.Observer', {
+  requires: ['Deft.log.Logger', 'Deft.util.DeftMixinUtils'],
+<span id='Deft-mixin-Observer-method-onClassMixedIn'>  /**
+</span>  	@private
+  */
+
+  onClassMixedIn: function(target) {
+    target.override({
+      constructor: Deft.mixin.Observer.createMixinInterceptor()
+    });
+    target.onExtended(function(clazz, config) {
+      clazz.override({
+        constructor: Deft.mixin.Observer.createMixinInterceptor()
+      });
+      return true;
+    });
+  },
+<span id='Deft-mixin-Observer-method-createObservers'>  /**
+</span>  	* @protected
+  */
+
+  createObservers: function() {
+    var events, target, _ref;
+    this.removeObservers();
+    this.registeredObservers = {};
+    _ref = this.observe;
+    for (target in _ref) {
+      events = _ref[target];
+      this.addObserver(target, events);
+    }
+  },
+<span id='Deft-mixin-Observer-method-addObserver'>  /**
+</span>  	* @protected
+  */
+
+  addObserver: function(target, events) {
+    var observer;
+    observer = Ext.create('Deft.mvc.Observer', {
+      host: this,
+      target: target,
+      events: events
+    });
+    this.registeredObservers[target] = observer;
+  },
+<span id='Deft-mixin-Observer-method-removeObservers'>  /**
+</span>  	* @protected
+  */
+
+  removeObservers: function() {
+    var observer, target, _ref;
+    _ref = this.registeredObservers;
+    for (target in _ref) {
+      observer = _ref[target];
+      observer.destroy();
+      delete this.registeredObservers[target];
+    }
+  },
   statics: {
-<span id='Deft-mvc-Observer-static-method-mergeObserve'>    /**
-</span>    		* Merges child and parent observers into a single object. This differs from a normal object merge because
+<span id='Deft-mixin-Observer-static-property-MIXIN_COMPLETED_KEY'>    MIXIN_COMPLETED_KEY: &quot;$observing&quot;,
+</span><span id='Deft-mixin-Observer-static-property-PROPERTY_NAME'>    PROPERTY_NAME: &quot;observe&quot;,
+</span><span id='Deft-mixin-Observer-static-method-createMixinInterceptor'>    /**
+</span>    		* @private
+    */
+
+    createMixinInterceptor: function() {
+      return function(config) {
+        var mixinCompletedKey, propertyName;
+        if (config == null) {
+          config = {};
+        }
+        mixinCompletedKey = Deft.mixin.Observer.MIXIN_COMPLETED_KEY;
+        propertyName = Deft.mixin.Observer.PROPERTY_NAME;
+        if (this[propertyName] == null) {
+          this[propertyName] = {};
+        }
+        if (!this[mixinCompletedKey] &amp;&amp; Ext.Object.getSize(this[propertyName]) &gt; 0) {
+          Deft.util.DeftMixinUtils.mergeSuperclassProperty(this, propertyName, Deft.mixin.Observer.propertyMergeHandler);
+          Deft.mixin.Observer.afterMixinProcessed(this);
+          this[Deft.util.DeftMixinUtils.parentConstructorForVersion(this)](arguments);
+          return this;
+        }
+        return this[Deft.util.DeftMixinUtils.parentConstructorForVersion(this)](arguments);
+      };
+    },
+<span id='Deft-mixin-Observer-static-method-propertyMergeHandler'>    /**
+</span>    		* @private
+    		* Called by DeftMixinUtils.mergeSuperclassProperty(). Allows each mixin to define its own
+    		* customized subclass/superclass merge logic.
+    		*
+    		* Merges child and parent observers into a single object. This differs from a normal object merge because
     		* a given observer target and event can potentially have multiple handlers declared in different parent or
     		* child classes. It transforms an event handler value into an array of values, and merges the arrays of handlers
     		* from child to parent. This maintains the handlers even if both parent and child classes have handlers for the
     		* same target and event.
     */
 
-    mergeObserve: function(originalParentObserve, originalChildObserve) {
-      var childEvent, childEvents, childHandler, childHandlerArray, childObserve, childTarget, convertConfigArray, eventOptionNames, parentEvent, parentEvents, parentHandler, parentHandlerArray, parentObserve, parentTarget, _ref, _ref1;
+    propertyMergeHandler: function(originalParentObserve, originalChildObserve) {
+      var childEvent, childEvents, childHandler, childHandlerArray, childObserve, childTarget, eventOptionNames, parentEvent, parentEvents, parentHandler, parentHandlerArray, parentObserve, parentTarget, _ref, _ref1;
       if (!Ext.isObject(originalParentObserve)) {
         parentObserve = {};
       } else {
@@ -50,43 +144,8 @@ Ext.define('Deft.mvc.Observer', {
         childObserve = Ext.clone(originalChildObserve);
       }
       eventOptionNames = [&quot;buffer&quot;, &quot;single&quot;, &quot;delay&quot;, &quot;element&quot;, &quot;target&quot;, &quot;destroyable&quot;];
-      convertConfigArray = function(observeConfig) {
-        var handlerConfig, newObserveEvents, observeEvents, observeTarget, thisEventOptionName, thisObserveEvent, _i, _j, _len, _len1, _results;
-        _results = [];
-        for (observeTarget in observeConfig) {
-          observeEvents = observeConfig[observeTarget];
-          if (Ext.isArray(observeEvents)) {
-            newObserveEvents = {};
-            for (_i = 0, _len = observeEvents.length; _i &lt; _len; _i++) {
-              thisObserveEvent = observeEvents[_i];
-              if (Ext.Object.getSize(thisObserveEvent) === 1) {
-                Ext.apply(newObserveEvents, thisObserveEvent);
-              } else {
-                handlerConfig = {};
-                if ((thisObserveEvent != null ? thisObserveEvent.fn : void 0) != null) {
-                  handlerConfig.fn = thisObserveEvent.fn;
-                }
-                if ((thisObserveEvent != null ? thisObserveEvent.scope : void 0) != null) {
-                  handlerConfig.scope = thisObserveEvent.scope;
-                }
-                for (_j = 0, _len1 = eventOptionNames.length; _j &lt; _len1; _j++) {
-                  thisEventOptionName = eventOptionNames[_j];
-                  if ((thisObserveEvent != null ? thisObserveEvent[thisEventOptionName] : void 0) != null) {
-                    handlerConfig[thisEventOptionName] = thisObserveEvent[thisEventOptionName];
-                  }
-                }
-                newObserveEvents[thisObserveEvent.event] = [handlerConfig];
-              }
-            }
-            _results.push(observeConfig[observeTarget] = newObserveEvents);
-          } else {
-            _results.push(void 0);
-          }
-        }
-        return _results;
-      };
-      convertConfigArray(parentObserve);
-      convertConfigArray(childObserve);
+      Deft.mixin.Observer.convertConfigArray(parentObserve, eventOptionNames);
+      Deft.mixin.Observer.convertConfigArray(childObserve, eventOptionNames);
       for (childTarget in childObserve) {
         childEvents = childObserve[childTarget];
         for (childEvent in childEvents) {
@@ -118,182 +177,55 @@ Ext.define('Deft.mvc.Observer', {
         }
       }
       return parentObserve;
-    }
-  },
-<span id='Deft-mvc-Observer-method-constructor'>  /**
-</span>  	* Expects a config object with properties for host, target, and events.
-  */
+    },
+<span id='Deft-mixin-Observer-static-method-convertConfigArray'>    /**
+</span>    		* @private
+    		* Converts an observe configuration that use an array of event configuration objects into object keys for
+    		* event name, containing an array of configuration objects.
+    */
 
-  constructor: function(config) {
-    var eventName, events, handler, handlerArray, host, options, references, scope, target, _i, _len;
-    this.listeners = [];
-    host = config != null ? config.host : void 0;
-    target = config != null ? config.target : void 0;
-    events = config != null ? config.events : void 0;
-    if (host &amp;&amp; target &amp;&amp; (this.isPropertyChain(target) || this.isTargetObservable(host, target))) {
-      for (eventName in events) {
-        handlerArray = events[eventName];
-        if (Ext.isString(handlerArray)) {
-          handlerArray = handlerArray.replace(' ', '').split(',');
-        }
-        for (_i = 0, _len = handlerArray.length; _i &lt; _len; _i++) {
-          handler = handlerArray[_i];
-          scope = host;
-          options = null;
-          if (Ext.isObject(handler)) {
-            options = Ext.clone(handler);
-            if (options != null ? options.event : void 0) {
-              eventName = this.extract(options, &quot;event&quot;);
-            }
-            if (options != null ? options.fn : void 0) {
-              handler = this.extract(options, &quot;fn&quot;);
-            }
-            if (options != null ? options.scope : void 0) {
-              scope = this.extract(options, &quot;scope&quot;);
+    convertConfigArray: function(observeConfig, eventOptionNames) {
+      var handlerConfig, newObserveEvents, observeEvents, observeTarget, thisEventOptionName, thisObserveEvent, _i, _j, _len, _len1, _results;
+      _results = [];
+      for (observeTarget in observeConfig) {
+        observeEvents = observeConfig[observeTarget];
+        if (Ext.isArray(observeEvents)) {
+          newObserveEvents = {};
+          for (_i = 0, _len = observeEvents.length; _i &lt; _len; _i++) {
+            thisObserveEvent = observeEvents[_i];
+            if (Ext.Object.getSize(thisObserveEvent) === 1) {
+              Ext.apply(newObserveEvents, thisObserveEvent);
+            } else {
+              handlerConfig = {};
+              if ((thisObserveEvent != null ? thisObserveEvent.fn : void 0) != null) {
+                handlerConfig.fn = thisObserveEvent.fn;
+              }
+              if ((thisObserveEvent != null ? thisObserveEvent.scope : void 0) != null) {
+                handlerConfig.scope = thisObserveEvent.scope;
+              }
+              for (_j = 0, _len1 = eventOptionNames.length; _j &lt; _len1; _j++) {
+                thisEventOptionName = eventOptionNames[_j];
+                if ((thisObserveEvent != null ? thisObserveEvent[thisEventOptionName] : void 0) != null) {
+                  handlerConfig[thisEventOptionName] = thisObserveEvent[thisEventOptionName];
+                }
+              }
+              newObserveEvents[thisObserveEvent.event] = [handlerConfig];
             }
           }
-          references = this.locateReferences(host, target, handler);
-          if (references) {
-            references.target.on(eventName, references.handler, scope, options);
-            this.listeners.push({
-              targetName: target,
-              target: references.target,
-              event: eventName,
-              handler: references.handler,
-              scope: scope
-            });
-            Deft.Logger.log(&quot;Created observer on '&quot; + target + &quot;' for event '&quot; + eventName + &quot;'.&quot;);
-          } else {
-            Deft.Logger.warn(&quot;Could not create observer on '&quot; + target + &quot;' for event '&quot; + eventName + &quot;'.&quot;);
-          }
+          _results.push(observeConfig[observeTarget] = newObserveEvents);
+        } else {
+          _results.push(void 0);
         }
       }
-    } else {
-      Deft.Logger.warn(&quot;Could not create observers on '&quot; + target + &quot;' because '&quot; + target + &quot;' is not an Ext.util.Observable&quot;);
-    }
-    return this;
-  },
-<span id='Deft-mvc-Observer-method-isTargetObservable'>  /**
-</span>  	* Returns true if the passed host has a target that is Observable.
-  	* Checks for an isObservable=true property, observable mixin, or if the class extends Observable.
-  */
+      return _results;
+    },
+<span id='Deft-mixin-Observer-static-method-afterMixinProcessed'>    /**
+</span>    		@private
+    */
 
-  isTargetObservable: function(host, target) {
-    var hostTarget, hostTargetClass, _ref;
-    hostTarget = this.locateTarget(host, target);
-    if (hostTarget == null) {
-      return false;
+    afterMixinProcessed: function(target) {
+      target[this.MIXIN_COMPLETED_KEY] = true;
     }
-    if ((hostTarget.isObservable != null) || (((_ref = hostTarget.mixins) != null ? _ref.observable : void 0) != null)) {
-      return true;
-    } else {
-      hostTargetClass = Ext.ClassManager.getClass(hostTarget);
-      return Deft.Class.extendsClass(hostTargetClass, 'Ext.util.Observable') || Deft.Class.extendsClass(hostTargetClass, 'Ext.mixin.Observable');
-    }
-  },
-<span id='Deft-mvc-Observer-method-locateTarget'>  /**
-</span>  	* Attempts to locate an observer target given the host object and target property name.
-  	* Checks for both host[ target ], and host.getTarget().
-  */
-
-  locateTarget: function(host, target) {
-    var result;
-    if (Ext.isFunction(host['get' + Ext.String.capitalize(target)])) {
-      result = host['get' + Ext.String.capitalize(target)].call(host);
-      return result;
-    } else if ((host != null ? host[target] : void 0) != null) {
-      result = host[target];
-      return result;
-    } else {
-      return null;
-    }
-  },
-<span id='Deft-mvc-Observer-method-isPropertyChain'>  /**
-</span>  	* Returns true if the passed target is a string containing a '.', indicating that it is referencing a nested property.
-  */
-
-  isPropertyChain: function(target) {
-    return Ext.isString(target) &amp;&amp; target.indexOf('.') &gt; -1;
-  },
-<span id='Deft-mvc-Observer-method-locateReferences'>  /**
-</span>  	* Given a host object, target property name, and handler, return object references for the final target and handler function.
-  	* If necessary, recurse down a property chain to locate the final target object for the event listener.
-  */
-
-  locateReferences: function(host, target, handler) {
-    var handlerHost, propertyChain;
-    handlerHost = host;
-    if (this.isPropertyChain(target)) {
-      propertyChain = this.parsePropertyChain(host, target);
-      if (!propertyChain) {
-        return null;
-      }
-      host = propertyChain.host;
-      target = propertyChain.target;
-    }
-    if (Ext.isFunction(handler)) {
-      return {
-        target: this.locateTarget(host, target),
-        handler: handler
-      };
-    } else if (Ext.isFunction(handlerHost[handler])) {
-      return {
-        target: this.locateTarget(host, target),
-        handler: handlerHost[handler]
-      };
-    } else {
-      return null;
-    }
-  },
-<span id='Deft-mvc-Observer-method-parsePropertyChain'>  /**
-</span>  	* Given a target property chain and a property host object, recurse down the property chain and return
-  	* the final host object from the property chain, and the final object that will accept the event listener.
-  */
-
-  parsePropertyChain: function(host, target) {
-    var propertyChain;
-    if (Ext.isString(target)) {
-      propertyChain = target.split('.');
-    } else if (Ext.isArray(target)) {
-      propertyChain = target;
-    } else {
-      return null;
-    }
-    if (propertyChain.length &gt; 1 &amp;&amp; (this.locateTarget(host, propertyChain[0]) != null)) {
-      return this.parsePropertyChain(this.locateTarget(host, propertyChain[0]), propertyChain.slice(1));
-    } else if (this.isTargetObservable(host, propertyChain[0])) {
-      return {
-        host: host,
-        target: propertyChain[0]
-      };
-    } else {
-      return null;
-    }
-  },
-<span id='Deft-mvc-Observer-method-extract'>  /**
-</span>  	* Retrieves the value for the specified object key and removes the pair
-  	* from the object.
-  */
-
-  extract: function(object, key) {
-    var value;
-    value = object[key];
-    delete object[key];
-    return value;
-  },
-<span id='Deft-mvc-Observer-method-destroy'>  /**
-</span>  	* Iterate through the listeners array and remove each event listener.
-  */
-
-  destroy: function() {
-    var listenerData, _i, _len, _ref;
-    _ref = this.listeners;
-    for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
-      listenerData = _ref[_i];
-      Deft.Logger.log(&quot;Removing observer on '&quot; + listenerData.targetName + &quot;' for event '&quot; + listenerData.event + &quot;'.&quot;);
-      listenerData.target.un(listenerData.event, listenerData.handler, listenerData.scope);
-    }
-    this.listeners = [];
   }
 });
 </pre>
