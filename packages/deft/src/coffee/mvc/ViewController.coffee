@@ -254,6 +254,8 @@ Ext.define( 'Deft.mvc.ViewController',
 
 		try
 			@behaviorHosts[ alias ]?.destroy()
+			delete @behaviorHosts[ alias ]
+
 		catch error
 			# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
 			Deft.Logger.warn( "Error destroying associated view controller: an error occurred while destroying the associated controller with the alias '#{ alias }'." )
