@@ -29,14 +29,15 @@ describe( 'Deft.promise.Chain', ->
 	
 	targetScope = {}
 	
-	verifyScope = ( fn, scope ) -> 
+	verifyScope = ( fn, expectedScope ) ->
 		return ->
-			expect( @ ).to.equal( scope )
+			expect( @ ).to.equal( expectedScope )
 			return fn.apply( @, arguments )
 	
-	verifyArgs = ( fn, args ) ->
+	verifyArgs = ( fn, expectedArgs ) ->
 		return ->
-			expect( arguments ).to.deep.equal( args )
+			args = [].slice.call( arguments, 0 )
+			expect( args ).to.deep.equal( expectedArgs )
 			return fn.apply( @, arguments )
 	
 	describe( 'sequence()', ->
@@ -355,7 +356,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.reject( new Error( 'error message' ) ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'error message' )
+				return promise.should.be.rejectedWith( Error, 'error message' )
 			)
 			
 			return
@@ -376,7 +377,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with one function and one function that throws an Error', ->
@@ -388,7 +389,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with two functions and one function that throws an Error', ->
@@ -401,7 +402,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -422,7 +423,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with one function and one function that throws an Error', ->
@@ -434,7 +435,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with two functions and one function that throws an Error', ->
@@ -447,7 +448,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -468,7 +469,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with one function and one function that returns a rejected Promise', ->
@@ -480,7 +481,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with two functions and one function that returns a rejected Promise', ->
@@ -493,7 +494,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -514,7 +515,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with one function and one function that returns a rejected Promise', ->
@@ -526,7 +527,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with two functions and one function that returns a rejected Promise', ->
@@ -539,7 +540,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -558,7 +559,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Array with one function and one non-function value', ->
@@ -570,7 +571,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Array with two functions and one non-function value', ->
@@ -583,7 +584,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			return
@@ -602,7 +603,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Promise of an Array with one function and one non-function value', ->
@@ -614,7 +615,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Promise of an Array with two functions and one non-function value', ->
@@ -627,7 +628,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.sequence( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			return
@@ -954,7 +955,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.reject( new Error( 'error message' ) ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'error message' )
+				return promise.should.be.rejectedWith( Error, 'error message' )
 			)
 			
 			return
@@ -975,7 +976,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with one function and one function that throws an Error', ->
@@ -987,7 +988,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with two functions and one function that throws an Error', ->
@@ -1000,7 +1001,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -1021,7 +1022,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with one function and one function that throws an Error', ->
@@ -1033,7 +1034,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with two functions and one function that throws an Error', ->
@@ -1046,7 +1047,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -1067,7 +1068,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with one function and one function that returns a rejected Promise', ->
@@ -1079,7 +1080,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with two functions and one function that returns a rejected Promise', ->
@@ -1092,7 +1093,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -1113,7 +1114,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with one function and one function that returns a rejected Promise', ->
@@ -1125,7 +1126,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with two functions and one function that returns a rejected Promise', ->
@@ -1138,7 +1139,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -1157,7 +1158,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Array with one function and one non-function value', ->
@@ -1169,7 +1170,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Array with two functions and one non-function value', ->
@@ -1182,7 +1183,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			return
@@ -1201,7 +1202,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Promise of an Array with one function and one non-function value', ->
@@ -1213,7 +1214,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Promise of an Array with two functions and one non-function value', ->
@@ -1226,7 +1227,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.parallel( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			return
@@ -1536,7 +1537,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.reject( new Error( 'error message' ) ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'error message' )
+				return promise.should.be.rejectedWith( Error, 'error message' )
 			)
 			
 			return
@@ -1553,7 +1554,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with one function and one function that throws an Error', ->
@@ -1565,7 +1566,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with two functions and one function that throws an Error', ->
@@ -1578,7 +1579,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -1595,7 +1596,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with one function and one function that throws an Error', ->
@@ -1607,7 +1608,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Promise of an Array with two functions and one function that throws an Error', ->
@@ -1620,7 +1621,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -1637,7 +1638,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with one function and one function that returns a rejected Promise', ->
@@ -1649,7 +1650,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with two functions and one function that returns a rejected Promise', ->
@@ -1662,7 +1663,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -1679,7 +1680,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with one function and one function that returns a rejected Promise', ->
@@ -1691,7 +1692,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			specify( 'Array with two functions and one function that returns a rejected Promise', ->
@@ -1704,7 +1705,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Error message' )
+				return promise.should.be.rejectedWith( Error, 'Error message' )
 			)
 			
 			return
@@ -1719,7 +1720,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Array with one function and one non-function value', ->
@@ -1731,7 +1732,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Array with two functions and one non-function value', ->
@@ -1744,7 +1745,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( fns )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			return
@@ -1759,7 +1760,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Promise of an Array with one function and one non-function value', ->
@@ -1771,7 +1772,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			specify( 'Promise of an Array with two functions and one non-function value', ->
@@ -1784,7 +1785,7 @@ describe( 'Deft.promise.Chain', ->
 				promise = Deft.Chain.pipeline( Deft.Deferred.resolve( fns ) )
 				
 				promise.should.be.an.instanceof( Deft.Promise )
-				return promise.should.be.rejected.with( Error, 'Invalid parameter: expected a function.' )
+				return promise.should.be.rejectedWith( Error, 'Invalid parameter: expected a function.' )
 			)
 			
 			return

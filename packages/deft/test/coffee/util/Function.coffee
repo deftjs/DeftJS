@@ -22,7 +22,7 @@ describe( 'Deft.util.Function', ->
 			
 			expect( memoFunction( 12 ) ).to.equal( fibonacci( 12 ) )
 			expect( memoFunction( 12 ) ).to.equal( fibonacci( 12 ) )
-			expect( targetFunction ).to.be.calledOnce.and.calledOn( undefined )
+			expect( targetFunction ).to.be.calledOnce.and.calledOn( window )
 			
 			return
 		)

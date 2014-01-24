@@ -1,6 +1,22 @@
 (function (mochaAsPromised) {
     "use strict";
 
+    function findNodeJSMocha(moduleToTest, suffix, accumulator) {
+        if (accumulator === undefined) {
+            accumulator = [];
+        }
+
+        if (moduleToTest.id.indexOf(suffix, moduleToTest.id.length - suffix.length) !== -1 && moduleToTest.exports) {
+            accumulator.push(moduleToTest.exports);
+        }
+
+        moduleToTest.children.forEach(function (child) {
+            findNodeJSMocha(child, suffix, accumulator);
+        });
+
+        return accumulator;
+    }
+
     // Module systems magic dance.
 
     if (typeof require === "function" && typeof exports === "object" && typeof module === "object") {
@@ -8,33 +24,32 @@
         // using the Mocha test runner from either a locally-installed package, or from a globally-installed one.
         // In the latter case, naively plugging in `require("mocha")` would end up duck-punching the wrong instance,
         // so we provide this shortcut to auto-detect which Mocha package needs to be duck-punched.
-        module.exports = function (mocha) {
-            if (!mocha) {
+        module.exports = function (mochaModules) {
+            if (mochaModules === undefined) {
                 if (typeof process === "object" && Object.prototype.toString.call(process) === "[object process]") {
                     // We're in *real* Node.js, not in a browserify-like environment. Do automatic detection logic.
-                    var path = require("path");
 
-                    // `process.argv[1]` is either something like `"/host/package/node_modules/mocha/bin/_mocha`", or
-                    // `"/path/to/global/node_modules/mocha/bin/_mocha"`. Verify that, though:
-                    var lastThreeSegments = process.argv[1].split(path.sep).slice(-3);
-                    if (lastThreeSegments[0] !== "mocha" || lastThreeSegments[1] !== "bin") {
-                        throw new Error("Attempted to automatically plug in to Mocha, but was not running through " +
-                                        "the Mocha test runner. Either run using the Mocha command-line test runner, " +
-                                        "or plug in manually by passing the running Mocha module.");
+                    // Funky syntax prevents Browserify from detecting the require, since it's needed for Node.js-only
+                    // stuff.
+                    var path = (require)("path");
+                    var suffix = path.join("mocha", "lib", "mocha.js");
+                    mochaModules = findNodeJSMocha(require.main, suffix);
+
+                    if (mochaModules === undefined) {
+                        throw new Error("Attempted to automatically plug in to Mocha, but could not detect a " +
+                                        "running Mocha module.");
                     }
 
-                    var mochaPath = path.resolve(process.argv[1], "../..");
-                    mocha = (require)(mochaPath); // Trick browserify into not complaining.
                 } else if (typeof Mocha !== "undefined") {
                     // We're in a browserify-like emulation environment. Try the `Mocha` global.
-                    mocha = Mocha;
+                    mochaModules = [Mocha];
                 } else {
                     throw new Error("Attempted to automatically plug in to Mocha, but could not detect the " +
                                     "environment. Plug in manually by passing the running Mocha module.");
                 }
             }
 
-            mochaAsPromised(mocha);
+            mochaModules.forEach(mochaAsPromised);
         };
     } else if (typeof define === "function" && define.amd) {
         // AMD
@@ -48,17 +63,20 @@
 }((function () {
     "use strict";
 
-    function isPromise(x) {
-        return typeof x === "object" && x !== null && typeof x.then === "function";
+    function getThen(x) {
+        if ((typeof x === "object" || typeof x === "function") && x !== null) {
+            var then = x.then;
+            if (typeof then === "function") {
+                return then;
+            }
+        }
     }
 
-    var duckPunchedAlready = false;
-
     return function mochaAsPromised(mocha) {
-        if (duckPunchedAlready) {
+        if (mocha._mochaAsPromisedLoadedAlready) {
             return;
         }
-        duckPunchedAlready = true;
+        mocha._mochaAsPromisedLoadedAlready = true;
 
         // Soooo this is an awesome hack.
 
@@ -99,9 +117,11 @@
                         // within a suite.
                         var retVal = fn.call(this, done);
 
-                        if (isPromise(retVal)) {
+                        var then = getThen(retVal);
+                        if (then) {
                             // If we get a promise back...
-                            retVal.then(
+                            then.call(
+                                retVal,
                                 function () {
                                     // On fulfillment, ignore the fulfillment value and call `done()` with no arguments.
                                     done();

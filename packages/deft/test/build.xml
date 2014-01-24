@@ -62,6 +62,11 @@
 			<arg line="start karma/touch/2.2.1.conf.js --single-run --browsers ${karma.browsers}" />
 		</exec>
 
+		<echo message="Sencha Touch 2.3.0" />
+		<exec executable="karma" failonerror="true">
+			<arg line="start karma/touch/2.3.0.conf.js --single-run --browsers ${karma.browsers}" />
+		</exec>
+
 	</target>
 	
 	<target name="coverage" description="Tests and generates a coverage report for Deft JS against all supported versions of Sencha Touch and Ext JS">

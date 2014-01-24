@@ -2124,6 +2124,9 @@ describe( 'Deft.ioc.Injector', ->
 				expect( fnInjectPassedInstanceAsPrototypeFactoryFunction ).to.be.calledWith( exampleClassInstance, exampleConfig, 'second argument', 'third argument' )
 				expect( fnInjectPassedInstanceAsPrototypeLazilyFactoryFunction ).to.be.calledWith( exampleClassInstance, exampleConfig, 'second argument', 'third argument' )
 
+				delete ExampleClassWithInject
+
+				return
 			)
 
 			specify( 'should execute in the instance context and pass the initial config of the instance being injected when lazily resolving a dependency with a factory function', ->

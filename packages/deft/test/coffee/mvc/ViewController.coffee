@@ -60,8 +60,8 @@ describe( 'Deft.mvc.ViewController', ->
 	)
 
 	describe( 'Creation of getters and event listeners using the \'control\' property', ->
-		
-		beforeEach( ->
+
+		before( ->
 			Ext.define( 'ExampleComponent',
 				extend: 'Ext.Component'
 				alias: 'widget.example'
@@ -97,14 +97,26 @@ describe( 'Deft.mvc.ViewController', ->
 					@fireEvent( 'exampleevent', @, value )
 					return
 			)
-			
+
+			return
+		)
+
+		after( ->
+			delete ExampleComponent
+			delete ExampleView
+
+			return
+		)
+
+		beforeEach( ->
 			Ext.DomHelper.append( Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>' )
-			
+
 			return
 		)
 		
 		afterEach( ->
 			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
+
 			return
 		)
 		
@@ -132,7 +144,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( hasListener( view, 'exampleevent' ) ).to.be.true
 			view.fireExampleEvent( 'expected value' )
 			expect( viewController.onExampleViewExampleEvent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 
@@ -160,7 +174,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( hasListener( view, 'exampleevent' ) ).to.be.true
 			view.fireExampleEvent( 'expected value' )
 			expect( viewController.onExampleViewExampleEvent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -191,7 +207,9 @@ describe( 'Deft.mvc.ViewController', ->
 			view.fireExampleEvent( 'expected value' )
 			view.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onExampleViewExampleEvent ).to.be.calledOnce.and.calledWith( view, 'expected value', { single: true } ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -222,7 +240,10 @@ describe( 'Deft.mvc.ViewController', ->
 			view.fireExampleEvent( 'expected value' )
 			view.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).to.be.calledOnce.and.calledWith( view, 'expected value', { single: true } ).and.calledOn( expectedScope )
-			
+
+			delete ExampleScope
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -242,7 +263,9 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).to.throw( Error, 'Error adding \'exampleevent\' listener: the specified handler \'onExampleViewExampleEvent\' is not a Function or does not exist.' )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -263,7 +286,9 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).to.equal( component )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -282,7 +307,9 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).to.throw( Error, 'Error locating component: no component(s) found matching \'#doesntexist\'.' )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -303,7 +330,9 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).to.equal( component )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -322,7 +351,9 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).to.throw( Error, 'Error locating component: no component(s) found matching \'#doesntexist\'.' )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -344,7 +375,9 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			component = view.query( '#example' )[ 0 ]
 			expect( viewController.getExample() ).to.equal( component )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -378,7 +411,9 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			components = view.query( 'example' )
 			expect( viewController.getExample() ).to.deep.equal( components )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -398,7 +433,9 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).to.throw( Error, 'Error locating component: no component(s) found matching \'#doesntexist\'.' )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -429,7 +466,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( hasListener( component, 'exampleevent' ) ).to.be.true
 			component.fireExampleEvent( 'expected value' )
 			expect( viewController.onExampleComponentExampleEvent ).to.be.calledOnce.and.calledWith( component, 'expected value' ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -463,7 +502,9 @@ describe( 'Deft.mvc.ViewController', ->
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onExampleComponentExampleEvent ).to.be.calledOnce.and.calledWith( component, 'expected value', { single: true } ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -497,7 +538,10 @@ describe( 'Deft.mvc.ViewController', ->
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).to.be.calledOnce.and.calledWith( component, 'expected value', { single: true } ).and.calledOn( expectedScope )
-			
+
+			delete ExampleScope
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -517,7 +561,9 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).to.throw( Error, 'Error adding \'exampleevent\' listener: the specified handler \'onExampleComponentExampleEvent\' is not a Function or does not exist.' )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -550,7 +596,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( hasListener( component, 'exampleevent' ) ).to.be.true
 			component.fireExampleEvent( 'expected value' )
 			expect( viewController.onExampleComponentExampleEvent ).to.be.calledOnce.and.calledWith( component, 'expected value' ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -586,7 +634,9 @@ describe( 'Deft.mvc.ViewController', ->
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onExampleComponentExampleEvent ).to.be.calledOnce.and.calledWith( component, 'expected value', { single: true } ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -622,7 +672,10 @@ describe( 'Deft.mvc.ViewController', ->
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).to.be.calledOnce.and.calledWith( component, 'expected value', { single: true } ).and.calledOn( expectedScope )
-			
+
+			delete ExampleScope
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -644,7 +697,9 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			).to.throw( Error, 'Error adding \'exampleevent\' listener: the specified handler \'onExampleComponentExampleEvent\' is not a Function or does not exist.' )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -692,7 +747,9 @@ describe( 'Deft.mvc.ViewController', ->
 				expect( viewController.onExampleComponentExampleEvent.lastCall ).to.be.calledWith( component, 'expected value' ).and.calledOn( viewController )
 				
 			expect( viewController.onExampleComponentExampleEvent.callCount ).to.equal( components.length )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -751,7 +808,9 @@ describe( 'Deft.mvc.ViewController', ->
 				expect( viewController.onExampleComponentExampleEvent ).not.to.be.called
 				
 			expect( viewController.onExampleComponentExampleEvent.callCount ).to.equal( 0 )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -810,7 +869,10 @@ describe( 'Deft.mvc.ViewController', ->
 				expect( eventListenerFunction ).not.to.be.called
 				
 			expect( eventListenerFunction.callCount ).to.equal( 0 )
-			
+
+			delete ExampleScope
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -840,7 +902,9 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			
 			expect( viewController.getDynamicExample() ).to.equal( component )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -871,7 +935,9 @@ describe( 'Deft.mvc.ViewController', ->
 			)
 			
 			expect( viewController.getDynamicExample() ).to.equal( component )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -911,7 +977,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( hasListener( component,'exampleevent' ) ).to.be.true
 			component.fireExampleEvent( 'expected value' )
 			expect( viewController.onDynamicExampleComponentExampleEvent ).to.be.calledOnce.and.calledWith( component, 'expected value' ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -954,7 +1022,9 @@ describe( 'Deft.mvc.ViewController', ->
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onDynamicExampleComponentExampleEvent ).to.be.calledOnce.and.calledWith( component, 'expected value', { single: true } ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -997,7 +1067,10 @@ describe( 'Deft.mvc.ViewController', ->
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).to.be.calledOnce.and.calledWith( component, 'expected value', { single: true } ).and.calledOn( expectedScope )
-			
+
+			delete ExampleScope
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -1038,7 +1111,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( hasListener( component, 'exampleevent' ) ).to.be.true
 			component.fireExampleEvent( 'expected value' )
 			expect( viewController.onDynamicExampleComponentExampleEvent ).to.be.calledOnce.and.calledWith( component, 'expected value' ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -1082,7 +1157,9 @@ describe( 'Deft.mvc.ViewController', ->
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( viewController.onDynamicExampleComponentExampleEvent ).to.be.calledOnce.and.calledWith( component, 'expected value', { single: true } ).and.calledOn( viewController )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -1127,7 +1204,10 @@ describe( 'Deft.mvc.ViewController', ->
 			component.fireExampleEvent( 'expected value' )
 			component.fireExampleEvent( 'unexpected value' )
 			expect( eventListenerFunction ).to.be.calledOnce.and.calledWith( component, 'expected value', { single: true } ).and.calledOn( expectedScope )
-			
+
+			delete ExampleScope
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -1188,7 +1268,9 @@ describe( 'Deft.mvc.ViewController', ->
 				component.fireExampleEvent( 'expected value' )
 				expect( viewController.onDynamicExampleComponentExampleEvent.lastCall ).to.be.calledWith( component, 'expected value' ).and.calledOn( viewController )
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).to.equal( 3 )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -1259,7 +1341,9 @@ describe( 'Deft.mvc.ViewController', ->
 				component.fireExampleEvent( 'expected value' )
 				expect( viewController.onDynamicExampleComponentExampleEvent ).not.be.called
 			expect( viewController.onDynamicExampleComponentExampleEvent.callCount ).to.equal( 0 )
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -1330,7 +1414,10 @@ describe( 'Deft.mvc.ViewController', ->
 				component.fireExampleEvent( 'expected value' )
 				expect( eventListenerFunction ).not.to.be.called
 			expect( eventListenerFunction.callCount ).to.equal( 0 )
-			
+
+			delete ExampleScope
+			delete ExampleViewController
+
 			return
 		)
 
@@ -1852,6 +1939,13 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			return
 		)
+
+		afterEach( ->
+			delete NestedObservable
+			delete DeeplyNestedObservable
+
+			return
+		)
 		
 		specify( 'merges child observe configurations', ->
 			Ext.define( 'ExampleBaseViewController',
@@ -1878,7 +1972,10 @@ describe( 'Deft.mvc.ViewController', ->
 					baseMessage: [ 'baseMessageHandler' ]
 			
 			expect( viewController.observe ).to.deep.equal( expectedObserveConfiguration )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+
 			return
 		)
 		
@@ -1907,7 +2004,10 @@ describe( 'Deft.mvc.ViewController', ->
 					baseMessage: [ 'baseMessageHandler' ]
 			
 			expect( viewController.observe ).to.deep.equal( expectedObserveConfiguration )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+
 			return
 		)
 		
@@ -1945,7 +2045,11 @@ describe( 'Deft.mvc.ViewController', ->
 					baseMessage: [ 'baseMessageHandler' ]
 			
 			expect( viewController.observe ).to.deep.equal( expectedObserveConfiguration )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+			delete ExampleSubclass2ViewController
+
 			return
 		)
 		
@@ -1982,7 +2086,11 @@ describe( 'Deft.mvc.ViewController', ->
 					subclassMessage: [ 'subclassMessageHandler' ]
 			
 			expect( viewController.observe ).to.deep.equal( expectedObserveConfiguration )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+			delete ExampleSubclass2ViewController
+
 			return
 		)
 		
@@ -2015,7 +2123,11 @@ describe( 'Deft.mvc.ViewController', ->
 					baseMessage: [ 'baseMessageHandler' ]
 			
 			expect( viewController.observe ).to.deep.equal( expectedObserveConfiguration )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+			delete ExampleSubclass2ViewController
+
 			return
 		)
 		
@@ -2048,7 +2160,11 @@ describe( 'Deft.mvc.ViewController', ->
 					subclassMessage: [ 'subclassMessageHandler' ]
 			
 			expect( viewController.observe ).to.deep.equal( expectedObserveConfiguration )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+			delete ExampleSubclass2ViewController
+
 			return
 		)
 		
@@ -2082,6 +2198,10 @@ describe( 'Deft.mvc.ViewController', ->
 			messageBus.fireEvent( 'message', eventData )
 			
 			expect( viewController.messageHandler ).to.be.calledOnce.and.calledWith( eventData).and.calledOn( viewController )
+
+			delete ExampleViewController
+
+			return
 		)
 		
 		specify( 'attaches listeners to observed objects in a ViewController subclass where the subclass has an observe configuration', ->
@@ -2143,7 +2263,10 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.baseMessageHandler ).to.be.calledOnce.and.calledWith( baseEventData ).and.calledOn( viewController )
 			expect( viewController.subclassMessageHandler ).to.be.calledOnce.and.calledWith( subclassEventData ).and.calledOn( viewController )
 			expect( viewController.storeHandler ).to.be.calledOnce.and.calledWith( storeEventData ).and.calledOn( viewController )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+
 			return
 		)
 		
@@ -2217,7 +2340,11 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.baseMessageHandler ).to.be.calledOnce.and.calledWith( baseEventData ).and.calledOn( expectedScope )
 			expect( viewController.subclassMessageHandler ).to.be.calledOnce.and.calledWith( subclassEventData ).and.calledOn( expectedScope )
 			expect( viewController.storeHandler ).to.be.calledOnce.and.calledWith( storeEventData ).and.calledOn( expectedScope )
-			
+
+			delete ExampleScope
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+
 			return
 		)
 		
@@ -2279,7 +2406,10 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.messageHandler ).to.be.calledOnce.and.calledWith( messageEventData ).and.calledOn( viewController )
 			expect( viewController.storeProxyHandler ).to.be.calledOnce.and.calledWith( storeProxyEventData ).and.calledOn( viewController )
 			expect( viewController.deeplyNestedObservableHandler ).to.be.calledOnce.and.calledWith( deeplyNestedObservableEventData ).and.calledOn( viewController )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+
 			return
 		)
 		
@@ -2327,7 +2457,10 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( viewController.baseMessageHandler ).to.be.calledOnce.and.calledWith( eventData ).and.calledOn( viewController )
 			expect( viewController.subclassMessageHandler ).to.be.calledOnce.and.calledWith( eventData ).and.calledOn( viewController )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+
 			return
 		)
 		
@@ -2383,7 +2516,11 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( viewController.baseMessageHandler ).to.be.calledOnce.and.calledWith( eventData ).and.calledOn( expectedScope )
 			expect( viewController.subclassMessageHandler ).to.be.calledOnce.and.calledWith( eventData ).and.calledOn( expectedScope )
-			
+
+			delete ExampleScope
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+
 			return
 		)
 		
@@ -2487,7 +2624,10 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.subclassMessageHandler2 ).to.be.calledOnce.and.calledWith( subclassEventData2 ).and.calledOn( viewController )
 			expect( viewController.storeProxyHandler ).to.be.calledOnce.and.calledWith( storeEventData ).and.calledOn( viewController )
 			expect( viewController.deeplyNestedObservableHandler ).to.be.calledOnce.and.calledWith( deeplyNestedObservableData ).and.calledOn( viewController )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+
 			return
 		)
 		
@@ -2601,7 +2741,10 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.subclassMessageHandler2 ).to.be.calledOnce.and.calledWith( subclassEventData2 ).and.calledOn( viewController )
 			expect( viewController.storeProxyHandler ).to.be.calledOnce.and.calledWith( storeEventData ).and.calledOn( viewController )
 			expect( viewController.deeplyNestedObservableHandler ).to.be.calledOnce.and.calledWith( deeplyNestedObservableEventData ).and.calledOn( viewController )
-			
+
+			delete ExampleBaseViewController
+			delete ExampleSubclassViewController
+
 			return
 		)
 		
@@ -2772,18 +2915,18 @@ describe( 'Deft.mvc.ViewController', ->
 	)
 	
 	describe( 'Destruction and clean-up', ->
-		
-		beforeEach( ->
+
+		before( ->
 			Ext.define( 'ExampleComponent',
 				extend: 'Ext.Component'
 				alias: 'widget.example'
 			)
-			
+
 			Ext.define( 'ExampleView',
 				extend: 'Ext.Container'
-				
+
 				renderTo: 'componentTestArea'
-				# Ext JS
+			# Ext JS
 				items: [
 					{
 						xtype: 'example'
@@ -2799,7 +2942,18 @@ describe( 'Deft.mvc.ViewController', ->
 						}
 					]
 			)
-			
+
+			return
+		)
+
+		after( ->
+			delete ExampleComponent
+			delete ExampleView
+
+			return
+		)
+
+		beforeEach( ->
 			Ext.DomHelper.append( Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>' )
 			
 			return
@@ -2807,7 +2961,7 @@ describe( 'Deft.mvc.ViewController', ->
 		
 		afterEach( ->
 			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
-			
+
 			return
 		)
 		
@@ -2830,7 +2984,9 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( viewController.destroy ).to.be.calledOnce
 			expect( isViewDestroyed ).to.be.true
-			
+
+			delete ExampleViewController
+
 			return
 		)
 		
@@ -2856,6 +3012,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			expect( viewController.destroy ).to.be.calledOnce
 			expect( isViewDestroyed ).to.be.false
+
+			delete ExampleViewController
 			
 			return
 		)
@@ -2889,7 +3047,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.destroy ).to.be.called
 			expect( isViewDestroyed ).to.be.true
 			
-			expect( hasListener( view, 'exampleevent' ) ).to.be.flse
+			expect( hasListener( view, 'exampleevent' ) ).to.be.false
+
+			delete ExampleViewController
 			
 			return
 		)
@@ -2931,6 +3091,8 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( isViewDestroyed ).to.be.true
 			
 			expect( hasListener( component, 'exampleevent' ) ).to.be.false
+
+			delete ExampleViewController
 			
 			return
 		)
@@ -2986,6 +3148,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			for component in components
 				expect( hasListener( component, 'exampleevent' ) ).to.be.false
+
+			delete ExampleViewController
 			
 			return
 		)
@@ -3033,6 +3197,8 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( isViewDestroyed ).to.be.true
 			
 			expect( hasListener( component, 'exampleevent' ) ).to.be.false
+
+			delete ExampleViewController
 			
 			return
 		)
@@ -3093,6 +3259,8 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			for component in components
 				expect( hasListener( component, 'exampleevent' ) ).to.be.false
+
+			delete ExampleViewController
 			
 			return
 		)
@@ -3147,6 +3315,10 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( hasListener( store.getProxy(), 'customevent' ) ).to.be.false
 			expect( hasListener( store2, 'beforesync' ) ).to.be.false
 			expect( hasListener( store2, 'beforeload' ) ).to.be.false
+
+			delete ExampleClass
+
+			return
 		)
 	)
 
