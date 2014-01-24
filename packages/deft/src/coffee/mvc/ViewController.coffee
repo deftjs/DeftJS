@@ -127,13 +127,19 @@ Ext.define( 'Deft.mvc.ViewController',
 		'Deft.mvc.Observer'
 		'Deft.util.DeftMixinUtils'
 	]
-	
+
+
 	config:
 		###*
 		* View controlled by this ViewController.
 		###
 		view: null
-	
+
+		###*
+		* Associated ViewControllers to supply additional behavior.
+		###
+		behaviorHosts: null
+
 
 	constructor: ( config = {} ) ->
 		if config.view
@@ -141,7 +147,15 @@ Ext.define( 'Deft.mvc.ViewController',
 		@initConfig( config ) # Ensure any config values are set before creating observers.
 		@createObservers()
 		return @
-	
+
+
+	###*
+	* Initialize the ViewController
+	###
+	init: ->
+		return
+
+
 	###*
 	* @protected
 	###
@@ -163,16 +177,95 @@ Ext.define( 'Deft.mvc.ViewController',
 					@onViewInitialize()
 				else
 					@getView().on( 'initialize', @onViewInitialize, @, single: true )
+
+			@createBehaviors()
+
 		else
 			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
 		return
 
+
 	###*
-	* Initialize the ViewController
+	* @protected
 	###
-	init: ->
-		return
-	
+	createBehaviors: ->
+		@behaviorHosts = {}
+
+		for alias, clazz of @behaviors
+			@addBehavior( alias, clazz )
+
+
+	###*
+	* @protected
+	###
+	destroyBehaviors: ->
+		for alias, instance of @behaviorHosts
+			@removeBehavior( alias )
+
+
+	###*
+  *	Add a new view controller behavior association to a view controller.
+  * @param {String} alias The alias for the new behavior host
+  * @param {String} class The class name of the view controller that will supply the additional behavior.
+  ###
+	addBehavior: ( alias, clazz ) ->
+
+		if( @behaviorHosts[ alias ]? )
+			Deft.Logger.warn( "The specified behavior alias '#{ alias }' already exists." )
+			return
+
+		isRecursionStart = false
+		if( Deft.mvc.ViewController.behaviorCreationStack.length is 0 )
+			isRecursionStart = true
+
+		try
+
+			# Prevent circular dependencies during behavior creation
+			if( not Ext.Array.contains( Deft.mvc.ViewController.behaviorCreationStack, Ext.getClassName( @ ) ) )
+				Deft.mvc.ViewController.behaviorCreationStack.push( Ext.getClassName( @ ) )
+			else
+				Deft.mvc.ViewController.behaviorCreationStack.push( Ext.getClassName( @ ) )
+				initialClass = Deft.mvc.ViewController.behaviorCreationStack[ 0 ]
+				stackMessage = Deft.mvc.ViewController.behaviorCreationStack.join( " -> " )
+				Deft.mvc.ViewController.behaviorCreationStack = []
+				Ext.Error.raise( msg: "Error creating behaviors for '#{ initialClass }'. A circular dependency exists in its behaviors: #{ stackMessage }" )
+
+			newHost = Ext.create( clazz )
+			newHost.controlView( @getView() )
+			@behaviorHosts[ alias ] = newHost
+			Deft.mvc.ViewController.behaviorCreationStack = [] if isRecursionStart
+
+		catch error
+			# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
+			Deft.Logger.warn( "Error initializing associated view controller: an error occurred while creating an instance of the specified controller: '#{ clazz }'." )
+			Deft.mvc.ViewController.behaviorCreationStack = []
+			throw error
+
+
+	###*
+	*	Removes and destroys a view controller behavior association for this view controller.
+  * @param {String} alias The alias for the behavior host to remove
+  ###
+	removeBehavior: ( alias ) ->
+
+		if( not @behaviorHosts[ alias ]? )
+			Deft.Logger.warn( "The specified behavior alias '#{ alias }' cannot be removed because the alias does not exist." )
+
+		try
+			@behaviorHosts[ alias ]?.destroy()
+		catch error
+			# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
+			Deft.Logger.warn( "Error destroying associated view controller: an error occurred while destroying the associated controller with the alias '#{ alias }'." )
+			throw error
+
+
+	###*
+  *	Locates a behavior host by alias.
+  ###
+	getBehaviorHost: ( alias ) ->
+		return @behaviorHosts[ alias ]
+
+
 	###*
 	* Destroy the ViewController
 	###
@@ -182,8 +275,10 @@ Ext.define( 'Deft.mvc.ViewController',
 		for selector of @registeredComponentSelectors
 			@removeComponentSelector( selector )
 		@removeObservers()
+		@destroyBehaviors()
 		return true
-	
+
+
 	###*
 	* @private
 	###
@@ -220,7 +315,8 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		@init()
 		return
-	
+
+
 	###*
 	* @private
 	###
@@ -229,7 +325,8 @@ Ext.define( 'Deft.mvc.ViewController',
 			@getView().un( 'beforedestroy', @onViewBeforeDestroy, @ )
 			return true
 		return false
-	
+
+
 	###*
 	* Add a component accessor method the ViewController for the specified view-relative selector.
 	###
@@ -254,7 +351,8 @@ Ext.define( 'Deft.mvc.ViewController',
 		
 		@registeredComponentReferences[ id ] = true
 		return
-	
+
+
 	###*
 	* Remove a component accessor method the ViewController for the specified view-relative selector.
 	###
@@ -273,7 +371,8 @@ Ext.define( 'Deft.mvc.ViewController',
 		delete @registeredComponentReferences[ id ]
 		
 		return
-	
+
+
 	###*
 	* Get the component(s) corresponding to the specified view-relative selector.
 	###
@@ -288,7 +387,8 @@ Ext.define( 'Deft.mvc.ViewController',
 				return matches
 		else
 			return @getView()
-	
+
+
 	###*
 	* Add a component selector with the specified listeners for the specified view-relative selector.
 	###
@@ -309,7 +409,8 @@ Ext.define( 'Deft.mvc.ViewController',
 		@registeredComponentSelectors[ selector ] = componentSelector
 		
 		return
-	
+
+
 	###*
 	* Remove a component selector with the specified listeners for the specified view-relative selector.
 	###
@@ -324,7 +425,8 @@ Ext.define( 'Deft.mvc.ViewController',
 		delete @registeredComponentSelectors[ selector ]
 		
 		return
-	
+
+
 	###*
 	* Get the component selectorcorresponding to the specified view-relative selector.
 	###
@@ -341,6 +443,9 @@ Ext.define( 'Deft.mvc.ViewController',
 
 
 	statics:
+
+		behaviorCreationStack: []
+
 
 		mergeSubclassInterceptor: () ->
 			return ( config = {} ) ->
@@ -361,6 +466,7 @@ Ext.define( 'Deft.mvc.ViewController',
 					return @
 
 				return @[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
+
 
 		controlMergeHandler: ( originalParentControl, originalChildControl ) ->
 			# Make sure we aren't modifying the original objects, particularly for the parent object, since it may be a CLASS-LEVEL object.
@@ -430,27 +536,15 @@ Ext.define( 'Deft.mvc.ViewController',
 									return
 							)
 
-							###
-							1. figure out which one has .listeners
-							2. loop over the other (simple) side to transform it into a .listener object, like
-  									listeners =
-  										simpleTarget1: "handler1Name"
-  										simpleTarget2: "handler2Name"
-  						3. Pass both listeners objects to applyReplacedListeners just like above (since both are objects now)
-							###
-
-
-
-
 						# Otherwise, this is a "simple" listener config
 						else
-
 							Deft.mvc.ViewController.applyReplacedListeners( originalParentControlConfig, matchedPostMergeParentTargetConfig, ( listenerArray, eventConfig ) ->
 								listenerArray.push( Ext.clone( eventConfig ) )
 								return Ext.Array.unique( listenerArray )
 							)
 
 			return parentControl
+
 
 		applyReplacedListeners: ( originalControlConfig, postMergeControlConfig, applyFn ) ->
 			for thisEvent, eventConfig of originalControlConfig
@@ -477,6 +571,7 @@ Ext.define( 'Deft.mvc.ViewController',
 
 			return
 
+
 		behaviorMergeHandler: ( parentBehaviors, childBehaviors ) ->
-			return Ext.Array.merge( parentBehaviors, childBehaviors )
+			return Ext.merge( Ext.clone( parentBehaviors ), Ext.clone( childBehaviors ) )
 )

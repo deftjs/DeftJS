@@ -58,7 +58,7 @@ describe( 'Deft.mvc.ViewController', ->
 			return
 		)
 	)
-	
+
 	describe( 'Creation of getters and event listeners using the \'control\' property', ->
 		
 		beforeEach( ->
@@ -105,7 +105,6 @@ describe( 'Deft.mvc.ViewController', ->
 		
 		afterEach( ->
 			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
-			
 			return
 		)
 		
@@ -137,447 +136,6 @@ describe( 'Deft.mvc.ViewController', ->
 			return
 		)
 
-		specify( 'attaches view controller scoped event listeners to events for the view after merging simple inherited control blocks', ->
-
-			Ext.define( 'ExampleViewController',
-				extend: 'Deft.mvc.ViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventParent'
-
-				onExampleViewExampleEventParent: ( event ) ->
-					return
-
-			)
-
-			Ext.define( 'ExampleViewControllerChild',
-				extend: 'ExampleViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventChild'
-
-				onExampleViewExampleEventChild: ( event ) ->
-					return
-
-			)
-
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
-
-			view = Ext.create( 'ExampleView' )
-
-			viewController = Ext.create( 'ExampleViewControllerChild',
-				view: view
-			)
-
-			expect( viewController.getView() ).to.equal( view )
-			expect( hasListener( view, 'exampleevent' ) ).to.be.true
-
-			view.fireExampleEvent( 'expected value' )
-
-			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-
-			return
-		)
-
-		specify( 'attaches view controller scoped event listeners to events for the view after merging selector-based inherited control blocks', ->
-
-			Ext.define( 'ExampleViewController',
-				extend: 'Deft.mvc.ViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventParent'
-					someComponent:
-						selector: '#example'
-						listeners:
-							exampleevent2:
-								fn: 'onExampleViewExampleEvent2Parent'
-								single: true
-
-				onExampleViewExampleEventParent: ( event ) ->
-					return
-
-				onExampleViewExampleEvent2Parent: ( event ) ->
-					return
-			)
-
-			Ext.define( 'ExampleViewControllerChild',
-				extend: 'ExampleViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventChild'
-					someComponent:
-						selector: '#example'
-						listeners:
-							exampleevent2: 'onExampleViewExampleEvent2Child'
-
-				onExampleViewExampleEventChild: ( event ) ->
-					return
-
-				onExampleViewExampleEvent2Child: ( event ) ->
-					return
-			)
-
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
-
-			view = Ext.create( 'ExampleView' )
-
-			viewController = Ext.create( 'ExampleViewControllerChild',
-				view: view
-			)
-
-			expect( viewController.getView() ).to.equal( view )
-			expect( hasListener( view, 'exampleevent' ) ).to.be.true
-			expect( hasListener( viewController.getSomeComponent(), 'exampleevent2' ) ).to.be.true
-
-			view.fireExampleEvent( 'expected value' )
-			viewController.getSomeComponent().fireEvent( 'exampleevent2', 'expected value 2' )
-
-			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
-
-			return
-		)
-
-		specify( 'attaches view controller scoped event listeners to events for the view after merging non-selector-based inherited control blocks', ->
-
-			Ext.define( 'ExampleViewController',
-				extend: 'Deft.mvc.ViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventParent'
-					example:
-						listeners:
-							exampleevent2:
-								fn: 'onExampleViewExampleEvent2Parent'
-								single: true
-
-				onExampleViewExampleEventParent: ( event ) ->
-					return
-
-				onExampleViewExampleEvent2Parent: ( event ) ->
-					return
-			)
-
-			Ext.define( 'ExampleViewControllerChild',
-				extend: 'ExampleViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventChild'
-					example:
-						listeners:
-							exampleevent2: 'onExampleViewExampleEvent2Child'
-
-				onExampleViewExampleEventChild: ( event ) ->
-					return
-
-				onExampleViewExampleEvent2Child: ( event ) ->
-					return
-			)
-
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
-
-			view = Ext.create( 'ExampleView' )
-
-			viewController = Ext.create( 'ExampleViewControllerChild',
-				view: view
-			)
-
-			expect( viewController.getView() ).to.equal( view )
-			expect( hasListener( view, 'exampleevent' ) ).to.be.true
-			expect( hasListener( viewController.getExample(), 'exampleevent2' ) ).to.be.true
-
-			view.fireExampleEvent( 'expected value' )
-			viewController.getExample().fireEvent( 'exampleevent2', 'expected value 2' )
-
-			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
-
-			return
-		)
-
-		specify( 'attaches view controller scoped event listeners to events for the view after merging non-selector-based inherited control blocks where parent uses listener config', ->
-
-			Ext.define( 'ExampleViewController',
-				extend: 'Deft.mvc.ViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventParent'
-					example:
-						listeners:
-							exampleevent2:
-								fn: 'onExampleViewExampleEvent2Parent'
-								single: true
-
-				onExampleViewExampleEventParent: ( event ) ->
-					return
-
-				onExampleViewExampleEvent2Parent: ( event ) ->
-					return
-			)
-
-			Ext.define( 'ExampleViewControllerChild',
-				extend: 'ExampleViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventChild'
-					example:
-							exampleevent2: 'onExampleViewExampleEvent2Child'
-
-				onExampleViewExampleEventChild: ( event ) ->
-					return
-
-				onExampleViewExampleEvent2Child: ( event ) ->
-					return
-			)
-
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
-
-			view = Ext.create( 'ExampleView' )
-
-			viewController = Ext.create( 'ExampleViewControllerChild',
-				view: view
-			)
-
-			expect( viewController.getView() ).to.equal( view )
-			expect( hasListener( view, 'exampleevent' ) ).to.be.true
-			expect( hasListener( viewController.getExample(), 'exampleevent2' ) ).to.be.true
-
-			view.fireExampleEvent( 'expected value' )
-			viewController.getExample().fireEvent( 'exampleevent2', 'expected value 2' )
-
-			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
-
-			return
-		)
-
-		specify( 'attaches view controller scoped event listeners to events for the view after merging non-selector-based inherited control blocks where child uses listener config', ->
-
-			Ext.define( 'ExampleViewController',
-				extend: 'Deft.mvc.ViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventParent'
-					example:
-						exampleevent2:
-							fn: 'onExampleViewExampleEvent2Parent'
-							single: true
-
-				onExampleViewExampleEventParent: ( event ) ->
-					return
-
-				onExampleViewExampleEvent2Parent: ( event ) ->
-					return
-			)
-
-			Ext.define( 'ExampleViewControllerChild',
-				extend: 'ExampleViewController'
-
-				control:
-					view:
-						exampleevent: 'onExampleViewExampleEventChild'
-					example:
-						listeners:
-							exampleevent2: 'onExampleViewExampleEvent2Child'
-
-				onExampleViewExampleEventChild: ( event ) ->
-					return
-
-				onExampleViewExampleEvent2Child: ( event ) ->
-					return
-			)
-
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
-
-			view = Ext.create( 'ExampleView' )
-
-			viewController = Ext.create( 'ExampleViewControllerChild',
-				view: view
-			)
-
-			expect( viewController.getView() ).to.equal( view )
-			expect( hasListener( view, 'exampleevent' ) ).to.be.true
-			expect( hasListener( viewController.getExample(), 'exampleevent2' ) ).to.be.true
-
-			view.fireExampleEvent( 'expected value' )
-			viewController.getExample().fireEvent( 'exampleevent2', 'expected value 2' )
-
-			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
-			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
-
-			return
-		)
-
-		specify( 'attaches view controller scoped event listeners to events for the view after merging a complex mixture of inherited control blocks', ->
-
-			Ext.define( 'ComplexExampleView',
-				extend: 'Ext.Container'
-
-				renderTo: 'componentTestArea'
-				# Ext JS
-				items: [
-					xtype: 'example'
-					itemId: 'firstComponent'
-				,
-					xtype: 'example'
-					itemId: 'secondComponent'
-				]
-				config:
-					# Sencha Touch
-					items: [
-						xtype: 'example'
-						itemId: 'firstComponent'
-					,
-						xtype: 'example'
-						itemId: 'secondComponent'
-					]
-
-			)
-
-			Ext.define( 'ExampleViewController',
-				extend: 'Deft.mvc.ViewController'
-
-				control:
-					view:
-						viewEvent1: 'onViewEvent1Parent'
-						viewEvent2: 'onViewEvent2Parent'
-					firstComponent:
-						listeners:
-							firstComponentEvent1:
-								fn: 'onFirstComponentEvent1Parent'
-								single: true
-					secondComponent:
-            listeners:
-                secondComponentEvent1:
-                    fn: 'onSecondComponentEvent1Parent'
-                    single: true
-
-				onViewEvent1Parent: ( event ) ->
-					return
-
-				onViewEvent2Parent: ( event ) ->
-					return
-
-				onFirstComponentEvent1Parent: ( event ) ->
-					return
-
-				onSecondComponentEvent1Parent: ( event ) ->
-					return
-			)
-
-			Ext.define( 'ExampleViewControllerChild',
-				extend: 'ExampleViewController'
-
-				control:
-					view:
-						viewEvent1: 'onViewEvent1Child'
-					firstComponent:
-						listeners:
-							firstComponentEvent1:
-								fn: 'onFirstComponentEvent1Child'
-								single: true
-							firstComponentEvent2: 'onFirstComponentEvent2Child'
-					secondComponent:
-						 secondComponentEvent1: 'onSecondComponentEvent1Child'
-						 secondComponentEvent2: 'onSecondComponentEvent2Child'
-
-				onViewEvent1Child: ( event ) ->
-					return
-
-				onFirstComponentEvent1Child: ( event ) ->
-					return
-
-				onFirstComponentEvent2Child: ( event ) ->
-					return
-
-				onSecondComponentEvent1Child: ( event ) ->
-					return
-
-				onSecondComponentEvent2Child: ( event ) ->
-					return
-			)
-
-			sinon.spy( ExampleViewControllerChild.prototype, 'onViewEvent1Parent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onViewEvent2Parent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onFirstComponentEvent1Parent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onSecondComponentEvent1Parent' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onViewEvent1Child' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onFirstComponentEvent1Child' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onFirstComponentEvent2Child' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onSecondComponentEvent1Child' )
-			sinon.spy( ExampleViewControllerChild.prototype, 'onSecondComponentEvent2Child' )
-
-			view = Ext.create( 'ComplexExampleView' )
-
-			viewController = Ext.create( 'ExampleViewControllerChild',
-				view: view
-			)
-
-			expect( viewController.getView() ).to.equal( view )
-			expect( hasListener( view, 'viewEvent1' ) ).to.be.true
-			expect( hasListener( view, 'viewEvent2' ) ).to.be.true
-			expect( hasListener( viewController.getFirstComponent(), 'firstComponentEvent1' ) ).to.be.true
-			expect( hasListener( viewController.getFirstComponent(), 'firstComponentEvent2' ) ).to.be.true
-			expect( hasListener( viewController.getSecondComponent(), 'secondComponentEvent1' ) ).to.be.true
-			expect( hasListener( viewController.getSecondComponent(), 'secondComponentEvent2' ) ).to.be.true
-
-			view.fireEvent( 'viewEvent1', 'view event 1 value' )
-			view.fireEvent( 'viewEvent2', 'view event 2 value' )
-			viewController.getFirstComponent().fireEvent( 'firstComponentEvent1', 'first component event 1 value' )
-			viewController.getFirstComponent().fireEvent( 'firstComponentEvent2', 'first component event 2 value' )
-			viewController.getSecondComponent().fireEvent( 'secondComponentEvent1', 'second component event 1 value' )
-			viewController.getSecondComponent().fireEvent( 'secondComponentEvent2', 'second component event 2 value' )
-
-			expect( viewController.onViewEvent1Parent ).to.be.calledOnce.and.calledWith( 'view event 1 value' ).and.calledOn( viewController )
-			expect( viewController.onViewEvent2Parent ).to.be.calledOnce.and.calledWith( 'view event 2 value' ).and.calledOn( viewController )
-			expect( viewController.onFirstComponentEvent1Parent ).to.be.calledOnce.and.calledWith( 'first component event 1 value' ).and.calledOn( viewController )
-			expect( viewController.onSecondComponentEvent1Parent ).to.be.calledOnce.and.calledWith( 'second component event 1 value' ).and.calledOn( viewController )
-			expect( viewController.onViewEvent1Child ).to.be.calledOnce.and.calledWith( 'view event 1 value' ).and.calledOn( viewController )
-			expect( viewController.onFirstComponentEvent1Child ).to.be.calledOnce.and.calledWith( 'first component event 1 value' ).and.calledOn( viewController )
-			expect( viewController.onFirstComponentEvent2Child ).to.be.calledOnce.and.calledWith( 'first component event 2 value' ).and.calledOn( viewController )
-			expect( viewController.onSecondComponentEvent1Child ).to.be.calledOnce.and.calledWith( 'second component event 1 value' ).and.calledOn( viewController )
-			expect( viewController.onSecondComponentEvent2Child ).to.be.calledOnce.and.calledWith( 'second component event 2 value' ).and.calledOn( viewController )
-
-			return
-		)
-
-
-
-
-
-
-		
 		specify( 'attaches view controller scoped event listeners to events for a component view', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
@@ -1775,6 +1333,506 @@ describe( 'Deft.mvc.ViewController', ->
 			
 			return
 		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging simple inherited control blocks', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+
+			return
+		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging selector-based inherited control blocks', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					someComponent:
+						selector: '#example'
+						listeners:
+							exampleevent2:
+								fn: 'onExampleViewExampleEvent2Parent'
+								single: true
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					someComponent:
+						selector: '#example'
+						listeners:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+			expect( hasListener( viewController.getSomeComponent(), 'exampleevent2' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+			viewController.getSomeComponent().fireEvent( 'exampleevent2', 'expected value 2' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			return
+		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging selector and non-selector-based inherited control blocks', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					example:
+						listeners:
+							exampleevent2:
+								fn: 'onExampleViewExampleEvent2Parent'
+								single: true
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					example:
+						selector: '#example'
+						listeners:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+			expect( hasListener( viewController.getExample(), 'exampleevent2' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+			viewController.getExample().fireEvent( 'exampleevent2', 'expected value 2' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			return
+		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging non-selector-based inherited control blocks', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					example:
+						listeners:
+							exampleevent2:
+								fn: 'onExampleViewExampleEvent2Parent'
+								single: true
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					example:
+						listeners:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+			expect( hasListener( viewController.getExample(), 'exampleevent2' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+			viewController.getExample().fireEvent( 'exampleevent2', 'expected value 2' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			return
+		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging non-selector-based inherited control blocks where parent uses listener config', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					example:
+						listeners:
+							exampleevent2:
+								fn: 'onExampleViewExampleEvent2Parent'
+								single: true
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					example:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+			expect( hasListener( viewController.getExample(), 'exampleevent2' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+			viewController.getExample().fireEvent( 'exampleevent2', 'expected value 2' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			return
+		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging non-selector-based inherited control blocks where child uses listener config', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					example:
+						exampleevent2:
+							fn: 'onExampleViewExampleEvent2Parent'
+							single: true
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					example:
+						listeners:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+			expect( hasListener( viewController.getExample(), 'exampleevent2' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+			viewController.getExample().fireEvent( 'exampleevent2', 'expected value 2' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			return
+		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging a complex mixture of inherited control blocks', ->
+
+			Ext.define( 'ComplexExampleView',
+				extend: 'Ext.Container'
+
+				renderTo: 'componentTestArea'
+				# Ext JS
+				items: [
+					xtype: 'example'
+					itemId: 'firstComponent'
+				,
+					xtype: 'example'
+					itemId: 'secondComponent'
+				]
+				config:
+					# Sencha Touch
+					items: [
+						xtype: 'example'
+						itemId: 'firstComponent'
+					,
+						xtype: 'example'
+						itemId: 'secondComponent'
+					]
+
+			)
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						viewEvent1: 'onViewEvent1Parent'
+						viewEvent2: 'onViewEvent2Parent'
+					firstComponent:
+						listeners:
+							firstComponentEvent1:
+								fn: 'onFirstComponentEvent1Parent'
+								single: true
+					secondComponent:
+						listeners:
+								secondComponentEvent1:
+										fn: 'onSecondComponentEvent1Parent'
+										single: true
+
+				onViewEvent1Parent: ( event ) ->
+					return
+
+				onViewEvent2Parent: ( event ) ->
+					return
+
+				onFirstComponentEvent1Parent: ( event ) ->
+					return
+
+				onSecondComponentEvent1Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						viewEvent1: 'onViewEvent1Child'
+					firstComponent:
+						listeners:
+							firstComponentEvent1:
+								fn: 'onFirstComponentEvent1Child'
+								single: true
+							firstComponentEvent2: 'onFirstComponentEvent2Child'
+					secondComponent:
+						 secondComponentEvent1: 'onSecondComponentEvent1Child'
+						 secondComponentEvent2: 'onSecondComponentEvent2Child'
+
+				onViewEvent1Child: ( event ) ->
+					return
+
+				onFirstComponentEvent1Child: ( event ) ->
+					return
+
+				onFirstComponentEvent2Child: ( event ) ->
+					return
+
+				onSecondComponentEvent1Child: ( event ) ->
+					return
+
+				onSecondComponentEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onViewEvent1Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onViewEvent2Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onFirstComponentEvent1Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onSecondComponentEvent1Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onViewEvent1Child' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onFirstComponentEvent1Child' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onFirstComponentEvent2Child' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onSecondComponentEvent1Child' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onSecondComponentEvent2Child' )
+
+			view = Ext.create( 'ComplexExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'viewEvent1' ) ).to.be.true
+			expect( hasListener( view, 'viewEvent2' ) ).to.be.true
+			expect( hasListener( viewController.getFirstComponent(), 'firstComponentEvent1' ) ).to.be.true
+			expect( hasListener( viewController.getFirstComponent(), 'firstComponentEvent2' ) ).to.be.true
+			expect( hasListener( viewController.getSecondComponent(), 'secondComponentEvent1' ) ).to.be.true
+			expect( hasListener( viewController.getSecondComponent(), 'secondComponentEvent2' ) ).to.be.true
+
+			view.fireEvent( 'viewEvent1', 'view event 1 value' )
+			view.fireEvent( 'viewEvent2', 'view event 2 value' )
+			viewController.getFirstComponent().fireEvent( 'firstComponentEvent1', 'first component event 1 value' )
+			viewController.getFirstComponent().fireEvent( 'firstComponentEvent2', 'first component event 2 value' )
+			viewController.getSecondComponent().fireEvent( 'secondComponentEvent1', 'second component event 1 value' )
+			viewController.getSecondComponent().fireEvent( 'secondComponentEvent2', 'second component event 2 value' )
+
+			expect( viewController.onViewEvent1Parent ).to.be.calledOnce.and.calledWith( 'view event 1 value' ).and.calledOn( viewController )
+			expect( viewController.onViewEvent2Parent ).to.be.calledOnce.and.calledWith( 'view event 2 value' ).and.calledOn( viewController )
+			expect( viewController.onFirstComponentEvent1Parent ).to.be.calledOnce.and.calledWith( 'first component event 1 value' ).and.calledOn( viewController )
+			expect( viewController.onSecondComponentEvent1Parent ).to.be.calledOnce.and.calledWith( 'second component event 1 value' ).and.calledOn( viewController )
+			expect( viewController.onViewEvent1Child ).to.be.calledOnce.and.calledWith( 'view event 1 value' ).and.calledOn( viewController )
+			expect( viewController.onFirstComponentEvent1Child ).to.be.calledOnce.and.calledWith( 'first component event 1 value' ).and.calledOn( viewController )
+			expect( viewController.onFirstComponentEvent2Child ).to.be.calledOnce.and.calledWith( 'first component event 2 value' ).and.calledOn( viewController )
+			expect( viewController.onSecondComponentEvent1Child ).to.be.calledOnce.and.calledWith( 'second component event 1 value' ).and.calledOn( viewController )
+			expect( viewController.onSecondComponentEvent2Child ).to.be.calledOnce.and.calledWith( 'second component event 2 value' ).and.calledOn( viewController )
+
+			return
+		)
 	)
 	
 	describe( 'Observer creation', ->
@@ -2548,6 +2606,169 @@ describe( 'Deft.mvc.ViewController', ->
 		)
 		
 		return
+	)
+
+	describe( 'Creation of associated view controllers using the \'behaviors\' property', ->
+
+		beforeEach( ->
+			Ext.define( 'ExampleComponent',
+				extend: 'Ext.Component'
+				alias: 'widget.example'
+
+				renderTo: 'componentTestArea'
+
+				fireExampleEvent: ( value ) ->
+					@fireEvent( 'exampleevent', @, value )
+					return
+			)
+
+			Ext.define( 'ExampleView',
+				extend: 'Ext.Container'
+
+				renderTo: 'componentTestArea'
+				# Ext JS
+				items: [
+					{
+						xtype: 'example'
+						itemId: 'example'
+					}
+				]
+				config:
+					# Sencha Touch
+					items: [
+						{
+							xtype: 'example'
+							itemId: 'example'
+						}
+					]
+
+				fireExampleEvent: ( value ) ->
+					@fireEvent( 'exampleevent', @, value )
+					return
+			)
+
+			Ext.DomHelper.append( Ext.getBody(), '<div id="componentTestArea" style="visibility: hidden"></div>' )
+
+			return
+		)
+
+		afterEach( ->
+			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
+			return
+		)
+
+		specify( 'creates and destroys associated controllers and attaches scoped event listeners for view events to view controller and associated controller', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEvent'
+
+				behaviors:
+					associatedController1: "AssociatedViewController1"
+
+				onExampleViewExampleEvent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'AssociatedViewController1',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onAssociatedExampleViewExampleEvent'
+
+				behaviors:
+					associatedController2: "AssociatedViewController2"
+
+				onAssociatedExampleViewExampleEvent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'AssociatedViewController2',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onAssociatedExampleViewExampleEvent'
+
+				onAssociatedExampleViewExampleEvent: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewController.prototype, 'onExampleViewExampleEvent' )
+			sinon.spy( AssociatedViewController1.prototype, 'onAssociatedExampleViewExampleEvent' )
+			sinon.spy( AssociatedViewController2.prototype, 'onAssociatedExampleViewExampleEvent' )
+			sinon.spy( AssociatedViewController1.prototype, 'destroy' )
+			sinon.spy( AssociatedViewController2.prototype, 'destroy' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewController',
+				view: view
+			)
+
+			associatedController1 = viewController.getBehaviorHost( "associatedController1" )
+			associatedController2 = associatedController1.getBehaviorHost( "associatedController2" )
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( associatedController1.getView() ).to.equal( view )
+			expect( associatedController2.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+
+			expect( viewController.onExampleViewExampleEvent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( associatedController1.onAssociatedExampleViewExampleEvent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( associatedController1 )
+			expect( associatedController2.onAssociatedExampleViewExampleEvent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( associatedController2 )
+
+			viewController.destroy()
+			expect( associatedController1.destroy ).to.be.calledOnce.and.calledOn( associatedController1 )
+			expect( associatedController2.destroy ).to.be.calledOnce.and.calledOn( associatedController2 )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.false
+
+			return
+		)
+
+		specify( 'throws an error when a circular dependency exists in a view controller\'s behaviors', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+				behaviors:
+					associatedController1: "AssociatedViewController1"
+			)
+
+			Ext.define( 'AssociatedViewController1',
+				extend: 'Deft.mvc.ViewController'
+				behaviors:
+					associatedController2: "AssociatedViewController2"
+			)
+
+			Ext.define( 'AssociatedViewController2',
+				extend: 'Deft.mvc.ViewController'
+				behaviors:
+					associatedController3: "AssociatedViewController3"
+			)
+
+			Ext.define( 'AssociatedViewController3',
+				extend: 'Deft.mvc.ViewController'
+				behaviors:
+					recursiveController: "AssociatedViewController1"
+			)
+
+			view = Ext.create( 'ExampleView' )
+
+			try
+				viewController = Ext.create( 'ExampleViewController',
+					view: view
+				)
+			catch error
+				expect( error.message.lastIndexOf( "circular dependency exists in its behaviors" ) ).to.be.greaterThan( -1 )
+
+			return
+		)
 	)
 	
 	describe( 'Destruction and clean-up', ->
