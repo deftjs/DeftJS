@@ -1464,6 +1464,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
 			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
 
+			delete ExampleViewController
+			delete ExampleViewControllerChild
+
 			return
 		)
 
@@ -1529,6 +1532,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
 			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
 			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
 
 			return
 		)
@@ -1596,6 +1602,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
 
 			return
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
 		)
 
 		specify( 'attaches view controller scoped event listeners to events for the view after merging non-selector-based inherited control blocks', ->
@@ -1658,6 +1667,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
 			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
 			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
 
 			return
 		)
@@ -1722,6 +1734,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
 			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
 
+			delete ExampleViewController
+			delete ExampleViewControllerChild
+
 			return
 		)
 
@@ -1784,6 +1799,9 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
 			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
 			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
 
 			return
 		)
@@ -1917,6 +1935,10 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( viewController.onFirstComponentEvent2Child ).to.be.calledOnce.and.calledWith( 'first component event 2 value' ).and.calledOn( viewController )
 			expect( viewController.onSecondComponentEvent1Child ).to.be.calledOnce.and.calledWith( 'second component event 1 value' ).and.calledOn( viewController )
 			expect( viewController.onSecondComponentEvent2Child ).to.be.calledOnce.and.calledWith( 'second component event 2 value' ).and.calledOn( viewController )
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
+			delete ComplexExampleView
 
 			return
 		)
@@ -2751,7 +2773,10 @@ describe( 'Deft.mvc.ViewController', ->
 		return
 	)
 
-	describe( 'Creation of associated view controllers using the \'behaviors\' property', ->
+	describe( 'Creation of companion view controllers using the \'companions\' property', ->
+
+		delete ExampleComponent
+		delete ExampleView
 
 		beforeEach( ->
 			Ext.define( 'ExampleComponent',
@@ -2797,10 +2822,12 @@ describe( 'Deft.mvc.ViewController', ->
 
 		afterEach( ->
 			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
+			delete ExampleComponent
+			delete ExampleView
 			return
 		)
 
-		specify( 'creates and destroys associated controllers and attaches scoped event listeners for view events to view controller and associated controller', ->
+		specify( 'creates and destroys companion view controllers and attaches scoped event listeners for view events to view controller and companion controller', ->
 
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
@@ -2809,7 +2836,7 @@ describe( 'Deft.mvc.ViewController', ->
 					view:
 						exampleevent: 'onExampleViewExampleEvent'
 
-				behaviors:
+				companions:
 					associatedController1: "AssociatedViewController1"
 
 				onExampleViewExampleEvent: ( event ) ->
@@ -2823,7 +2850,7 @@ describe( 'Deft.mvc.ViewController', ->
 					view:
 						exampleevent: 'onAssociatedExampleViewExampleEvent'
 
-				behaviors:
+				companions:
 					associatedController2: "AssociatedViewController2"
 
 				onAssociatedExampleViewExampleEvent: ( event ) ->
@@ -2853,8 +2880,8 @@ describe( 'Deft.mvc.ViewController', ->
 				view: view
 			)
 
-			associatedController1 = viewController.getBehaviorHost( "associatedController1" )
-			associatedController2 = associatedController1.getBehaviorHost( "associatedController2" )
+			associatedController1 = viewController.getCompanion( "associatedController1" )
+			associatedController2 = associatedController1.getCompanion( "associatedController2" )
 
 			expect( viewController.getView() ).to.equal( view )
 			expect( associatedController1.getView() ).to.equal( view )
@@ -2875,29 +2902,29 @@ describe( 'Deft.mvc.ViewController', ->
 			return
 		)
 
-		specify( 'throws an error when a circular dependency exists in a view controller\'s behaviors', ->
+		specify( 'throws an error when a circular dependency exists in a view controller\'s companions', ->
 
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
-				behaviors:
+				companions:
 					associatedController1: "AssociatedViewController1"
 			)
 
 			Ext.define( 'AssociatedViewController1',
 				extend: 'Deft.mvc.ViewController'
-				behaviors:
+				companions:
 					associatedController2: "AssociatedViewController2"
 			)
 
 			Ext.define( 'AssociatedViewController2',
 				extend: 'Deft.mvc.ViewController'
-				behaviors:
+				companions:
 					associatedController3: "AssociatedViewController3"
 			)
 
 			Ext.define( 'AssociatedViewController3',
 				extend: 'Deft.mvc.ViewController'
-				behaviors:
+				companions:
 					recursiveController: "AssociatedViewController1"
 			)
 
@@ -2908,7 +2935,7 @@ describe( 'Deft.mvc.ViewController', ->
 					view: view
 				)
 			catch error
-				expect( error.message.lastIndexOf( "circular dependency exists in its behaviors" ) ).to.be.greaterThan( -1 )
+				expect( error.message.lastIndexOf( "circular dependency exists in its companions" ) ).to.be.greaterThan( -1 )
 
 			return
 		)

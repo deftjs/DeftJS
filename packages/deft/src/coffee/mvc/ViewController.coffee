@@ -8,112 +8,134 @@ A lightweight MVC view controller. Full usage instructions in the [DeftJS docume
 
 First, specify a ViewController to attach to a view:
 
-    Ext.define("DeftQuickStart.view.MyTabPanel", {
-      extend: "Ext.tab.Panel",
-      controller: "DeftQuickStart.controller.MainController",
-      ...
-    });
+		Ext.define("DeftQuickStart.view.MyTabPanel", {
+			extend: "Ext.tab.Panel",
+			controller: "DeftQuickStart.controller.MainController",
+			...
+		});
 
 Next, define the ViewController:
 
-    Ext.define("DeftQuickStart.controller.MainController", {
-      extend: "Deft.mvc.ViewController",
+		Ext.define("DeftQuickStart.controller.MainController", {
+			extend: "Deft.mvc.ViewController",
 
-      init: function() {
-        return this.callParent(arguments);
-      }
+			init: function() {
+				return this.callParent(arguments);
+			}
 
-    });
+		});
 
 ## Inject dependencies using the <u>[`inject` property](https://github.com/deftjs/DeftJS/wiki/Injecting-Dependencies)</u>:
 
-    Ext.define("DeftQuickStart.controller.MainController", {
-      extend: "Deft.mvc.ViewController",
-      inject: ["companyStore"],
+		Ext.define("DeftQuickStart.controller.MainController", {
+			extend: "Deft.mvc.ViewController",
+			inject: ["companyStore"],
 
-      config: {
-        companyStore: null
-      },
+			config: {
+				companyStore: null
+			},
 
-      init: function() {
-        return this.callParent(arguments);
-      }
+			init: function() {
+				return this.callParent(arguments);
+			}
 
-    });
+		});
 
 ## Define <u>[references to view components](https://github.com/deftjs/DeftJS/wiki/Accessing-Views)</u> and <u>[add view listeners](https://github.com/deftjs/DeftJS/wiki/Handling-View-Events)</u> with the `control` property:
 
-    Ext.define("DeftQuickStart.controller.MainController", {
-      extend: "Deft.mvc.ViewController",
+		Ext.define("DeftQuickStart.controller.MainController", {
+			extend: "Deft.mvc.ViewController",
 
-      control: {
+			control: {
 
-        // Most common configuration, using an itemId and listener
-        manufacturingFilter: {
-          change: "onFilterChange"
-        },
+				// Most common configuration, using an itemId and listener
+				manufacturingFilter: {
+					change: "onFilterChange"
+				},
 
-        // Reference only, with no listeners
-        serviceIndustryFilter: true,
+				// Reference only, with no listeners
+				serviceIndustryFilter: true,
 
-        // Configuration using selector, listeners, and event listener options
-        salesFilter: {
-          selector: "toolbar > checkbox",
-          listeners: {
-            change: {
-              fn: "onFilterChange",
-              buffer: 50,
-              single: true
-            }
-          }
-        }
-      },
+				// Configuration using selector, listeners, and event listener options
+				salesFilter: {
+					selector: "toolbar > checkbox",
+					listeners: {
+						change: {
+							fn: "onFilterChange",
+							buffer: 50,
+							single: true
+						}
+					}
+				}
+			},
 
-      init: function() {
-        return this.callParent(arguments);
-      }
+			init: function() {
+				return this.callParent(arguments);
+			}
 
-      // Event handlers or other methods here...
+			// Event handlers or other methods here...
 
-    });
+		});
 
 ## Dynamically monitor view to attach listeners to added components with <u>[live selectors](https://github.com/deftjs/DeftJS/wiki/ViewController-Live-Selectors)</u>:
 
-    control: {
-      manufacturingFilter: {
-        live: true,
-        listeners: {
-          change: "onFilterChange"
-        }
-      }
-    };
+		control: {
+			manufacturingFilter: {
+				live: true,
+				listeners: {
+					change: "onFilterChange"
+				}
+			}
+		};
 
 ## Observe events on injected objects with the <u>[`observe` property](https://github.com/deftjs/DeftJS/wiki/ViewController-Observe-Configuration)</u>:
 
-    Ext.define("DeftQuickStart.controller.MainController", {
-      extend: "Deft.mvc.ViewController",
-      inject: ["companyStore"],
+		Ext.define("DeftQuickStart.controller.MainController", {
+			extend: "Deft.mvc.ViewController",
+			inject: ["companyStore"],
 
-      config: {
-        companyStore: null
-      },
+			config: {
+				companyStore: null
+			},
 
-      observe: {
-        // Observe companyStore for the update event
-        companyStore: {
-          update: "onCompanyStoreUpdateEvent"
-        }
-      },
+			observe: {
+				// Observe companyStore for the update event
+				companyStore: {
+					update: "onCompanyStoreUpdateEvent"
+				}
+			},
 
-      init: function() {
-        return this.callParent(arguments);
-      },
+			init: function() {
+				return this.callParent(arguments);
+			},
 
-      onCompanyStoreUpdateEvent: function(store, model, operation, fieldNames) {
-        // Do something when store fires update event
-      }
+			onCompanyStoreUpdateEvent: function(store, model, operation, fieldNames) {
+				// Do something when store fires update event
+			}
 
-    });
+		});
+
+## Attach companion view controllers using the <u>[`companions` property](https://github.com/deftjs/DeftJS/wiki/ViewController-Companion-Configuration)</u>:
+
+		Ext.define("DeftQuickStart.controller.MainController", {
+			extend: "Deft.mvc.ViewController",
+			inject: ["companyStore"],
+
+			config: {
+				companyStore: null
+			},
+
+			companions: {
+				// Create companion view controllers which can also manage the original view
+				// This allows a view controller to leverage common behavior provided by other view controllers.
+				shoppingCart: "DeftQuickStart.controller.ShoppingCartController"
+			},
+
+			init: function() {
+				return this.callParent(arguments);
+			}
+
+		});
 
 ###
 Ext.define( 'Deft.mvc.ViewController',
@@ -136,10 +158,10 @@ Ext.define( 'Deft.mvc.ViewController',
 		view: null
 
 		###*
-  	* @private
-		* Associated ViewControllers to supply additional behavior.
+		* @private
+		* Companion ViewController instances.
 		###
-		behaviorHosts: null
+		companionInstances: null
 
 
 	constructor: ( config = {} ) ->
@@ -179,7 +201,7 @@ Ext.define( 'Deft.mvc.ViewController',
 				else
 					@getView().on( 'initialize', @onViewInitialize, @, single: true )
 
-			@createBehaviors()
+			@createCompanions()
 
 		else
 			Ext.Error.raise( msg: 'Error constructing ViewController: the configured \'view\' is not an Ext.Component.' )
@@ -189,72 +211,72 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	* @protected
 	###
-	createBehaviors: ->
-		@behaviorHosts = {}
+	createCompanions: ->
+		@companionInstances = {}
 
-		for alias, clazz of @behaviors
-			@addBehavior( alias, clazz )
+		for alias, clazz of @companions
+			@addCompanion( alias, clazz )
 
 
 	###*
 	* @protected
 	###
-	destroyBehaviors: ->
-		for alias, instance of @behaviorHosts
-			@removeBehavior( alias )
+	destroyCompanions: ->
+		for alias, instance of @companionInstances
+			@removeCompanion( alias )
 
 
 	###*
-  *	Add a new view controller behavior association to a view controller.
-  * @param {String} alias The alias for the new behavior host
-  * @param {String} class The class name of the view controller that will supply the additional behavior.
-  ###
-	addBehavior: ( alias, clazz ) ->
+	* Add a new companion view controller to this view controller.
+	* @param {String} alias The alias for the new companion.
+	* @param {String} class The class name of the companion view controller.
+	###
+	addCompanion: ( alias, clazz ) ->
 
-		if( @behaviorHosts[ alias ]? )
-			Deft.Logger.warn( "The specified behavior alias '#{ alias }' already exists." )
+		if( @companionInstances[ alias ]? )
+			Deft.Logger.warn( "The specified companion alias '#{ alias }' already exists." )
 			return
 
 		isRecursionStart = false
-		if( Deft.mvc.ViewController.behaviorCreationStack.length is 0 )
+		if( Deft.mvc.ViewController.companionCreationStack.length is 0 )
 			isRecursionStart = true
 
 		try
 
-			# Prevent circular dependencies during behavior creation
-			if( not Ext.Array.contains( Deft.mvc.ViewController.behaviorCreationStack, Ext.getClassName( @ ) ) )
-				Deft.mvc.ViewController.behaviorCreationStack.push( Ext.getClassName( @ ) )
+			# Prevent circular dependencies during companion creation
+			if( not Ext.Array.contains( Deft.mvc.ViewController.companionCreationStack, Ext.getClassName( @ ) ) )
+				Deft.mvc.ViewController.companionCreationStack.push( Ext.getClassName( @ ) )
 			else
-				Deft.mvc.ViewController.behaviorCreationStack.push( Ext.getClassName( @ ) )
-				initialClass = Deft.mvc.ViewController.behaviorCreationStack[ 0 ]
-				stackMessage = Deft.mvc.ViewController.behaviorCreationStack.join( " -> " )
-				Deft.mvc.ViewController.behaviorCreationStack = []
-				Ext.Error.raise( msg: "Error creating behaviors for '#{ initialClass }'. A circular dependency exists in its behaviors: #{ stackMessage }" )
+				Deft.mvc.ViewController.companionCreationStack.push( Ext.getClassName( @ ) )
+				initialClass = Deft.mvc.ViewController.companionCreationStack[ 0 ]
+				stackMessage = Deft.mvc.ViewController.companionCreationStack.join( " -> " )
+				Deft.mvc.ViewController.companionCreationStack = []
+				Ext.Error.raise( msg: "Error creating companions for '#{ initialClass }'. A circular dependency exists in its companions: #{ stackMessage }" )
 
 			newHost = Ext.create( clazz )
 			newHost.controlView( @getView() )
-			@behaviorHosts[ alias ] = newHost
-			Deft.mvc.ViewController.behaviorCreationStack = [] if isRecursionStart
+			@companionInstances[ alias ] = newHost
+			Deft.mvc.ViewController.companionCreationStack = [] if isRecursionStart
 
 		catch error
 			# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
 			Deft.Logger.warn( "Error initializing associated view controller: an error occurred while creating an instance of the specified controller: '#{ clazz }'." )
-			Deft.mvc.ViewController.behaviorCreationStack = []
+			Deft.mvc.ViewController.companionCreationStack = []
 			throw error
 
 
 	###*
-	*	Removes and destroys a view controller behavior association for this view controller.
-  * @param {String} alias The alias for the behavior host to remove
-  ###
-	removeBehavior: ( alias ) ->
+	* Removes and destroys a companion view controller from this view controller.
+	* @param {String} alias The alias for the companion host to remove
+	###
+	removeCompanion: ( alias ) ->
 
-		if( not @behaviorHosts[ alias ]? )
-			Deft.Logger.warn( "The specified behavior alias '#{ alias }' cannot be removed because the alias does not exist." )
+		if( not @companionInstances[ alias ]? )
+			Deft.Logger.warn( "The specified companion alias '#{ alias }' cannot be removed because the alias does not exist." )
 
 		try
-			@behaviorHosts[ alias ]?.destroy()
-			delete @behaviorHosts[ alias ]
+			@companionInstances[ alias ]?.destroy()
+			delete @companionInstances[ alias ]
 
 		catch error
 			# NOTE: Ext.Logger.error() will throw an error, masking the error we intend to rethrow, so warn instead.
@@ -263,11 +285,11 @@ Ext.define( 'Deft.mvc.ViewController',
 
 
 	###*
-  *	Locates a behavior host by alias.
-  * @param {String} alias The alias for the desired behavior instance
-  ###
-	getBehaviorHost: ( alias ) ->
-		return @behaviorHosts[ alias ]
+	* Locates a companion view controller by alias.
+	* @param {String} alias The alias for the desired companion instance
+	###
+	getCompanion: ( alias ) ->
+		return @companionInstances[ alias ]
 
 
 	###*
@@ -279,7 +301,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		for selector of @registeredComponentSelectors
 			@removeComponentSelector( selector )
 		@removeObservers()
-		@destroyBehaviors()
+		@destroyCompanions()
 		return true
 
 
@@ -448,21 +470,21 @@ Ext.define( 'Deft.mvc.ViewController',
 
 	statics:
 
-		behaviorCreationStack: []
+		companionCreationStack: []
 
 
 		mergeSubclassInterceptor: () ->
 			return ( config = {} ) ->
 
 				controlPropertyName = "control"
-				behaviorPropertyName = "behaviors"
+				companionPropertyName = "companions"
 				if not @[ controlPropertyName ]? then @[ controlPropertyName ] = {}
-				if not @[ behaviorPropertyName ]? then @[ behaviorPropertyName ] = []
+				if not @[ companionPropertyName ]? then @[ companionPropertyName ] = []
 
 				# TODO: Add in a check for a completed flag to prevent re-processing a class?
 				if( Ext.Object.getSize( @[ controlPropertyName ] ) > 0 )
 					Deft.util.DeftMixinUtils.mergeSuperclassProperty( @, controlPropertyName, Deft.mvc.ViewController.controlMergeHandler )
-					Deft.util.DeftMixinUtils.mergeSuperclassProperty( @, behaviorPropertyName, Deft.mvc.ViewController.behaviorMergeHandler )
+					Deft.util.DeftMixinUtils.mergeSuperclassProperty( @, companionPropertyName, Deft.mvc.ViewController.companionMergeHandler )
 
 					# TODO: These calls based on Ext JS version can revert to @callParent() if we end up dropping 4.0.x support...
 					@[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
@@ -608,6 +630,6 @@ Ext.define( 'Deft.mvc.ViewController',
 			return normalizedOriginalParentControlConfig
 
 
-		behaviorMergeHandler: ( parentBehaviors, childBehaviors ) ->
-			return Ext.merge( Ext.clone( parentBehaviors ), Ext.clone( childBehaviors ) )
+		companionMergeHandler: ( parentCompanions, childCompanions ) ->
+			return Ext.merge( Ext.clone( parentCompanions ), Ext.clone( childCompanions ) )
 )
