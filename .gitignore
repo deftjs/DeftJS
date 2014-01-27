@@ -2,4 +2,9 @@
 .idea
 *.iml
 node_modules
+build
+packages/deft/build
 packages/deft/coverage
+packages/deft/docs
+packages/deft/src/js
+packages/deft/test/js
