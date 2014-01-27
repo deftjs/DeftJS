@@ -88,12 +88,12 @@
         <echo message="Compiling CoffeeScript..." />
 
         <echo message="Compiling CoffeeScript in ${package.dir}/src/coffee to ${package.dir}/src/js" />
-        <exec dir="src" executable="${coffeeExecutable}">
+        <exec dir="src" executable="${coffeeExecutable}" failonerror="true">
             <arg line="-cbo js coffee" />
         </exec>
 
         <echo message="Compiling CoffeeScript in ${package.dir}/test/coffee to ${package.dir}/test/js" />
-        <exec dir="test" executable="${coffeeExecutable}">
+        <exec dir="test" executable="${coffeeExecutable}" failonerror="true">
             <arg line="-cbo js coffee" />
         </exec>
 
@@ -125,7 +125,7 @@
         <echo message="${jsduck.config}" file="jsduck.json" />
 
         <echo message="Generating API documentation..." />
-        <exec executable="${jsDuckExecutable}" timeout="20000" failonerror="false" />
+        <exec executable="${jsDuckExecutable}" timeout="20000" failonerror="true" />
         
         <echo message="Applying custom JSDuck theme..." />
         <copy todir="docs" overwrite="true">
