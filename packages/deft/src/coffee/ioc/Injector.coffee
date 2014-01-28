@@ -114,6 +114,7 @@ Ext.define( 'Deft.ioc.Injector',
 
 		'Deft.log.Logger'
 		'Deft.ioc.DependencyProvider'
+		'Deft.util.Function'
 	]
 	singleton: true
 
@@ -236,7 +237,7 @@ Ext.define( 'Deft.ioc.Injector',
 				# NOTE: Ext JS's Ext.Component doesn't "play by the rules" and never actually calls Ext.Base::initConfig().
 				# Store the configs to be injected and apply via the constructor override define below.
 				targetInstance.injectConfig = injectConfig
-			else if Ext.isFunction( targetInstance.initConfig )
+			else if Deft.isFunction( targetInstance.initConfig )
 				originalInitConfigFunction = targetInstance.initConfig
 				targetInstance.initConfig = ( config ) ->
 					result = originalInitConfigFunction.call( @, Ext.Object.merge( {}, config or {}, injectConfig ) )

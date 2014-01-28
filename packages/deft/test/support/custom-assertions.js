@@ -1,5 +1,7 @@
 chai.use(function(chai, utils) {
 	var assert = chai.assert;
+	var expect = chai.expect;
+	var Assertion = chai.Assertion;
 
 	Assertion.addMethod('memberOf', function(array) {
 		var value = utils.flag(this, 'object');

@@ -12,6 +12,7 @@ Ext.define( 'Deft.mvc.ComponentSelector',
 		'Ext.ComponentQuery'
 		'Deft.log.Logger'
 		'Deft.mvc.ComponentSelectorListener'
+		'Deft.util.Function'
 	]
 	
 	constructor: ( config ) ->
@@ -39,9 +40,9 @@ Ext.define( 'Deft.mvc.ComponentSelector',
 						delete options.scope
 						
 				# Parse `fn`.
-				if Ext.isString( fn ) and Ext.isFunction( scope[ fn ] )
+				if Ext.isString( fn ) and Deft.isFunction( scope[ fn ] )
 					fn = scope[ fn ]
-				if not Ext.isFunction ( fn )
+				if not Deft.isFunction ( fn )
 					Ext.Error.raise( msg: "Error adding '#{ eventName }' listener: the specified handler '#{ fn }' is not a Function or does not exist." )
 				
 				@addListener( eventName, fn, scope, options )
