@@ -24,28 +24,36 @@ Ext.define( 'Deft.mvc.ComponentSelector',
 		@selectorListeners = []
 		
 		if Ext.isObject( @listeners )
-			for eventName, listener of @listeners
-				fn = listener
-				scope = @scope
-				options = null
-				
-				# Parse `options` if present.
-				if Ext.isObject( listener )
-					options = Ext.apply( {}, listener )
-					if options.fn?
-						fn = options.fn
-						delete options.fn
-					if options.scope?
-						scope = options.scope
-						delete options.scope
-						
-				# Parse `fn`.
-				if Ext.isString( fn ) and Deft.isFunction( scope[ fn ] )
-					fn = scope[ fn ]
-				if not Deft.isFunction ( fn )
-					Ext.Error.raise( msg: "Error adding '#{ eventName }' listener: the specified handler '#{ fn }' is not a Function or does not exist." )
-				
-				@addListener( eventName, fn, scope, options )
+			for eventName, listenerList of @listeners
+
+				# Convert non-array listener list into an array
+				if( not Ext.isArray( listenerList ) )
+					listenerList = [ listenerList ]
+
+				# Iternate listener list to create each listener
+				for listener in listenerList
+					fn = listener
+					scope = @scope
+					options = null
+
+					# Parse `options` if present.
+					if Ext.isObject( listener )
+						options = Ext.apply( {}, listener )
+						if options.fn?
+							fn = options.fn
+							delete options.fn
+						if options.scope?
+							scope = options.scope
+							delete options.scope
+
+					# Parse `fn`.
+					if Ext.isString( fn ) and Deft.isFunction( scope[ fn ] )
+						fn = scope[ fn ]
+					if not Deft.isFunction( fn )
+						Ext.Error.raise( msg: "Error adding '#{ eventName }' listener: the specified handler '#{ fn }' is not a Function or does not exist." )
+
+					@addListener( eventName, fn, scope, options )
+
 		return @
 	
 	destroy: ->
