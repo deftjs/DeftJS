@@ -77,7 +77,7 @@ Ext.define( 'Deft.mvc.Observer',
 	* Checks for both host[ target ], and host.getTarget().
 	###
 	locateTarget: ( host, target ) ->
-		if Ext.isFunction( host[ 'get' + Ext.String.capitalize( target ) ] )
+		if Deft.isFunction( host[ 'get' + Ext.String.capitalize( target ) ] )
 			result = host[ 'get' + Ext.String.capitalize( target ) ].call( host )
 			return result
 		else if host?[ target ]?
@@ -105,9 +105,9 @@ Ext.define( 'Deft.mvc.Observer',
 			host = propertyChain.host
 			target = propertyChain.target
 
-		if Ext.isFunction( handler )
+		if Deft.isFunction( handler )
 			return { target: @locateTarget( host, target ), handler: handler  }
-		else if Ext.isFunction( handlerHost[ handler ] )
+		else if Deft.isFunction( handlerHost[ handler ] )
 			return { target: @locateTarget( host, target ), handler: handlerHost[ handler ]  }
 		else
 			return null

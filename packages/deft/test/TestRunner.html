@@ -47,7 +47,7 @@
 
 	<script src="lib/mocha-as-promised-2.0.0/mocha-as-promised.js"></script>
 	<script src="lib/chai-as-promised-4.1.0/chai-as-promised.js"></script>
-	<!-- <script src="lib/setImmediate-1.0.1/setImmediate.js"></script> -->
+	<script src="lib/setImmediate-1.0.1/setImmediate.js"></script>
 
 	<!-- Include selected Sencha framework and Deft JS test files based on URL parameters and local storage values. -->
 	<script type="text/javascript">
@@ -69,18 +69,17 @@
 			
 			// Deft JS test files.
 			var files = [
-				'DeftJS-Promise-adapter.js',
+				//'js/custom-assertions.js',
 
-				'js/custom-assertions.js',
+				'js/util/Function.js',
 				'js/log/Logger.js',
 				'js/ioc/Injector.js',
 				'js/mixin/Injectable.js',
 				'js/mixin/Controllable.js',
-				'js/mvc/ViewController.js',
-				'lib/promises-aplus-tests-1.3.1/promises-aplus-tests.js',
-				'js/promise/Promise.js',
-				'js/promise/Chain.js',
-				'js/util/Function.js'
+				'js/mvc/ViewController.js'
+				//'lib/promises-aplus-tests-2.0.3/promises-aplus-tests.js',
+				//'js/promise/Promise.js',
+				//'js/promise/Chain.js'
 			];
 			
 			function getURLParameters() {

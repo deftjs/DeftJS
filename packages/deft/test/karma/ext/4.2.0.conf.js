@@ -28,16 +28,15 @@ module.exports = function(config) {
 			'test/lib/mocha-as-promised-2.0.0/mocha-as-promised.js',
 			'test/lib/chai-as-promised-4.1.0/chai-as-promised.js',
 
-			'test/DeftJS-Promise-adapter.js',
-
 			'test/js/custom-assertions.js',
-			'test/js/log/Logger.js',
+
 			'test/js/util/Function.js',
+			'test/js/log/Logger.js',
 			'test/js/ioc/Injector.js',
 			'test/js/mixin/Injectable.js',
 			'test/js/mixin/Controllable.js',
 			'test/js/mvc/ViewController.js',
-			'test/lib/promises-aplus-tests-1.3.1/promises-aplus-tests.js',
+			'test/lib/promises-aplus-tests-2.0.3/promises-aplus-tests.js',
 			'test/js/promise/Promise.js',
 			'test/js/promise/Chain.js'
 		],

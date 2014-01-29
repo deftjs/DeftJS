@@ -74,7 +74,7 @@ describe( 'Deft.util.Function', ->
 			)
 			return
 		)
-		
+
 		specify( 'schedules the specified functionto be executed in the specified scope in the next turn of the event loop', ( done ) ->
 			targetScope = {}
 			targetFunction = sinon.stub()
@@ -84,6 +84,23 @@ describe( 'Deft.util.Function', ->
 			setTimeout(
 				->
 					expect( targetFunction ).to.be.calledOnce.and.calledOn( targetScope )
+					done()
+					return
+				0
+			)
+			return
+		)
+
+		specify( 'schedules the specified functionto be executed in the specified scope with the specified parameters in the next turn of the event loop', ( done ) ->
+			targetScope = {}
+			targetFunction = sinon.stub()
+
+			Deft.util.Function.nextTick( targetFunction, targetScope, [ 'a', 'b','c' ] )
+
+			setTimeout(
+				->
+					expect( targetFunction ).to.be.calledOnce.and.calledOn( targetScope )
+					expect( targetFunction ).to.be.calledOnce.and.calledWith( 'a', 'b','c' )
 					done()
 					return
 				0

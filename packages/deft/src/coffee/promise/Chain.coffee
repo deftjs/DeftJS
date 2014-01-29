@@ -15,6 +15,7 @@ Ext.define( 'Deft.promise.Chain',
 	alternateClassName: [ 'Deft.Chain' ]
 	requires: [
 		'Deft.promise.Promise'
+		'Deft.util.Function'
 	]
 	
 	statics:
@@ -32,7 +33,7 @@ Ext.define( 'Deft.promise.Chain',
 			return Deft.Promise.reduce( 
 				fns
 				( results, fn ) ->
-					if not Ext.isFunction( fn )
+					if not Deft.isFunction( fn )
 						throw new Error( 'Invalid parameter: expected a function.' )
 					return Deft.Promise.when( fn.apply( scope, args ) ).then( ( result ) -> 
 						results.push( result ) 

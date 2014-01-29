@@ -1,14 +1,11 @@
-window.global = window;
 mocha.setup({
 	ui: "bdd"
 });
 
 chai.should();
 
-global.expect = chai.expect;
-global.AssertionError = chai.AssertionError;
-global.Assertion = chai.Assertion;
-global.assert = chai.assert;
+window.assert = chai.assert;
+window.expect = chai.expect;
 
 // Required for Phantom JS until 2.0 is released - it lacks Function.prototype.bind.
 // Adaoted fron Modernizr - https://github.com/Modernizr/Modernizr/blob/master/src/fnBind.js

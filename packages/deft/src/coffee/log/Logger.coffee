@@ -12,6 +12,9 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 ###
 Ext.define( 'Deft.log.Logger',
 	alternateClassName: [ 'Deft.Logger' ]
+	requires: [
+		'Deft.util.Function'
+	]
 	singleton: true
 
 	###*
@@ -85,7 +88,7 @@ Ext.define( 'Deft.log.Logger',
 		else
 			# Sencha Touch
 			@log = ( message, priority = 'info' ) ->
-				if Ext.Logger? and Ext.isFunction( Ext.Logger.log )
+				if Ext.Logger? and Deft.isFunction( Ext.Logger.log )
 					Ext.Logger.log( message, priority )
 				return
 		return
