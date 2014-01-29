@@ -19,7 +19,7 @@ describe( 'Deft.mvc.ViewController', ->
 				return false
 		else
 			return observable.hasListener( eventName )
-	
+
 	describe( 'Configuration', ->
 		
 		specify( 'configurable with a reference to the view it controls', ->
@@ -2821,16 +2821,22 @@ describe( 'Deft.mvc.ViewController', ->
 		)
 
 		afterEach( ->
+			# Ensure that injector stub is restored in the event of a spec failure.
+			if Deft.Injector.inject.restore
+				Deft.Injector.inject.restore()
 			Ext.removeNode( Ext.get( 'componentTestArea' ).dom )
 			delete ExampleComponent
 			delete ExampleView
 			return
 		)
 
-		specify( 'creates and destroys companion view controllers and attaches scoped event listeners for view events to view controller and companion controller', ->
+		specify( 'creates and destroys companion view controllers and attaches view event listeners to view controller and companion controller, and performs injections using ViewController class\'s Injectable mixin.', ->
+
+			injectStub = sinon.stub( Deft.Injector, 'inject' )
 
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
+				inject: [ 'identifier' ]
 
 				control:
 					view:
@@ -2839,12 +2845,20 @@ describe( 'Deft.mvc.ViewController', ->
 				companions:
 					associatedController1: "AssociatedViewController1"
 
+				constructor: ->
+					expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
+					expect( @inject ).to.be.eql(
+						identifier: 'identifier'
+					)
+					return @callParent( arguments )
+
 				onExampleViewExampleEvent: ( event ) ->
 					return
 			)
 
 			Ext.define( 'AssociatedViewController1',
 				extend: 'Deft.mvc.ViewController'
+				inject: [ 'identifier2' ]
 
 				control:
 					view:
@@ -2852,6 +2866,13 @@ describe( 'Deft.mvc.ViewController', ->
 
 				companions:
 					associatedController2: "AssociatedViewController2"
+
+				constructor: ->
+					expect( injectStub ).to.be.calledWith( @inject, @, arguments, false )
+					expect( @inject ).to.be.eql(
+						identifier2: 'identifier2'
+					)
+					return @callParent( arguments )
 
 				onAssociatedExampleViewExampleEvent: ( event ) ->
 					return
@@ -2899,6 +2920,12 @@ describe( 'Deft.mvc.ViewController', ->
 			expect( associatedController2.destroy ).to.be.calledOnce.and.calledOn( associatedController2 )
 			expect( hasListener( view, 'exampleevent' ) ).to.be.false
 
+			injectStub.restore()
+
+			delete ExampleViewController
+			delete AssociatedViewController1
+			delete AssociatedViewController2
+
 			return
 		)
 
@@ -2936,6 +2963,12 @@ describe( 'Deft.mvc.ViewController', ->
 				)
 			catch error
 				expect( error.message.lastIndexOf( "circular dependency exists in its companions" ) ).to.be.greaterThan( -1 )
+
+
+			delete ExampleViewController
+			delete AssociatedViewController1
+			delete AssociatedViewController2
+			delete AssociatedViewController3
 
 			return
 		)

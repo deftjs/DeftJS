@@ -101,11 +101,11 @@ Ext.define( 'Deft.mixin.Observer',
 					Deft.mixin.Observer.afterMixinProcessed( @ )
 
 					# TODO: These calls based on Ext JS version can revert to @callParent() if we end up dropping 4.0.x support...
-					@[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
+					@[ Deft.util.DeftMixinUtils.parentConstructorForVersion() ]( arguments )
 
 					return @
 
-				return @[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
+				return @[ Deft.util.DeftMixinUtils.parentConstructorForVersion() ]( arguments )
 
 
 		###*
@@ -193,7 +193,7 @@ Ext.define( 'Deft.mixin.Observer',
 		@private
 		###
 		afterMixinProcessed: ( target ) ->
-			target[ @MIXIN_COMPLETED_KEY ] = true
+			target[ Deft.mixin.Observer.MIXIN_COMPLETED_KEY ] = true
 			return
 
 )

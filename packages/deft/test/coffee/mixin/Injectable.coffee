@@ -5,6 +5,13 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
 describe( 'Deft.mixin.Injectable', ->
 
+	afterEach( ->
+		# Ensure that injector stub is restored in the event of a spec failure.
+		if Deft.Injector.inject.restore
+			Deft.Injector.inject.restore()
+		return
+	)
+
 	specify( 'should trigger injection before the target class constructor is executed', ->
 		injectStub = sinon.stub( Deft.Injector, 'inject' )
 
@@ -22,7 +29,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		exampleInstance = Ext.create( 'ExampleClass' )
 
-		Deft.Injector.inject.restore()
+		injectStub.restore()
 
 		delete ExampleClass
 
@@ -55,7 +62,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		expect( injectStub ).to.be.calledOnce
 
-		Deft.Injector.inject.restore()
+		injectStub.restore()
 
 		delete ExampleClass
 		delete ExampleSubclass
@@ -95,7 +102,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		expect( injectStub ).to.be.calledOnce
 
-		Deft.Injector.inject.restore()
+		injectStub.restore()
 
 		delete ExampleClass
 		delete ExampleSubclass
@@ -125,6 +132,7 @@ describe( 'Deft.mixin.Injectable', ->
 					identifier1: 'identifier1'
 					identifier2: 'identifier2'
 				)
+
 				return @callParent()
 		)
 
@@ -132,7 +140,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		expect( injectStub ).to.be.calledOnce
 
-		Deft.Injector.inject.restore()
+		injectStub.restore()
 
 		delete ExampleClass
 		delete ExampleSubclass
@@ -171,7 +179,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		expect( injectStub ).to.be.calledOnce
 
-		Deft.Injector.inject.restore()
+		injectStub.restore()
 
 		delete ExampleClass
 		delete ExampleSubclass
@@ -207,7 +215,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		expect( injectStub ).to.be.calledOnce
 
-		Deft.Injector.inject.restore()
+		injectStub.restore()
 
 		delete ExampleClass
 		delete ExampleSubclass
@@ -243,7 +251,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		expect( injectStub ).to.be.calledOnce
 
-		Deft.Injector.inject.restore()
+		injectStub.restore()
 
 		delete ExampleClass
 		delete ExampleSubclass
@@ -279,7 +287,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		expect( injectStub ).to.be.calledOnce
 
-		Deft.Injector.inject.restore()
+		injectStub.restore()
 
 		delete ExampleClass
 		delete ExampleSubclass
@@ -316,7 +324,7 @@ describe( 'Deft.mixin.Injectable', ->
 
 		expect( injectStub ).to.be.calledOnce
 
-		Deft.Injector.inject.restore()
+		injectStub.restore()
 
 		delete ExampleClass
 		delete ExampleSubclass

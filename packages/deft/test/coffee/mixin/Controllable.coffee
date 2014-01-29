@@ -6,7 +6,7 @@ Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 describe( 'Deft.mixin.Controllable', ->
 	
 	describe( "when a Component or Container specifies the 'controller' class annotation", ->
-		
+
 		specify( 'creates an instance of the view controller specified by the target view `controller` class annotation and configures it with a reference to the target view instance when an instance of the target view is created', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
@@ -83,7 +83,7 @@ describe( 'Deft.mixin.Controllable', ->
 			expect( exampleViewControllerInstance.getView() ).to.equal( exampleViewInstance )
 			return
 		)
-		
+
 		specify( 'passes the configuration object passed to the target view\'s `controllerConfig` config to the view controller\'s constructor', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
@@ -105,7 +105,7 @@ describe( 'Deft.mixin.Controllable', ->
 				controllerConfig:
 					value: 'expected value'
 			)
-			
+
 			expect( constructorSpy ).to.be.calledOnce.and.calledWith( { value: 'expected value' } )
 			exampleViewControllerInstance = constructorSpy.lastCall.thisValue
 			expect( exampleViewControllerInstance.getView() ).to.equal( exampleViewInstance )
@@ -116,7 +116,7 @@ describe( 'Deft.mixin.Controllable', ->
 
 			return
 		)
-		
+
 		specify( 'automatically adds a getController() accessor method to the target view that returns the associated the view controller instance', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'

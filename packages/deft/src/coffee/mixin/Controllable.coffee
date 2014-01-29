@@ -69,20 +69,20 @@ Ext.define( 'Deft.mixin.Controllable',
 					Deft.mixin.Controllable.afterMixinProcessed( @ )
 
 					# TODO: These calls based on Ext JS version can revert to @callParent() if we end up dropping 4.0.x support...
-					@[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
+					@[ Deft.util.DeftMixinUtils.parentConstructorForVersion() ]( arguments )
 
 					controller.controlView( @ )
 
 					return @
 
-				return @[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
+				return @[ Deft.util.DeftMixinUtils.parentConstructorForVersion() ]( arguments )
 
 
 		###*
 		* @private
 		###
 		afterMixinProcessed: ( target ) ->
-			target[ @MIXIN_COMPLETED_KEY ] = true
+			target[ Deft.mixin.Controllable.MIXIN_COMPLETED_KEY ] = true
 			return
 
 )

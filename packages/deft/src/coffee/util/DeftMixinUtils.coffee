@@ -32,7 +32,7 @@ Ext.define( "Deft.util.DeftMixinUtils",
 		###*
 		* Returns the proper method name to call the superclass constructor, based on platform and version.
 		###
-		parentConstructorForVersion: ( target ) ->
+		parentConstructorForVersion: ->
 			if Ext.getVersion( 'extjs' ) and Ext.getVersion( 'core' ).isLessThan( '4.1.0' )
 				return "callOverridden"
 			else

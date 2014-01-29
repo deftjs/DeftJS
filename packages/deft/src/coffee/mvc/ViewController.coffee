@@ -140,11 +140,12 @@ Next, define the ViewController:
 ###
 Ext.define( 'Deft.mvc.ViewController',
 	alternateClassName: [ 'Deft.ViewController' ]
-	mixins: [ 'Deft.mixin.Observer' ]
+	mixins: [ 'Deft.mixin.Injectable', 'Deft.mixin.Observer' ]
 	requires: [
 		'Deft.core.Class'
 		'Deft.log.Logger'
 		'Deft.mvc.ComponentSelector'
+		'Deft.mixin.Injectable'
 		'Deft.mixin.Observer'
 		'Deft.mvc.Observer'
 		'Deft.util.DeftMixinUtils'
@@ -165,8 +166,13 @@ Ext.define( 'Deft.mvc.ViewController',
 
 
 	constructor: ( config = {} ) ->
+		if Ext.isObject( config.companions )
+			@companions = Ext.merge( @companions, config.companions )
+			delete config.companions
+
 		if config.view
 			@controlView( config.view )
+
 		@initConfig( config ) # Ensure any config values are set before creating observers.
 		@createObservers()
 		return @
@@ -287,6 +293,7 @@ Ext.define( 'Deft.mvc.ViewController',
 	###*
 	* Locates a companion view controller by alias.
 	* @param {String} alias The alias for the desired companion instance
+	* @return {Deft.mvc.ViewController} The companion view controller instance.
 	###
 	getCompanion: ( alias ) ->
 		return @companionInstances[ alias ]
@@ -479,19 +486,15 @@ Ext.define( 'Deft.mvc.ViewController',
 				controlPropertyName = "control"
 				companionPropertyName = "companions"
 				if not @[ controlPropertyName ]? then @[ controlPropertyName ] = {}
-				if not @[ companionPropertyName ]? then @[ companionPropertyName ] = []
+				if not @[ companionPropertyName ]? then @[ companionPropertyName ] = {}
 
 				# TODO: Add in a check for a completed flag to prevent re-processing a class?
 				if( Ext.Object.getSize( @[ controlPropertyName ] ) > 0 )
 					Deft.util.DeftMixinUtils.mergeSuperclassProperty( @, controlPropertyName, Deft.mvc.ViewController.controlMergeHandler )
 					Deft.util.DeftMixinUtils.mergeSuperclassProperty( @, companionPropertyName, Deft.mvc.ViewController.companionMergeHandler )
 
-					# TODO: These calls based on Ext JS version can revert to @callParent() if we end up dropping 4.0.x support...
-					@[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
-
-					return @
-
-				return @[ Deft.util.DeftMixinUtils.parentConstructorForVersion( @ ) ]( arguments )
+				@[ Deft.util.DeftMixinUtils.parentConstructorForVersion() ]( arguments )
+				return @
 
 
 		controlMergeHandler: ( originalParentControl, originalChildControl ) ->

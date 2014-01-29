@@ -22,7 +22,13 @@ Ext.define( 'Deft.mixin.Injectable',
 		target::constructor = @createMixinInterceptor( target::constructor )
 
 		target.onExtended( ( clazz, config ) ->
-			config.constructor = Deft.mixin.Injectable.createMixinInterceptor( config.constructor )
+			# Injections should be processed before constructor runs, and should not wait for a call to callParent().
+			# So ensure that if a custom constructor function is being defined, that we intercept that constructor instead.
+			if( config.hasOwnProperty( "constructor") )
+				config.constructor = Deft.mixin.Injectable.createMixinInterceptor( config.constructor )
+			else
+				clazz::constructor = Deft.mixin.Injectable.createMixinInterceptor( clazz::constructor )
+
 			return true
 		)
 
@@ -49,12 +55,15 @@ Ext.define( 'Deft.mixin.Injectable',
 		* @private
 		###
 		constructorInterceptor: ( target, targetInstanceConstructorArguments ) ->
+			mixinCompletedKey = Deft.mixin.Injectable.MIXIN_COMPLETED_KEY
+			propertyName = Deft.mixin.Injectable.PROPERTY_NAME
+
 			# Only continue of the target hasn't already been processed for injections.
-			if( not target[ @MIXIN_COMPLETED_KEY ] )
-				Deft.util.DeftMixinUtils.mergeSuperclassProperty( target, @PROPERTY_NAME, @propertyMergeHandler )
-				injectConfig = target[ @PROPERTY_NAME ]
+			if( not target[ mixinCompletedKey ] )
+				Deft.util.DeftMixinUtils.mergeSuperclassProperty( target, propertyName, Deft.mixin.Injectable.propertyMergeHandler )
+				injectConfig = target[ propertyName ]
 				Deft.Injector.inject( injectConfig, target, targetInstanceConstructorArguments, false )
-				@afterMixinProcessed( target )
+				Deft.mixin.Injectable.afterMixinProcessed( target )
 
 			return true
 
@@ -83,7 +92,7 @@ Ext.define( 'Deft.mixin.Injectable',
 		@private
 		###
 		afterMixinProcessed: ( target ) ->
-			target[ @MIXIN_COMPLETED_KEY ] = true
+			target[ Deft.mixin.Injectable.MIXIN_COMPLETED_KEY ] = true
 			return
 
 )
