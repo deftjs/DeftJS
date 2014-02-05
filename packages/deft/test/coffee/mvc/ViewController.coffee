@@ -1470,6 +1470,75 @@ describe( 'Deft.mvc.ViewController', ->
 			return
 		)
 
+		specify( 'attaches view controller scoped event listeners to events for the view after merging simple inherited control blocks without affecting the parent prototype', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+
+				onExampleViewExampleEventParent: ( view, value ) ->
+					return
+
+			)
+
+			Ext.define( 'ExampleViewControllerChild1',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+			)
+
+			Ext.define( 'ExampleViewControllerChild2',
+				extend: 'ExampleViewController'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+			)
+
+			sinon.spy( ExampleViewControllerChild1.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild1.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild2.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild2.prototype, 'onExampleViewExampleEventChild' )
+
+			view1 = Ext.create( 'ExampleView' )
+
+			viewController1 = Ext.create( 'ExampleViewControllerChild1',
+				view: view1
+			)
+
+			view2 = Ext.create( 'ExampleView' )
+
+			viewController2 = Ext.create( 'ExampleViewControllerChild2',
+				view: view2
+			)
+
+			expect( hasListener( view1, 'exampleevent' ) ).to.be.true
+			expect( hasListener( view2, 'exampleevent' ) ).to.be.true
+
+			view1.fireExampleEvent( 'expected value 1' )
+			view2.fireExampleEvent( 'expected value 2' )
+
+			expect( viewController1.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view1, 'expected value 1' ).and.calledOn( viewController1 )
+			expect( viewController1.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view1, 'expected value 1' ).and.calledOn( viewController1 )
+			expect( viewController2.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view2, 'expected value 2' ).and.calledOn( viewController2 )
+			expect( viewController2.onExampleViewExampleEventChild ).not.to.be.called
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild1
+			delete ExampleViewControllerChild2
+
+			return
+		)
+
 		specify( 'attaches view controller scoped event listeners to events for the view after merging selector-based inherited control blocks', ->
 
 			Ext.define( 'ExampleViewController',

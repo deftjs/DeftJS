@@ -24,7 +24,7 @@ Ext.define( "Deft.util.DeftMixinUtils",
 				wasMerged = true
 
 			if( wasMerged and isRecursionStart )
-				target[ propertyName ] = currentResult
+				target[ propertyName ] = Ext.clone( currentResult )
 
 			return currentResult
 
