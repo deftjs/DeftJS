@@ -20,6 +20,8 @@ describe( 'Deft.mvc.ViewController', ->
 		else
 			return observable.hasListener( eventName )
 
+
+			###
 	describe( 'Configuration', ->
 		
 		specify( 'configurable with a reference to the view it controls', ->
@@ -58,6 +60,7 @@ describe( 'Deft.mvc.ViewController', ->
 			return
 		)
 	)
+  		###
 
 	describe( 'Creation of getters and event listeners using the \'control\' property', ->
 
@@ -79,18 +82,30 @@ describe( 'Deft.mvc.ViewController', ->
 				renderTo: 'componentTestArea'
 				# Ext JS
 				items: [
-					{
-						xtype: 'example'
-						itemId: 'example'
-					}
+					xtype: 'example'
+					itemId: 'example'
+				,
+					xtype : 'button'
+					text : 'Example Button'
+					itemId: 'button1'
+				,
+					xtype : 'button'
+					text : 'Another Button'
+					itemId: 'button2'
 				]
 				config:
 					# Sencha Touch
 					items: [
-						{
-							xtype: 'example'
-							itemId: 'example'
-						}
+						xtype: 'example'
+						itemId: 'example'
+					,
+						xtype : 'button'
+						text : 'Example Button'
+						itemId: 'button1'
+					,
+						xtype : 'button'
+						text : 'Another Button'
+						itemId: 'button2'
 					]
 				
 				fireExampleEvent: ( value ) ->
@@ -119,7 +134,7 @@ describe( 'Deft.mvc.ViewController', ->
 
 			return
 		)
-		
+
 		specify( 'attaches view controller scoped event listeners to events for the view', ->
 			Ext.define( 'ExampleViewController',
 				extend: 'Deft.mvc.ViewController'
@@ -1676,6 +1691,116 @@ describe( 'Deft.mvc.ViewController', ->
 			delete ExampleViewControllerChild
 		)
 
+		specify( 'attaches view controller scoped event listeners to events for the view after merging inherited control blocks that are all reference-only selectors', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					myButton:
+						selector: 'button[text="Example Button"]'
+					button2: true
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					example: true
+			)
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+
+			buttonFromView = view.down( 'button[text="Example Button"]' )
+			controllerButtonRef = viewController.getMyButton()
+			expect( buttonFromView ).to.equal( controllerButtonRef )
+
+			button2FromView = view.down( '#button2' )
+			controllerButtonRef2 = viewController.getButton2()
+			expect( button2FromView ).to.equal( controllerButtonRef2 )
+
+			return
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
+		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging inherited control blocks that include some reference-only selectors', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					myButton:
+						selector: 'button[text="Example Button"]'
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					button2: true
+					example:
+						selector: '#example'
+						listeners:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+			expect( hasListener( viewController.getExample(), 'exampleevent2' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+			viewController.getExample().fireEvent( 'exampleevent2', 'expected value 2' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			buttonFromView = view.down( 'button[text="Example Button"]' )
+			controllerButtonRef = viewController.getMyButton()
+			expect( buttonFromView ).to.equal( controllerButtonRef )
+
+			button2FromView = view.down( '#button2' )
+			controllerButtonRef2 = viewController.getButton2()
+			expect( button2FromView ).to.equal( controllerButtonRef2 )
+
+			return
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
+		)
+
 		specify( 'attaches view controller scoped event listeners to events for the view after merging non-selector-based inherited control blocks', ->
 
 			Ext.define( 'ExampleViewController',
@@ -2865,18 +2990,14 @@ describe( 'Deft.mvc.ViewController', ->
 				renderTo: 'componentTestArea'
 				# Ext JS
 				items: [
-					{
-						xtype: 'example'
-						itemId: 'example'
-					}
+					xtype: 'example'
+					itemId: 'example'
 				]
 				config:
 					# Sencha Touch
 					items: [
-						{
-							xtype: 'example'
-							itemId: 'example'
-						}
+						xtype: 'example'
+						itemId: 'example'
 					]
 
 				fireExampleEvent: ( value ) ->
@@ -3450,6 +3571,5 @@ describe( 'Deft.mvc.ViewController', ->
 			return
 		)
 	)
-
 	return
 )

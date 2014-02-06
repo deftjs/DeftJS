@@ -327,7 +327,7 @@ Ext.define( 'Deft.mvc.ViewController',
 				if self.destroy()
 					originalViewDestroyFunction.call( @ )
 				return
-		
+
 		for id, config of @control
 			selector = null
 			if id isnt 'view'
@@ -518,10 +518,10 @@ Ext.define( 'Deft.mvc.ViewController',
 				if parentControl[ originalParentTarget ]?
 					mergedParentTargetConfig = parentControl[ originalParentTarget ]
 
-					# And it has no selector specified, or the selectors match...
-					if originalParentTargetConfig.selector is undefined or mergedParentTargetConfig.selector is originalParentTargetConfig.selector
+					# And the merge potentially overwrote an existing parent control entry for the current event target...
+					if( Deft.mvc.ViewController.mayHaveReplacedListeners( originalParentTargetConfig, mergedParentTargetConfig ) )
 
-						# Then make sure the merge did not overwrite a different control configuration for the same event target.
+						# Then proceed with a full check to look for overwritten listeners for this event target.
 						Deft.mvc.ViewController.detectReplacedListeners(
 							mergedParentTargetConfig,
 							originalParentTargetConfig,
@@ -530,6 +530,14 @@ Ext.define( 'Deft.mvc.ViewController',
 						)
 
 			return parentControl
+
+
+		mayHaveReplacedListeners: ( originalConfig, mergedConfig ) ->
+			# If the original (pre-merge) control item has no selector,
+			# or the original and merged control item have the same selector and the merged
+			# config ended up with a listeners object, then it is possible that the merge
+			# overwrote the listener config for this control item.
+			return not originalConfig.selector? or ( mergedConfig.selector is originalConfig.selector and mergedConfig.listeners? )
 
 
 		detectReplacedListeners: ( mergedConfig, originalParentConfig, originalChildControl, controlTarget ) ->
@@ -592,14 +600,14 @@ Ext.define( 'Deft.mvc.ViewController',
 					isDuplicateListener = false
 					for dupeCheckListener in mergedListeners[ thisEvent ]
 
-						if dupeCheckListener is eventConfig or ( ( dupeCheckListener.fn isnt undefined or eventConfig.fn isnt undefined ) and dupeCheckListener.fn is eventConfig.fn )
+						if dupeCheckListener is eventConfig or ( ( dupeCheckListener.fn? or eventConfig.fn? ) and dupeCheckListener.fn is eventConfig.fn )
 							isDuplicateListener = true
 							break
 
 					# If it does not already exist, clone the original listener config and append it to the post-merge listeners.
 					if not isDuplicateListener
 						applyResult = applyFn( mergedListeners[ thisEvent ], eventConfig )
-						mergedListeners[ thisEvent ] = applyResult if applyResult isnt undefined
+						mergedListeners[ thisEvent ] = applyResult if applyResult?
 
 			return
 
@@ -607,7 +615,7 @@ Ext.define( 'Deft.mvc.ViewController',
 		areBothConfigsComplex: ( mergedConfig, originalParentConfig, originalChildControl, controlTarget ) ->
 			return Ext.isObject( mergedConfig.listeners ) and
 						 Ext.isObject( originalParentConfig.listeners ) and
-						 ( originalChildControl[ controlTarget ] is undefined or
+						 ( not originalChildControl[ controlTarget ]? or
 							 Ext.isObject( originalChildControl[ controlTarget ].listeners ) )
 
 
@@ -636,7 +644,7 @@ Ext.define( 'Deft.mvc.ViewController',
 						normalizedConfig.listeners[ matchedKey ] = Ext.clone( matchedValue )
 
 						# Also, if the merged config also has non-listener targets, move them into the listener config
-						if mergedConfig.listeners[ matchedKey ] is undefined
+						if not mergedConfig.listeners[ matchedKey ]?
 							mergedConfig.listeners[ matchedKey ] = Ext.clone( matchedValue )
 							delete mergedConfig[ matchedKey ]
 
