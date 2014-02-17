@@ -503,7 +503,7 @@ Ext.define( 'Deft.mvc.ViewController',
 				return @
 
 
-		controlMergeHandler: ( originalParentControl, originalChildControl ) ->
+		controlMergeHandler: ( originalParentControl, originalChildControl, targetClassName ) ->
 			# Make sure we aren't modifying the original objects, particularly for the parent object, since it may be a CLASS-LEVEL object.
 			parentControl = if Ext.isObject( originalParentControl ) then Ext.clone( originalParentControl ) else {}
 			childControl = if Ext.isObject( originalChildControl ) then Ext.clone( originalChildControl ) else {}
@@ -526,7 +526,8 @@ Ext.define( 'Deft.mvc.ViewController',
 							mergedParentTargetConfig,
 							originalParentTargetConfig,
 							originalChildControl,
-							originalParentTarget
+							originalParentTarget,
+							targetClassName
 						)
 
 			return parentControl
@@ -534,13 +535,19 @@ Ext.define( 'Deft.mvc.ViewController',
 
 		mayHaveReplacedListeners: ( originalConfig, mergedConfig ) ->
 			# If the original (pre-merge) control item has no selector,
-			# or the original and merged control item have the same selector and the merged
-			# config ended up with a listeners object, then it is possible that the merge
-			# overwrote the listener config for this control item.
-			return not originalConfig.selector? or ( mergedConfig.selector is originalConfig.selector and mergedConfig.listeners? )
+			# or the merged config ended up with a listeners object, then it is possible
+			# that the merge overwrote the listener config for this control item.
+			return not originalConfig.selector? or mergedConfig.listeners?
 
 
-		detectReplacedListeners: ( mergedConfig, originalParentConfig, originalChildControl, controlTarget ) ->
+		detectReplacedListeners: ( mergedConfig, originalParentConfig, originalChildControl, controlTarget, targetClassName ) ->
+
+			# Check for parent config that defines an explicit selector, but child config does not.
+			if( mergedConfig.selector? and originalChildControl[ controlTarget ]? and not originalChildControl[ controlTarget ].selector? )
+				errorMessage = "Ambiguous selector found in \`#{ targetClassName }\` while merging \`control:\` configuration for \`#{ controlTarget }\`: a superclass defines a selector of \`#{ mergedConfig.selector }\`, but the subclass defines no selector. "
+				errorMessage += "Define a selector in the subclass \`control:\` configuration for \`#{ controlTarget }\` to ensure that the correct view component is being used."
+				Deft.Logger.error( errorMessage )
+				throw new Error( errorMessage )
 
 			# If we are dealing with an Object-based event config, and the parent and child configs for
 			# this target do not mix simple and complex configurations, merge in any missing parent listeners...

@@ -1623,6 +1623,197 @@ describe( 'Deft.mvc.ViewController', ->
 			return
 		)
 
+		specify( 'attaches view controller scoped event listeners to events for the view after merging selector-based inherited control blocks with selector override', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					someComponent:
+						selector: '#an-abstract-selector-to-override'
+						listeners:
+							exampleevent2:
+								fn: 'onExampleViewExampleEvent2Parent'
+								single: true
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					someComponent:
+						selector: '#example'
+						listeners:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+			expect( hasListener( viewController.getSomeComponent(), 'exampleevent2' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+			viewController.getSomeComponent().fireEvent( 'exampleevent2', 'expected value 2' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
+
+			return
+		)
+
+		specify( 'attaches view controller scoped event listeners to events for the view after merging selector-based inherited control blocks with selector override of implicit selector', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					someComponent:
+						listeners:
+							exampleevent2:
+								fn: 'onExampleViewExampleEvent2Parent'
+								single: true
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					someComponent:
+						selector: '#example'
+						listeners:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventParent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Parent' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEventChild' )
+			sinon.spy( ExampleViewControllerChild.prototype, 'onExampleViewExampleEvent2Child' )
+
+			view = Ext.create( 'ExampleView' )
+
+			viewController = Ext.create( 'ExampleViewControllerChild',
+				view: view
+			)
+
+			expect( viewController.getView() ).to.equal( view )
+			expect( hasListener( view, 'exampleevent' ) ).to.be.true
+			expect( hasListener( viewController.getSomeComponent(), 'exampleevent2' ) ).to.be.true
+
+			view.fireExampleEvent( 'expected value' )
+			viewController.getSomeComponent().fireEvent( 'exampleevent2', 'expected value 2' )
+
+			expect( viewController.onExampleViewExampleEventParent ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEventChild ).to.be.calledOnce.and.calledWith( view, 'expected value' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Parent ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+			expect( viewController.onExampleViewExampleEvent2Child ).to.be.calledOnce.and.calledWith( 'expected value 2' ).and.calledOn( viewController )
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
+
+			return
+		)
+
+		specify( 'throws an ambiguous selector error while merging selector-based inherited control blocks with ambiguous selector override', ->
+
+			Ext.define( 'ExampleViewController',
+				extend: 'Deft.mvc.ViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventParent'
+					someComponent:
+						selector: '#an-abstract-selector'
+						listeners:
+							exampleevent2:
+								fn: 'onExampleViewExampleEvent2Parent'
+								single: true
+
+				onExampleViewExampleEventParent: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Parent: ( event ) ->
+					return
+			)
+
+			Ext.define( 'ExampleViewControllerChild',
+				extend: 'ExampleViewController'
+
+				control:
+					view:
+						exampleevent: 'onExampleViewExampleEventChild'
+					someComponent:
+						listeners:
+							exampleevent2: 'onExampleViewExampleEvent2Child'
+
+				onExampleViewExampleEventChild: ( event ) ->
+					return
+
+				onExampleViewExampleEvent2Child: ( event ) ->
+					return
+			)
+
+			view = Ext.create( 'ExampleView' )
+
+			try
+				viewController = Ext.create( 'ExampleViewControllerChild',
+					view: view
+				)
+			catch error
+				expect( error.message.lastIndexOf( "Ambiguous selector found" ) ).to.be.greaterThan( -1 )
+
+			delete ExampleViewController
+			delete ExampleViewControllerChild
+
+			return
+		)
+
 		specify( 'attaches view controller scoped event listeners to events for the view after merging selector and non-selector-based inherited control blocks', ->
 
 			Ext.define( 'ExampleViewController',
@@ -2034,6 +2225,7 @@ describe( 'Deft.mvc.ViewController', ->
 						viewEvent1: 'onViewEvent1Parent'
 						viewEvent2: 'onViewEvent2Parent'
 					firstComponent:
+						selector: '#an-abstract-selector-to-override'
 						listeners:
 							firstComponentEvent1:
 								fn: 'onFirstComponentEvent1Parent'
@@ -2064,6 +2256,7 @@ describe( 'Deft.mvc.ViewController', ->
 					view:
 						viewEvent1: 'onViewEvent1Child'
 					firstComponent:
+						selector: '#firstComponent'
 						listeners:
 							firstComponentEvent1:
 								fn: 'onFirstComponentEvent1Child'

@@ -20,7 +20,7 @@ Ext.define( "Deft.util.DeftMixinUtils",
 				currentResult = @mergeSuperclassProperty( target.superclass, propertyName, mergeFn, currentResult )
 
 			if( target?[ propertyName ]? )
-				currentResult = mergeFn( currentResult, target[ propertyName ] )
+				currentResult = mergeFn( currentResult, target[ propertyName ], Ext.getClassName( target ) )
 				wasMerged = true
 
 			if( wasMerged and isRecursionStart )
