@@ -200,12 +200,22 @@ Ext.define( 'Deft.mvc.ViewController',
 					@onViewInitialize()
 				else
 					@getView().on( 'afterrender', @onViewInitialize, @, single: true )
+
+				@getView().on( 'beforedestroy', @onViewBeforeDestroy, @ )
+
 			else
 				# Sencha Touch
 				if @getView().initialized
 					@onViewInitialize()
 				else
 					@getView().on( 'initialize', @onViewInitialize, @, single: true )
+
+				self = this
+				originalViewDestroyFunction = @getView().destroy
+				@getView().destroy = ->
+					if self.destroy()
+						originalViewDestroyFunction.call( @ )
+					return
 
 			@createCompanions()
 
@@ -316,18 +326,6 @@ Ext.define( 'Deft.mvc.ViewController',
 	* @private
 	###
 	onViewInitialize: ->
-		if Ext.getVersion( 'extjs' )?
-			# Ext JS
-			@getView().on( 'beforedestroy', @onViewBeforeDestroy, @ )
-		else
-			# Sencha Touch
-			self = this
-			originalViewDestroyFunction = @getView().destroy
-			@getView().destroy = ->
-				if self.destroy()
-					originalViewDestroyFunction.call( @ )
-				return
-
 		for id, config of @control
 			selector = null
 			if id isnt 'view'
