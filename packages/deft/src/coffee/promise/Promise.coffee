@@ -20,7 +20,7 @@ value or rejected with any error thrown by the callback.
 
 ## <u>[Basic Usage](https://github.com/deftjs/DeftJS/wiki/Promises%20API)</u>
 
-In it's most basic and common form, a method will create and return a Promise like this:
+In its most basic and common form, a method will create and return a Promise like this:
 
     // A method in a service class which uses a Store and returns a Promise
     loadCompanies: function() {
