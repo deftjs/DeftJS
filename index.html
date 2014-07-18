@@ -40,198 +40,200 @@
 				<a href="http://groups.google.com/group/deftjs" class="button icon google"><span>Google Group</span></a>
 				<a href="https://twitter.com/DeftJS" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @DeftJS</a>
 				<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-			<h1>
-				About
-			</h1>
-			<p>
-				Deft JS enhances Ext JS and Sencha Touch’s APIs with additional building blocks that enable large development teams to rapidly build enterprise scale applications, leveraging best practices and proven patterns discovered by top RIA developers at some of the best consulting firms in the industry.
-			</p>
-			<h1>
-				Goals
-			</h1>
-			<ul>
-				<li>
-					<strong>Flexibility</strong>
-					<ul>
-						<li>Coordinates dynamic assembly of object dependencies based on a configurable IoC container.
-						</li>
-					</ul>
-				</li>
-				<li>
-					<strong>Approachability</strong>
-					<ul>
-						<li>Builds on familiar Ext JS API syntax conventions for ‘pay-as-you-go’ complexity.
-						</li>
-					</ul>
-				</li>
-				<li>
-					<strong>Simplicity</strong>
-					<ul>
-						<li>Eliminates boilerplate code in favor of the simplest expression of developer intent.
-						</li>
-					</ul>
-				</li>
-				<li>
-					<strong>Testability</strong>
-					<ul>
-						<li>Promotes loose coupling through class annotation driven dependency injection.
-						</li>
-					</ul>
-				</li>
-				<li>
-					<strong>Extensibility</strong>
-					<ul>
-						<li>Leverages the advanced class system provided by Ext JS and Sencha Touch.
-						</li>
-					</ul>
-				</li>
-				<li>
-					<strong>Reusability</strong>
-					<ul>
-						<li>Enables business layer code reuse between Ext JS and Sencha Touch applications.
-						</li>
-					</ul>
-				</li>
-			</ul>
-			<h1>
-				Features
-			</h1>
-			<h2>IoC Container</h2>
-			<ul>
-				<li>Provides class annotation-driven dependency injection.</li>
-				<li>Maps dependencies by user-defined identifiers.</li>
-				<li>Resolves dependencies by class instance, factory function or value.</li>
-				<li>Supports singleton and prototype resolution of class instance and factory function dependencies.</li>
-				<li>Offers eager and lazy instantiation of dependencies.</li>
-				<li>Injects dependencies into Ext JS class configs and properties before the class constructor is executed.</li>
-			</ul>
-			<h2>MVC with ViewControllers</h2>
-			<ul>
-				<li>Provides class annotation-driven association between a given view and its ViewController.</li>
-				<li>Clarifies the role of the controller - i.e. controlling a view and delegating work to injected business services (service classes, Stores, etc.).</li>
-				<li>Supports multiple independent instances of a given view, each with their own ViewController instance.</li>
-				<li>Reduces memory usage by automatically creating and destroying view controllers in tandem with their associated views.</li>
-				<li>Supports concise configuration for referencing view components and registering event listeners with view controller methods.</li>
-				<li>Integrates with the view destruction lifecycle to allow the view controller to potentially cancel removal and destruction.</li>
-				<li>Simplifies clean-up by automatically removing view and view component references and event listeners.</li>
-			</ul>
-			<h2>Promises and Deferreds</h2>
-			<ul>
-				<li>Provides an elegant way to represent a ‘future value’ resulting from an asynchronous operation.</li>
-				<li>Offers a consistent, readable API for registering success, failure, cancellation or progress callbacks.</li>
-				<li>Allows chaining of transformation and processing of future values.</li>
-				<li>Simplifies processing of a set of future values via utility functions including all(), any(), map() and reduce().</li>
-				<li>Implements the <a href="http://wiki.commonjs.org/wiki/Promises/A">CommonJS Promises/A specification</a>.</li>
-			</ul>
-			
-			<h1>Documentation</h1>
-			<p>
-				Full documentation is available in the <a href="https://github.com/deftjs/DeftJS/wiki">Deft JS Github Wiki</a>.
-			</p>
-			
-			<h1>
-				Version History
-			</h1>
-			<ul>
-				<li>0.9.1 - Promises and Deferreds rewritten to be Promises/A+ compliant; migrated from Jasmine to Mocha+Chai+Sinon; added Karma build configuration; automated build process with Travis CI; migrated project to Sencha Cmd; added test suites for Ext JS 4.2.1 and Touch 2.2.1.
-				</li>
-				<li>0.8.0 - Moved from mixins to class preprocessors. Added: Promises API, ViewController Observer feature, Deft.Application class, hundreds of Jasmine tests, improved logging, JSDuck documentation, and numerous other improvements.
-				</li>
-				<li>0.6.7 - Controllable now automatically adds a getController() accessor to view. Fixes reported issue with Deferreds completed with 'undefined' values.
-				</li>
-				<li>0.6.6 - Fixes to improve error handling and reporting; especially those associated with nonexistent classes and classes that were not Ext.require()-ed.
-				</li>
-				<li>0.6.5 - Enhanced IoC container to support classes defined as singletons using the Sencha class system.
-				</li>
-				<li>0.6.4 - Hotfix for Sencha Touch Logger issue.
-				</li>
-				<li>0.6.3 - Added memoization feature. Fixed reported Sencha Touch issues.
-				</li>
-				<li>0.6.2 - Added support for View Controller event listener options. Ext JS 4.1rc3 compatibility fixes.
-				</li>
-				<li>0.6.1 - Sencha Touch compatibility fixes.
-				</li>
-				<li>0.6.0 - Introducing View Controller and Controllable. Preview release of Deferred and Promise.
-				</li>
-				<li>0.1.1 - Preview release, added Jasmine test suite.
-				</li>
-				<li>0.1.0 - Preview release, introducing an IoC container for dependency injection.
-				</li>
-			</ul>
-			<h1>
-				Roadmap
-			</h1>
-			<ul>
-				<li>Navigation - support for hierarchical views, route-aware
-				</li>
-				<li>AOP with an Ext JS-style API (i.e. JSON style configuration)
-				</li>
-				<li>Occasionally-Connected Store (simplifing online / offline capabilities)
-				</li>
-			</ul>
-			<h1>
-				Development Team
-			</h1>
-			<ul>
-				<li>
-					<a href="http://twitter.com/johnyanarella">John Yanarella</a> (Creator)
-				</li>
-				<li>
-					<a href="https://twitter.com/brian428">Brian Kotek</a>
-				</li>
-				<li>
-					<a href="https://twitter.com/superstructor">Isaac Johnston</a>
-				</li>
-				<li>
-					<a href="https://twitter.com/bobjim">Ryan Campbell</a>
-				</li>
-				<li>
-					<a href="https://twitter.com/mindmillmedia">David Tucker</a>
-				</li>
-			</ul>
-			<h1>
-				Acknowledgements
-			</h1>
-			<ul>
-				<li>Inspiration drawn from other IoC frameworks:
-					<ul>
-						<li>
-							<a href="http://www.springsource.org/">Spring</a>
-						</li>
-						<li>
-							<a href="http://swizframework.org/">Swiz</a>
-						</li>
-						<li>
-							<a href="http://www.robotlegs.org/">Robotlegs</a>
-						</li>
-						<li>
-							<a href="https://github.com/tschneidereit/SwiftSuspenders">Swift Suspenders</a>
-						</li>
-						<li>
-							<a href="http://angularjs.org/">AngularJS</a>
-						</li>
-					</ul>
-				</li>
-				<li>Special thanks to:
-					<ul>
-						<li>
-							<a href="http://dribbble.com/artifactdesign">Jason Barry</a> for creating the Deft JS logo.
-						</li>
-						<li>
-							<a href="http://twitter.com/thomasburleson">Thomas Burleson</a> for beta-testing and providing feedback on view controllers and promises.
-						</li>
-						<li>
-							<a href="http://www.davidtucker.net/">David Tucker</a> for reviewing several iterations of the proposed syntax.
-						</li>
-						<li>
-							<a href="mailto:claude_r_gauthier@hotmail.com">Claude Gauthier</a> for leading the 5-day <a href="http://www.sencha.com/training">‘Fast Track to Ext JS’</a> training where this idea was born.
-						</li>
-						<li>
-							<a href="http://twitter.com/timothymarshall">Tim Marshall</a> for parting with the twitter account and project name, which he’d previously used for a personal project.
-						</li>
-					</ul>
-				</li>
-			</ul>
+
+				<h1>
+					About
+				</h1>
+				<p>
+					Deft JS enhances Ext JS and Sencha Touch’s APIs with additional building blocks that enable large development teams to rapidly build enterprise scale applications, leveraging best practices and proven patterns discovered by top RIA developers at some of the best consulting firms in the industry.
+				</p>
+				<h1>
+					Goals
+				</h1>
+				<ul>
+					<li>
+						<strong>Flexibility</strong>
+						<ul>
+							<li>Coordinates dynamic assembly of object dependencies based on a configurable IoC container.
+							</li>
+						</ul>
+					</li>
+					<li>
+						<strong>Approachability</strong>
+						<ul>
+							<li>Builds on familiar Ext JS API syntax conventions for ‘pay-as-you-go’ complexity.
+							</li>
+						</ul>
+					</li>
+					<li>
+						<strong>Simplicity</strong>
+						<ul>
+							<li>Eliminates boilerplate code in favor of the simplest expression of developer intent.
+							</li>
+						</ul>
+					</li>
+					<li>
+						<strong>Testability</strong>
+						<ul>
+							<li>Promotes loose coupling through class annotation driven dependency injection.
+							</li>
+						</ul>
+					</li>
+					<li>
+						<strong>Extensibility</strong>
+						<ul>
+							<li>Leverages the advanced class system provided by Ext JS and Sencha Touch.
+							</li>
+						</ul>
+					</li>
+					<li>
+						<strong>Reusability</strong>
+						<ul>
+							<li>Enables business layer code reuse between Ext JS and Sencha Touch applications.
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<h1>
+					Features
+				</h1>
+				<h2>IoC Container</h2>
+				<ul>
+					<li>Provides class annotation-driven dependency injection.</li>
+					<li>Maps dependencies by user-defined identifiers.</li>
+					<li>Resolves dependencies by class instance, factory function or value.</li>
+					<li>Supports singleton and prototype resolution of class instance and factory function dependencies.</li>
+					<li>Offers eager and lazy instantiation of dependencies.</li>
+					<li>Injects dependencies into Ext JS class configs and properties before the class constructor is executed.</li>
+				</ul>
+				<h2>MVC with ViewControllers</h2>
+				<ul>
+					<li>Provides class annotation-driven association between a given view and its ViewController.</li>
+					<li>Clarifies the role of the controller - i.e. controlling a view and delegating work to injected business services (service classes, Stores, etc.).</li>
+					<li>Supports multiple independent instances of a given view, each with their own ViewController instance.</li>
+					<li>Reduces memory usage by automatically creating and destroying view controllers in tandem with their associated views.</li>
+					<li>Supports concise configuration for referencing view components and registering event listeners with view controller methods.</li>
+					<li>Integrates with the view destruction lifecycle to allow the view controller to potentially cancel removal and destruction.</li>
+					<li>Simplifies clean-up by automatically removing view and view component references and event listeners.</li>
+				</ul>
+				<h2>Promises and Deferreds</h2>
+				<ul>
+					<li>Provides an elegant way to represent a ‘future value’ resulting from an asynchronous operation.</li>
+					<li>Offers a consistent, readable API for registering success, failure, cancellation or progress callbacks.</li>
+					<li>Allows chaining of transformation and processing of future values.</li>
+					<li>Simplifies processing of a set of future values via utility functions including all(), any(), map() and reduce().</li>
+					<li>Implements the <a href="http://wiki.commonjs.org/wiki/Promises/A">CommonJS Promises/A specification</a>.</li>
+				</ul>
+
+				<h1>Documentation</h1>
+				<p>
+					Full documentation is available in the <a href="https://github.com/deftjs/DeftJS/wiki">Deft JS Github Wiki</a>.
+				</p>
+
+				<h1>
+					Version History
+				</h1>
+				<ul>
+					<li>0.9.1 - Promises and Deferreds rewritten to be Promises/A+ compliant; migrated from Jasmine to Mocha+Chai+Sinon; added Karma build configuration; automated build process with Travis CI; migrated project to Sencha Cmd; added test suites for Ext JS 4.2.1 and Touch 2.2.1.
+					</li>
+					<li>0.8.0 - Moved from mixins to class preprocessors. Added: Promises API, ViewController Observer feature, Deft.Application class, hundreds of Jasmine tests, improved logging, JSDuck documentation, and numerous other improvements.
+					</li>
+					<li>0.6.7 - Controllable now automatically adds a getController() accessor to view. Fixes reported issue with Deferreds completed with 'undefined' values.
+					</li>
+					<li>0.6.6 - Fixes to improve error handling and reporting; especially those associated with nonexistent classes and classes that were not Ext.require()-ed.
+					</li>
+					<li>0.6.5 - Enhanced IoC container to support classes defined as singletons using the Sencha class system.
+					</li>
+					<li>0.6.4 - Hotfix for Sencha Touch Logger issue.
+					</li>
+					<li>0.6.3 - Added memoization feature. Fixed reported Sencha Touch issues.
+					</li>
+					<li>0.6.2 - Added support for View Controller event listener options. Ext JS 4.1rc3 compatibility fixes.
+					</li>
+					<li>0.6.1 - Sencha Touch compatibility fixes.
+					</li>
+					<li>0.6.0 - Introducing View Controller and Controllable. Preview release of Deferred and Promise.
+					</li>
+					<li>0.1.1 - Preview release, added Jasmine test suite.
+					</li>
+					<li>0.1.0 - Preview release, introducing an IoC container for dependency injection.
+					</li>
+				</ul>
+				<h1>
+					Roadmap
+				</h1>
+				<ul>
+					<li>Navigation - support for hierarchical views, route-aware
+					</li>
+					<li>AOP with an Ext JS-style API (i.e. JSON style configuration)
+					</li>
+					<li>Occasionally-Connected Store (simplifing online / offline capabilities)
+					</li>
+				</ul>
+				<h1>
+					Development Team
+				</h1>
+				<ul>
+					<li>
+						<a href="http://twitter.com/johnyanarella">John Yanarella</a> (Creator)
+					</li>
+					<li>
+						<a href="https://twitter.com/brian428">Brian Kotek</a>
+					</li>
+					<li>
+						<a href="https://twitter.com/superstructor">Isaac Johnston</a>
+					</li>
+					<li>
+						<a href="https://twitter.com/bobjim">Ryan Campbell</a>
+					</li>
+					<li>
+						<a href="https://twitter.com/mindmillmedia">David Tucker</a>
+					</li>
+				</ul>
+				<h1>
+					Acknowledgements
+				</h1>
+				<ul>
+					<li>Inspiration drawn from other IoC frameworks:
+						<ul>
+							<li>
+								<a href="http://www.springsource.org/">Spring</a>
+							</li>
+							<li>
+								<a href="http://swizframework.org/">Swiz</a>
+							</li>
+							<li>
+								<a href="http://www.robotlegs.org/">Robotlegs</a>
+							</li>
+							<li>
+								<a href="https://github.com/tschneidereit/SwiftSuspenders">Swift Suspenders</a>
+							</li>
+							<li>
+								<a href="http://angularjs.org/">AngularJS</a>
+							</li>
+						</ul>
+					</li>
+					<li>Special thanks to:
+						<ul>
+							<li>
+								<a href="http://dribbble.com/artifactdesign">Jason Barry</a> for creating the Deft JS logo.
+							</li>
+							<li>
+								<a href="http://twitter.com/thomasburleson">Thomas Burleson</a> for beta-testing and providing feedback on view controllers and promises.
+							</li>
+							<li>
+								<a href="http://www.davidtucker.net/">David Tucker</a> for reviewing several iterations of the proposed syntax.
+							</li>
+							<li>
+								<a href="mailto:claude_r_gauthier@hotmail.com">Claude Gauthier</a> for leading the 5-day <a href="http://www.sencha.com/training">‘Fast Track to Ext JS’</a> training where this idea was born.
+							</li>
+							<li>
+								<a href="http://twitter.com/timothymarshall">Tim Marshall</a> for parting with the twitter account and project name, which he’d previously used for a personal project.
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
 		</section>
 
 		<script>
