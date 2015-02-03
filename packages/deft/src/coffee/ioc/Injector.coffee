@@ -253,7 +253,7 @@ Ext.define( 'Deft.ioc.Injector',
 				# Ext JS 4.0
 				Ext.Component.override(
 					constructor: ( config ) ->
-						config = Ext.Object.merge( {}, config or {}, @injectConfig or {} )
+						config = Ext.apply(config or {}, @injectConfig)
 						delete @injectConfig
 						return @callOverridden( [ config ] )
 				)
@@ -263,7 +263,7 @@ Ext.define( 'Deft.ioc.Injector',
 					override: 'Ext.Component'
 
 					constructor: ( config ) ->
-						config = Ext.Object.merge( {}, config or {}, @injectConfig or {} )
+						config = Ext.apply(config or {}, @injectConfig)
 						delete @injectConfig
 						return @callParent( [ config ] )
 				)
