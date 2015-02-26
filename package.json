@@ -12,12 +12,14 @@
     "url": "https://github.com/deftjs/DeftJS.git"
   },
   "devDependencies": {
-    "karma": "~0.10",
-    "coffee-script": "1.6.3",
-    "mocha": "~1.17.0",
-    "karma-mocha": "~0.1.1",
-    "karma-coverage": "~0.1.4",
-    "karma-safari-launcher": "~0.1.1"
+    "karma": "~0.12.31",
+    "coffee-script": "~1.9.1",
+    "mocha": "~2.1.0",
+    "karma-mocha": "~0.1.10",
+    "karma-coverage": "~0.2.7",
+    "karma-safari-launcher": "~0.1.1",
+    "karma-phantomjs-launcher": "~0.1.4",
+    "karma-firefox-launcher": "~0.1.4"
   },
   "scripts": {
     "test": "cd packages/deft && ant test -Dkarma.browsers=PhantomJS,Firefox"
